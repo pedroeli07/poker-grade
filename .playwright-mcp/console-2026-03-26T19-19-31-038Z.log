@@ -1,0 +1,31 @@
+[     592ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-E8EPi3ovz+EfxEviTr9UjHKYh5PnfxNoZOnJbyuXKOo='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:0
+[     597ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-UTHNSJz+MZvogbfNCmxO1hDaxknW1/+K6CxyBkC6j/I='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:24
+[     597ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-OBTN3RiyCV4Bq7dFqZ5a2pAXjnCcCYeTJMO2I/LYKeo='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:24
+[     597ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-adi1ZRFmhu8LCiohy1Stq2MihzqwGEjLCruUKhmW7cM='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:24
+[     597ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-1TeY3aBytRV7kwtA5KTepnraoWKkcK1rFpC2yObUbZQ='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:24
+[     597ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-ffbV5K/8vbB+NHiuY8qDUiLxn/1mOCw0aOEdjDZb80E='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:24
+[     597ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-+kUjVyxl2KMgqUz4/me1aaXB02L+PXJEwK3ObHQBwQE='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:24
+[     598ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-Myb6jovxncXbSE9dO4MQzObOCeOjlK/VZ5nDfhm9ADk='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:24
+[     598ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-45dIeT+p1MQZwOqM11mhQJUynkUYHjCP6xYfynyLo2M='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:24
+[     598ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-lp8kXNNBv5x8qjPq4ZYweiB4LGUqDno0ovJxwxvrEcA='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:24
+[     598ms] [ERROR] Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-OCbZa2tvIx+PFJXf8xEugcVgpBmdozPy2/51OCXiyQE='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked. @ http://localhost:3000/register:24
+[     746ms] InvariantError: Invariant: Expected a request ID to be defined for the document via self.__next_r. This is a bug in Next.js.
+    at createDebugChannel (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:7804:41)
+    at module evaluation (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:15044:20)
+    at http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1307:27
+    at runModuleExecutionHooks (http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1636:13)
+    at instantiateModuleShared (http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1305:9)
+    at instantiateModule (http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1621:12)
+    at getOrInstantiateModuleFromParent (http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1604:12)
+    at DevContext.commonJsRequire [as r] (http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:299:12)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:15201:47
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:194:9
+    at loadScriptsInSequence (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:158:16)
+    at appBootstrap (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:187:5)
+    at module evaluation (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:15200:32)
+    at http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1307:27
+    at runModuleExecutionHooks (http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1636:13)
+    at instantiateModuleShared (http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1305:9)
+    at instantiateModule (http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1621:12)
+    at getOrInstantiateRuntimeModule (http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1582:12)
+    at Object.registerChunk (http://localhost:3000/_next/static/chunks/turbopack-_0p44nws._.js:1985:21)

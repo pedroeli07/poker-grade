@@ -1,0 +1,1172 @@
+[
+  {
+    "id": 200642,
+    "name": "PKO $11-$30 regular",
+    "site": [
+      {
+        "item_id": 1,
+        "item_text": "PokerStars"
+      },
+      {
+        "item_id": 2,
+        "item_text": "GG Network"
+      },
+      {
+        "item_id": 5,
+        "item_text": "888poker"
+      },
+      {
+        "item_id": 6,
+        "item_text": "iPoker"
+      },
+      {
+        "item_id": 3,
+        "item_text": "PartyPoker"
+      },
+      {
+        "item_id": 9,
+        "item_text": "WPN Network"
+      },
+      {
+        "item_id": 10,
+        "item_text": "PokerStars.ES"
+      }
+    ],
+    "game2": [
+      {
+        "item_id": 1,
+        "item_text": "NLH"
+      }
+    ],
+    "buy_in_min": 11,
+    "buy_in_max": 30,
+    "speed": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Slow",
+        "item_text": "Slow"
+      }
+    ],
+    "type": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Flight",
+        "item_text": "Flight"
+      }
+    ],
+    "players": [
+      {
+        "item_id": "Full Ring",
+        "item_text": "7 to 10 (Full Ring)"
+      },
+      {
+        "item_id": "6-Max",
+        "item_text": "6-Max"
+      }
+    ],
+    "variant": [
+      {
+        "item_id": "Knockout",
+        "item_text": "Knockout"
+      },
+      {
+        "item_id": "Mystery",
+        "item_text": "Mystery"
+      }
+    ],
+    "state": null,
+    "prize_pool_min": 5000,
+    "prize_pool_max": null,
+    "init_stacks_min": null,
+    "init_stacks_max": null,
+    "from_date": null,
+    "to_date": null,
+    "from_time": null,
+    "to_time": null,
+    "search": "",
+    "order": {
+      "state": 1
+    },
+    "onlyNew": false,
+    "scheduled": null,
+    "maxLate": false,
+    "field": null,
+    "from_duration": null,
+    "priority": null,
+    "to_duration": null,
+    "limit": null,
+    "include_closed": false,
+    "order_start": 0,
+    "order_site": 0,
+    "order_game": 0,
+    "order_buy_in": 0,
+    "order_name": 0,
+    "order_prize_pool": 0,
+    "order_speed": 0,
+    "order_state": 1,
+    "order_field": 0,
+    "order_duration": 0,
+    "order_register_time": 0,
+    "order_av_ability": 0,
+    "order_type": 0,
+    "onlyFast": false,
+    "from_register_time": null,
+    "to_register_time": null,
+    "timezone": -180,
+    "exclude": "",
+    "flagged_only": null,
+    "auto_scheduled_only": null,
+    "show_exception": false,
+    "category": null,
+    "av_ability": null,
+    "currency": null,
+    "min_participants": 250,
+    "week_day": null,
+    "from_end_time": null,
+    "to_end_time": null,
+    "order_grindstate": 0,
+    "order_priority": 0,
+    "auto_only": true,
+    "manual_only": false,
+    "deleted_filter_only": true,
+    "unchecked_filter_only": false,
+    "min_blind": null,
+    "max_blind": null,
+    "favorites": false
+  },
+  {
+    "id": 200643,
+    "name": "PKO $31-$40 regular",
+    "site": [
+      {
+        "item_id": 5,
+        "item_text": "888poker"
+      },
+      {
+        "item_id": 6,
+        "item_text": "iPoker"
+      },
+      {
+        "item_id": 3,
+        "item_text": "PartyPoker"
+      },
+      {
+        "item_id": 10,
+        "item_text": "PokerStars.ES"
+      }
+    ],
+    "game2": [
+      {
+        "item_id": 1,
+        "item_text": "NLH"
+      }
+    ],
+    "buy_in_min": 31,
+    "buy_in_max": 40,
+    "speed": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Slow",
+        "item_text": "Slow"
+      }
+    ],
+    "type": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Flight",
+        "item_text": "Flight"
+      }
+    ],
+    "players": [
+      {
+        "item_id": "Full Ring",
+        "item_text": "7 to 10 (Full Ring)"
+      },
+      {
+        "item_id": "6-Max",
+        "item_text": "6-Max"
+      }
+    ],
+    "variant": [
+      {
+        "item_id": "Knockout",
+        "item_text": "Knockout"
+      }
+    ],
+    "state": null,
+    "prize_pool_min": 15000,
+    "prize_pool_max": null,
+    "init_stacks_min": null,
+    "init_stacks_max": null,
+    "from_date": null,
+    "to_date": null,
+    "from_time": null,
+    "to_time": null,
+    "search": "",
+    "order": {
+      "state": 1
+    },
+    "onlyNew": false,
+    "scheduled": null,
+    "maxLate": false,
+    "field": null,
+    "from_duration": null,
+    "priority": null,
+    "to_duration": null,
+    "limit": null,
+    "include_closed": false,
+    "order_start": 0,
+    "order_site": 0,
+    "order_game": 0,
+    "order_buy_in": 0,
+    "order_name": 0,
+    "order_prize_pool": 0,
+    "order_speed": 0,
+    "order_state": 1,
+    "order_field": 0,
+    "order_duration": 0,
+    "order_register_time": 0,
+    "order_av_ability": 0,
+    "order_type": 0,
+    "onlyFast": false,
+    "from_register_time": null,
+    "to_register_time": null,
+    "timezone": -180,
+    "exclude": "red lotus",
+    "flagged_only": null,
+    "auto_scheduled_only": null,
+    "show_exception": false,
+    "category": null,
+    "av_ability": null,
+    "currency": null,
+    "min_participants": 300,
+    "week_day": null,
+    "from_end_time": null,
+    "to_end_time": null,
+    "order_grindstate": 0,
+    "order_priority": 0,
+    "auto_only": true,
+    "manual_only": false,
+    "deleted_filter_only": true,
+    "unchecked_filter_only": false,
+    "min_blind": null,
+    "max_blind": null,
+    "favorites": false
+  },
+  {
+    "id": 200646,
+    "name": "PKO $100-$109 regular (SÓ Sunday Party)",
+    "site": [
+      {
+        "item_id": 3,
+        "item_text": "PartyPoker"
+      },
+      {
+        "item_id": 6,
+        "item_text": "iPoker"
+      }
+    ],
+    "game2": [
+      {
+        "item_id": 1,
+        "item_text": "NLH"
+      }
+    ],
+    "buy_in_min": 100,
+    "buy_in_max": 120,
+    "speed": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Slow",
+        "item_text": "Slow"
+      }
+    ],
+    "type": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      }
+    ],
+    "players": [
+      {
+        "item_id": "Full Ring",
+        "item_text": "7 to 10 (Full Ring)"
+      },
+      {
+        "item_id": "6-Max",
+        "item_text": "6-Max"
+      }
+    ],
+    "variant": [
+      {
+        "item_id": "Knockout",
+        "item_text": "Knockout"
+      }
+    ],
+    "state": null,
+    "prize_pool_min": 50000,
+    "prize_pool_max": null,
+    "init_stacks_min": null,
+    "init_stacks_max": null,
+    "from_date": null,
+    "to_date": null,
+    "from_time": null,
+    "to_time": null,
+    "search": "",
+    "order": {
+      "state": 1
+    },
+    "onlyNew": false,
+    "scheduled": null,
+    "maxLate": false,
+    "field": null,
+    "from_duration": null,
+    "priority": null,
+    "to_duration": null,
+    "limit": null,
+    "include_closed": false,
+    "order_start": 0,
+    "order_site": 0,
+    "order_game": 0,
+    "order_buy_in": 0,
+    "order_name": 0,
+    "order_prize_pool": 0,
+    "order_speed": 0,
+    "order_state": 1,
+    "order_field": 0,
+    "order_duration": 0,
+    "order_register_time": 0,
+    "order_av_ability": 0,
+    "order_type": 0,
+    "onlyFast": false,
+    "from_register_time": null,
+    "to_register_time": null,
+    "timezone": -180,
+    "exclude": "red lotus|encore",
+    "flagged_only": null,
+    "auto_scheduled_only": null,
+    "show_exception": false,
+    "category": null,
+    "av_ability": null,
+    "currency": null,
+    "min_participants": null,
+    "week_day": null,
+    "from_end_time": null,
+    "to_end_time": null,
+    "order_grindstate": 0,
+    "order_priority": 0,
+    "auto_only": true,
+    "manual_only": false,
+    "deleted_filter_only": true,
+    "unchecked_filter_only": false,
+    "min_blind": null,
+    "max_blind": null,
+    "favorites": false
+  },
+  {
+    "id": 200648,
+    "name": "PKO $11-$25 vanila",
+    "site": [
+      {
+        "item_id": 1,
+        "item_text": "PokerStars"
+      },
+      {
+        "item_id": 5,
+        "item_text": "888poker"
+      },
+      {
+        "item_id": 6,
+        "item_text": "iPoker"
+      },
+      {
+        "item_id": 3,
+        "item_text": "PartyPoker"
+      },
+      {
+        "item_id": 9,
+        "item_text": "WPN Network"
+      },
+      {
+        "item_id": 10,
+        "item_text": "PokerStars.ES"
+      }
+    ],
+    "game2": [
+      {
+        "item_id": 1,
+        "item_text": "NLH"
+      }
+    ],
+    "buy_in_min": 11,
+    "buy_in_max": 30,
+    "speed": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Slow",
+        "item_text": "Slow"
+      }
+    ],
+    "type": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Flight",
+        "item_text": "Flight"
+      }
+    ],
+    "players": [
+      {
+        "item_id": "Full Ring",
+        "item_text": "7 to 10 (Full Ring)"
+      },
+      {
+        "item_id": "6-Max",
+        "item_text": "6-Max"
+      }
+    ],
+    "variant": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      }
+    ],
+    "state": null,
+    "prize_pool_min": 4000,
+    "prize_pool_max": null,
+    "init_stacks_min": null,
+    "init_stacks_max": null,
+    "from_date": null,
+    "to_date": null,
+    "from_time": null,
+    "to_time": null,
+    "search": "",
+    "order": {
+      "state": 1
+    },
+    "onlyNew": false,
+    "scheduled": null,
+    "maxLate": false,
+    "field": null,
+    "from_duration": null,
+    "priority": null,
+    "to_duration": null,
+    "limit": null,
+    "include_closed": false,
+    "order_start": 0,
+    "order_site": 0,
+    "order_game": 0,
+    "order_buy_in": 0,
+    "order_name": 0,
+    "order_prize_pool": 0,
+    "order_speed": 0,
+    "order_state": 1,
+    "order_field": 0,
+    "order_duration": 0,
+    "order_register_time": 0,
+    "order_av_ability": 0,
+    "order_type": 0,
+    "onlyFast": false,
+    "from_register_time": null,
+    "to_register_time": null,
+    "timezone": -180,
+    "exclude": "hot|hotter",
+    "flagged_only": null,
+    "auto_scheduled_only": null,
+    "show_exception": false,
+    "category": null,
+    "av_ability": null,
+    "currency": null,
+    "min_participants": 300,
+    "week_day": null,
+    "from_end_time": null,
+    "to_end_time": null,
+    "order_grindstate": 0,
+    "order_priority": 0,
+    "auto_only": true,
+    "manual_only": false,
+    "deleted_filter_only": true,
+    "unchecked_filter_only": false,
+    "min_blind": null,
+    "max_blind": null,
+    "favorites": false
+  },
+  {
+    "id": 200649,
+    "name": "PKO $11-$25 vanila do gg",
+    "site": [
+      {
+        "item_id": 2,
+        "item_text": "GG Network"
+      }
+    ],
+    "game2": [
+      {
+        "item_id": 1,
+        "item_text": "NLH"
+      }
+    ],
+    "buy_in_min": 11,
+    "buy_in_max": 30,
+    "speed": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Slow",
+        "item_text": "Slow"
+      }
+    ],
+    "type": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Flight",
+        "item_text": "Flight"
+      }
+    ],
+    "players": [
+      {
+        "item_id": "Full Ring",
+        "item_text": "7 to 10 (Full Ring)"
+      },
+      {
+        "item_id": "6-Max",
+        "item_text": "6-Max"
+      }
+    ],
+    "variant": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      }
+    ],
+    "state": null,
+    "prize_pool_min": 4000,
+    "prize_pool_max": null,
+    "init_stacks_min": null,
+    "init_stacks_max": null,
+    "from_date": null,
+    "to_date": null,
+    "from_time": "12:00",
+    "to_time": "18:00",
+    "search": "",
+    "order": {
+      "state": 1
+    },
+    "onlyNew": false,
+    "scheduled": null,
+    "maxLate": false,
+    "field": null,
+    "from_duration": null,
+    "priority": null,
+    "to_duration": null,
+    "limit": null,
+    "include_closed": false,
+    "order_start": 0,
+    "order_site": 0,
+    "order_game": 0,
+    "order_buy_in": 0,
+    "order_name": 0,
+    "order_prize_pool": 0,
+    "order_speed": 0,
+    "order_state": 1,
+    "order_field": 0,
+    "order_duration": 0,
+    "order_register_time": 0,
+    "order_av_ability": 0,
+    "order_type": 0,
+    "onlyFast": false,
+    "from_register_time": null,
+    "to_register_time": null,
+    "timezone": -180,
+    "exclude": "hot|hotter",
+    "flagged_only": null,
+    "auto_scheduled_only": null,
+    "show_exception": false,
+    "category": null,
+    "av_ability": null,
+    "currency": null,
+    "min_participants": 300,
+    "week_day": null,
+    "from_end_time": null,
+    "to_end_time": null,
+    "order_grindstate": 0,
+    "order_priority": 0,
+    "auto_only": true,
+    "manual_only": false,
+    "deleted_filter_only": true,
+    "unchecked_filter_only": false,
+    "min_blind": null,
+    "max_blind": null,
+    "favorites": false
+  },
+  {
+    "id": 200650,
+    "name": "PKO $41-$50 regular ",
+    "site": [
+      {
+        "item_id": 5,
+        "item_text": "888poker"
+      },
+      {
+        "item_id": 6,
+        "item_text": "iPoker"
+      },
+      {
+        "item_id": 3,
+        "item_text": "PartyPoker"
+      },
+      {
+        "item_id": 1,
+        "item_text": "PokerStars"
+      },
+      {
+        "item_id": 2,
+        "item_text": "GG Network"
+      }
+    ],
+    "game2": [
+      {
+        "item_id": 1,
+        "item_text": "NLH"
+      }
+    ],
+    "buy_in_min": 41,
+    "buy_in_max": 50,
+    "speed": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Slow",
+        "item_text": "Slow"
+      }
+    ],
+    "type": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Flight",
+        "item_text": "Flight"
+      }
+    ],
+    "players": [
+      {
+        "item_id": "Full Ring",
+        "item_text": "7 to 10 (Full Ring)"
+      },
+      {
+        "item_id": "6-Max",
+        "item_text": "6-Max"
+      }
+    ],
+    "variant": [
+      {
+        "item_id": "Knockout",
+        "item_text": "Knockout"
+      },
+      {
+        "item_id": "Mystery",
+        "item_text": "Mystery"
+      }
+    ],
+    "state": null,
+    "prize_pool_min": 3000,
+    "prize_pool_max": null,
+    "init_stacks_min": null,
+    "init_stacks_max": null,
+    "from_date": null,
+    "to_date": null,
+    "from_time": null,
+    "to_time": null,
+    "search": "",
+    "order": {
+      "state": 1
+    },
+    "onlyNew": false,
+    "scheduled": null,
+    "maxLate": false,
+    "field": null,
+    "from_duration": null,
+    "priority": null,
+    "to_duration": null,
+    "limit": null,
+    "include_closed": false,
+    "order_start": 0,
+    "order_site": 0,
+    "order_game": 0,
+    "order_buy_in": 0,
+    "order_name": 0,
+    "order_prize_pool": 0,
+    "order_speed": 0,
+    "order_state": 1,
+    "order_field": 0,
+    "order_duration": 0,
+    "order_register_time": 0,
+    "order_av_ability": 0,
+    "order_type": 0,
+    "onlyFast": false,
+    "from_register_time": null,
+    "to_register_time": null,
+    "timezone": -180,
+    "exclude": "red lotus|forty|mystery",
+    "flagged_only": null,
+    "auto_scheduled_only": null,
+    "show_exception": false,
+    "category": null,
+    "av_ability": null,
+    "currency": null,
+    "min_participants": 300,
+    "week_day": [
+      {
+        "item_id": 6,
+        "item_text": "Saturday"
+      },
+      {
+        "item_id": 5,
+        "item_text": "Friday"
+      },
+      {
+        "item_id": 0,
+        "item_text": "Sunday"
+      }
+    ],
+    "from_end_time": null,
+    "to_end_time": null,
+    "order_grindstate": 0,
+    "order_priority": 0,
+    "auto_only": true,
+    "manual_only": false,
+    "deleted_filter_only": true,
+    "unchecked_filter_only": false,
+    "min_blind": null,
+    "max_blind": null,
+    "favorites": false
+  },
+  {
+    "id": 200651,
+    "name": "PKO $51-$60 regular ",
+    "site": [
+      {
+        "item_id": 5,
+        "item_text": "888poker"
+      },
+      {
+        "item_id": 6,
+        "item_text": "iPoker"
+      },
+      {
+        "item_id": 3,
+        "item_text": "PartyPoker"
+      },
+      {
+        "item_id": 1,
+        "item_text": "PokerStars"
+      },
+      {
+        "item_id": 2,
+        "item_text": "GG Network"
+      },
+      {
+        "item_id": 10,
+        "item_text": "PokerStars.ES"
+      }
+    ],
+    "game2": [
+      {
+        "item_id": 1,
+        "item_text": "NLH"
+      }
+    ],
+    "buy_in_min": 51,
+    "buy_in_max": 60,
+    "speed": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Slow",
+        "item_text": "Slow"
+      }
+    ],
+    "type": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Flight",
+        "item_text": "Flight"
+      }
+    ],
+    "players": [
+      {
+        "item_id": "Full Ring",
+        "item_text": "7 to 10 (Full Ring)"
+      },
+      {
+        "item_id": "6-Max",
+        "item_text": "6-Max"
+      }
+    ],
+    "variant": [
+      {
+        "item_id": "Knockout",
+        "item_text": "Knockout"
+      }
+    ],
+    "state": null,
+    "prize_pool_min": 25000,
+    "prize_pool_max": null,
+    "init_stacks_min": null,
+    "init_stacks_max": null,
+    "from_date": null,
+    "to_date": null,
+    "from_time": null,
+    "to_time": null,
+    "search": "",
+    "order": {
+      "state": 1
+    },
+    "onlyNew": false,
+    "scheduled": null,
+    "maxLate": false,
+    "field": null,
+    "from_duration": null,
+    "priority": null,
+    "to_duration": null,
+    "limit": null,
+    "include_closed": false,
+    "order_start": 0,
+    "order_site": 0,
+    "order_game": 0,
+    "order_buy_in": 0,
+    "order_name": 0,
+    "order_prize_pool": 0,
+    "order_speed": 0,
+    "order_state": 1,
+    "order_field": 0,
+    "order_duration": 0,
+    "order_register_time": 0,
+    "order_av_ability": 0,
+    "order_type": 0,
+    "onlyFast": false,
+    "from_register_time": null,
+    "to_register_time": null,
+    "timezone": -180,
+    "exclude": "red lotus|encore|ultra|fifty|mb",
+    "flagged_only": null,
+    "auto_scheduled_only": null,
+    "show_exception": false,
+    "category": null,
+    "av_ability": null,
+    "currency": null,
+    "min_participants": 500,
+    "week_day": null,
+    "from_end_time": null,
+    "to_end_time": null,
+    "order_grindstate": 0,
+    "order_priority": 0,
+    "auto_only": true,
+    "manual_only": false,
+    "deleted_filter_only": true,
+    "unchecked_filter_only": false,
+    "min_blind": null,
+    "max_blind": null,
+    "favorites": false
+  },
+  {
+    "id": 200834,
+    "name": "PKO $11-$14 turbo",
+    "site": [
+      {
+        "item_id": 1,
+        "item_text": "PokerStars"
+      },
+      {
+        "item_id": 2,
+        "item_text": "GG Network"
+      },
+      {
+        "item_id": 5,
+        "item_text": "888poker"
+      },
+      {
+        "item_id": 6,
+        "item_text": "iPoker"
+      },
+      {
+        "item_id": 3,
+        "item_text": "PartyPoker"
+      },
+      {
+        "item_id": 10,
+        "item_text": "PokerStars.ES"
+      }
+    ],
+    "game2": [
+      {
+        "item_id": 1,
+        "item_text": "NLH"
+      }
+    ],
+    "buy_in_min": 11,
+    "buy_in_max": 14,
+    "speed": [
+      {
+        "item_id": "Turbo",
+        "item_text": "Turbo"
+      }
+    ],
+    "type": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Flight",
+        "item_text": "Flight"
+      }
+    ],
+    "players": [
+      {
+        "item_id": "Full Ring",
+        "item_text": "7 to 10 (Full Ring)"
+      },
+      {
+        "item_id": "6-Max",
+        "item_text": "6-Max"
+      }
+    ],
+    "variant": [
+      {
+        "item_id": "Knockout",
+        "item_text": "Knockout"
+      },
+      {
+        "item_id": "Mystery",
+        "item_text": "Mystery"
+      }
+    ],
+    "state": null,
+    "prize_pool_min": 4000,
+    "prize_pool_max": null,
+    "init_stacks_min": null,
+    "init_stacks_max": null,
+    "from_date": null,
+    "to_date": null,
+    "from_time": null,
+    "to_time": null,
+    "search": "",
+    "order": {
+      "state": 1
+    },
+    "onlyNew": false,
+    "scheduled": null,
+    "maxLate": false,
+    "field": null,
+    "from_duration": null,
+    "priority": null,
+    "to_duration": null,
+    "limit": null,
+    "include_closed": false,
+    "order_start": 0,
+    "order_site": 0,
+    "order_game": 0,
+    "order_buy_in": 0,
+    "order_name": 0,
+    "order_prize_pool": 0,
+    "order_speed": 0,
+    "order_state": 1,
+    "order_field": 0,
+    "order_duration": 0,
+    "order_register_time": 0,
+    "order_av_ability": 0,
+    "order_type": 0,
+    "onlyFast": false,
+    "from_register_time": null,
+    "to_register_time": null,
+    "timezone": -180,
+    "exclude": "hot|hotter",
+    "flagged_only": null,
+    "auto_scheduled_only": null,
+    "show_exception": false,
+    "category": null,
+    "av_ability": null,
+    "currency": null,
+    "min_participants": 300,
+    "week_day": null,
+    "from_end_time": null,
+    "to_end_time": null,
+    "order_grindstate": 0,
+    "order_priority": 0,
+    "auto_only": true,
+    "manual_only": false,
+    "deleted_filter_only": true,
+    "unchecked_filter_only": false,
+    "min_blind": null,
+    "max_blind": null,
+    "favorites": false
+  },
+  {
+    "id": 200835,
+    "name": "PKO $15-$30 turbo",
+    "site": [
+      {
+        "item_id": 1,
+        "item_text": "PokerStars"
+      },
+      {
+        "item_id": 2,
+        "item_text": "GG Network"
+      },
+      {
+        "item_id": 5,
+        "item_text": "888poker"
+      },
+      {
+        "item_id": 6,
+        "item_text": "iPoker"
+      },
+      {
+        "item_id": 3,
+        "item_text": "PartyPoker"
+      },
+      {
+        "item_id": 10,
+        "item_text": "PokerStars.ES"
+      }
+    ],
+    "game2": [
+      {
+        "item_id": 1,
+        "item_text": "NLH"
+      }
+    ],
+    "buy_in_min": 15,
+    "buy_in_max": 30,
+    "speed": [
+      {
+        "item_id": "Turbo",
+        "item_text": "Turbo"
+      }
+    ],
+    "type": [
+      {
+        "item_id": "Regular",
+        "item_text": "Regular"
+      },
+      {
+        "item_id": "Flight",
+        "item_text": "Flight"
+      }
+    ],
+    "players": [
+      {
+        "item_id": "Full Ring",
+        "item_text": "7 to 10 (Full Ring)"
+      },
+      {
+        "item_id": "6-Max",
+        "item_text": "6-Max"
+      }
+    ],
+    "variant": [
+      {
+        "item_id": "Knockout",
+        "item_text": "Knockout"
+      },
+      {
+        "item_id": "Mystery",
+        "item_text": "Mystery"
+      }
+    ],
+    "state": null,
+    "prize_pool_min": 3000,
+    "prize_pool_max": null,
+    "init_stacks_min": null,
+    "init_stacks_max": null,
+    "from_date": null,
+    "to_date": null,
+    "from_time": null,
+    "to_time": null,
+    "search": "",
+    "order": {
+      "state": 1
+    },
+    "onlyNew": false,
+    "scheduled": null,
+    "maxLate": false,
+    "field": null,
+    "from_duration": null,
+    "priority": null,
+    "to_duration": null,
+    "limit": null,
+    "include_closed": false,
+    "order_start": 0,
+    "order_site": 0,
+    "order_game": 0,
+    "order_buy_in": 0,
+    "order_name": 0,
+    "order_prize_pool": 0,
+    "order_speed": 0,
+    "order_state": 1,
+    "order_field": 0,
+    "order_duration": 0,
+    "order_register_time": 0,
+    "order_av_ability": 0,
+    "order_type": 0,
+    "onlyFast": false,
+    "from_register_time": null,
+    "to_register_time": null,
+    "timezone": -180,
+    "exclude": "hot|hotter",
+    "flagged_only": null,
+    "auto_scheduled_only": null,
+    "show_exception": false,
+    "category": null,
+    "av_ability": null,
+    "currency": null,
+    "min_participants": 300,
+    "week_day": null,
+    "from_end_time": null,
+    "to_end_time": null,
+    "order_grindstate": 0,
+    "order_priority": 0,
+    "auto_only": true,
+    "manual_only": false,
+    "deleted_filter_only": true,
+    "unchecked_filter_only": false,
+    "min_blind": null,
+    "max_blind": null,
+    "favorites": false
+  }
+]

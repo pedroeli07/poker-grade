@@ -1,0 +1,445 @@
+// Gestão de Grades - Poker Tournament Grid Management
+// Schema for Neon Postgres
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum UserRole {
+  ADMIN
+  COACH
+  MANAGER
+  PLAYER
+  VIEWER
+}
+
+enum PlayerStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum GradeType {
+  MAIN
+  ABOVE
+  BELOW
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  EXCEPTION
+  REJECTED
+}
+
+enum TournamentMatchStatus {
+  IN_GRADE
+  SUSPECT
+  OUT_OF_GRADE
+}
+
+enum TargetStatus {
+  ON_TRACK
+  ATTENTION
+  OFF_TRACK
+}
+
+enum TargetType {
+  NUMERIC
+  TEXT
+}
+
+enum LimitAction {
+  UPGRADE
+  MAINTAIN
+  DOWNGRADE
+}
+
+// ==========================================
+// AUTH (sessão + credenciais — Argon2id no app)
+// ==========================================
+
+model AuthUser {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  displayName    String?
+  passwordHash   String?
+  googleSub      String?   @unique
+  role           UserRole
+  playerId       String?   @unique
+  player         Player?   @relation("AuthPlayer", fields: [playerId], references: [id], onDelete: SetNull)
+  coachId        String?   @unique
+  coach          Coach?    @relation("AuthCoach", fields: [coachId], references: [id], onDelete: SetNull)
+  lockedUntil    DateTime?
+  failedAttempts Int       @default(0)
+  lastFailedAt   DateTime?
+  sessions       AuthSession[]
+  invitesCreated AllowedEmail[] @relation("AllowedEmailAddedBy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("auth_users")
+}
+
+/** E-mails autorizados a criar conta (convite) — removido após registro bem-sucedido. */
+model AllowedEmail {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      UserRole
+  addedById String
+  addedBy   AuthUser @relation("AllowedEmailAddedBy", fields: [addedById], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([addedById])
+  @@map("allowed_emails")
+}
+
+model AuthSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("auth_sessions")
+}
+
+// ==========================================
+// CORE MODELS
+// ==========================================
+
+model Player {
+  id        String       @id @default(cuid())
+  name      String
+  nickname  String?
+  email     String?      @unique
+  role      UserRole @default(PLAYER)
+  status    PlayerStatus @default(ACTIVE)
+  avatarUrl String?
+
+  authAccount AuthUser? @relation("AuthPlayer")
+
+  // Relationships
+  coachId   String?
+  coach     Coach?   @relation(fields: [coachId], references: [id], onDelete: SetNull)
+  driId     String?
+  dri       Coach?   @relation("DriPlayers", fields: [driId], references: [id], onDelete: SetNull)
+
+  gradeAssignments PlayerGradeAssignment[]
+  targets          PlayerTarget[]
+  playedTournaments PlayedTournament[]
+  reviewItems      GradeReviewItem[]
+  limitChanges     LimitChangeHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([coachId])
+  @@index([status])
+  @@map("players")
+}
+
+model Coach {
+  id        String  @id @default(cuid())
+  name      String
+  email     String  @unique
+  role      UserRole @default(COACH)
+  avatarUrl String?
+
+  authAccount AuthUser? @relation("AuthCoach")
+
+  // Players this coach manages
+  players    Player[]
+  driPlayers Player[] @relation("DriPlayers")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("coaches")
+}
+
+// ==========================================
+// GRADE SYSTEM
+// ==========================================
+
+model GradeProfile {
+  id          String @id @default(cuid())
+  name        String // e.g., "PKO $11-$30 Low Stakes"
+  description String?
+
+  // Grade rules (filters from Lobbyze JSON)
+  rules    GradeRule[]
+
+  // Player assignments
+  assignments PlayerGradeAssignment[]
+
+  // Raw JSON from Lobbyze import
+  rawFiltersJson Json?
+
+  isTemplate Boolean @default(false) // For generic templates by profile
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("grade_profiles")
+}
+
+model GradeRule {
+  id             String @id @default(cuid())
+  gradeProfileId String
+
+  gradeProfile GradeProfile @relation(fields: [gradeProfileId], references: [id], onDelete: Cascade)
+
+  // Lobbyze filter fields
+  lobbyzeFilterId Int?        // Original Lobbyze filter ID
+  filterName      String      // e.g., "PKO $11-$30 regular"
+
+  // Core filter criteria
+  sites           Json        // Array of {item_id, item_text}
+  gameType        Json?       // Array of {item_id, item_text} - NLH, PLO, etc.
+  buyInMin        Float?
+  buyInMax        Float?
+  speed           Json?       // Array: Regular, Turbo, Slow, etc.
+  tournamentType  Json?       // Array: Regular, Flight, etc.
+  playerCount     Json?       // Array: Full Ring, 6-Max, etc.
+  variant         Json?       // Array: Knockout, Mystery, Regular, etc.
+
+  // Additional filters
+  prizePoolMin    Float?
+  prizePoolMax    Float?
+  minParticipants Int?
+  fromTime        String?     // "HH:mm"
+  toTime          String?     // "HH:mm"
+  weekDay         Json?       // Array of {item_id, item_text}
+  excludePattern  String?     // Pipe-separated: "red lotus|encore"
+  timezone        Int?        // Offset in minutes: -180 = BRT
+
+  // Automation flags
+  autoOnly        Boolean @default(false)
+  manualOnly      Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([gradeProfileId])
+  @@map("grade_rules")
+}
+
+model PlayerGradeAssignment {
+  id        String    @id @default(cuid())
+  playerId  String
+  gradeId   String
+  gradeType GradeType // MAIN, ABOVE, BELOW
+
+  player       Player       @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  gradeProfile GradeProfile @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+  removedAt  DateTime?
+  isActive   Boolean  @default(true)
+
+  // Who assigned this grade
+  assignedBy String?
+  notes      String?
+
+  @@unique([playerId, gradeType, isActive]) // Only one active grade per type per player
+  @@index([playerId])
+  @@index([gradeId])
+  @@index([isActive])
+  @@map("player_grade_assignments")
+}
+
+// ==========================================
+// TARGETS
+// ==========================================
+
+model PlayerTarget {
+  id       String     @id @default(cuid())
+  playerId String
+  player   Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  // Target definition
+  name        String      // e.g., "ABI alvo", "ROI mínimo", "Frequência de estudo"
+  category    String      // e.g., "performance", "discipline", "study", "qualitative"
+  targetType  TargetType  @default(NUMERIC)
+
+  // Values
+  numericValue   Float?    // For numeric targets
+  numericCurrent Float?    // Current value
+  textValue      String?   // For text targets
+  textCurrent    String?   // Current text value
+  unit           String?   // e.g., "$", "%", "hours", "sessions"
+
+  // Thresholds for status calculation
+  greenThreshold  Float?   // >= this = ON_TRACK
+  yellowThreshold Float?   // >= this = ATTENTION, below = OFF_TRACK
+
+  status      TargetStatus @default(ATTENTION)
+
+  // Limit action association
+  limitAction LimitAction? // Which limit decision this target relates to
+
+  // Coach notes
+  coachNotes String?
+
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([playerId])
+  @@index([category])
+  @@map("player_targets")
+}
+
+// ==========================================
+// TOURNAMENT TRACKING
+// ==========================================
+
+model TournamentImport {
+  id        String @id @default(cuid())
+
+  // Import metadata
+  fileName    String
+  importType  String    // "excel", "csv", "json"
+  playerName  String?   // From sheet tab name
+  importedBy  String?
+
+  // Stats
+  totalRows       Int @default(0)
+  matchedInGrade  Int @default(0)
+  suspect         Int @default(0)
+  outOfGrade      Int @default(0)
+
+  tournaments PlayedTournament[]
+
+  createdAt DateTime @default(now())
+
+  @@map("tournament_imports")
+}
+
+model PlayedTournament {
+  id       String @id @default(cuid())
+
+  // Import reference
+  importId String?
+  import   TournamentImport? @relation(fields: [importId], references: [id], onDelete: SetNull)
+
+  // Player reference
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  // Tournament data (from Excel)
+  date           DateTime
+  site           String        // PokerStars, GG Network, etc.
+  buyInCurrency  String?       // $, €, ¥
+  buyInValue     Float         // Numeric buy-in
+  buyInUsd       Float?        // Converted to USD
+  tournamentName String
+  scheduling     String?       // "Played", "Extra play"
+  rebuy          Boolean @default(false)
+  speed          String?       // Regular, Turbo, Slow
+  sharkId        String?       // Shark scope ID
+  priority       String?       // HIGH, MEDIUM, None
+
+  // Matching result
+  matchStatus    TournamentMatchStatus @default(SUSPECT)
+  matchedRuleId  String?       // Which grade rule matched
+
+  // Review
+  reviewItem     GradeReviewItem?
+
+  createdAt DateTime @default(now())
+
+  @@index([playerId])
+  @@index([matchStatus])
+  @@index([date])
+  @@index([importId])
+  @@map("played_tournaments")
+}
+
+// ==========================================
+// REVIEW SYSTEM
+// ==========================================
+
+model GradeReviewItem {
+  id String @id @default(cuid())
+
+  // References
+  playerId     String
+  player       Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  tournamentId String           @unique
+  tournament   PlayedTournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  // Review
+  status          ReviewStatus @default(PENDING)
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  reviewNotes     String?
+
+  // Player justification
+  justification   String?
+  justifiedAt     DateTime?
+
+  // Infraction tracking
+  isInfraction    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([playerId])
+  @@index([status])
+  @@map("grade_review_items")
+}
+
+// ==========================================
+// HISTORY & AUDIT
+// ==========================================
+
+model LimitChangeHistory {
+  id       String @id @default(cuid())
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  action      LimitAction // UPGRADE, MAINTAIN, DOWNGRADE
+  fromGrade   String?     // Previous grade name
+  toGrade     String?     // New grade name
+  reason      String?
+  decidedBy   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([playerId])
+  @@index([createdAt])
+  @@map("limit_change_history")
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+
+  // What happened
+  action    String   // "player.created", "grade.assigned", "review.approved"
+  entity    String   // "player", "grade", "review"
+  entityId  String
+  details   Json?    // Old/new values
+
+  // Who did it
+  performedBy String?
+
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
