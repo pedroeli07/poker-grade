@@ -31,7 +31,7 @@ export default async function PlayersPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Jogadores</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-primary">Jogadores</h2>
           <p className="text-muted-foreground mt-1">
             Gerencie o time de jogadores e aloque coaches responsáveis.
           </p>
@@ -39,10 +39,7 @@ export default async function PlayersPage() {
         {canCreate ? <NewPlayerModal coaches={coaches} /> : null}
       </div>
 
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle>Listagem Rápida</CardTitle>
-        </CardHeader>
+      <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
         <CardContent>
           {players.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground border border-dashed border-border rounded-lg">

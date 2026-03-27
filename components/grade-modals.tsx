@@ -27,7 +27,7 @@ import {
 import { createGradeProfile, importGradeFromJson } from "@/app/dashboard/grades/actions";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
-import { cn } from "@/lib/utils";
+import { cn, isNextRedirectError } from "@/lib/utils";
 
 const log = createLogger("grade-modals");
 
@@ -56,6 +56,7 @@ export function NewGradeModal() {
         handleOpenChange(false);
         router.push(`/dashboard/grades/${result.id}`);
       } catch (err) {
+        if (isNextRedirectError(err)) throw err;
         toast.error("Erro ao criar grade", err instanceof Error ? err.message : "Tente novamente.");
       }
     });
@@ -64,10 +65,10 @@ export function NewGradeModal() {
   return (
     <>
       <Button
-        className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90"
+        className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-5 text-[15px]"
         onClick={() => setOpen(true)}
       >
-        <Plus className="mr-2 h-4 w-4" />
+        <Plus className="mr-2 h-5 w-5" />
         Nova Grade
       </Button>
 
@@ -75,13 +76,13 @@ export function NewGradeModal() {
         <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
           {/* Header */}
           <div className="px-7 pt-7 pb-5 bg-gradient-to-b from-primary/5 to-transparent">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 shrink-0">
-                <Grid3X3 className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 shrink-0">
+                <Grid3X3 className="h-6 w-6 text-primary" />
               </div>
-              <DialogHeader className="space-y-0.5">
-                <DialogTitle className="text-lg font-semibold">Nova Grade</DialogTitle>
-                <DialogDescription className="text-sm">
+              <DialogHeader className="space-y-1">
+                <DialogTitle className="text-xl font-semibold">Nova Grade</DialogTitle>
+                <DialogDescription className="text-[15px]">
                   Crie um perfil de grade. Regras podem ser importadas via JSON.
                 </DialogDescription>
               </DialogHeader>
@@ -91,9 +92,9 @@ export function NewGradeModal() {
           <Separator />
 
           <form ref={formRef} onSubmit={handleSubmit}>
-            <div className="px-7 py-6 space-y-5">
+            <div className="px-7 py-6 space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="new-grade-name" className="text-sm font-medium">
+                <Label htmlFor="new-grade-name" className="text-[15px] font-medium">
                   Nome da Grade <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -103,22 +104,22 @@ export function NewGradeModal() {
                   minLength={2}
                   maxLength={200}
                   placeholder="Ex: PKO $11–$30 Low Stakes"
-                  className="h-10 bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
+                  className="h-12 text-[15px] bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
                   disabled={isPending}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="new-grade-desc" className="text-sm font-medium">
+                <Label htmlFor="new-grade-desc" className="text-[15px] font-medium">
                   Descrição
                 </Label>
                 <Textarea
                   id="new-grade-desc"
                   name="description"
                   placeholder="Descreva os torneios desta grade, limites de buy-in, formatos..."
-                  rows={3}
+                  rows={4}
                   maxLength={2000}
-                  className="bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 resize-none"
+                  className="bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 resize-none text-[15px]"
                   disabled={isPending}
                 />
               </div>
@@ -132,24 +133,24 @@ export function NewGradeModal() {
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
                 disabled={isPending}
-                className="border-border/60 h-10 px-5"
+                className="border-border/60 h-11 px-5 text-[15px]"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isPending}
-                className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-6 min-w-[140px]"
+                className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-6 min-w-[140px] text-[15px]"
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Criando...
                   </>
                 ) : (
                   <>
                     Criar Grade
-                    <ChevronRight className="ml-2 h-4 w-4" />
+                    <ChevronRight className="ml-2 h-5 w-5" />
                   </>
                 )}
               </Button>
@@ -223,6 +224,7 @@ export function ImportGradeModal() {
         router.refresh();
         router.push("/dashboard/grades");
       } catch (err) {
+        if (isNextRedirectError(err)) throw err;
         const msg = err instanceof Error ? err.message : "Erro desconhecido ao importar JSON";
         log.error("Erro na importação JSON", err instanceof Error ? err : undefined);
         setError(msg);
@@ -235,10 +237,10 @@ export function ImportGradeModal() {
     <>
       <Button
         variant="outline"
-        className="border-border hover:bg-sidebar-accent"
+        className="border-border hover:bg-sidebar-accent h-11 px-5 text-[15px]"
         onClick={() => setOpen(true)}
       >
-        <FileJson className="mr-2 h-4 w-4" />
+        <FileJson className="mr-2 h-5 w-5" />
         Importar JSON
       </Button>
 
@@ -246,13 +248,13 @@ export function ImportGradeModal() {
         <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
           {/* Header */}
           <div className="px-7 pt-7 pb-5 bg-gradient-to-b from-primary/5 to-transparent">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 shrink-0">
-                <FileJson className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 shrink-0">
+                <FileJson className="h-6 w-6 text-primary" />
               </div>
-              <DialogHeader className="space-y-0.5">
-                <DialogTitle className="text-lg font-semibold">Importar Grade (Lobbyze)</DialogTitle>
-                <DialogDescription className="text-sm">
+              <DialogHeader className="space-y-1">
+                <DialogTitle className="text-xl font-semibold">Importar Grade (Lobbyze)</DialogTitle>
+                <DialogDescription className="text-[15px]">
                   Faça upload do arquivo JSON exportado da Lobbyze.
                 </DialogDescription>
               </DialogHeader>
@@ -262,10 +264,10 @@ export function ImportGradeModal() {
           <Separator />
 
           <form ref={formRef} onSubmit={handleSubmit}>
-            <div className="px-7 py-6 space-y-5">
+            <div className="px-7 py-6 space-y-6">
               {/* Nome */}
               <div className="space-y-2">
-                <Label htmlFor="import-grade-name" className="text-sm font-medium">
+                <Label htmlFor="import-grade-name" className="text-[15px] font-medium">
                   Nome da Grade <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -273,28 +275,28 @@ export function ImportGradeModal() {
                   name="name"
                   required
                   placeholder="Ex: Grade $11–$30 Regular"
-                  className="h-10 bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
+                  className="h-12 text-[15px] bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
                   disabled={isPending}
                 />
               </div>
 
               {/* Descrição */}
               <div className="space-y-2">
-                <Label htmlFor="import-grade-desc" className="text-sm font-medium">
+                <Label htmlFor="import-grade-desc" className="text-[15px] font-medium">
                   Descrição
                 </Label>
                 <Input
                   id="import-grade-desc"
                   name="description"
                   placeholder="Ex: Grade principal para alunos do ABI 20"
-                  className="h-10 bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
+                  className="h-12 text-[15px] bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
                   disabled={isPending}
                 />
               </div>
 
               {/* Dropzone */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">
+                <Label className="text-[15px] font-medium">
                   Arquivo JSON <span className="text-destructive">*</span>
                 </Label>
 
@@ -304,7 +306,7 @@ export function ImportGradeModal() {
                   onDrop={handleDrop}
                   onClick={() => inputRef.current?.click()}
                   className={cn(
-                    "relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer select-none min-h-[140px] px-6 py-7",
+                    "relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer select-none min-h-[160px] px-6 py-7",
                     dragOver
                       ? "border-primary bg-primary/10 scale-[1.01]"
                       : file
@@ -323,26 +325,26 @@ export function ImportGradeModal() {
 
                   {file ? (
                     <>
-                      <FileJson className="h-10 w-10 mb-2.5 text-emerald-500 drop-shadow-[0_0_8px_theme(colors.emerald.500/0.4)]" />
-                      <span className="font-medium text-sm text-foreground">{file.name}</span>
-                      <span className="text-xs text-muted-foreground mt-1">
+                      <FileJson className="h-12 w-12 mb-3 text-emerald-500 drop-shadow-[0_0_8px_theme(colors.emerald.500/0.4)]" />
+                      <span className="font-medium text-base text-foreground">{file.name}</span>
+                      <span className="text-[14px] text-muted-foreground mt-1.5">
                         {(file.size / 1024).toFixed(1)} KB
                       </span>
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); resetState(); }}
-                        className="absolute top-2.5 right-2.5 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        className="absolute top-2.5 right-2.5 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                       >
-                        <X className="h-3.5 w-3.5" />
+                        <X className="h-4 w-4" />
                       </button>
                     </>
                   ) : (
                     <>
-                      <Upload className={cn("h-9 w-9 mb-2.5 transition-colors", dragOver ? "text-primary" : "text-muted-foreground")} />
-                      <span className="font-medium text-sm text-foreground/80">
+                      <Upload className={cn("h-10 w-10 mb-3 transition-colors", dragOver ? "text-primary" : "text-muted-foreground")} />
+                      <span className="font-medium text-base text-foreground/80">
                         {dragOver ? "Solte o arquivo aqui" : "Clique ou arraste o JSON"}
                       </span>
-                      <span className="text-xs text-muted-foreground mt-1">Apenas arquivos .json suportados</span>
+                      <span className="text-[14px] text-muted-foreground mt-1.5">Apenas arquivos .json suportados</span>
                     </>
                   )}
                 </div>
@@ -350,9 +352,9 @@ export function ImportGradeModal() {
 
               {/* Erro */}
               {error && (
-                <div className="flex items-start gap-2.5 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                  <X className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                  <p className="text-sm text-destructive font-medium">{error}</p>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <X className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+                  <p className="text-[15px] text-destructive font-medium">{error}</p>
                 </div>
               )}
             </div>
@@ -365,24 +367,24 @@ export function ImportGradeModal() {
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
                 disabled={isPending}
-                className="border-border/60 h-10 px-5"
+                className="border-border/60 h-11 px-5 text-[15px]"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={!file || isPending}
-                className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-6 min-w-[150px]"
+                className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-6 min-w-[160px] text-[15px]"
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Importando...
                   </>
                 ) : (
                   <>
                     Importar Grade
-                    <ChevronRight className="ml-2 h-4 w-4" />
+                    <ChevronRight className="ml-2 h-5 w-5" />
                   </>
                 )}
               </Button>

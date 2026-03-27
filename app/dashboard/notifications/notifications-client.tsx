@@ -1,9 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState, useTransition, useCallback } from "react";
+import Link from "next/link";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  getNotificationsPage,
+  markNotificationRead,
+  markAllNotificationsRead,
+  deleteNotification,
+  deleteSelectedNotifications,
+} from "./actions";
+import { cn } from "@/lib/utils";
 import {
   Bell,
   Check,
@@ -12,257 +20,377 @@ import {
   Upload,
   AlertTriangle,
   Target,
-  Users,
   Grid3X3,
+  Users,
+  TrendingUp,
   Info,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import type { NotificationType } from "@prisma/client";
 
-type NotificationType = "info" | "success" | "warning" | "import" | "target" | "review";
+// ── Types ──────────────────────────────────────────────────────────────────
 
-interface Notification {
+type NotifItem = {
   id: string;
+  type: NotificationType;
   title: string;
   message: string;
-  type: NotificationType;
+  link: string | null;
   read: boolean;
   createdAt: Date;
-}
-
-const TYPE_CONFIG: Record<
-  NotificationType,
-  { icon: typeof Bell; color: string; bg: string; border: string }
-> = {
-  info: { icon: Info, color: "text-blue-400", bg: "bg-blue-400/10", border: "border-blue-400/20" },
-  success: { icon: Check, color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20" },
-  warning: { icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20" },
-  import: { icon: Upload, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
-  target: { icon: Target, color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20" },
-  review: { icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20" },
 };
 
-function formatTimeAgo(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const minutes = Math.floor(diff / (1000 * 60));
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+type PageData = {
+  items: NotifItem[];
+  total: number;
+  unreadCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
 
-  if (minutes < 60) return `${minutes}min atrás`;
-  if (hours < 24) return `${hours}h atrás`;
-  return `${days}d atrás`;
-}
+// ── Config ──────────────────────────────────────────────────────────────────
 
-type FilterType = "all" | "unread" | "read";
+const TYPE_CONFIG: Record<NotificationType, { icon: typeof Bell; color: string; bg: string; label: string }> = {
+  GRADE_ASSIGNED: { icon: Grid3X3, color: "text-primary", bg: "bg-primary/10", label: "Grade" },
+  GRADE_CREATED: { icon: Grid3X3, color: "text-blue-500", bg: "bg-blue-500/10", label: "Grade" },
+  IMPORT_DONE: { icon: Upload, color: "text-emerald-500", bg: "bg-emerald-500/10", label: "Importação" },
+  EXTRA_PLAY: { icon: AlertTriangle, color: "text-amber-500", bg: "bg-amber-500/10", label: "Extra Play" },
+  REVIEW_DECISION: { icon: Check, color: "text-violet-500", bg: "bg-violet-500/10", label: "Revisão" },
+  PLAYER_CREATED: { icon: Users, color: "text-blue-500", bg: "bg-blue-500/10", label: "Jogador" },
+  LIMIT_CHANGED: { icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10", label: "Limite" },
+  SYSTEM: { icon: Info, color: "text-muted-foreground", bg: "bg-muted", label: "Sistema" },
+};
 
-export function NotificationsClient() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [filter, setFilter] = useState<FilterType>("all");
+// ── Component ────────────────────────────────────────────────────────────────
+
+export function NotificationsClient({ initialData }: { initialData: PageData }) {
+  const [data, setData] = useState<PageData>(initialData);
+  const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const [, startTransition] = useTransition();
 
-  const filtered = useMemo(() => {
-    if (filter === "unread") return notifications.filter((n) => !n.read);
-    if (filter === "read") return notifications.filter((n) => n.read);
-    return notifications;
-  }, [notifications, filter]);
-
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.read).length,
-    [notifications]
+  const reload = useCallback(
+    async (page = data.page, f = filter) => {
+      setLoading(true);
+      try {
+        const fresh = await getNotificationsPage(page, f);
+        setData(fresh as PageData);
+        setSelected(new Set());
+      } finally {
+        setLoading(false);
+      }
+    },
+    [data.page, filter]
   );
 
-  const toggleSelect = (id: string) => {
+  function changePage(next: number) {
+    if (next < 1 || next > data.totalPages) return;
+    reload(next, filter);
+  }
+
+  function changeFilter(f: typeof filter) {
+    setFilter(f);
+    reload(1, f);
+  }
+
+  function toggleSelect(id: string) {
     setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
     });
-  };
+  }
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
+  function toggleAll() {
+    if (selected.size === data.items.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(data.items.map((i) => i.id)));
+    }
+  }
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
+  function handleMarkRead(id: string) {
+    startTransition(async () => {
+      await markNotificationRead(id);
+      reload(data.page);
+    });
+  }
 
-  const deleteSelected = () => {
-    setNotifications((prev) => prev.filter((n) => !selected.has(n.id)));
-    setSelected(new Set());
-  };
+  function handleMarkAllRead() {
+    startTransition(async () => {
+      await markAllNotificationsRead();
+      reload(data.page);
+    });
+  }
 
-  const filters: { label: string; value: FilterType }[] = [
-    { label: "Todas", value: "all" },
-    { label: "Não lidas", value: "unread" },
-    { label: "Lidas", value: "read" },
-  ];
+  function handleDelete(id: string) {
+    startTransition(async () => {
+      await deleteNotification(id);
+      reload(data.page);
+    });
+  }
+
+  function handleDeleteSelected() {
+    const ids = Array.from(selected);
+    startTransition(async () => {
+      await deleteSelectedNotifications(ids);
+      reload(data.page);
+    });
+  }
+
+  const allSelected = selected.size === data.items.length && data.items.length > 0;
 
   return (
     <div className="space-y-6">
+      {/* Page header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Notificações</h2>
+          <h2 className="text-4xl font-bold tracking-tight text-primary">Notificações</h2>
           <p className="text-muted-foreground mt-1">
-            Acompanhe todas as atualizações e alertas do sistema.
+            Acompanhe as atividades recentes da clínica
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {unreadCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={markAllAsRead}
-              className="border-border hover:bg-sidebar-accent"
+          {data.unreadCount > 0 && (
+            <button
+              type="button"
+              onClick={handleMarkAllRead}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-[15px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             >
-              <CheckCheck className="mr-2 h-4 w-4" />
+              <CheckCheck className="h-4 w-4" />
               Marcar todas como lidas
-            </Button>
-          )}
-          {selected.size > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={deleteSelected}
-              className="border-destructive/30 text-destructive hover:bg-destructive/10"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Excluir ({selected.size})
-            </Button>
+            </button>
           )}
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-2">
-        {filters.map((f) => (
+      {/* Controls bar */}
+      <div className="flex flex-wrap items-center gap-3 py-3 border-y border-border">
+        {/* Select all */}
+        <div className="flex items-center gap-2">
           <button
-            key={f.value}
             type="button"
-            onClick={() => setFilter(f.value)}
+            onClick={toggleAll}
             className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer",
-              filter === f.value
-                ? "bg-primary/10 text-primary border border-primary/20"
-                : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground border border-transparent"
+              "flex h-5 w-5 items-center justify-center rounded border transition-colors cursor-pointer",
+              allSelected
+                ? "bg-primary border-primary"
+                : "border-border hover:border-primary/60"
             )}
           >
-            {f.label}
-            {f.value === "unread" && unreadCount > 0 && (
-              <Badge className="ml-2 bg-primary text-primary-foreground text-[10px] h-5 min-w-5 px-1.5">
-                {unreadCount}
-              </Badge>
-            )}
+            {allSelected && <Check className="h-3 w-3 text-white" />}
           </button>
-        ))}
+          <span className="text-sm text-muted-foreground font-medium">
+            Itens por página:
+          </span>
+          <span className="text-sm font-semibold text-foreground">10</span>
+        </div>
+
+        {/* Filters */}
+        <div className="flex items-center gap-1 ml-2">
+          {(["all", "unread", "read"] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => changeFilter(f)}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
+                filter === f
+                  ? "bg-primary/10 text-primary border border-primary/20"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent"
+              )}
+            >
+              {f === "all" ? "Todas" : f === "unread" ? "Não lidas" : "Lidas"}
+              {f === "unread" && data.unreadCount > 0 && (
+                <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold">
+                  {data.unreadCount}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Bulk delete */}
+        {selected.size > 0 && (
+          <button
+            type="button"
+            onClick={handleDeleteSelected}
+            className="ml-auto flex items-center gap-2 px-4 py-1.5 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 text-sm font-semibold hover:bg-destructive/20 transition-colors cursor-pointer"
+          >
+            <Trash2 className="h-4 w-4" />
+            Excluir ({selected.size})
+          </button>
+        )}
+
+        {/* Pagination summary */}
+        <div className="ml-auto flex items-center gap-3 text-sm text-muted-foreground">
+          <span>
+            Página {data.page} de {data.totalPages} ({data.total} itens)
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              disabled={data.page === 1}
+              onClick={() => changePage(data.page - 1)}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </button>
+            <button
+              type="button"
+              disabled={data.page === data.totalPages}
+              onClick={() => changePage(data.page + 1)}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-sm font-semibold text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              Próximo
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Notifications List */}
-      <Card className="glass-card">
-        <CardContent className="p-0">
-          {filtered.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
-              <Bell className="h-12 w-12 mx-auto mb-4 opacity-30" />
-              <p className="text-lg font-medium">Nenhuma notificação</p>
-              <p className="text-sm mt-1">
-                {filter === "unread"
-                  ? "Todas as notificações foram lidas."
-                  : "Você ainda não recebeu notificações."}
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {filtered.map((notification, index) => {
-                const config = TYPE_CONFIG[notification.type];
-                const Icon = config.icon;
-                const isSelected = selected.has(notification.id);
+      {/* List */}
+      {loading ? (
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-24 rounded-xl bg-muted/40 animate-pulse" />
+          ))}
+        </div>
+      ) : data.items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-xl text-muted-foreground">
+          <Bell className="h-12 w-12 mb-4 opacity-20" />
+          <p className="text-lg font-semibold text-foreground/60">
+            Nenhuma notificação
+          </p>
+          <p className="text-sm mt-1">
+            {filter === "unread"
+              ? "Todas as notificações foram lidas."
+              : "Sem notificações no momento."}
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <div className="divide-y divide-border">
+            {data.items.map((notif) => {
+              const cfg = TYPE_CONFIG[notif.type];
+              const Icon = cfg.icon;
+              const isSelected = selected.has(notif.id);
 
-                return (
-                  <div
-                    key={notification.id}
+              return (
+                <div
+                  key={notif.id}
+                  className={cn(
+                    "flex items-start gap-4 px-6 py-5 transition-colors group hover:bg-muted/30",
+                    !notif.read && "bg-primary/[0.025]",
+                    isSelected && "bg-primary/5"
+                  )}
+                >
+                  {/* Checkbox */}
+                  <button
+                    type="button"
+                    onClick={() => toggleSelect(notif.id)}
                     className={cn(
-                      "flex items-start gap-4 p-4 sm:p-5 transition-all duration-200 hover:bg-sidebar-accent/30 group",
-                      !notification.read && "bg-primary/3",
-                      isSelected && "bg-primary/5",
-                      `animate-fade-in`
+                      "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors cursor-pointer",
+                      isSelected
+                        ? "bg-primary border-primary"
+                        : "border-border hover:border-primary/60"
                     )}
-                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    {/* Checkbox */}
-                    <button
-                      type="button"
-                      onClick={() => toggleSelect(notification.id)}
-                      className={cn(
-                        "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-all cursor-pointer",
-                        isSelected
-                          ? "bg-primary border-primary text-primary-foreground"
-                          : "border-border hover:border-primary/50"
-                      )}
-                    >
-                      {isSelected && <Check className="h-3 w-3" />}
-                    </button>
+                    {isSelected && <Check className="h-3 w-3 text-white" />}
+                  </button>
 
-                    {/* Icon */}
-                    <div
-                      className={cn(
-                        "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                        config.bg,
-                        config.border,
-                        "border"
-                      )}
-                    >
-                      <Icon className={cn("h-4 w-4", config.color)} />
-                    </div>
+                  {/* Icon */}
+                  <div
+                    className={cn(
+                      "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                      cfg.bg
+                    )}
+                  >
+                    <Icon className={cn("h-5 w-5", cfg.color)} />
+                  </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p
-                              className={cn(
-                                "text-sm font-medium truncate",
-                                !notification.read
-                                  ? "text-foreground"
-                                  : "text-muted-foreground"
-                              )}
-                            >
-                              {notification.title}
-                            </p>
-                            {!notification.read && (
-                              <span className="flex h-2 w-2 shrink-0 rounded-full bg-primary shadow-[0_0_6px] shadow-primary/50" />
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p
+                            className={cn(
+                              "text-[15px] font-semibold",
+                              notif.read ? "text-foreground/70" : "text-foreground"
                             )}
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                            {notification.message}
+                          >
+                            {notif.title}
                           </p>
+                          {!notif.read && (
+                            <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+                          )}
                         </div>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-                          {formatTimeAgo(notification.createdAt)}
-                        </span>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+                          {notif.message}
+                        </p>
+                        <div className="flex items-center gap-3 mt-2">
+                          <span
+                            className={cn(
+                              "text-xs font-semibold px-2.5 py-1 rounded-full",
+                              cfg.bg,
+                              cfg.color
+                            )}
+                          >
+                            {cfg.label}
+                          </span>
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            🕐{" "}
+                            {format(new Date(notif.createdAt), "dd/MM/yyyy HH:mm", {
+                              locale: ptBR,
+                            })}
+                          </span>
+                        </div>
                       </div>
 
                       {/* Actions */}
-                      {!notification.read && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        {notif.link && (
+                          <Link
+                            href={notif.link}
+                            title="Abrir"
+                            className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Link>
+                        )}
+                        {!notif.read && (
+                          <button
+                            type="button"
+                            title="Marcar como lida"
+                            onClick={() => handleMarkRead(notif.id)}
+                            className="p-2 rounded-lg text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                          >
+                            <Check className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={() => markAsRead(notification.id)}
-                          className="mt-2 text-xs text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                          title="Excluir"
+                          onClick={() => handleDelete(notif.id)}
+                          className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                         >
-                          Marcar como lida
+                          <Check className={cn("h-4 w-4", notif.read ? "text-emerald-500" : "text-muted-foreground/30")} />
                         </button>
-                      )}
+                      </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

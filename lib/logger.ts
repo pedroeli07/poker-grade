@@ -1,6 +1,10 @@
 /**
  * Structured logging for server and client.
- * Search logs by scope: `[imports.actions]` or level: `ERROR`, `SUCCESS`.
+ * Search logs by scope: `[imports.actions]` or level: ERROR, SUCCESS.
+ *
+ * Env vars:
+ *   LOG_LEVEL=debug|info|warn|error  (default: info in prod, debug in dev)
+ *   LOG_SCOPES=scope1,scope2         (if set, only these scopes are logged)
  */
 
 import pino from "pino";
@@ -21,20 +25,12 @@ function redactMeta(
   if (!meta) return undefined;
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(meta)) {
-    if (SENSITIVE_KEYS.has(k.toLowerCase())) {
-      out[k] = "[REDACTED]";
-    } else {
-      out[k] = v;
-    }
+    out[k] = SENSITIVE_KEYS.has(k.toLowerCase()) ? "[REDACTED]" : v;
   }
   return out;
 }
 
-const prodLogger =
-  typeof window === "undefined" && process.env.NODE_ENV === "production"
-    ? pino({ level: process.env.LOG_LEVEL || "info" })
-    : null;
-
+// ── Level config ──────────────────────────────────────────
 export type LogLevel = "debug" | "info" | "success" | "warn" | "error";
 
 const LEVEL_ORDER: Record<LogLevel, number> = {
@@ -47,30 +43,63 @@ const LEVEL_ORDER: Record<LogLevel, number> = {
 
 function minLevelFromEnv(): LogLevel {
   const raw = process.env.LOG_LEVEL?.toLowerCase();
-  if (raw === "debug" || raw === "info" || raw === "warn" || raw === "error")
-    return raw === "error" ? "error" : raw;
+  if (raw === "debug") return "debug";
+  if (raw === "warn") return "warn";
+  if (raw === "error") return "error";
+  if (raw === "info") return "info";
   return process.env.NODE_ENV === "production" ? "info" : "debug";
 }
 
-const MIN = LEVEL_ORDER[minLevelFromEnv()];
+const MIN_LEVEL = LEVEL_ORDER[minLevelFromEnv()];
 
-function shouldEmit(level: LogLevel): boolean {
-  return LEVEL_ORDER[level] >= MIN;
+// Optional scope filter: LOG_SCOPES=imports.actions,grades.actions
+const ALLOWED_SCOPES: Set<string> | null = (() => {
+  const raw = process.env.LOG_SCOPES;
+  if (!raw) return null;
+  return new Set(raw.split(",").map((s) => s.trim()));
+})();
+
+function shouldEmit(scope: string, level: LogLevel): boolean {
+  if (LEVEL_ORDER[level] < MIN_LEVEL) return false;
+  if (ALLOWED_SCOPES && !ALLOWED_SCOPES.has(scope)) return false;
+  return true;
 }
 
-function format(
+// ── Production pino logger ────────────────────────────────
+const prodLogger =
+  typeof window === "undefined" && process.env.NODE_ENV === "production"
+    ? pino({ level: process.env.LOG_LEVEL || "info" })
+    : null;
+
+// ── Dev console colours ───────────────────────────────────
+const LEVEL_COLORS: Record<LogLevel, string> = {
+  debug: "\x1b[90m",    // grey
+  info: "\x1b[36m",     // cyan
+  success: "\x1b[32m",  // green
+  warn: "\x1b[33m",     // yellow
+  error: "\x1b[31m",    // red
+};
+const RESET = "\x1b[0m";
+const DIM = "\x1b[2m";
+const BOLD = "\x1b[1m";
+
+function devLine(
   scope: string,
   level: LogLevel,
   message: string,
   meta?: Record<string, unknown>
 ): string {
-  const ts = new Date().toISOString();
-  const safe = redactMeta(meta);
+  const color = LEVEL_COLORS[level];
+  const tag = `${color}${BOLD}${level.toUpperCase().padEnd(7)}${RESET}`;
+  const scopeStr = `${DIM}[${scope}]${RESET}`;
   const metaStr =
-    safe && Object.keys(safe).length > 0 ? ` ${JSON.stringify(safe)}` : "";
-  return `${ts} ${level.toUpperCase().padEnd(7)} [${scope}] ${message}${metaStr}`;
+    meta && Object.keys(meta).length > 0
+      ? ` ${DIM}${JSON.stringify(meta)}${RESET}`
+      : "";
+  return `${tag} ${scopeStr} ${message}${metaStr}`;
 }
 
+// ── Emit ──────────────────────────────────────────────────
 function emit(
   scope: string,
   level: LogLevel,
@@ -78,9 +107,8 @@ function emit(
   meta?: Record<string, unknown>,
   err?: unknown
 ): void {
-  if (!shouldEmit(level)) return;
+  if (!shouldEmit(scope, level)) return;
 
-  const line = format(scope, level, message, meta);
   const safeMeta = redactMeta(meta);
 
   if (prodLogger) {
@@ -95,47 +123,36 @@ function emit(
           ? { err: String(err) }
           : {}),
     };
-    if (level === "error") {
-      prodLogger.error(data);
-    } else if (level === "warn") {
-      prodLogger.warn(data);
-    } else {
-      prodLogger.info(data);
-    }
+    if (level === "error") prodLogger.error(data);
+    else if (level === "warn") prodLogger.warn(data);
+    else prodLogger.info(data);
     return;
   }
 
-  switch (level) {
-    case "error":
-      if (err instanceof Error) {
-        console.error(line, err);
-      } else if (err !== undefined) {
-        console.error(line, err);
-      } else {
-        console.error(line);
-      }
-      break;
-    case "warn":
-      console.warn(line);
-      break;
-    case "debug":
-      console.debug(line);
-      break;
-    default:
-      console.info(line);
+  const line = devLine(scope, level, message, safeMeta);
+
+  if (level === "error") {
+    if (err instanceof Error && err.stack) {
+      console.error(line, `\n${DIM}${err.stack}${RESET}`);
+    } else {
+      console.error(line);
+    }
+  } else if (level === "warn") {
+    console.warn(line);
+  } else if (level === "debug") {
+    console.debug(line);
+  } else {
+    console.info(line);
   }
 }
 
+// ── Public API ────────────────────────────────────────────
 export type ScopedLogger = {
   debug: (message: string, meta?: Record<string, unknown>) => void;
   info: (message: string, meta?: Record<string, unknown>) => void;
   success: (message: string, meta?: Record<string, unknown>) => void;
   warn: (message: string, meta?: Record<string, unknown>) => void;
-  error: (
-    message: string,
-    cause?: Error,
-    meta?: Record<string, unknown>
-  ) => void;
+  error: (message: string, cause?: Error, meta?: Record<string, unknown>) => void;
 };
 
 export function createLogger(scope: string): ScopedLogger {
@@ -148,5 +165,4 @@ export function createLogger(scope: string): ScopedLogger {
   };
 }
 
-/** Default logger when no scope is needed */
 export const log = createLogger("app");

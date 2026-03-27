@@ -20,7 +20,7 @@ const OAUTH_ERRORS: Record<string, string> = {
 };
 
 const inputClass =
-  "h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus-visible:border-rose-500/40 focus-visible:ring-2 focus-visible:ring-rose-500/20";
+  "h-11 w-full rounded-xl border border-border bg-card/50 px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20";
 
 export function LoginForm() {
   const router = useRouter();
@@ -99,7 +99,7 @@ export function LoginForm() {
         <div className="space-y-2">
           <label
             htmlFor="login-email"
-            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-500"
+            className="block font-mono text-[12px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
           >
             E-mail
           </label>
@@ -119,7 +119,7 @@ export function LoginForm() {
         <div className="space-y-2">
           <label
             htmlFor="login-password"
-            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-500"
+            className="block font-mono text-[12px] font-medium uppercase tracking-[0.2em] text-muted-foregroun"
           >
             Senha
           </label>
@@ -130,15 +130,15 @@ export function LoginForm() {
             maxLength={512}
             autoComplete="current-password"
             placeholder="••••••••"
-            className="border-white/10 bg-white/[0.04] pr-11 pl-3.5"
+            className="border-border bg-card/50 pr-11 pl-3.5 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20 text-black"
           />
         </div>
-        <label className="flex cursor-pointer items-center gap-2 font-mono text-[11px] text-zinc-500">
+        <label className="flex cursor-pointer items-center gap-2 font-mono text-[11px] text-muted-foreground">
           <input
             type="checkbox"
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
-            className="size-3.5 rounded border-white/20 bg-white/5 accent-rose-500"
+            className="size-3.5 rounded border-border bg-card accent-primary"
           />
           Lembrar e-mail
         </label>
@@ -146,7 +146,7 @@ export function LoginForm() {
           type="submit"
           disabled={loading}
           className={cn(
-            "cursor-pointer h-12 w-full rounded-xl bg-rose-600 font-mono text-sm font-semibold uppercase tracking-wider text-white shadow-lg shadow-rose-950/40 transition hover:bg-rose-500 disabled:opacity-60"
+            "cursor-pointer h-12 w-full rounded-xl bg-primary font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:opacity-60"
           )}
         >
           {loading ? "Entrando…" : "Entrar"}
@@ -154,20 +154,20 @@ export function LoginForm() {
       </form>
 
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-white/10" />
-        <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-600">
+        <div className="h-px flex-1 bg-border" />
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           ou
         </span>
-        <div className="h-px flex-1 bg-white/10" />
+        <div className="h-px flex-1 bg-border" />
       </div>
 
       <GoogleSignInButton />
 
-      <p className="text-center font-mono text-xs text-zinc-500">
+      <p className="text-center font-mono text-xs text-muted-foreground">
         Não tem uma conta?{" "}
         <Link
           href="/register"
-          className="cursor-pointer text-rose-400 underline-offset-4 hover:text-rose-300 hover:underline"
+          className="cursor-pointer text-primary underline-offset-4 hover:text-primary/80 hover:underline font-semibold"
         >
           Registre-se
         </Link>

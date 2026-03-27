@@ -117,7 +117,7 @@ function StatusBadge({ registered }: { registered: boolean }) {
           registered ? "bg-emerald-500" : "bg-amber-500"
         )}
       />
-      <span className={registered ? "text-emerald-600" : "text-amber-600"}>
+      <span className={registered ? "text-emerald-600 bg-emerald-500/10 border-emerald-500/25" : "text-amber-600 bg-amber-500/10 border-amber-500/25"}>
         {registered ? "Ativo" : "Pendente"}
       </span>
     </span>
@@ -184,8 +184,8 @@ export function UsuariosClient({ initialRows }: Props) {
 
       <div className="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-            <Users className="h-7 w-7 text-muted-foreground" />
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-primary">
+            <Users className="h-7 w-7 text-primary" />
             Usuários
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -290,7 +290,7 @@ export function UsuariosClient({ initialRows }: Props) {
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border">
           <div className="min-w-[640px]">
-          <div className="grid grid-cols-[1fr_120px_100px_100px] gap-2 border-b border-border bg-muted/40 px-4 py-2 text-xs font-medium uppercase text-muted-foreground">
+          <div className="grid grid-cols-[1fr_120px_100px_100px] gap-2 border-b border-border bg-blue-500/30 px-4 py-2 text-xs font-medium uppercase text-muted-foreground">
             <span>Membro</span>
             <span>Cargo</span>
             <span>Status</span>
@@ -536,7 +536,7 @@ function UserTableRow({
   };
 
   return (
-    <div className="grid grid-cols-[1fr_120px_100px_100px] items-center gap-2 px-4 py-3 text-sm">
+    <div className="grid grid-cols-[1fr_120px_100px_100px] items-center gap-2 px-4 py-3 text-sm bg-blue-500/10 hover:bg-blue-500/20 transition-colors">
       <div className="flex min-w-0 items-center gap-2">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-[10px] font-semibold">
           {getInitials(row.email)}

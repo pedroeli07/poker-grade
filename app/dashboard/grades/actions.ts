@@ -9,6 +9,7 @@ import { requireSession } from "@/lib/auth/session";
 import { assertCanManageGrades } from "@/lib/auth/rbac";
 import { deleteGradeSchema, importGradeFormSchema } from "@/lib/validation/schemas";
 import { sanitizeOptional, sanitizeText } from "@/lib/sanitize";
+import { notifyGradeCreated } from "@/lib/notifications";
 
 const log = createLogger("grades.actions");
 
@@ -70,7 +71,7 @@ export async function importGradeFromJson(formData: FormData) {
   );
 
   try {
-    await prisma.gradeProfile.create({
+    const grade = await prisma.gradeProfile.create({
       data: {
         name,
         description,
@@ -81,29 +82,30 @@ export async function importGradeFromJson(formData: FormData) {
             const row = (parsedJson as Record<string, unknown>[])[i];
             const lid = row?.id;
             return {
-            filterName: sanitizeText(r.filterName, 500),
-            lobbyzeFilterId: typeof lid === "number" ? lid : null,
-            sites: toPrismaJson(r.sites),
-            buyInMin: r.buyInMin,
-            buyInMax: r.buyInMax,
-            speed: toPrismaJsonOptional(r.speed),
-            variant: toPrismaJsonOptional(r.variant),
-            tournamentType: toPrismaJsonOptional(r.tournamentType),
-            prizePoolMin: r.prizePoolMin,
-            prizePoolMax: r.prizePoolMax,
-            minParticipants: r.minParticipants,
-            excludePattern: sanitizeOptional(r.excludePattern, 2000),
-            fromTime: r.fromTime,
-            toTime: r.toTime,
-            weekDay: toPrismaJsonOptional(r.weekDay),
+              filterName: sanitizeText(r.filterName, 500),
+              lobbyzeFilterId: typeof lid === "number" ? lid : null,
+              sites: toPrismaJson(r.sites),
+              buyInMin: r.buyInMin,
+              buyInMax: r.buyInMax,
+              speed: toPrismaJsonOptional(r.speed),
+              variant: toPrismaJsonOptional(r.variant),
+              tournamentType: toPrismaJsonOptional(r.tournamentType),
+              prizePoolMin: r.prizePoolMin,
+              prizePoolMax: r.prizePoolMax,
+              minParticipants: r.minParticipants,
+              excludePattern: sanitizeOptional(r.excludePattern, 2000),
+              fromTime: r.fromTime,
+              toTime: r.toTime,
+              weekDay: toPrismaJsonOptional(r.weekDay),
             };
           }),
         },
       },
     });
 
+    void notifyGradeCreated(name, grade.id);
     revalidatePath("/dashboard/grades");
-    log.success("Grade criada via JSON", { name, rules: gradeRules.length });
+    log.success("Grade importada via JSON", { name, rules: gradeRules.length });
     return { success: true };
   } catch (err) {
     log.error(
@@ -135,6 +137,7 @@ export async function createGradeProfile(formData: FormData) {
     data: { name, description, isTemplate: false },
   });
 
+  void notifyGradeCreated(name, grade.id);
   revalidatePath("/dashboard/grades");
   log.success("Grade criada manualmente", { name, id: grade.id });
   return { success: true, id: grade.id };

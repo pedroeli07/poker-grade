@@ -188,6 +188,52 @@ export async function getGradeByIdForSession(session: AppSession, id: string) {
   return grade;
 }
 
+export async function getImportDetailForSession(session: AppSession, importId: string) {
+  const importRecord = await prisma.tournamentImport.findUnique({
+    where: { id: importId },
+    include: {
+      tournaments: {
+        include: {
+          reviewItem: {
+            select: { id: true, status: true, isInfraction: true },
+          },
+        },
+        orderBy: { date: "asc" },
+      },
+    },
+  });
+
+  if (!importRecord) return null;
+
+  if (session.role === "PLAYER" && session.playerId) {
+    const player = await prisma.player.findUnique({
+      where: { id: session.playerId },
+      select: { name: true, nickname: true },
+    });
+    if (!player) return null;
+    const pn = importRecord.playerName?.toLowerCase() ?? "";
+    if (
+      pn !== player.name?.toLowerCase() &&
+      pn !== player.nickname?.toLowerCase()
+    )
+      return null;
+  }
+
+  if (session.role === "COACH" && session.coachId) {
+    const players = await prisma.player.findMany({
+      where: coachPlayerFilter(session.coachId),
+      select: { name: true, nickname: true },
+    });
+    const names = players
+      .flatMap((p) => [p.name, p.nickname].filter(Boolean) as string[])
+      .map((n) => n.toLowerCase());
+    const pn = importRecord.playerName?.toLowerCase() ?? "";
+    if (!names.includes(pn)) return null;
+  }
+
+  return importRecord;
+}
+
 export async function assertReviewAccessible(
   session: AppSession,
   reviewId: string

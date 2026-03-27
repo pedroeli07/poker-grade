@@ -19,7 +19,7 @@ function createPrismaClient(): PrismaClient {
 
   return new PrismaClient({
     adapter,
-    log: process.env.NODE_ENV === "development" ? ["query"] : [],
+    log: [],  // SQL query logs disabled — too noisy; use application-level logging
   });
 }
 
@@ -31,5 +31,4 @@ if (process.env.NODE_ENV !== "production") {
 
 prismaLog.info("PrismaClient pronto", {
   env: process.env.NODE_ENV,
-  queryLog: process.env.NODE_ENV === "development",
 });

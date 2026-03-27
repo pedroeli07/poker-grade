@@ -73,7 +73,7 @@ export default async function TargetsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Targets e Metas</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-primary">Targets e Metas</h2>
           <p className="text-muted-foreground mt-1">
             Acompanhe ABI, ROI, Volume e gatilhos de subida/descida de limite.
           </p>
@@ -85,7 +85,7 @@ export default async function TargetsPage() {
 
       {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="glass-card bg-emerald-500/5 border-emerald-500/20">
+        <Card className="backdrop-blur-md shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)] bg-emerald-500/5 border border-emerald-500/20">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-500/15 shrink-0">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
@@ -97,7 +97,7 @@ export default async function TargetsPage() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card bg-amber-500/5 border-amber-500/20">
+        <Card className="backdrop-blur-md shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)] bg-amber-500/5 border border-amber-500/20">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-500/15 shrink-0">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -109,7 +109,7 @@ export default async function TargetsPage() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card bg-red-500/5 border-red-500/20">
+        <Card className="backdrop-blur-md shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)] bg-red-500/5 border border-red-500/20">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-red-500/15 shrink-0">
               <XCircle className="h-4 w-4 text-red-500" />
@@ -123,7 +123,7 @@ export default async function TargetsPage() {
       </div>
 
       {/* Target list */}
-      <Card className="glass-card">
+      <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
         <CardHeader>
           <CardTitle>Todos os Targets</CardTitle>
           <CardDescription>

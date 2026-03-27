@@ -25,6 +25,7 @@ import { Separator } from "@/components/ui/separator";
 import { Plus, Target, Loader2, ChevronRight } from "lucide-react";
 import { createTarget } from "@/app/dashboard/targets/actions";
 import { toast } from "@/lib/toast";
+import { isNextRedirectError } from "@/lib/utils";
 
 type Player = { id: string; name: string; nickname: string | null };
 
@@ -86,6 +87,7 @@ export function NewTargetModal({ players }: NewTargetModalProps) {
         handleOpenChange(false);
         router.refresh();
       } catch (err) {
+        if (isNextRedirectError(err)) throw err;
         toast.error("Erro ao criar target", err instanceof Error ? err.message : "Tente novamente.");
       }
     });

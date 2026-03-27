@@ -1,153 +1,353 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ArrowLeft, Clock, DollarSign, Filter, Users, LayoutList } from "lucide-react";
+  ArrowLeft,
+  DollarSign,
+  Clock,
+  Users,
+  Zap,
+  Tag,
+  Ban,
+  Timer,
+  CalendarDays,
+  Info,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { LobbyzeFilterItem } from "@/lib/types";
-import { formatBuyIn, formatList } from "@/lib/utils";
-import { createLogger } from "@/lib/logger";
 import { requireSession } from "@/lib/auth/session";
 import { getGradeByIdForSession } from "@/lib/data/queries";
 
-const pageLog = createLogger("grades.detail");
+function parseJson<T>(val: unknown): T[] {
+  if (Array.isArray(val)) return val as T[];
+  if (typeof val === "string") {
+    try {
+      const p = JSON.parse(val);
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
 
-export default async function GradeRulesPage({ params }: { params: Promise<{ id: string }> }) {
+function Pills({
+  items,
+  variant = "default",
+}: {
+  items: LobbyzeFilterItem[];
+  variant?: "sites" | "default" | "speed" | "variant";
+}) {
+  if (!items.length) return <span className="text-muted-foreground/50 text-sm">Todos</span>;
+
+  const cls =
+    variant === "sites"
+      ? (text: string) =>
+          text.toLowerCase().includes("pokerstars")
+            ? "bg-red-500/12 text-red-300 border-red-500/25"
+            : "bg-blue-500/12 text-blue-300 border-blue-500/25"
+      : variant === "speed"
+        ? () => "bg-amber-500/12 text-amber-300 border-amber-500/25"
+        : variant === "variant"
+          ? () => "bg-violet-500/12 text-violet-300 border-violet-500/25"
+          : () => "bg-secondary text-secondary-foreground border-border";
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((item, i) => (
+        <span
+          key={i}
+          className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${cls(item.item_text)}`}
+        >
+          {item.item_text}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function BuyInRange({
+  min,
+  max,
+}: {
+  min: number | null;
+  max: number | null;
+}) {
+  if (!min && !max)
+    return (
+      <span className="text-muted-foreground/50 text-sm">Sem restrição</span>
+    );
+
+  const pct = min && max ? ((min / max) * 100).toFixed(0) : null;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <span className="font-mono text-lg font-bold text-emerald-400">
+          ${min ?? "—"}
+        </span>
+        <span className="text-muted-foreground/60">—</span>
+        <span className="font-mono text-lg font-bold text-emerald-400">
+          ${max ?? "—"}
+        </span>
+      </div>
+      {min && max && (
+        <div className="h-2 rounded-full bg-muted/50 overflow-hidden w-full max-w-[140px]">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400"
+            style={{ width: `${100 - Number(pct)}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default async function GradeRulesPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const session = await requireSession();
   const { id } = await params;
   const grade = await getGradeByIdForSession(session, id);
 
-  if (!grade) {
-    pageLog.warn("Grade não encontrada ou sem permissão", { id });
-    notFound();
-  }
-
-  pageLog.debug("Página de grade carregada", {
-    id,
-    rules: grade.rules.length,
-  });
+  if (!grade) notFound();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-5xl mx-auto">
+      {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/grades">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
-        <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-3xl font-bold tracking-tight">{grade.name}</h2>
-            <Badge variant="outline" className="border-primary/20 text-primary bg-primary/10">
-              {grade.rules.length} Regras
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-4xl font-bold tracking-tight">{grade.name}</h2>
+            <Badge
+              variant="outline"
+              className="border-primary/30 text-primary bg-primary/8 text-sm px-3"
+            >
+              {grade.rules.length} filtro{grade.rules.length !== 1 ? "s" : ""}
+            </Badge>
+            <Badge
+              variant="outline"
+              className="border-border text-muted-foreground text-sm px-3"
+            >
+              <Users className="h-4 w-4 mr-1.5" />
+              {grade._count.assignments} jogador
+              {grade._count.assignments !== 1 ? "es" : ""}
             </Badge>
           </div>
-          <p className="text-muted-foreground mt-1">
-            {grade.description || "Nenhuma descrição fornecida para esta grade."}
-          </p>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Jogadores</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{grade._count.assignments}</div>
-          </CardContent>
-        </Card>
+      {/* Coach explanation */}
+      {grade.description && (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 flex gap-5">
+          <div className="shrink-0 mt-0.5">
+            <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
+              <Info className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+          <div>
+            <p className="text-base font-semibold text-primary mb-1.5">
+              Nota do Coach
+            </p>
+            <p className="text-[15px] text-foreground/80 leading-relaxed whitespace-pre-line">
+              {grade.description}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Section header */}
+      <div className="flex items-center gap-4">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-3">
+          Filtros da grade
+        </span>
+        <div className="h-px flex-1 bg-border" />
       </div>
 
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-primary" />
-            Regras Detalhadas (Filtros Lobbyze)
-          </CardTitle>
-          <CardDescription>
-            Tudo o que for jogado e estiver dentro dos parâmetros abaixo será considerado "IN_GRADE".
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border border-border">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent bg-sidebar/50">
-                  <TableHead className="w-[200px]">Nome (Filtro)</TableHead>
-                  <TableHead>Sites</TableHead>
-                  <TableHead>Buy-In ($)</TableHead>
-                  <TableHead>Formato / Status</TableHead>
-                  <TableHead>Extra</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {grade.rules.map((rule) => (
-                  <TableRow key={rule.id} className="hover:bg-sidebar-accent/50">
-                    <TableCell className="font-medium">{rule.filterName}</TableCell>
-                    
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {(() => {
-                          try {
-                            const arr = typeof rule.sites === 'string' ? JSON.parse(rule.sites) : rule.sites;
-                            if (Array.isArray(arr) && arr.length > 0) {
-                              return arr.map((s: LobbyzeFilterItem, i: number) => (
-                                <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0 whitespace-nowrap">
-                                  {s.item_text}
-                                </Badge>
-                              ));
-                            }
-                          } catch {}
-                          return "Todos";
-                        })()}
-                      </div>
-                    </TableCell>
-                    
-                    <TableCell>
-                      <div className="flex items-center gap-1.5 text-emerald-500 font-medium whitespace-nowrap">
-                        <DollarSign className="h-3 w-3" />
-                        {formatBuyIn(rule.buyInMin, rule.buyInMax)}
-                      </div>
-                    </TableCell>
+      {/* Filter cards grid */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {grade.rules.map((rule, idx) => {
+          const sites = parseJson<LobbyzeFilterItem>(rule.sites);
+          const speed = parseJson<LobbyzeFilterItem>(rule.speed);
+          const variant = parseJson<LobbyzeFilterItem>(rule.variant);
+          const tournamentType = parseJson<LobbyzeFilterItem>(rule.tournamentType);
+          const weekDay = parseJson<LobbyzeFilterItem>(rule.weekDay);
 
-                    <TableCell>
-                      <div className="space-y-1.5">
-                        <div className="text-xs flex items-center gap-1.5 text-muted-foreground">
-                          <Clock className="h-3 w-3" /> {formatList(rule.speed)}
-                        </div>
-                        <div className="text-xs flex items-center gap-1.5 text-muted-foreground">
-                          <LayoutList className="h-3 w-3" /> {formatList(rule.tournamentType)}
-                          {rule.variant ? ` | ${formatList(rule.variant)}` : ""}
-                        </div>
-                      </div>
-                    </TableCell>
+          const hasExtra =
+            rule.prizePoolMin ||
+            rule.minParticipants ||
+            rule.excludePattern ||
+            (rule.fromTime && rule.toTime) ||
+            weekDay.length > 0;
 
-                    <TableCell>
-                      <div className="space-y-1 text-xs">
-                        {rule.prizePoolMin && <div><span className="text-muted-foreground">GTD Min:</span> ${rule.prizePoolMin}</div>}
-                        {rule.minParticipants && <div><span className="text-muted-foreground">Pts Min:</span> {rule.minParticipants}</div>}
-                        {rule.excludePattern && <div><span className="text-red-400">Exclui:</span> {rule.excludePattern.replace(/\|/g, ", ")}</div>}
-                        {rule.fromTime && rule.toTime && <div><span className="text-muted-foreground">Horário:</span> {rule.fromTime} - {rule.toTime}</div>}
-                      </div>
-                    </TableCell>
+          return (
+            <div
+              key={rule.id}
+              className="rounded-xl border border-border bg-card/60 overflow-hidden hover:border-border/80 transition-colors group"
+            >
+              {/* Card header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/60 bg-muted/10">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-md bg-primary/15 flex items-center justify-center text-[13px] font-bold text-primary">
+                    {idx + 1}
+                  </span>
+                  <span className="font-semibold text-base text-foreground">
+                    {rule.filterName}
+                  </span>
+                </div>
+                {rule.lobbyzeFilterId && (
+                  <span className="text-xs text-muted-foreground/50 font-mono">
+                    #{rule.lobbyzeFilterId}
+                  </span>
+                )}
+              </div>
 
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+              {/* Card body */}
+              <div className="p-6 space-y-6">
+                {/* Sites */}
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center shrink-0 mt-0.5">
+                    <Zap className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                      Sites
+                    </p>
+                    <Pills items={sites} variant="sites" />
+                  </div>
+                </div>
+
+                {/* Buy-in */}
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <DollarSign className="h-5 w-5 text-emerald-500" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                      Buy-in
+                    </p>
+                    <BuyInRange min={rule.buyInMin} max={rule.buyInMax} />
+                  </div>
+                </div>
+
+                {/* Speed */}
+                {speed.length > 0 && (
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Clock className="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                        Speed
+                      </p>
+                      <Pills items={speed} variant="speed" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Variant / Tournament type */}
+                {(variant.length > 0 || tournamentType.length > 0) && (
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Tag className="h-5 w-5 text-violet-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                        Formato / Variante
+                      </p>
+                      <Pills
+                        items={[...tournamentType, ...variant]}
+                        variant="variant"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Extra constraints */}
+                {hasExtra && (
+                  <div className="pt-4 border-t border-border/50 space-y-3">
+                    {rule.prizePoolMin && (
+                      <div className="flex items-center gap-3 text-base text-muted-foreground">
+                        <TrendingUp className="h-5 w-5 text-emerald-500/70" />
+                        <span>
+                          Garantido mín:{" "}
+                          <strong className="text-foreground/80">
+                            ${rule.prizePoolMin.toLocaleString()}
+                          </strong>
+                        </span>
+                      </div>
+                    )}
+                    {rule.minParticipants && (
+                      <div className="flex items-center gap-3 text-base text-muted-foreground">
+                        <Users className="h-5 w-5 text-blue-500/70" />
+                        <span>
+                          Mín. entrants:{" "}
+                          <strong className="text-foreground/80">
+                            {rule.minParticipants}
+                          </strong>
+                        </span>
+                      </div>
+                    )}
+                    {rule.fromTime && rule.toTime && (
+                      <div className="flex items-center gap-3 text-base text-muted-foreground">
+                        <Timer className="h-5 w-5 text-primary/70" />
+                        <span>
+                          Horário:{" "}
+                          <strong className="text-foreground/80">
+                            {rule.fromTime} — {rule.toTime}
+                          </strong>
+                        </span>
+                      </div>
+                    )}
+                    {weekDay.length > 0 && (
+                      <div className="flex items-center gap-3 text-base text-muted-foreground">
+                        <CalendarDays className="h-5 w-5 text-primary/70" />
+                        <span>
+                          Dias:{" "}
+                          <strong className="text-foreground/80">
+                            {weekDay.map((d) => d.item_text).join(", ")}
+                          </strong>
+                        </span>
+                      </div>
+                    )}
+                    {rule.excludePattern && (
+                      <div className="flex items-center gap-3 text-base text-muted-foreground">
+                        <Ban className="h-5 w-5 text-red-500/70" />
+                        <span>
+                          Excluir:{" "}
+                          <strong className="text-red-500/80">
+                            {rule.excludePattern.replace(/\|/g, ", ")}
+                          </strong>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {grade.rules.length === 0 && (
+        <div className="bg-blue-500/10 flex flex-col items-center justify-center py-16 border border-dashed border-border rounded-xl text-muted-foreground">
+          <Target className="h-10 w-10 mb-3 opacity-30" />
+          <p className="text-xl">Nenhum filtro definido para esta grade.</p>
+          <p className="text-base mt-1 text-muted-foreground/80">
+            Faça o upload de um JSON da Lobbyze para importar os filtros.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

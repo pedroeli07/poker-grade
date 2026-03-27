@@ -63,6 +63,17 @@ enum LimitAction {
   DOWNGRADE
 }
 
+enum NotificationType {
+  GRADE_ASSIGNED
+  GRADE_CREATED
+  IMPORT_DONE
+  EXTRA_PLAY
+  REVIEW_DECISION
+  PLAYER_CREATED
+  LIMIT_CHANGED
+  SYSTEM
+}
+
 // ==========================================
 // AUTH (sessão + credenciais — Argon2id no app)
 // ==========================================
@@ -83,6 +94,7 @@ model AuthUser {
   lastFailedAt   DateTime?
   sessions       AuthSession[]
   invitesCreated AllowedEmail[] @relation("AllowedEmailAddedBy")
+  notifications  Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -423,6 +435,31 @@ model LimitChangeHistory {
   @@index([playerId])
   @@index([createdAt])
   @@map("limit_change_history")
+}
+
+// ==========================================
+// NOTIFICATIONS
+// ==========================================
+
+model Notification {
+  id      String           @id @default(cuid())
+  userId  String
+  user    AuthUser         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    NotificationType
+  title   String
+  message String
+  link    String?
+
+  read    Boolean  @default(false)
+  readAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
+  @@map("notifications")
 }
 
 model AuditLog {

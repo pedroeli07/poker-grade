@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LockIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
 
 interface ProfileData {
   email: string;
@@ -118,12 +117,12 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
       </div>
 
       {/* Two-column layout */}
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-0 border border-border rounded-xl overflow-hidden">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-0 border border-border rounded-xl overflow-hidden bg-blue-500/10">
 
         {/* LEFT — Informações Pessoais */}
         <div className="border-r border-border bg-card/20 p-8 space-y-6">
           {/* Section label */}
-          <div className="section-label text-[10px] tracking-[0.18em]">
+          <div className="section-label text-[15px] tracking-[0.18em]">
             Informações Pessoais
           </div>
 
@@ -195,8 +194,9 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
 
         {/* RIGHT — Alterar Senha */}
         <div className="bg-card/10 p-8 space-y-6">
-          <div className="section-label text-[10px] tracking-[0.18em]">
+          <div className="section-label text-[15px] tracking-[0.18em]">
             Alterar Senha
+           
           </div>
 
           <div className="space-y-5">
@@ -219,7 +219,7 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
           {/* Update button */}
           <button
             type="button"
-            className="w-full h-11 rounded-md border border-border bg-card/60 text-foreground text-xs font-bold tracking-[0.18em] uppercase hover:bg-sidebar-accent hover:border-primary/30 transition-all cursor-pointer mt-4"
+            className="w-full h-11 rounded-md bg-primary text-primary-foreground text-xs font-bold tracking-[0.18em] uppercase hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed glow-primary-intense"
           >
             Atualizar Senha
           </button>

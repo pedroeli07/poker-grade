@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -26,7 +26,7 @@ import {
 import { uploadTournaments } from "@/app/dashboard/imports/actions";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
-import { cn } from "@/lib/utils";
+import { cn, isNextRedirectError } from "@/lib/utils";
 
 const log = createLogger("imports.modal");
 
@@ -34,13 +34,15 @@ type UploadResult = { processed: number; summary: string[] };
 
 export function NewImportModal() {
   const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<UploadResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  const loading = isPending;
 
   function resetState() {
     setFile(null);
@@ -80,31 +82,41 @@ export function NewImportModal() {
     setError(null);
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!file) return;
 
-    setLoading(true);
     setError(null);
-
     const formData = new FormData(e.currentTarget);
 
-    try {
-      log.info("Enviando importação");
-      const res = await uploadTournaments(formData);
-      setResult({ processed: res.processed, summary: res.summary });
-      setFile(null);
-      toast.success("Importação concluída", `${res.processed} torneios processados`);
-      router.refresh();
-    } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "Erro desconhecido ao processar arquivo";
-      log.error("Falha no upload", err instanceof Error ? err : undefined);
-      setError(msg);
-      toast.error("Falha na importação", msg);
-    } finally {
-      setLoading(false);
-    }
+    startTransition(async () => {
+      try {
+        log.info("Enviando importação");
+        const res = await uploadTournaments(formData);
+
+        if (!res.success) {
+          const msg = res.error ?? "Erro desconhecido";
+          log.warn("Importação retornou erro", { msg });
+          setError(msg);
+          toast.error("Falha na importação", msg);
+          return;
+        }
+
+        setResult({ processed: res.processed, summary: res.summary });
+        setFile(null);
+        toast.success("Importação concluída", `${res.processed} torneios processados`);
+        router.refresh();
+      } catch (err) {
+        // Re-throw NEXT_REDIRECT so Next.js can navigate (e.g. session expired → /login)
+        if (isNextRedirectError(err)) throw err;
+
+        const msg =
+          err instanceof Error ? err.message : "Erro de comunicação com o servidor";
+        log.error("Falha no upload", err instanceof Error ? err : undefined);
+        setError(msg);
+        toast.error("Falha na importação", msg);
+      }
+    });
   }
 
   return (
@@ -118,43 +130,43 @@ export function NewImportModal() {
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden font-sans border-border/40 bg-background/95 backdrop-blur-2xl shadow-2xl glass-card rounded-2xl">
+        <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden font-sans border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl rounded-2xl">
           {/* Header */}
           <div className="relative px-8 pt-8 pb-6 bg-gradient-to-b from-primary/5 via-primary/[0.02] to-transparent">
             <div className="flex items-start gap-4">
-              <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 shrink-0 shadow-[0_0_15px_rgba(255,50,50,0.15)] ring-1 ring-white/5 glow-primary transition-all">
+              <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 shrink-0 shadow-[0_0_15px_rgba(255,50,50,0.1)] ring-1 ring-primary/5 transition-all">
                 <FileSpreadsheet className="h-6 w-6 text-primary" />
               </div>
-              <DialogHeader className="space-y-1.5 text-left">
-                <DialogTitle className="text-[18px] font-black tracking-tight text-foreground">
+              <DialogHeader className="space-y-2 text-left">
+                <DialogTitle className="text-2xl font-black tracking-tight text-foreground">
                   Nova Importação
                 </DialogTitle>
-                <DialogDescription className="text-[15px] text-muted-foreground/90 leading-relaxed font-medium">
+                <DialogDescription className="text-base text-muted-foreground/90 leading-relaxed font-medium">
                   Faça o upload do arquivo Excel Lobbyze contendo o histórico de torneios do jogador.
                 </DialogDescription>
               </DialogHeader>
             </div>
             {/* Linha de separação sutil */}
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
           </div>
 
           {result ? (
             /* ── Tela de Resultado ─────────────────────────── */
             <>
               <div className="px-8 py-6 space-y-4">
-                <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 shadow-inner">
-                  <div className="flex items-center gap-2.5 text-emerald-400 font-semibold mb-3 text-base">
-                    <CheckCircle2 className="h-5 w-5 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 shadow-inner">
+                  <div className="flex items-center gap-3 text-emerald-600 font-bold mb-4 text-xl">
+                    <CheckCircle2 className="h-6 w-6 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
                     Processamento Concluído!
                   </div>
-                  <p className="text-[14px] text-foreground/90 mb-4 leading-relaxed tracking-wide">
-                    Um total de <strong className="text-emerald-500 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-md text-base">{result.processed}</strong> torneios foram processados e cruzados com a grade.
+                  <p className="text-[16px] text-foreground/90 mb-5 leading-relaxed tracking-wide">
+                    Um total de <strong className="text-emerald-700 font-bold bg-emerald-500/20 px-2 py-1 rounded-md text-lg">{result.processed}</strong> torneios foram processados e cruzados com a grade.
                   </p>
                   {result.summary.length > 0 && (
-                    <div className="space-y-1.5 pt-4 border-t border-emerald-500/20">
+                    <div className="space-y-2 pt-5 border-t border-emerald-500/20">
                       {result.summary.map((line, i) => (
-                        <div key={i} className="text-[13px] text-muted-foreground flex gap-2 font-medium">
-                          <span className="text-emerald-500/70 mt-0.5">•</span>
+                        <div key={i} className="text-[15px] text-muted-foreground flex gap-2 font-medium">
+                          <span className="text-emerald-600 mt-0.5">•</span>
                           <span>{line}</span>
                         </div>
                       ))}
@@ -163,10 +175,10 @@ export function NewImportModal() {
                 </div>
               </div>
 
-              <DialogFooter className="px-8 py-5 border-t border-border/40 bg-black/20 gap-3 sm:gap-0">
+              <DialogFooter className="px-8 py-5 border-t border-border/50 bg-muted/30 dark:bg-muted/10 gap-3 sm:gap-0">
                 <Button
                   variant="outline"
-                  className="rounded-xl border-border/60 hover:bg-white/[0.04] text-muted-foreground hover:text-foreground h-11"
+                  className="rounded-xl border-border/60 hover:bg-accent text-muted-foreground hover:text-foreground h-11"
                   onClick={() => { resetState(); }}
                 >
                   <RotateCcw className="mr-2 h-4 w-4" />
@@ -186,11 +198,11 @@ export function NewImportModal() {
             <form onSubmit={handleSubmit}>
               <div className="px-8 py-6 space-y-6">
                 {/* Aviso Destacado */}
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-200/90 relative overflow-hidden">
+                <div className="flex items-start gap-4 p-5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-600 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent pointer-events-none" />
-                  <AlertCircle className="w-4 h-4 text-orange-400 mt-0.5 shrink-0" />
+                  <AlertCircle className="w-6 h-6 text-orange-500 mt-0 shrink-0" />
                   <p className="text-[15px] font-medium leading-relaxed">
-                    O nome da aba (Sheet) <strong className="text-orange-50 font-bold px-1.5 py-0.5 bg-orange-500/20 rounded-md mx-0.5">deve ser igual</strong> ao Nickname ou Nome do jogador cadastrado para que funcione corretamente.
+                    O nome da aba (Sheet) <strong className="text-orange-700 font-bold px-2 py-0.5 bg-orange-500/20 rounded-md mx-1">deve ser igual</strong> ao Nickname ou Nome do jogador cadastrado para que funcione corretamente.
                   </p>
                 </div>
 
@@ -204,10 +216,10 @@ export function NewImportModal() {
                     "relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer select-none",
                     "min-h-[220px] px-6 py-8 group",
                     dragOver
-                      ? "border-primary bg-primary/10 shadow-[0_0_30px_rgba(255,50,50,0.1)] scale-[1.02]"
+                      ? "border-primary bg-primary/5 shadow-[0_0_20px_rgba(255,50,50,0.1)] scale-[1.02]"
                       : file
                       ? "border-emerald-500/40 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/60"
-                      : "border-white/10 bg-white/[0.015] hover:border-primary/40 hover:bg-primary/5"
+                      : "border-border/60 bg-muted/40 hover:border-primary/40 hover:bg-muted/60"
                   )}
                 >
                   <Input
@@ -215,7 +227,6 @@ export function NewImportModal() {
                     type="file"
                     name="file"
                     accept=".xlsx,.xls,.csv"
-                    required
                     onChange={handleFileChange}
                     className="hidden"
                     disabled={loading}
@@ -224,23 +235,23 @@ export function NewImportModal() {
                   {file ? (
                     <>
                       <div className="flex flex-col items-center text-emerald-500 animate-scale-in">
-                        <FileSpreadsheet className="h-12 w-12 mb-3 drop-shadow-[0_0_12px_theme(colors.emerald.500/0.4)]" />
-                        <span className="font-semibold text-[15px] text-foreground text-center line-clamp-1 break-all px-4">{file.name}</span>
-                        <span className="text-[13px] text-muted-foreground font-medium mt-1">
+                        <FileSpreadsheet className="h-16 w-16 mb-4 drop-shadow-[0_0_12px_theme(colors.emerald.500/0.4)]" />
+                        <span className="font-semibold text-lg text-foreground text-center line-clamp-1 break-all px-6">{file.name}</span>
+                        <span className="text-[15px] text-muted-foreground font-medium mt-2">
                           {(file.size / 1024).toFixed(1)} KB
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); resetState(); }}
-                        className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+                        className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                       >
                         <X className="h-4 w-4" />
                       </button>
                     </>
                   ) : (
                     <div className="flex flex-col items-center text-muted-foreground">
-                      <div className="p-4 rounded-full bg-white/[0.02] mb-4 group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-300">
+                      <div className="p-4 rounded-full bg-background border border-border/50 shadow-sm mb-4 group-hover:scale-110 group-hover:border-primary/30 transition-all duration-300">
                         <UploadCloud
                           className={cn(
                             "h-8 w-8 transition-colors",
@@ -262,18 +273,18 @@ export function NewImportModal() {
                 {error && (
                   <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 animate-fade-in shadow-inner">
                     <X className="h-4 w-4 text-destructive mt-0.5 shrink-0 drop-shadow-[0_0_5px_theme(colors.destructive.DEFAULT)]" />
-                    <p className="text-[13px] text-red-200/90 font-medium leading-relaxed">{error}</p>
+                    <p className="text-[13px] text-destructive dark:text-red-200/90 font-medium leading-relaxed">{error}</p>
                   </div>
                 )}
               </div>
 
-              <DialogFooter className="px-8 py-5 border-t border-border/40 bg-black/20 gap-3 sm:gap-0">
+              <DialogFooter className="px-8 py-5 border-t border-border/50 bg-muted/30 dark:bg-muted/10 gap-3 sm:gap-0">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => handleOpenChange(false)}
                   disabled={loading}
-                  className="rounded-xl border-border/60 hover:bg-white/[0.04] text-muted-foreground hover:text-foreground font-medium h-11"
+                  className="rounded-xl border-border/60 hover:bg-accent text-muted-foreground hover:text-foreground font-medium h-11"
                 >
                   Cancelar
                 </Button>

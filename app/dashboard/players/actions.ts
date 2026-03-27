@@ -7,6 +7,7 @@ import { requireSession } from "@/lib/auth/session";
 import { assertCanWrite } from "@/lib/auth/rbac";
 import { createPlayerFormSchema } from "@/lib/validation/schemas";
 import { sanitizeOptional, sanitizeText } from "@/lib/sanitize";
+import { notifyPlayerCreated } from "@/lib/notifications";
 
 const log = createLogger("players.actions");
 
@@ -43,7 +44,7 @@ export async function createPlayer(formData: FormData) {
 
   log.info("Criando jogador", { name, hasCoach: Boolean(coachId) });
 
-  await prisma.player.create({
+  const player = await prisma.player.create({
     data: {
       name,
       nickname,
@@ -52,6 +53,8 @@ export async function createPlayer(formData: FormData) {
       status: "ACTIVE",
     },
   });
+
+  void notifyPlayerCreated(name, player.id);
 
   revalidatePath("/dashboard/players");
   log.success("Jogador criado", { name });

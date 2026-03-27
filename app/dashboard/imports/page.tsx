@@ -8,13 +8,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileSpreadsheet, AlertTriangle, ShieldCheck } from "lucide-react";
+import { FileSpreadsheet, AlertTriangle, ShieldCheck, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { requireSession } from "@/lib/auth/session";
 import { IMPORT_ROLES } from "@/lib/auth/rbac";
 import { getImportsForSession } from "@/lib/data/queries";
 import { NewImportModal } from "@/components/new-import-modal";
+import Link from "next/link";
 
 export default async function ImportsPage() {
   const session = await requireSession();
@@ -25,7 +26,7 @@ export default async function ImportsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Importações</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-primary">Importações</h2>
           <p className="text-muted-foreground mt-1">
             Histórico de arquivos de torneios da Lobbyze importados no sistema.
           </p>
@@ -33,7 +34,7 @@ export default async function ImportsPage() {
         {canImport ? <NewImportModal /> : null}
       </div>
 
-      <Card className="glass-card">
+      <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
         <CardHeader>
           <CardTitle>Histórico Recente</CardTitle>
         </CardHeader>
@@ -59,10 +60,16 @@ export default async function ImportsPage() {
                 </TableHeader>
                 <TableBody>
                   {imports.map((item) => (
-                    <TableRow key={item.id} className="hover:bg-sidebar-accent/50">
-                      <TableCell className="font-medium flex items-center gap-2">
-                        <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
-                        {item.fileName}
+                    <TableRow key={item.id} className="hover:bg-sidebar-accent/50 cursor-pointer group">
+                      <TableCell className="font-medium">
+                        <Link
+                          href={`/dashboard/imports/${item.id}`}
+                          className="flex items-center gap-2 hover:text-primary transition-colors"
+                        >
+                          <FileSpreadsheet className="h-4 w-4 text-emerald-500 shrink-0" />
+                          <span>{item.fileName}</span>
+                          <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-60 transition-opacity ml-1" />
+                        </Link>
                       </TableCell>
                       <TableCell>{item.playerName || <span className="text-muted-foreground italic">Não Identificado</span>}</TableCell>
                       

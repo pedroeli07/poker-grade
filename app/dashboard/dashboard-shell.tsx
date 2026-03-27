@@ -2,6 +2,7 @@
 
 import AppSidebar from "@/components/app-sidebar";
 import Topbar from "@/components/topbar";
+import { NotificationSheet } from "@/components/notification-sheet";
 import { useSidebarStore } from "@/lib/stores/use-sidebar-store";
 import { cn } from "@/lib/utils";
 
@@ -19,10 +20,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <Topbar />
-        <div className="flex-1 p-6 bg-grid-pattern animate-fade-in">
-          {children}
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-pattern animate-fade-in">
+          <div className="w-full">
+            {children}
+          </div>
         </div>
       </main>
+
+      {/* Notification slide-out sheet */}
+      <NotificationSheet />
     </div>
   );
 }

@@ -127,7 +127,7 @@ export default async function PlayerProfilePage({
 
       {/* Stats rápidos */}
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-        <Card className="glass-card">
+        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <Grid3X3 className="h-4 w-4 text-primary" />
@@ -138,7 +138,7 @@ export default async function PlayerProfilePage({
           </CardContent>
         </Card>
 
-        <Card className="glass-card">
+        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <ShieldCheck className="h-4 w-4 text-emerald-500" />
@@ -149,7 +149,7 @@ export default async function PlayerProfilePage({
           </CardContent>
         </Card>
 
-        <Card className="glass-card">
+        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -160,7 +160,7 @@ export default async function PlayerProfilePage({
           </CardContent>
         </Card>
 
-        <Card className="glass-card">
+        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <Target className="h-4 w-4 text-primary" />
@@ -210,7 +210,7 @@ export default async function PlayerProfilePage({
 
             const grade = assignment.gradeProfile;
             return (
-              <Card key={type} className="glass-card overflow-hidden">
+              <Card key={type} className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)] overflow-hidden">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">

@@ -1,5 +1,18 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+
+/**
+ * Returns true if `err` is a Next.js NEXT_REDIRECT error.
+ * These must be re-thrown so the framework can navigate — never swallowed.
+ */
+export function isNextRedirectError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const digest = (err as { digest?: string }).digest;
+  return (
+    err.message === "NEXT_REDIRECT" ||
+    (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT"))
+  );
+}
 import { LobbyzeFilterItem } from "./types";
 
 export function cn(...inputs: ClassValue[]) {

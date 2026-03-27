@@ -69,10 +69,10 @@ export function NewPlayerModal({ coaches }: NewPlayerModalProps) {
   return (
     <>
       <Button
-        className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90"
+        className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-5 text-[15px]"
         onClick={() => setOpen(true)}
       >
-        <UserPlus className="mr-2 h-4 w-4" />
+        <UserPlus className="mr-2 h-5 w-5" />
         Novo Jogador
       </Button>
 
@@ -80,13 +80,13 @@ export function NewPlayerModal({ coaches }: NewPlayerModalProps) {
         <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
           {/* Header */}
           <div className="px-7 pt-7 pb-5 bg-gradient-to-b from-primary/5 to-transparent">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 shrink-0">
-                <UserPlus className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 shrink-0">
+                <UserPlus className="h-6 w-6 text-primary" />
               </div>
-              <DialogHeader className="space-y-0.5">
-                <DialogTitle className="text-lg font-semibold">Novo Jogador</DialogTitle>
-                <DialogDescription className="text-sm">
+              <DialogHeader className="space-y-1">
+                <DialogTitle className="text-xl font-semibold">Novo Jogador</DialogTitle>
+                <DialogDescription className="text-[15px]">
                   Preencha os dados para cadastrar um novo membro no time.
                 </DialogDescription>
               </DialogHeader>
@@ -98,35 +98,35 @@ export function NewPlayerModal({ coaches }: NewPlayerModalProps) {
           <form ref={formRef} onSubmit={handleSubmit}>
             <div className="px-7 py-6 space-y-5">
               {/* Nome + Nickname */}
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-5 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">
+                  <Label htmlFor="name" className="text-[15px] font-medium">
                     Nome Completo <span className="text-destructive">*</span>
                   </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
                     <Input
                       id="name"
                       name="name"
                       required
                       placeholder="João Silva"
-                      className="pl-10 h-10 bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
+                      className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
                       disabled={isPending}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="nickname" className="text-sm font-medium">
+                  <Label htmlFor="nickname" className="text-[15px] font-medium">
                     Nickname
                   </Label>
                   <div className="relative">
-                    <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
                     <Input
                       id="nickname"
                       name="nickname"
                       placeholder="joaosilva_poker"
-                      className="pl-10 h-10 bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
+                      className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
                       disabled={isPending}
                     />
                   </div>
@@ -135,17 +135,17 @@ export function NewPlayerModal({ coaches }: NewPlayerModalProps) {
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
+                <Label htmlFor="email" className="text-[15px] font-medium">
                   E-mail
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
                   <Input
                     id="email"
                     name="email"
                     type="email"
                     placeholder="joao@time.com"
-                    className="pl-10 h-10 bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
+                    className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
                     disabled={isPending}
                   />
                 </div>
@@ -153,22 +153,22 @@ export function NewPlayerModal({ coaches }: NewPlayerModalProps) {
 
               {/* Coach */}
               <div className="space-y-2">
-                <Label htmlFor="coachId" className="text-sm font-medium">
+                <Label htmlFor="coachId" className="text-[15px] font-medium">
                   Coach Responsável
                 </Label>
                 <Select value={coachId} onValueChange={setCoachId} disabled={isPending}>
                   <SelectTrigger
                     id="coachId"
-                    className="w-full h-10 bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
+                    className="w-full h-12 bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors text-[15px]"
                   >
                     <SelectValue placeholder="Selecione um coach..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">
+                    <SelectItem value="none" className="text-[15px] py-2.5">
                       <span className="text-muted-foreground">Sem coach</span>
                     </SelectItem>
                     {coaches.map((coach) => (
-                      <SelectItem key={coach.id} value={coach.id}>
+                      <SelectItem key={coach.id} value={coach.id} className="text-[15px] py-2.5">
                         <span>{coach.name}</span>
                         <span className="ml-1.5 text-xs text-muted-foreground">· {coach.role}</span>
                       </SelectItem>

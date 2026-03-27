@@ -7,25 +7,41 @@ import { revalidatePath } from "next/cache";
 import { MatchResult } from "@/lib/types";
 import { createLogger } from "@/lib/logger";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanImport } from "@/lib/auth/rbac";
+import { IMPORT_ROLES } from "@/lib/auth/rbac";
+import { notifyImportDone } from "@/lib/notifications";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 const log = createLogger("imports.actions");
 
 const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
 
-export async function uploadTournaments(formData: FormData) {
-  const session = await requireSession();
-  assertCanImport(session);
+type UploadResult =
+  | { success: true; processed: number; summary: string[] }
+  | { success: false; error: string };
 
-  const file = formData.get("file") as File;
+function generateCuid(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let id = "c";
+  for (let i = 0; i < 24; i++) {
+    id += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return id;
+}
+
+export async function uploadTournaments(formData: FormData): Promise<UploadResult> {
+  const session = await requireSession();
+
+  if (!IMPORT_ROLES.includes(session.role)) {
+    return { success: false, error: "Sem permissão para importar torneios." };
+  }
+
+  const file = formData.get("file") as File | null;
   if (!file) {
-    log.warn("Upload chamado sem arquivo");
-    throw new Error("Arquivo não encontrado");
+    return { success: false, error: "Arquivo não encontrado." };
   }
 
   if (file.size > MAX_UPLOAD_BYTES) {
-    log.warn("Arquivo excede tamanho máximo", { size: file.size });
-    throw new Error("Arquivo muito grande (máx. 12 MB)");
+    return { success: false, error: "Arquivo muito grande (máx. 12 MB)." };
   }
 
   log.info("Iniciando processamento de importação", {
@@ -34,126 +50,135 @@ export async function uploadTournaments(formData: FormData) {
   });
 
   try {
-  const arrayBuffer = await file.arrayBuffer();
-  // We process the Excel file using our parser logic (handles multiple sheets/players)
-  const parseResults = parseExcelBuffer(arrayBuffer);
-  log.info("Excel parseado", { sheets: parseResults.length });
+    const arrayBuffer = await file.arrayBuffer();
+    const parseResults = parseExcelBuffer(arrayBuffer);
+    log.info("Excel parseado", { sheets: parseResults.length, file: file.name });
 
-  let totalProcessed = 0;
-  let summary = [];
+    let totalProcessed = 0;
+    const summary: string[] = [];
 
-  for (const sheetResult of parseResults) {
-    if (sheetResult.tournaments.length === 0) continue;
+    for (const sheetResult of parseResults) {
+      if (sheetResult.tournaments.length === 0) continue;
 
-    // 1. Find player by matching sheet name to either player nickname or name
-    // Lobbyze uses the PokerStars/PartyPoker screen name usually
-    const player = await prisma.player.findFirst({
-      where: {
-        OR: [
-          { nickname: { equals: sheetResult.playerName, mode: "insensitive" } },
-          { name: { equals: sheetResult.playerName, mode: "insensitive" } },
-        ]
-      },
-      include: {
-        gradeAssignments: {
-          where: { isActive: true },
-          include: {
-            gradeProfile: {
-              include: { rules: true }
-            }
-          }
+      log.info("Processando aba", {
+        sheet: sheetResult.playerName,
+        rows: sheetResult.tournaments.length,
+      });
+
+      const allPlayers = await prisma.player.findMany({
+        include: {
+          gradeAssignments: {
+            where: { isActive: true },
+            include: { gradeProfile: { include: { rules: true } } },
+          },
+        },
+      });
+
+      const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, "");
+      const target = normalize(sheetResult.playerName);
+
+      let player = allPlayers.find(
+        (p) =>
+          normalize(p.name) === target ||
+          (p.nickname && normalize(p.nickname) === target)
+      );
+
+      if (!player) {
+        if (session.role === "ADMIN" || session.role === "MANAGER") {
+          log.info("Jogador não encontrado — criando", { sheet: sheetResult.playerName });
+          player = await prisma.player.create({
+            data: { name: sheetResult.playerName, nickname: sheetResult.playerName, status: "ACTIVE" },
+            include: {
+              gradeAssignments: {
+                where: { isActive: true },
+                include: { gradeProfile: { include: { rules: true } } },
+              },
+            },
+          });
+          summary.push(`Novo jogador criado: ${player.name}`);
+        } else {
+          summary.push(`Jogador não encontrado: ${sheetResult.playerName}`);
+          continue;
         }
       }
-    });
 
-    if (!player) {
-      log.warn("Jogador não encontrado para aba da planilha", {
-        sheet: sheetResult.playerName,
+      if (session.role === "PLAYER") {
+        if (!session.playerId || player.id !== session.playerId) {
+          summary.push(`Sem permissão para a aba: ${sheetResult.playerName}`);
+          continue;
+        }
+      } else if (session.role === "COACH" && session.coachId) {
+        if (player.coachId !== session.coachId && player.driId !== session.coachId) {
+          summary.push(`Sem permissão para a aba: ${sheetResult.playerName}`);
+          continue;
+        }
+      }
+
+      const mainGrade = player.gradeAssignments.find((a) => a.gradeType === "MAIN")?.gradeProfile;
+      if (!mainGrade) {
+        log.warn("Jogador sem grade principal — matching desativado", { player: player.name });
+      }
+
+      const importRecord = await prisma.tournamentImport.create({
+        data: { fileName: file.name, importType: "excel", playerName: player.name, importedBy: session.userId },
       });
-      summary.push(`Jogador não encontrado para a aba: ${sheetResult.playerName}`);
-      continue;
-    }
 
-    if (session.role === "PLAYER") {
-      if (!session.playerId || player.id !== session.playerId) {
-        log.warn("PLAYER tentou importar aba de outro jogador", {
-          sheet: sheetResult.playerName,
-        });
-        summary.push(`Sem permissão para a aba: ${sheetResult.playerName}`);
-        continue;
-      }
-    } else if (session.role === "COACH" && session.coachId) {
-      const allowed =
-        player.coachId === session.coachId || player.driId === session.coachId;
-      if (!allowed) {
-        log.warn("Coach tentou importar jogador fora da carteira", {
-          sheet: sheetResult.playerName,
-        });
-        summary.push(`Sem permissão para a aba: ${sheetResult.playerName}`);
-        continue;
-      }
-    }
+      // ── Batch processing: prepare all data in-memory, then insert in bulk ──
+      let matchedInGrade = 0;
+      let suspect = 0;
+      let outOfGrade = 0;
 
-    // 2. Identify the active main grade
-    const mainGrade = player.gradeAssignments.find(a => a.gradeType === "MAIN")?.gradeProfile;
-    // (Future: Could also load ABOVE/BELOW grades to run secondary matching)
+      const tournamentRows: Array<{
+        id: string;
+        playerId: string;
+        importId: string;
+        date: Date;
+        site: string;
+        buyInCurrency: string;
+        buyInValue: number;
+        buyInUsd: number;
+        tournamentName: string;
+        scheduling: string;
+        rebuy: boolean;
+        speed: string;
+        sharkId: string | null;
+        priority: string;
+        matchStatus: MatchResult;
+        matchedRuleId: string | null;
+      }> = [];
 
-    if (mainGrade && mainGrade.rules.length === 0) {
-      log.warn("Grade principal sem regras; matching desativado", {
-        player: player.name,
-        gradeId: mainGrade.id,
-      });
-    }
+      const reviewRows: Array<{
+        playerId: string;
+        tournamentId: string;
+        status: "PENDING";
+        isInfraction: boolean;
+      }> = [];
 
-    let matchedInGrade = 0;
-    let suspect = 0;
-    let outOfGrade = 0;
+      for (const t of sheetResult.tournaments) {
+        const dateObj = parseLobbyzeDate(t.date) ?? new Date();
+        const buyInNumeric = Number(t.buyInValue) || 0;
 
-    // Create the import record
-    const importRecord = await prisma.tournamentImport.create({
-      data: {
-        fileName: file.name,
-        importType: "excel",
-        playerName: player.name,
-        importedBy: session.userId,
-      }
-    });
+        let matchStatus: MatchResult = "OUT_OF_GRADE";
+        let matchedRuleId: string | null = null;
 
-    const playedTournamentsData = [];
-    const reviewItemsData = [];
+        if (mainGrade && mainGrade.rules.length > 0) {
+          const matchResult = matchTournamentToGrade(
+            { site: t.site, buyInValue: buyInNumeric, tournamentName: t.tournamentName, speed: t.speed },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mainGrade.rules as any
+          );
+          matchStatus = matchResult.result;
+          matchedRuleId = matchResult.matchedRuleId;
+        }
 
-    // 3. Process each row
-    for (const t of sheetResult.tournaments) {
-      // Clean date
-      const dateObj = parseLobbyzeDate(t.date) || new Date();
+        if (matchStatus === "IN_GRADE") matchedInGrade++;
+        else if (matchStatus === "SUSPECT") suspect++;
+        else outOfGrade++;
 
-      let matchStatus: MatchResult = "OUT_OF_GRADE";
-      let matchedRuleId = null;
+        const tournamentId = generateCuid();
 
-      // Ensure buyIn is numeric to avoid type issues (Excel parser handles this but let's double check)
-      const buyInNumeric = Number(t.buyInValue) || 0;
-
-      if (mainGrade && mainGrade.rules.length > 0) {
-        // Convert rules to the format grade-matcher expects
-        // (For Prisma we just pass them directly, they map 1:1 if types are aligned)
-        const matchResult = matchTournamentToGrade({
-          site: t.site,
-          buyInValue: buyInNumeric,
-          tournamentName: t.tournamentName,
-          speed: t.speed,
-        }, mainGrade.rules as any);
-
-        matchStatus = matchResult.result;
-        matchedRuleId = matchResult.matchedRuleId;
-      }
-
-      if (matchStatus === "IN_GRADE") matchedInGrade++;
-      else if (matchStatus === "SUSPECT") suspect++;
-      else outOfGrade++;
-
-      // 4. Save to Database
-      const playedTournament = await prisma.playedTournament.create({
-        data: {
+        tournamentRows.push({
+          id: tournamentId,
           playerId: player.id,
           importId: importRecord.id,
           date: dateObj,
@@ -162,64 +187,69 @@ export async function uploadTournaments(formData: FormData) {
           buyInValue: buyInNumeric,
           buyInUsd: Number(t.buyInUsd) || buyInNumeric,
           tournamentName: t.tournamentName,
-          scheduling: t.scheduling,
+          scheduling: t.scheduling ?? "",
           rebuy: t.rebuy,
           speed: t.speed,
-          sharkId: t.sharkId,
+          sharkId: t.sharkId || null,
           priority: t.priority,
           matchStatus,
           matchedRuleId,
-        }
-      });
+        });
 
-      // If suspect or out of grade, automatically queue for Review
-      if (matchStatus === "SUSPECT" || matchStatus === "OUT_OF_GRADE") {
-        await prisma.gradeReviewItem.create({
-          data: {
+        const isExtraPlay = (t.scheduling ?? "").toLowerCase().includes("extra");
+        if (isExtraPlay || matchStatus === "SUSPECT" || matchStatus === "OUT_OF_GRADE") {
+          reviewRows.push({
             playerId: player.id,
-            tournamentId: playedTournament.id,
+            tournamentId,
             status: "PENDING",
             isInfraction: false,
-          }
-        });
+          });
+        }
       }
 
-      totalProcessed++;
-    }
+      // Batch insert tournaments (single query)
+      await prisma.playedTournament.createMany({ data: tournamentRows });
+      log.info("Torneios inseridos em batch", { count: tournamentRows.length });
 
-    // Update the import record stats
-    await prisma.tournamentImport.update({
-      where: { id: importRecord.id },
-      data: {
-        totalRows: sheetResult.tournaments.length,
-        matchedInGrade,
+      // Batch insert review items (single query)
+      if (reviewRows.length > 0) {
+        await prisma.gradeReviewItem.createMany({ data: reviewRows });
+        log.info("Review items inseridos em batch", { count: reviewRows.length });
+      }
+
+      // Update import stats
+      await prisma.tournamentImport.update({
+        where: { id: importRecord.id },
+        data: { totalRows: sheetResult.tournaments.length, matchedInGrade, suspect, outOfGrade },
+      });
+
+      totalProcessed += tournamentRows.length;
+
+      log.success("Aba processada", {
+        player: player.name,
+        total: sheetResult.tournaments.length,
+        inGrade: matchedInGrade,
         suspect,
         outOfGrade,
-      }
-    });
+      });
 
-    summary.push(`Processado: ${player.name} (${sheetResult.tournaments.length} torneios)`);
-  }
+      void notifyImportDone(player.name, player.id, importRecord.id, outOfGrade);
 
-  revalidatePath("/dashboard/imports");
-  revalidatePath("/dashboard/review");
+      summary.push(
+        `${player.name}: ${sheetResult.tournaments.length} torneios (${outOfGrade} extra play)`
+      );
+    }
 
-  log.success("Importação concluída", {
-    processed: totalProcessed,
-    summaryLines: summary.length,
-  });
+    revalidatePath("/dashboard/imports");
+    revalidatePath("/dashboard/review");
+    revalidatePath("/dashboard");
 
-  return {
-    success: true,
-    processed: totalProcessed,
-    summary,
-  };
+    log.success("Importação concluída", { file: file.name, processed: totalProcessed });
+    return { success: true, processed: totalProcessed, summary };
   } catch (err) {
-    log.error(
-      "Falha na importação de torneios",
-      err instanceof Error ? err : undefined,
-      { fileName: file.name }
-    );
-    throw err;
+    if (isRedirectError(err)) throw err;
+    const msg = err instanceof Error ? err.message : "Erro desconhecido ao processar arquivo";
+    log.error("Falha na importação", err instanceof Error ? err : undefined, { file: file.name });
+    return { success: false, error: msg };
   }
 }

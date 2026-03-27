@@ -14,7 +14,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 const inputClass =
-  "h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus-visible:border-rose-500/40 focus-visible:ring-2 focus-visible:ring-rose-500/20";
+  "h-11 w-full rounded-xl border border-border bg-card/50 px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -149,7 +149,7 @@ export function RegisterForm() {
         <div className="space-y-2">
           <label
             htmlFor="reg-name"
-            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-500"
+            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
           >
             Nome completo
           </label>
@@ -169,7 +169,7 @@ export function RegisterForm() {
         <div className="space-y-2">
           <label
             htmlFor="reg-email"
-            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-500"
+            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
           >
             E-mail
           </label>
@@ -190,7 +190,7 @@ export function RegisterForm() {
         <div className="space-y-2">
           <label
             htmlFor="reg-password"
-            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-500"
+            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
           >
             Senha
           </label>
@@ -213,7 +213,7 @@ export function RegisterForm() {
               tabIndex={-1}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setShowPassword((s) => !s)}
-              className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-zinc-500 transition-colors hover:text-zinc-300"
+              className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
               aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
             >
               {showPassword ? (
@@ -226,7 +226,7 @@ export function RegisterForm() {
           <PasswordStrength password={password} compact />
           {password.length > 0 && policyGaps.length > 0 ? (
             <p
-              className="font-mono text-[10px] leading-relaxed text-zinc-500"
+              className="font-mono text-[10px] leading-relaxed text-muted-foreground"
               data-testid="password-policy-gaps"
             >
               Falta: {policyGaps.join(" · ")}
@@ -236,7 +236,7 @@ export function RegisterForm() {
         <div className="space-y-2">
           <label
             htmlFor="reg-confirm"
-            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-500"
+            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
           >
             Confirmar senha
           </label>
@@ -259,7 +259,7 @@ export function RegisterForm() {
               tabIndex={-1}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setShowConfirm((s) => !s)}
-              className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-zinc-500 transition-colors hover:text-zinc-300"
+              className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
               aria-label={showConfirm ? "Ocultar senha" : "Mostrar senha"}
             >
               {showConfirm ? (
@@ -270,12 +270,12 @@ export function RegisterForm() {
             </button>
           </div>
           {confirm.length > 0 && password !== confirm ? (
-            <p className="text-xs text-rose-400">As senhas não coincidem.</p>
+            <p className="text-xs text-destructive">As senhas não coincidem.</p>
           ) : null}
         </div>
         {submitted && !canSubmit && submitBlockerHint ? (
           <p
-            className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 font-mono text-[10px] leading-relaxed text-zinc-500"
+            className="rounded-lg border border-border bg-muted px-3 py-2 font-mono text-[10px] leading-relaxed text-muted-foreground"
             data-testid="register-blockers-hint"
           >
             {submitBlockerHint}
@@ -286,7 +286,7 @@ export function RegisterForm() {
           data-testid="register-submit"
           disabled={loading}
           className={cn(
-            "cursor-pointer h-12 w-full rounded-xl bg-rose-900 font-mono text-sm font-semibold uppercase tracking-wider text-white shadow-lg shadow-black/40 transition hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-40"
+            "cursor-pointer h-12 w-full rounded-xl bg-primary font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
           )}
         >
           {loading ? "Registrando…" : "Registrar"}
@@ -294,20 +294,20 @@ export function RegisterForm() {
       </form>
 
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-white/10" />
-        <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-600">
+        <div className="h-px flex-1 bg-border" />
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           ou
         </span>
-        <div className="h-px flex-1 bg-white/10" />
+        <div className="h-px flex-1 bg-border" />
       </div>
 
       <GoogleSignInButton label="Registrar com Google" />
 
-      <p className="text-center font-mono text-xs text-zinc-500">
+      <p className="text-center font-mono text-xs text-muted-foreground">
         Já tem uma conta?{" "}
         <Link
           href="/login"
-          className="cursor-pointer text-rose-400 underline-offset-4 hover:text-rose-300 hover:underline"
+          className="cursor-pointer text-primary underline-offset-4 hover:text-primary/80 hover:underline font-semibold"
         >
           Entrar
         </Link>

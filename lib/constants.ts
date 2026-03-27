@@ -16,6 +16,7 @@ import {
   ChevronsDown,
   XCircle,
   TrendingUp,
+  Layers,
 } from "lucide-react";
 import { canViewPlayer } from "./utils";
 import { notFound, redirect } from "next/navigation";
@@ -28,6 +29,11 @@ export const SIDEBAR_NAV_ITEMS = [
     href: "/dashboard",
     icon: LayoutDashboard,
     exact: true,
+  },
+  {
+    title: "Minha Grade",
+    href: "/dashboard/minha-grade",
+    icon: Layers,
   },
   {
     title: "Jogadores",
@@ -80,16 +86,16 @@ export const SIDEBAR_SECONDARY_ITEMS = [
 ] as const;
 
 export const TOPBAR_PAGE_TITLES: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/dashboard/players": "Jogadores",
-  "/dashboard/grades": "Grades",
-  "/dashboard/imports": "Importações",
-  "/dashboard/review": "Revisão de Torneios",
-  "/dashboard/targets": "Targets",
-  "/dashboard/history": "Histórico de Limites",
-  "/dashboard/usuarios": "Usuários",
-  "/dashboard/notifications": "Notificações",
-  "/dashboard/profile": "Meu Perfil",
+  "/dashboard": "",
+  "/dashboard/players": "",
+  "/dashboard/grades": "",
+  "/dashboard/imports": "",
+  "/dashboard/review": "",
+  "/dashboard/targets": "",
+  "/dashboard/history": "",
+  "/dashboard/usuarios": "",
+  "/dashboard/notifications": "",
+  "/dashboard/profile": "",
 };
 
 
