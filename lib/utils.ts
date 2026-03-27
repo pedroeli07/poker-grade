@@ -24,3 +24,15 @@ export function cn(...inputs: ClassValue[]) {
     if (min === null && max !== null) return `Até $${max}`;
     return `$${min} - $${max}`;
   };
+
+  export const canViewPlayer = (
+    session: { role: string; coachId?: string | null; playerId?: string | null },
+    player: { id: string; coachId: string | null; driId: string | null }
+  ) => {
+    if (session.role === "ADMIN" || session.role === "MANAGER" || session.role === "VIEWER")
+      return true;
+    if (session.role === "COACH" && session.coachId)
+      return player.coachId === session.coachId || player.driId === session.coachId;
+    if (session.role === "PLAYER") return session.playerId === player.id;
+    return false;
+  };

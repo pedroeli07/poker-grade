@@ -50,20 +50,17 @@ function NavItem({
   href,
   title,
   exact,
-  index,
   isOpen,
   pathname,
 }: {
   href: string;
   title: string;
   exact?: boolean;
-  index: number;
   isOpen: boolean;
   pathname: string;
 }) {
   const active = isItemActive(pathname, href, exact);
   const Icon = NAV_ICONS[href] ?? LayoutDashboard;
-  const num = String(index + 1).padStart(2, "0");
 
   return (
     <Link
@@ -72,7 +69,7 @@ function NavItem({
         "group relative flex items-center gap-3 rounded-xl transition-all duration-300 overflow-hidden",
         isOpen ? "px-3 py-3" : "px-0 py-3 justify-center",
         active
-          ? "bg-primary/8"
+          ? "bg-primary/9"
           : "hover:bg-white/[0.03]"
       )}
     >
@@ -89,7 +86,7 @@ function NavItem({
 
       {/* Active background shimmer */}
       {active && (
-        <span className="absolute inset-0 bg-linear-to-r from-primary/12 via-primary/5 to-transparent pointer-events-none" />
+        <span className="absolute inset-0 bg-linear-to-r from-red-500/12 via-red-500/5 to-transparent pointer-events-none" />
       )}
 
       {/* Icon container */}
@@ -105,25 +102,25 @@ function NavItem({
         <Icon className="h-[17px] w-[17px]" />
       </span>
 
-      {/* Label + number */}
+      {/* Active indicator dot */}
+      {active && !isOpen && (
+        <span className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+      )}
+
+      {/* Label */}
       {isOpen && (
-        <span className="relative z-10 flex flex-1 items-center justify-between min-w-0">
+        <span className="relative z-10 flex flex-1 items-center gap-2 min-w-0">
           <span
             className={cn(
-              "text-[13.5px] font-medium tracking-[-0.01em] truncate transition-colors duration-200",
+              "text-[15px] font-sans tracking-[-0.01em] truncate transition-colors duration-200",
               active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground/80"
             )}
           >
             {title}
           </span>
-          <span
-            className={cn(
-              "text-[10px] font-bold tabular-nums transition-all duration-300",
-              active ? "text-primary/70" : "text-muted-foreground/30 group-hover:text-muted-foreground/50"
-            )}
-          >
-            {num}
-          </span>
+          {active && (
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+          )}
         </span>
       )}
     </Link>
@@ -150,16 +147,17 @@ function AppSidebar() {
     <aside
       className={cn(
         "fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out",
-        "bg-[oklch(0.085_0.005_260)] border-r",
-        "border-white/[0.05]",
+        "bg-sidebar border-r border-sidebar-border",
         isOpen ? "w-[220px]" : "w-[68px]"
       )}
       style={{
         backgroundImage: `
-          radial-gradient(ellipse at 50% 0%, oklch(0.63 0.24 25 / 8%) 0%, transparent 60%)
+          radial-gradient(ellipse at 50% 0%, oklch(0.63 0.24 25 / 8%) 0%, transparent 60%),
+          linear-gradient(90deg, var(--sidebar-glow) 0px, transparent 3%, transparent 98%, var(--sidebar-glow) 100%)
         `,
       }}
     >
+      <div className="absolute inset-0 bg-grid-pattern pointer-events-none opacity-30" />
       {/* Top red accent line */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 h-[1px] w-3/4 bg-linear-to-r from-transparent via-primary/50 to-transparent"
@@ -167,7 +165,7 @@ function AppSidebar() {
 
       {/* ── LOGO ── */}
       <div className={cn(
-        "flex items-center gap-3 border-b border-white/[0.05] transition-all duration-300",
+        "flex items-center gap-3 border-b border-sidebar-border transition-all duration-300",
         isOpen ? "h-[64px] px-4" : "h-[64px] justify-center px-0"
       )}>
         {/* Spade logo mark */}
@@ -182,11 +180,11 @@ function AppSidebar() {
 
         {isOpen && (
           <div className="flex flex-col leading-none">
-            <span className="text-[11px] font-medium tracking-[0.18em] uppercase text-muted-foreground/60">
-              Gestão de
+            <span className="text-[14px] font-black tracking-[0.18em] uppercase text-muted-foreground">
+              CL
             </span>
             <span className="text-[16px] font-black tracking-tight text-foreground leading-tight">
-              Grades
+              TEAM
             </span>
           </div>
         )}
@@ -203,13 +201,12 @@ function AppSidebar() {
           </div>
         )}
 
-        {SIDEBAR_NAV_ITEMS.map((item, i) => (
+        {SIDEBAR_NAV_ITEMS.map((item) => (
           <NavItem
             key={item.href}
             href={item.href}
             title={item.title}
             exact={"exact" in item ? item.exact : false}
-            index={i}
             isOpen={isOpen}
             pathname={pathname}
           />
@@ -226,12 +223,11 @@ function AppSidebar() {
           </div>
         )}
 
-        {SIDEBAR_SECONDARY_ITEMS.map((item, i) => (
+        {SIDEBAR_SECONDARY_ITEMS.map((item) => (
           <NavItem
             key={item.href}
             href={item.href}
             title={item.title}
-            index={SIDEBAR_NAV_ITEMS.length + i}
             isOpen={isOpen}
             pathname={pathname}
           />

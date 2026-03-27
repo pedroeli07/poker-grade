@@ -33,7 +33,16 @@ function Topbar() {
   const title = titleOverride ?? routeTitle;
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background/80 backdrop-blur-md px-6">
+    <header 
+      className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background/80 backdrop-blur-md px-6"
+      style={{
+        backgroundImage: `
+          linear-gradient(90deg, var(--sidebar-glow) 0px, transparent 3%, transparent 98%, var(--sidebar-glow) 100%),
+          radial-gradient(ellipse at 50% 0%, oklch(0.63 0.24 25 / 6%) 0%, transparent 50%)
+        `,
+        backgroundAttachment: 'fixed',
+      }}
+    >
       <div className="flex flex-1 items-center gap-4">
         <h1 className="text-lg font-semibold text-foreground tracking-tight">
           {title}

@@ -1,12 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Archive, Plus, FileJson } from "lucide-react";
+import { Archive } from "lucide-react";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { canManageGrades } from "@/lib/auth/rbac";
 import { getGradesForSession } from "@/lib/data/queries";
 import { DeleteGradeButton } from "@/components/delete-grade-button";
+import { NewGradeModal, ImportGradeModal } from "@/components/grade-modals";
 
 export default async function GradesPage() {
   const session = await requireSession();
@@ -24,18 +25,8 @@ export default async function GradesPage() {
         </div>
         {manage ? (
           <div className="flex gap-2">
-            <Button variant="outline" className="border-border hover:bg-sidebar-accent" asChild>
-              <Link href="/dashboard/grades/import">
-                <FileJson className="mr-2 h-4 w-4" />
-                Importar JSON
-              </Link>
-            </Button>
-            <Button className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90" asChild>
-              <Link href="/dashboard/grades/new">
-                <Plus className="mr-2 h-4 w-4" />
-                Nova Grade
-              </Link>
-            </Button>
+            <ImportGradeModal />
+            <NewGradeModal />
           </div>
         ) : null}
       </div>
@@ -66,7 +57,7 @@ export default async function GradesPage() {
                   </Badge>
                 </div>
               </div>
-              
+
               <div className="mt-4 pt-4 border-t border-border flex justify-end">
                 <Button variant="ghost" size="sm" asChild>
                   <Link href={`/dashboard/grades/${grade.id}`}>

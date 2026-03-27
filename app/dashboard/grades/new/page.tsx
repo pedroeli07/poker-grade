@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function ImportGradePage() {
+export default function NewGradePage() {
   redirect("/dashboard/grades");
 }

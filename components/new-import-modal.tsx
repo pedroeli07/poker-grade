@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import {
   Upload,
   FileSpreadsheet,
@@ -21,6 +20,8 @@ import {
   ChevronRight,
   X,
   RotateCcw,
+  AlertCircle,
+  UploadCloud,
 } from "lucide-react";
 import { uploadTournaments } from "@/app/dashboard/imports/actions";
 import { toast } from "@/lib/toast";
@@ -109,7 +110,7 @@ export function NewImportModal() {
   return (
     <>
       <Button
-        className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90"
+        className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-4 py-2 h-auto text-sm font-semibold transition-all hover:scale-[1.02]"
         onClick={() => setOpen(true)}
       >
         <Upload className="mr-2 h-4 w-4" />
@@ -117,41 +118,43 @@ export function NewImportModal() {
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
+        <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden font-sans border-border/40 bg-background/95 backdrop-blur-2xl shadow-2xl glass-card rounded-2xl">
           {/* Header */}
-          <div className="relative px-6 pt-6 pb-5 bg-gradient-to-b from-primary/5 to-transparent">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 shrink-0">
-                <FileSpreadsheet className="h-4 w-4 text-primary" />
+          <div className="relative px-8 pt-8 pb-6 bg-gradient-to-b from-primary/5 via-primary/[0.02] to-transparent">
+            <div className="flex items-start gap-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 shrink-0 shadow-[0_0_15px_rgba(255,50,50,0.15)] ring-1 ring-white/5 glow-primary transition-all">
+                <FileSpreadsheet className="h-6 w-6 text-primary" />
               </div>
-              <DialogHeader className="space-y-0.5">
-                <DialogTitle className="text-base font-semibold">Nova Importação</DialogTitle>
-                <DialogDescription className="text-xs">
-                  Upload do arquivo Excel Lobbyze com o histórico de torneios.
+              <DialogHeader className="space-y-1.5 text-left">
+                <DialogTitle className="text-[18px] font-black tracking-tight text-foreground">
+                  Nova Importação
+                </DialogTitle>
+                <DialogDescription className="text-[15px] text-muted-foreground/90 leading-relaxed font-medium">
+                  Faça o upload do arquivo Excel Lobbyze contendo o histórico de torneios do jogador.
                 </DialogDescription>
               </DialogHeader>
             </div>
+            {/* Linha de separação sutil */}
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
           </div>
-
-          <Separator />
 
           {result ? (
             /* ── Tela de Resultado ─────────────────────────── */
             <>
-              <div className="px-6 py-5 space-y-4">
-                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                  <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-2">
-                    <CheckCircle2 className="h-5 w-5" />
-                    Importação Concluída
+              <div className="px-8 py-6 space-y-4">
+                <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 shadow-inner">
+                  <div className="flex items-center gap-2.5 text-emerald-400 font-semibold mb-3 text-base">
+                    <CheckCircle2 className="h-5 w-5 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                    Processamento Concluído!
                   </div>
-                  <p className="text-sm text-foreground mb-3">
-                    <strong>{result.processed}</strong> torneios processados e comparados.
+                  <p className="text-[14px] text-foreground/90 mb-4 leading-relaxed tracking-wide">
+                    Um total de <strong className="text-emerald-500 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-md text-base">{result.processed}</strong> torneios foram processados e cruzados com a grade.
                   </p>
                   {result.summary.length > 0 && (
-                    <div className="space-y-1 pt-3 border-t border-emerald-500/20">
+                    <div className="space-y-1.5 pt-4 border-t border-emerald-500/20">
                       {result.summary.map((line, i) => (
-                        <div key={i} className="text-xs text-muted-foreground flex gap-1.5">
-                          <span className="text-emerald-500/70 mt-px">•</span>
+                        <div key={i} className="text-[13px] text-muted-foreground flex gap-2 font-medium">
+                          <span className="text-emerald-500/70 mt-0.5">•</span>
                           <span>{line}</span>
                         </div>
                       ))}
@@ -160,37 +163,36 @@ export function NewImportModal() {
                 </div>
               </div>
 
-              <Separator />
-
-              <DialogFooter className="px-6 py-4 border-t-0 bg-muted/20">
+              <DialogFooter className="px-8 py-5 border-t border-border/40 bg-black/20 gap-3 sm:gap-0">
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="border-border/60"
+                  className="rounded-xl border-border/60 hover:bg-white/[0.04] text-muted-foreground hover:text-foreground h-11"
                   onClick={() => { resetState(); }}
                 >
-                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                  <RotateCcw className="mr-2 h-4 w-4" />
                   Nova Importação
                 </Button>
                 <Button
-                  size="sm"
-                  className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="rounded-xl glow-primary bg-primary text-primary-foreground hover:bg-primary/90 h-11 font-semibold"
                   onClick={() => handleOpenChange(false)}
                 >
-                  Fechar
-                  <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
+                  Concluir
+                  <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </DialogFooter>
             </>
           ) : (
             /* ── Tela de Upload ────────────────────────────── */
             <form onSubmit={handleSubmit}>
-              <div className="px-6 py-5 space-y-4">
-                {/* Aviso de formato */}
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  O nome da aba (Sheet) <strong className="text-foreground">deve</strong> corresponder
-                  ao Nickname ou Nome do jogador cadastrado.
-                </p>
+              <div className="px-8 py-6 space-y-6">
+                {/* Aviso Destacado */}
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-200/90 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent pointer-events-none" />
+                  <AlertCircle className="w-4 h-4 text-orange-400 mt-0.5 shrink-0" />
+                  <p className="text-[15px] font-medium leading-relaxed">
+                    O nome da aba (Sheet) <strong className="text-orange-50 font-bold px-1.5 py-0.5 bg-orange-500/20 rounded-md mx-0.5">deve ser igual</strong> ao Nickname ou Nome do jogador cadastrado para que funcione corretamente.
+                  </p>
+                </div>
 
                 {/* Dropzone */}
                 <div
@@ -199,13 +201,13 @@ export function NewImportModal() {
                   onDrop={handleDrop}
                   onClick={() => inputRef.current?.click()}
                   className={cn(
-                    "relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer select-none",
-                    "min-h-[160px] px-6 py-8",
+                    "relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer select-none",
+                    "min-h-[220px] px-6 py-8 group",
                     dragOver
-                      ? "border-primary bg-primary/10 scale-[1.01]"
+                      ? "border-primary bg-primary/10 shadow-[0_0_30px_rgba(255,50,50,0.1)] scale-[1.02]"
                       : file
-                      ? "border-emerald-500/50 bg-emerald-500/5 hover:bg-emerald-500/10"
-                      : "border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-primary/5"
+                      ? "border-emerald-500/40 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/60"
+                      : "border-white/10 bg-white/[0.015] hover:border-primary/40 hover:bg-primary/5"
                   )}
                 >
                   <Input
@@ -221,74 +223,74 @@ export function NewImportModal() {
 
                   {file ? (
                     <>
-                      <div className="flex flex-col items-center text-emerald-500">
-                        <FileSpreadsheet className="h-10 w-10 mb-2.5 drop-shadow-[0_0_8px_theme(colors.emerald.500/0.4)]" />
-                        <span className="font-medium text-sm text-foreground">{file.name}</span>
-                        <span className="text-xs text-muted-foreground mt-1">
+                      <div className="flex flex-col items-center text-emerald-500 animate-scale-in">
+                        <FileSpreadsheet className="h-12 w-12 mb-3 drop-shadow-[0_0_12px_theme(colors.emerald.500/0.4)]" />
+                        <span className="font-semibold text-[15px] text-foreground text-center line-clamp-1 break-all px-4">{file.name}</span>
+                        <span className="text-[13px] text-muted-foreground font-medium mt-1">
                           {(file.size / 1024).toFixed(1)} KB
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); resetState(); }}
-                        className="absolute top-2.5 right-2.5 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
                       >
-                        <X className="h-3.5 w-3.5" />
+                        <X className="h-4 w-4" />
                       </button>
                     </>
                   ) : (
                     <div className="flex flex-col items-center text-muted-foreground">
-                      <Upload
-                        className={cn(
-                          "h-10 w-10 mb-2.5 transition-colors",
-                          dragOver ? "text-primary" : "group-hover:text-primary"
-                        )}
-                      />
-                      <span className="font-medium text-sm text-foreground/80">
-                        {dragOver ? "Solte para fazer upload" : "Clique ou arraste o arquivo"}
+                      <div className="p-4 rounded-full bg-white/[0.02] mb-4 group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-300">
+                        <UploadCloud
+                          className={cn(
+                            "h-8 w-8 transition-colors",
+                            dragOver ? "text-primary" : "text-muted-foreground group-hover:text-primary"
+                          )}
+                        />
+                      </div>
+                      <span className="font-semibold text-[15px] text-foreground/90 tracking-wide">
+                        {dragOver ? "Solte o arquivo aqui" : "Clique ou arraste o arquivo"}
                       </span>
-                      <span className="text-xs mt-1">Lobbyze export · .xlsx, .xls, .csv</span>
+                      <span className="text-[13px] text-muted-foreground font-medium mt-1.5">
+                        Arquivos suportados: .xlsx, .xls, .csv
+                      </span>
                     </div>
                   )}
                 </div>
 
                 {/* Erro */}
                 {error && (
-                  <div className="flex items-start gap-2.5 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                    <X className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                    <p className="text-sm text-destructive font-medium">{error}</p>
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 animate-fade-in shadow-inner">
+                    <X className="h-4 w-4 text-destructive mt-0.5 shrink-0 drop-shadow-[0_0_5px_theme(colors.destructive.DEFAULT)]" />
+                    <p className="text-[13px] text-red-200/90 font-medium leading-relaxed">{error}</p>
                   </div>
                 )}
               </div>
 
-              <Separator />
-
-              <DialogFooter className="px-6 py-4 border-t-0 bg-muted/20">
+              <DialogFooter className="px-8 py-5 border-t border-border/40 bg-black/20 gap-3 sm:gap-0">
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
                   onClick={() => handleOpenChange(false)}
                   disabled={loading}
-                  className="border-border/60"
+                  className="rounded-xl border-border/60 hover:bg-white/[0.04] text-muted-foreground hover:text-foreground font-medium h-11"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
-                  size="sm"
                   disabled={!file || loading}
-                  className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90 min-w-[170px]"
+                  className="rounded-xl glow-primary bg-primary text-primary-foreground hover:bg-primary/90 h-11 font-semibold min-w-[180px] shadow-xl"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Analisando...
                     </>
                   ) : (
                     <>
                       Processar Grades
-                      <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
+                      <ChevronRight className="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
@@ -300,3 +302,4 @@ export function NewImportModal() {
     </>
   );
 }
+

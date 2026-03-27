@@ -115,6 +115,31 @@ export async function importGradeFromJson(formData: FormData) {
   }
 }
 
+export async function createGradeProfile(formData: FormData) {
+  const session = await requireSession();
+  assertCanManageGrades(session);
+
+  const name = sanitizeText(String(formData.get("name") ?? ""), 200);
+  const description = sanitizeOptional(
+    formData.get("description") ? String(formData.get("description")) : null,
+    2000
+  );
+
+  if (!name || name.length < 2) {
+    throw new Error("Nome deve ter pelo menos 2 caracteres");
+  }
+
+  log.info("Criando grade manualmente", { name });
+
+  const grade = await prisma.gradeProfile.create({
+    data: { name, description, isTemplate: false },
+  });
+
+  revalidatePath("/dashboard/grades");
+  log.success("Grade criada manualmente", { name, id: grade.id });
+  return { success: true, id: grade.id };
+}
+
 export async function deleteGrade(id: string) {
   const session = await requireSession();
   assertCanManageGrades(session);

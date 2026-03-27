@@ -9,7 +9,18 @@ import {
   UserRoundCog,
   Bell,
   UserCircle,
+  TrendingDown,
+  Minus,
+  CheckCircle2,
+  ChevronsUp,
+  ChevronsDown,
+  XCircle,
+  TrendingUp,
 } from "lucide-react";
+import { canViewPlayer } from "./utils";
+import { notFound, redirect } from "next/navigation";
+import { prisma } from "./prisma";
+import { requireSession } from "./auth/session";
 
 export const SIDEBAR_NAV_ITEMS = [
   {
@@ -75,8 +86,27 @@ export const TOPBAR_PAGE_TITLES: Record<string, string> = {
   "/dashboard/imports": "Importações",
   "/dashboard/review": "Revisão de Torneios",
   "/dashboard/targets": "Targets",
-  "/dashboard/history": "Histórico",
+  "/dashboard/history": "Histórico de Limites",
   "/dashboard/usuarios": "Usuários",
   "/dashboard/notifications": "Notificações",
   "/dashboard/profile": "Meu Perfil",
+};
+
+
+export const GRADE_TYPE_LABEL: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
+  ABOVE: { label: "Grade Acima", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20", icon: ChevronsUp },
+  MAIN: { label: "Grade Principal", color: "text-primary bg-primary/10 border-primary/20", icon: Grid3X3 },
+  BELOW: { label: "Grade Abaixo", color: "text-amber-500 bg-amber-500/10 border-amber-500/20", icon: ChevronsDown },
+};
+
+export const TARGET_STATUS_CONFIG = {
+  ON_TRACK: { label: "No Caminho", icon: CheckCircle2, color: "text-emerald-500" },
+  ATTENTION: { label: "Atenção", icon: AlertTriangle, color: "text-amber-500" },
+  OFF_TRACK: { label: "Fora da Meta", icon: XCircle, color: "text-red-500" },
+};
+
+export const LIMIT_ACTION_CONFIG = {
+  UPGRADE: { label: "Subida", icon: TrendingUp, color: "text-emerald-500" },
+  MAINTAIN: { label: "Manutenção", icon: Minus, color: "text-muted-foreground" },
+  DOWNGRADE: { label: "Descida", icon: TrendingDown, color: "text-red-500" },
 };
