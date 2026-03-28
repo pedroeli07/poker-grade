@@ -64,6 +64,8 @@ export async function POST(request: Request) {
       coachId: true,
       lockedUntil: true,
       failedAttempts: true,
+      displayName: true,
+      email: true,
     },
   });
 
@@ -130,6 +132,8 @@ export async function POST(request: Request) {
     role: user.role,
     playerId: user.playerId,
     coachId: user.coachId,
+    displayName: user.displayName,
+    email: user.email,
   });
 
   logLoginSuccess(user.id);

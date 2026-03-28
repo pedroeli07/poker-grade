@@ -237,7 +237,7 @@ export function ImportGradeModal() {
     <>
       <Button
         variant="outline"
-        className="border-border hover:bg-sidebar-accent h-11 px-5 text-[15px]"
+        className="border-border hover:bg-sidebar-accent h-11 px-5 text-[15px] bg-blue-500/10"
         onClick={() => setOpen(true)}
       >
         <FileJson className="mr-2 h-5 w-5" />

@@ -119,7 +119,7 @@ export async function POST(request: Request) {
 
   const newUser = await prisma.authUser.findUniqueOrThrow({
     where: { id: newUserId },
-    select: { id: true, role: true, playerId: true, coachId: true },
+    select: { id: true, role: true, playerId: true, coachId: true, displayName: true, email: true },
   });
 
   const { token, sessionId } = await createAuthSession(newUser);

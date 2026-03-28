@@ -3,27 +3,55 @@ import { NextResponse } from "next/server";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 import { verifySessionJwt } from "@/lib/auth/jwt";
 
+/**
+ * Routes that PLAYER role cannot access.
+ * Checked via startsWith so sub-routes are also covered.
+ */
+const PLAYER_BLOCKED_PREFIXES = [
+  "/dashboard/players",
+  "/dashboard/grades",
+  "/dashboard/imports",
+  "/dashboard/review",
+  "/dashboard/targets",
+  "/dashboard/usuarios",
+];
+
+/** The landing page for a PLAYER after login */
+const PLAYER_HOME = "/dashboard/minha-grade";
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon")
-  ) {
-    return NextResponse.next();
+  // ── Auth check ────────────────────────────────────────────────────────────
+  const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+  if (!token) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (pathname.startsWith("/dashboard")) {
-    const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
+  let payload;
+  try {
+    payload = await verifySessionJwt(token);
+  } catch {
+    const res = NextResponse.redirect(new URL("/login", request.url));
+    res.cookies.delete(SESSION_COOKIE_NAME);
+    return res;
+  }
+
+  const role = payload.role as string;
+
+  // ── Role-based route protection ───────────────────────────────────────────
+  if (role === "PLAYER") {
+    // Redirect root dashboard to player home
+    if (pathname === "/dashboard") {
+      return NextResponse.redirect(new URL(PLAYER_HOME, request.url));
     }
-    try {
-      await verifySessionJwt(token);
-    } catch {
-      return NextResponse.redirect(new URL("/login", request.url));
+
+    // Block access to staff-only sections
+    const blocked = PLAYER_BLOCKED_PREFIXES.some((prefix) =>
+      pathname.startsWith(prefix)
+    );
+    if (blocked) {
+      return NextResponse.redirect(new URL(PLAYER_HOME, request.url));
     }
   }
 

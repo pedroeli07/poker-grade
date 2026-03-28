@@ -20,7 +20,16 @@ import {
   UserCheck,
   LayoutGrid,
   List as ListIcon,
+  Table2,
 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -40,6 +49,8 @@ import {
 } from "./actions";
 import { toast } from "@/lib/toast";
 import { isSuperAdminEmail } from "@/lib/auth/bootstrap";
+import { ColumnFilter } from "@/components/column-filter";
+import { distinctOptions } from "@/lib/distinct-options";
 
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: UserRole.VIEWER, label: "Viewer" },
@@ -125,31 +136,65 @@ function StatusBadge({ registered }: { registered: boolean }) {
 }
 
 type Props = { initialRows: UsuarioDirectoryRow[] };
+type ColumnKey = "email" | "role" | "status";
+type ColumnFilters = Record<ColumnKey, Set<string> | null>;
 
 export function UsuariosClient({ initialRows }: Props) {
   const router = useRouter();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<UserRole | "ALL">("ALL");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "REGISTERED" | "PENDING">(
-    "ALL"
-  );
+  const [filters, setFilters] = useState<ColumnFilters>({
+    email: null,
+    role: null,
+    status: null,
+  });
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const [pending, startTransition] = useTransition();
 
+  const options = useMemo(
+    () => ({
+      email: distinctOptions(initialRows, (r: UsuarioDirectoryRow) => ({
+        value: r.email,
+        label: r.email,
+      })),
+      role: distinctOptions(initialRows, (r: UsuarioDirectoryRow) => ({
+        value: r.role,
+        label: ROLE_VISUAL[r.role].label,
+      })),
+      status: distinctOptions(initialRows, (r: UsuarioDirectoryRow) => ({
+        value: r.isRegistered ? "REGISTERED" : "PENDING",
+        label: r.isRegistered ? "Ativo" : "Pendente",
+      })),
+    }),
+    [initialRows]
+  );
+
   const filtered = useMemo(() => {
-    return initialRows.filter((u) => {
+    return initialRows.filter((u: UsuarioDirectoryRow) => {
       if (
         searchQuery &&
         !u.email.toLowerCase().includes(searchQuery.toLowerCase().trim())
       )
         return false;
-      if (roleFilter !== "ALL" && u.role !== roleFilter) return false;
-      if (statusFilter === "REGISTERED" && !u.isRegistered) return false;
-      if (statusFilter === "PENDING" && u.isRegistered) return false;
+
+      if (filters.email && !filters.email.has(u.email)) return false;
+      if (filters.role && !filters.role.has(u.role)) return false;
+
+      const statusVal = u.isRegistered ? "REGISTERED" : "PENDING";
+      if (filters.status && !filters.status.has(statusVal)) return false;
+
       return true;
     });
-  }, [initialRows, searchQuery, roleFilter, statusFilter]);
+  }, [initialRows, searchQuery, filters]);
+
+  const setCol = (col: ColumnKey) => (next: Set<string> | null) => {
+    setFilters((f: ColumnFilters) => ({ ...f, [col]: next }));
+  };
+
+  const anyFilter =
+    filters.email !== null ||
+    filters.role !== null ||
+    filters.status !== null;
 
   const stats = useMemo(() => {
     const registeredCount = initialRows.filter((u) => u.isRegistered).length;
@@ -215,42 +260,16 @@ export function UsuariosClient({ initialRows }: Props) {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar e-mail…"
+            placeholder="Buscar por e-mail…"
             className="bg-background pl-9"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={roleFilter}
-            onValueChange={(v) => setRoleFilter(v as UserRole | "ALL")}
-          >
-            <SelectTrigger className="w-[160px] bg-background">
-              <SelectValue placeholder="Cargo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todos os cargos</SelectItem>
-              {ROLE_OPTIONS.map((r) => (
-                <SelectItem key={r.value} value={r.value}>
-                  {r.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={statusFilter}
-            onValueChange={(v) =>
-              setStatusFilter(v as "ALL" | "REGISTERED" | "PENDING")
-            }
-          >
-            <SelectTrigger className="w-[160px] bg-background">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todos</SelectItem>
-              <SelectItem value="REGISTERED">Ativos</SelectItem>
-              <SelectItem value="PENDING">Pendentes</SelectItem>
-            </SelectContent>
-          </Select>
+          {viewMode === "table" && (
+            <span className="text-xs text-muted-foreground mr-2">
+              Mostrando <span className="font-semibold text-foreground">{filtered.length}</span> de <span className="font-semibold text-foreground">{initialRows.length}</span>
+            </span>
+          )}
           <div className="flex rounded-lg border border-border p-0.5">
             <Button
               type="button"
@@ -274,8 +293,31 @@ export function UsuariosClient({ initialRows }: Props) {
         </div>
       </div>
 
+      {viewMode === "grid" && anyFilter && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm">
+          <span className="text-muted-foreground">
+            Filtros de coluna ativos ({filtered.length} de {initialRows.length} usuários). Ajuste na visão <strong className="text-foreground">Tabela</strong>.
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs shrink-0"
+            onClick={() =>
+              setFilters({
+                email: null,
+                role: null,
+                status: null,
+              })
+            }
+          >
+            Limpar filtros
+          </Button>
+        </div>
+      )}
+
       {filtered.length === 0 ? (
-        <EmptyState hasFilters={Boolean(searchQuery || roleFilter !== "ALL" || statusFilter !== "ALL")} />
+        <EmptyState hasFilters={Boolean(searchQuery || anyFilter)} />
       ) : viewMode === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((row) => (
@@ -288,25 +330,72 @@ export function UsuariosClient({ initialRows }: Props) {
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <div className="min-w-[640px]">
-          <div className="grid grid-cols-[1fr_120px_100px_100px] gap-2 border-b border-border bg-blue-500/30 px-4 py-2 text-xs font-medium uppercase text-muted-foreground">
-            <span>Membro</span>
-            <span>Cargo</span>
-            <span>Status</span>
-            <span className="text-right">Ações</span>
-          </div>
-          <div className="divide-y divide-border">
-            {filtered.map((row) => (
-              <UserTableRow
-                key={`${row.kind}-${row.id}`}
-                row={row}
-                disabled={pending}
-                onAction={(fn, ok) => runAction(fn, ok)}
-              />
-            ))}
-          </div>
-          </div>
+        <div className="space-y-3">
+          {anyFilter && (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() =>
+                  setFilters({
+                    email: null,
+                    role: null,
+                    status: null,
+                  })
+                }
+              >
+                Limpar todos os filtros de coluna
+              </Button>
+            </div>
+          )}
+        <div className="rounded-xl border border-border overflow-x-auto bg-[oklch(1_0_0/80%)]">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-blue-500/10 hover:bg-transparent">
+                <TableHead>
+                  <ColumnFilter
+                    columnId="u-email"
+                    label="Membro"
+                    options={options.email}
+                    applied={filters.email}
+                    onApply={setCol("email")}
+                  />
+                </TableHead>
+                <TableHead>
+                  <ColumnFilter
+                    columnId="u-role"
+                    label="Cargo"
+                    options={options.role}
+                    applied={filters.role}
+                    onApply={setCol("role")}
+                  />
+                </TableHead>
+                <TableHead>
+                  <ColumnFilter
+                    columnId="u-status"
+                    label="Status"
+                    options={options.status}
+                    applied={filters.status}
+                    onApply={setCol("status")}
+                  />
+                </TableHead>
+                <TableHead className="text-right w-[140px]">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((row) => (
+                <UserTableRow
+                  key={`${row.kind}-${row.id}`}
+                  row={row}
+                  disabled={pending}
+                  onAction={(fn, ok) => runAction(fn, ok)}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
         </div>
       )}
     </div>
@@ -536,32 +625,34 @@ function UserTableRow({
   };
 
   return (
-    <div className="grid grid-cols-[1fr_120px_100px_100px] items-center gap-2 px-4 py-3 text-sm bg-white hover:bg-blue-500/10 transition-colors">
-      <div className="flex min-w-0 items-center gap-2">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-[10px] font-semibold">
-          {getInitials(row.email)}
+    <TableRow className="group hover:bg-sidebar-accent/50">
+      <TableCell>
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xs font-semibold">
+            {getInitials(row.email)}
+          </div>
+          {editing ? (
+            <Input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-8 bg-background font-mono text-sm max-w-[280px]"
+              disabled={isBootstrap}
+            />
+          ) : (
+            <span className="truncate font-mono text-sm" title={row.email}>
+              {row.email}
+            </span>
+          )}
         </div>
-        {editing ? (
-          <Input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-8 bg-background font-mono text-xs"
-            disabled={isBootstrap}
-          />
-        ) : (
-          <span className="truncate font-mono text-xs" title={row.email}>
-            {row.email}
-          </span>
-        )}
-      </div>
-      <div>
+      </TableCell>
+      <TableCell>
         {editing ? (
           <Select
             value={role}
             onValueChange={(v) => setRole(v as UserRole)}
             disabled={isBootstrap}
           >
-            <SelectTrigger className="h-8 bg-background text-xs">
+            <SelectTrigger className="h-8 bg-background text-sm w-[110px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -575,52 +666,54 @@ function UserTableRow({
         ) : (
           <RoleBadge role={row.role} />
         )}
-      </div>
-      <div>
+      </TableCell>
+      <TableCell>
         <StatusBadge registered={row.isRegistered} />
-      </div>
-      <div className="flex justify-end gap-1">
-        {editing ? (
-          <>
-            <Button size="icon" variant="secondary" className="h-8 w-8" onClick={save} disabled={disabled}>
-              {disabled ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-            </Button>
-            <Button
-              size="icon"
-              variant="outline"
-              className="h-8 w-8"
-              onClick={() => {
-                setEditing(false);
-                setEmail(row.email);
-                setRole(row.role);
-              }}
-            >
-              <X className="h-3.5 w-3.5" />
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8"
-              onClick={() => setEditing(true)}
-              disabled={disabled}
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8 text-destructive"
-              onClick={remove}
-              disabled={disabled}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </>
-        )}
-      </div>
-    </div>
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="inline-flex items-center justify-end gap-1">
+          {editing ? (
+            <>
+              <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={save} disabled={disabled}>
+                {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 text-muted-foreground"
+                onClick={() => {
+                  setEditing(false);
+                  setEmail(row.email);
+                  setRole(row.role);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+                onClick={() => setEditing(true)}
+                disabled={disabled}
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
+                onClick={remove}
+                disabled={disabled}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }

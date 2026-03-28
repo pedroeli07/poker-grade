@@ -14,6 +14,8 @@ export type AppSession = {
   sessionId: string;
   playerId: string | null;
   coachId: string | null;
+  displayName: string | null;
+  email: string;
 };
 
 const DB_ERROR = Symbol("DB_ERROR");
@@ -76,6 +78,8 @@ export async function getSession(): Promise<AppSession | null> {
       sessionId: jti,
       playerId: (payload.playerId as string | null | undefined) ?? null,
       coachId: (payload.coachId as string | null | undefined) ?? null,
+      displayName: (payload.displayName as string | null) ?? null,
+      email: (payload.email as string) ?? "",
     };
   }
 
@@ -84,12 +88,19 @@ export async function getSession(): Promise<AppSession | null> {
     return null;
   }
 
+  const user = await prisma.authUser.findUnique({
+    where: { id: sub },
+    select: { displayName: true, email: true },
+  });
+
   return {
     userId: sub,
     role: payload.role,
     sessionId: jti,
     playerId: (payload.playerId as string | null | undefined) ?? null,
     coachId: (payload.coachId as string | null | undefined) ?? null,
+    displayName: user?.displayName ?? null,
+    email: user?.email ?? "",
   };
 }
 

@@ -9,6 +9,8 @@ type UserRow = {
   role: UserRole;
   playerId: string | null;
   coachId: string | null;
+  displayName: string | null;
+  email: string;
 };
 
 export async function createAuthSession(user: UserRow): Promise<{
@@ -28,6 +30,8 @@ export async function createAuthSession(user: UserRow): Promise<{
     sessionId: session.id,
     playerId: user.playerId,
     coachId: user.coachId,
+    displayName: user.displayName,
+    email: user.email,
   });
 
   return { token, sessionId: session.id };

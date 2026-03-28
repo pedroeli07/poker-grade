@@ -49,3 +49,10 @@ export function cn(...inputs: ClassValue[]) {
     if (session.role === "PLAYER") return session.playerId === player.id;
     return false;
   };
+
+  export function schedulingCategory(scheduling: string | null) {
+  const s = (scheduling ?? "").toLowerCase();
+  if (s.includes("extra")) return "extra";
+  if (s === "played" || s === "jogado") return "played";
+  return "missed";
+}

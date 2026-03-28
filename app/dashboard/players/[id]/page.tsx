@@ -200,7 +200,7 @@ export default async function PlayerProfilePage({
               return (
                 <div
                   key={type}
-                  className="rounded-xl border border-dashed border-border/60 p-4 flex items-center gap-3 text-muted-foreground"
+                  className="rounded-xl border border-dashed border-border/60 p-4 flex items-center gap-3 text-muted-foreground bg-blue-500/10"
                 >
                   <GradeIcon className="h-4 w-4 shrink-0" />
                   <span className="text-sm">{cfg.label} — não atribuída</span>
@@ -265,7 +265,7 @@ export default async function PlayerProfilePage({
             </div>
 
             {player.targets.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border/60 p-6 text-center text-muted-foreground">
+              <div className="rounded-xl border border-dashed border-border/60 p-6 text-center text-muted-foreground bg-blue-500/10">
                 <Target className="h-8 w-8 mx-auto mb-2 opacity-40" />
                 <p className="text-sm">Nenhum target definido.</p>
               </div>
@@ -277,7 +277,7 @@ export default async function PlayerProfilePage({
                   return (
                     <div
                       key={target.id}
-                      className="flex items-center justify-between rounded-lg border border-border/60 bg-card/50 px-3 py-2.5"
+                      className="flex items-center justify-between rounded-lg border-2 border-border/60 bg-card/50 px-3 py-2.5"
                     >
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{target.name}</p>
@@ -313,7 +313,7 @@ export default async function PlayerProfilePage({
             </div>
 
             {player.limitChanges.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhuma alteração registrada.</p>
+              <p className="text-sm text-muted-foreground bg-blue-500/10 rounded-lg p-4">Nenhuma alteração registrada.</p>
             ) : (
               <div className="space-y-2">
                 {player.limitChanges.map((change) => {

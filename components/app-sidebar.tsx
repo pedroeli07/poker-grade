@@ -25,6 +25,7 @@ import { createLogger } from "@/lib/logger";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import { SIDEBAR_NAV_ITEMS, SIDEBAR_SECONDARY_ITEMS } from "@/lib/constants";
+import type { UserRole } from "@prisma/client";
 
 const log = createLogger("sidebar");
 
@@ -124,10 +125,23 @@ function NavItem({
   );
 }
 
-function AppSidebar() {
+function AppSidebar({ userRole }: { userRole: UserRole }) {
   const pathname = usePathname();
   const { isOpen, toggle } = useSidebarStore();
   const router = useRouter();
+
+  // PLAYER sees only their own pages; staff sees everything else
+  const navItems =
+    userRole === "PLAYER"
+      ? SIDEBAR_NAV_ITEMS.filter((item) =>
+          ["/dashboard/minha-grade", "/dashboard/history"].includes(item.href)
+        )
+      : SIDEBAR_NAV_ITEMS.filter((item) => {
+          if (item.href === "/dashboard/minha-grade") return false;
+          if (item.href === "/dashboard/usuarios")
+            return ["ADMIN", "MANAGER"].includes(userRole);
+          return true;
+        });
 
   const handleLogout = async () => {
     try {
@@ -191,7 +205,7 @@ function AppSidebar() {
           </div>
         )}
 
-        {SIDEBAR_NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <NavItem
             key={item.href}
             href={item.href}

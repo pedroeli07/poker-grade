@@ -17,15 +17,9 @@ import {
   XCircle,
   TrendingUp,
   Layers,
-  RefreshCw,
-  MinusCircle,
 } from "lucide-react";
-import { canViewPlayer } from "./utils";
-import { notFound, redirect } from "next/navigation";
-import { prisma } from "./prisma";
-import { requireSession } from "./auth/session";
-import { canReview } from "./auth/rbac";
-import { getImportDetailForSession } from "./data/queries";
+
+export const cardClassName="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_32px_-4px_oklch(0.45_0.18_250/26%),0_2px_8px_-2px_oklch(0.45_0.18_250/14%)] transition-all duration-200 hover:border-[oklch(0.45_0.18_250)] hover:shadow-[0_8px_48px_-6px_oklch(0.45_0.18_250/38%),0_4px_24px_-6px_oklch(0.45_0.18_250/20%)] overflow-hidden group"
 
 export const SIDEBAR_NAV_ITEMS = [
   {
@@ -91,6 +85,7 @@ export const SIDEBAR_SECONDARY_ITEMS = [
 
 export const TOPBAR_PAGE_TITLES: Record<string, string> = {
   "/dashboard": "",
+  "/dashboard/minha-grade": "",
   "/dashboard/players": "",
   "/dashboard/grades": "",
   "/dashboard/imports": "",
@@ -102,8 +97,10 @@ export const TOPBAR_PAGE_TITLES: Record<string, string> = {
   "/dashboard/profile": "",
 };
 
-
-export const GRADE_TYPE_LABEL: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
+export const GRADE_TYPE_LABEL: Record<
+  string,
+  { label: string; color: string; icon: React.ComponentType<{ className?: string }> }
+> = {
   ABOVE: { label: "Grade Acima", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20", icon: ChevronsUp },
   MAIN: { label: "Grade Principal", color: "text-primary bg-primary/10 border-primary/20", icon: Grid3X3 },
   BELOW: { label: "Grade Abaixo", color: "text-amber-500 bg-amber-500/10 border-amber-500/20", icon: ChevronsDown },
@@ -120,5 +117,3 @@ export const LIMIT_ACTION_CONFIG = {
   MAINTAIN: { label: "Manutenção", icon: Minus, color: "text-muted-foreground" },
   DOWNGRADE: { label: "Descida", icon: TrendingDown, color: "text-red-500" },
 };
-
-

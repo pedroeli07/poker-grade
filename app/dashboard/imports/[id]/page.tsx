@@ -27,15 +27,9 @@ import {
   Calendar,
   Building2,
 } from "lucide-react";
+import { schedulingCategory } from "@/lib/utils";
+import { Tab } from "@/lib/types";
 
-type Tab = "extra" | "rebuy" | "played" | "missed";
-
-function schedulingCategory(scheduling: string | null) {
-  const s = (scheduling ?? "").toLowerCase();
-  if (s.includes("extra")) return "extra";
-  if (s === "played" || s === "jogado") return "played";
-  return "missed";
-}
 
 function SchedulingBadge({ scheduling }: { scheduling: string | null }) {
   const cat = schedulingCategory(scheduling);
@@ -150,7 +144,7 @@ export default async function ImportDetailPage({
     },
   ];
 
-  const activeTournaments =
+const activeTournaments =
     activeTab === "extra"
       ? extraPlay
       : activeTab === "rebuy"

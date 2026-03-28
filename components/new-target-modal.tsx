@@ -106,7 +106,7 @@ export function NewTargetModal({ players }: NewTargetModalProps) {
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
           {/* Header */}
-          <div className="px-6 pt-6 pb-5 bg-gradient-to-b from-primary/5 to-transparent">
+          <div className="px-6 pt-6 pb-5 bg-linear-to-b from-primary/5 to-transparent">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 shrink-0">
                 <Target className="h-4 w-4 text-primary" />
@@ -311,7 +311,7 @@ export function NewTargetModal({ players }: NewTargetModalProps) {
 
             <Separator />
 
-            <DialogFooter className="px-6 py-4 border-t-0 bg-muted/20">
+            <DialogFooter className="p-6 pt-2 border-t-0 bg-muted/20 gap-3">
               <Button
                 type="button"
                 variant="outline"

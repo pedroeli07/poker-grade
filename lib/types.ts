@@ -233,3 +233,5 @@ export interface MatchDetail {
   matchedRuleName: string | null;
   reasons: string[];
 }
+
+export type Tab = "extra" | "rebuy" | "played" | "missed";

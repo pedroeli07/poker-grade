@@ -57,15 +57,38 @@ function CurrentTimeDisplay() {
   );
 }
 
-function Topbar() {
+function Topbar({
+  displayName,
+  email,
+}: {
+  displayName: string | null;
+  email: string;
+}) {
   const pathname = usePathname();
   const { unreadCount, setUnreadCount, toggle } = useNotificationStore();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     getUnreadCount()
       .then(setUnreadCount)
       .catch(() => {});
   }, [pathname, setUnreadCount]);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClick = () => setDropdownOpen(false);
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [dropdownOpen]);
+
+  const initials = displayName
+    ? displayName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
+    : email?.[0]?.toUpperCase() ?? "?";
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  };
 
   return (
     <header 
@@ -96,14 +119,52 @@ function Topbar() {
           )}
         </button>
 
-        {/* User Avatar */}
-        <Link
-          href="/dashboard/profile"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer ml-1 font-semibold"
-          title="Meu Perfil"
-        >
-          <User className="h-5 w-5" />
-        </Link>
+        {/* User Avatar with Dropdown */}
+        <div className="relative ml-1">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDropdownOpen(!dropdownOpen);
+            }}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer font-semibold text-sm"
+            title="Menu do usuário"
+          >
+            {initials}
+          </button>
+
+          {dropdownOpen && (
+            <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-background shadow-lg overflow-hidden z-50">
+              <div className="p-3 border-b border-border">
+                <p className="font-semibold text-sm text-foreground truncate">
+                  {displayName || "Usuário"}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {email}
+                </p>
+              </div>
+              <div className="p-1">
+                <Link
+                  href="/dashboard/profile"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
+                  onClick={() => setDropdownOpen(false)}
+                >
+                  <User className="h-4 w-4" />
+                  Meu Perfil
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="cursor-pointer w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Sair
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

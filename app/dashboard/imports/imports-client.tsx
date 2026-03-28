@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -35,8 +36,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ColumnFilter } from "@/components/column-filter";
+import { distinctOptions } from "@/lib/distinct-options";
 
-type ImportRow = {
+export type ImportRow = {
   id: string;
   fileName: string;
   playerName: string | null;
@@ -44,8 +47,25 @@ type ImportRow = {
   matchedInGrade: number;
   suspect: number;
   outOfGrade: number;
-  createdAt: Date;
+  createdAt: Date | string;
 };
+
+const EMPTY_PLAYER = "__empty__";
+
+type ColKey =
+  | "fileName"
+  | "player"
+  | "totalRows"
+  | "played"
+  | "extraPlay"
+  | "didntPlay"
+  | "date";
+
+type Filters = Record<ColKey, Set<string> | null>;
+
+function rowDateLabel(r: ImportRow) {
+  return format(new Date(r.createdAt), "dd/MM/yyyy • HH:mm", { locale: ptBR });
+}
 
 export function ImportsClient({
   imports,
@@ -55,27 +75,112 @@ export function ImportsClient({
   canDelete: boolean;
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [filters, setFilters] = useState<Filters>({
+    fileName: null,
+    player: null,
+    totalRows: null,
+    played: null,
+    extraPlay: null,
+    didntPlay: null,
+    date: null,
+  });
   const [isPending, startTransition] = useTransition();
   const [idsToDelete, setIdsToDelete] = useState<string[] | null>(null);
   const router = useRouter();
 
-  const allSelected = selected.size === imports.length && imports.length > 0;
+  const options = useMemo(
+    () => ({
+      fileName: distinctOptions(imports, (r) => ({
+        value: r.fileName,
+        label: r.fileName,
+      })),
+      player: distinctOptions(imports, (r) => {
+        const v = r.playerName ?? EMPTY_PLAYER;
+        return {
+          value: v,
+          label: r.playerName ?? "(não identificado)",
+        };
+      }),
+      totalRows: distinctOptions(imports, (r) => ({
+        value: String(r.totalRows),
+        label: String(r.totalRows),
+      })),
+      played: distinctOptions(imports, (r) => ({
+        value: String(r.matchedInGrade),
+        label: String(r.matchedInGrade),
+      })),
+      extraPlay: distinctOptions(imports, (r) => ({
+        value: String(r.outOfGrade),
+        label: String(r.outOfGrade),
+      })),
+      didntPlay: distinctOptions(imports, (r) => ({
+        value: String(r.suspect),
+        label: String(r.suspect),
+      })),
+      date: distinctOptions(imports, (r) => {
+        const label = rowDateLabel(r);
+        return { value: label, label };
+      }),
+    }),
+    [imports]
+  );
+
+  const filtered = useMemo(() => {
+    return imports.filter((r) => {
+      if (filters.fileName && !filters.fileName.has(r.fileName))
+        return false;
+      const pk = r.playerName ?? EMPTY_PLAYER;
+      if (filters.player && !filters.player.has(pk)) return false;
+      if (filters.totalRows && !filters.totalRows.has(String(r.totalRows)))
+        return false;
+      if (filters.played && !filters.played.has(String(r.matchedInGrade)))
+        return false;
+      if (filters.extraPlay && !filters.extraPlay.has(String(r.outOfGrade)))
+        return false;
+      if (filters.didntPlay && !filters.didntPlay.has(String(r.suspect)))
+        return false;
+      const dl = rowDateLabel(r);
+      if (filters.date && !filters.date.has(dl)) return false;
+      return true;
+    });
+  }, [imports, filters]);
+
+  const anyFilter = Object.values(filters).some((x) => x !== null);
+
+  const allSelected =
+    filtered.length > 0 && filtered.every((i) => selected.has(i.id));
 
   function toggleAll() {
     if (allSelected) {
-      setSelected(new Set());
+      setSelected((prev) => {
+        const next = new Set(prev);
+        filtered.forEach((i) => next.delete(i.id));
+        return next;
+      });
     } else {
-      setSelected(new Set(imports.map((i) => i.id)));
+      setSelected((prev) => {
+        const next = new Set(prev);
+        filtered.forEach((i) => next.add(i.id));
+        return next;
+      });
     }
   }
 
   function toggleRow(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
+
+  const setCol = (col: ColKey) => (next: Set<string> | null) => {
+    setFilters((f) => ({ ...f, [col]: next }));
+  };
 
   function requestDelete(ids: string[]) {
     if (!ids.length) return;
@@ -91,7 +196,7 @@ export function ImportsClient({
       const res = await deleteImports(ids);
       if (res.success) {
         toast.success(
-          count === 1 ? "Importação excluída" : `${count} importações excluídas`,
+          count === 1 ? "Importação excluída" : `${count} importações excluídas`
         );
         setSelected(new Set());
         setIdsToDelete(null);
@@ -103,9 +208,10 @@ export function ImportsClient({
     });
   }
 
+  const colCount = canDelete ? 9 : 7;
+
   return (
     <div className="space-y-3">
-      {/* Bulk action bar — appears when items are selected */}
       {selected.size > 0 && (
         <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/15">
           <span className="text-sm font-semibold text-foreground">
@@ -132,7 +238,39 @@ export function ImportsClient({
         </div>
       )}
 
-      {/* Table */}
+      {imports.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
+          <span>
+            Mostrando{" "}
+            <span className="font-medium text-foreground">{filtered.length}</span>{" "}
+            de{" "}
+            <span className="font-medium text-foreground">{imports.length}</span>{" "}
+            importaç{imports.length === 1 ? "ão" : "ões"}
+          </span>
+          {anyFilter && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() =>
+                setFilters({
+                  fileName: null,
+                  player: null,
+                  totalRows: null,
+                  played: null,
+                  extraPlay: null,
+                  didntPlay: null,
+                  date: null,
+                })
+              }
+            >
+              Limpar todos os filtros
+            </Button>
+          )}
+        </div>
+      )}
+
       <div className="rounded-xl border border-border overflow-hidden">
         <Table>
           <TableHeader>
@@ -142,37 +280,107 @@ export function ImportsClient({
                   <button
                     type="button"
                     onClick={toggleAll}
+                    disabled={filtered.length === 0}
                     className={cn(
                       "flex h-5 w-5 items-center justify-center rounded border transition-colors cursor-pointer",
                       allSelected
                         ? "bg-blue-500 border-blue-500"
-                        : "border-blue-300 bg-white hover:border-blue-400"
+                        : "border-blue-300 bg-white hover:border-blue-400",
+                      filtered.length === 0 && "opacity-40 cursor-not-allowed"
                     )}
                   >
                     {allSelected && <Check className="h-3 w-3 text-white" />}
                   </button>
                 </TableHead>
               )}
-              <TableHead className="text-blue-900 font-semibold">Arquivo</TableHead>
-              <TableHead className="text-blue-900 font-semibold">Jogador</TableHead>
-              <TableHead className="text-center text-blue-900 font-semibold">Total</TableHead>
-              <TableHead className="text-center text-blue-900 font-semibold">Jogados</TableHead>
-              <TableHead className="text-center text-blue-900 font-semibold">Extra Play</TableHead>
-              <TableHead className="text-center text-blue-900 font-semibold">Não Jogados</TableHead>
-              <TableHead className="text-right text-blue-900 font-semibold">Data</TableHead>
+              <TableHead className="text-blue-900 font-semibold">
+                <ColumnFilter
+                  columnId="imp-file"
+                  label="Arquivo"
+                  options={options.fileName}
+                  applied={filters.fileName}
+                  onApply={setCol("fileName")}
+                />
+              </TableHead>
+              <TableHead className="text-blue-900 font-semibold">
+                <ColumnFilter
+                  columnId="imp-player"
+                  label="Jogador"
+                  options={options.player}
+                  applied={filters.player}
+                  onApply={setCol("player")}
+                />
+              </TableHead>
+              <TableHead className="text-center text-blue-900 font-semibold">
+                <ColumnFilter
+                  columnId="imp-total"
+                  label="Total"
+                  options={options.totalRows}
+                  applied={filters.totalRows}
+                  onApply={setCol("totalRows")}
+                />
+              </TableHead>
+              <TableHead className="text-center text-blue-900 font-semibold">
+                <ColumnFilter
+                  columnId="imp-played"
+                  label="Jogados"
+                  options={options.played}
+                  applied={filters.played}
+                  onApply={setCol("played")}
+                />
+              </TableHead>
+              <TableHead className="text-center text-blue-900 font-semibold">
+                <ColumnFilter
+                  columnId="imp-extra"
+                  label="Extra Play"
+                  options={options.extraPlay}
+                  applied={filters.extraPlay}
+                  onApply={setCol("extraPlay")}
+                />
+              </TableHead>
+              <TableHead className="text-center text-blue-900 font-semibold">
+                <ColumnFilter
+                  columnId="imp-didnt"
+                  label="Não Jogados"
+                  options={options.didntPlay}
+                  applied={filters.didntPlay}
+                  onApply={setCol("didntPlay")}
+                />
+              </TableHead>
+              <TableHead className="text-right text-blue-900 font-semibold">
+                <ColumnFilter
+                  columnId="imp-date"
+                  label="Data"
+                  options={options.date}
+                  applied={filters.date}
+                  onApply={setCol("date")}
+                />
+              </TableHead>
               {canDelete && <TableHead className="w-12" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {imports.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={canDelete ? 9 : 7} className="text-center py-12 text-muted-foreground">
+                <TableCell
+                  colSpan={colCount}
+                  className="text-center py-12 text-muted-foreground"
+                >
                   <FileSpreadsheet className="h-10 w-10 mx-auto mb-3 opacity-30" />
                   <p className="text-sm">Nenhuma importação realizada ainda.</p>
                 </TableCell>
               </TableRow>
+            ) : filtered.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={colCount}
+                  className="text-center py-12 text-muted-foreground"
+                >
+                  Nenhuma importação com os filtros atuais.
+                </TableCell>
+              </TableRow>
             ) : (
-              imports.map((item) => {
+              filtered.map((item) => {
                 const isSelected = selected.has(item.id);
                 return (
                   <TableRow
@@ -183,7 +391,13 @@ export function ImportsClient({
                     )}
                   >
                     {canDelete && (
-                      <TableCell className="pl-4 w-12" onClick={(e) => { e.stopPropagation(); toggleRow(item.id); }}>
+                      <TableCell
+                        className="pl-4 w-12"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleRow(item.id);
+                        }}
+                      >
                         <button
                           type="button"
                           className={cn(
@@ -193,7 +407,9 @@ export function ImportsClient({
                               : "border-border hover:border-primary/60"
                           )}
                         >
-                          {isSelected && <Check className="h-3 w-3 text-white" />}
+                          {isSelected && (
+                            <Check className="h-3 w-3 text-white" />
+                          )}
                         </button>
                       </TableCell>
                     )}
@@ -204,7 +420,10 @@ export function ImportsClient({
                         className="flex items-center gap-2 hover:text-primary transition-colors"
                       >
                         <FileSpreadsheet className="h-4 w-4 text-emerald-500 shrink-0" />
-                        <span className="truncate max-w-[280px]" title={item.fileName}>
+                        <span
+                          className="truncate max-w-[280px]"
+                          title={item.fileName}
+                        >
                           {item.fileName}
                         </span>
                         <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-60 transition-opacity shrink-0" />
@@ -223,37 +442,45 @@ export function ImportsClient({
                       {item.totalRows}
                     </TableCell>
 
-                      {/* matchedInGrade = played, outOfGrade = extra play, suspect = didn't play */}
-                      <TableCell className="text-center">
-                        <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
-                          <ShieldCheck className="h-3 w-3 mr-1" />
-                          {item.matchedInGrade}
+                    <TableCell className="text-center">
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
+                      >
+                        <ShieldCheck className="h-3 w-3 mr-1" />
+                        {item.matchedInGrade}
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell className="text-center">
+                      {item.outOfGrade > 0 ? (
+                        <Badge
+                          variant="outline"
+                          className="border-red-500/30 text-red-600 bg-red-500/10"
+                        >
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          {item.outOfGrade}
                         </Badge>
-                      </TableCell>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">0</span>
+                      )}
+                    </TableCell>
 
-                      <TableCell className="text-center">
-                        {item.outOfGrade > 0 ? (
-                          <Badge variant="outline" className="border-red-500/30 text-red-600 bg-red-500/10">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            {item.outOfGrade}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">0</span>
-                        )}
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        {item.suspect > 0 ? (
-                          <Badge variant="outline" className="border-zinc-400/50 text-zinc-500 bg-zinc-100">
-                            {item.suspect}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">0</span>
-                        )}
-                      </TableCell>
+                    <TableCell className="text-center">
+                      {item.suspect > 0 ? (
+                        <Badge
+                          variant="outline"
+                          className="border-zinc-400/50 text-zinc-500 bg-zinc-100"
+                        >
+                          {item.suspect}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">0</span>
+                      )}
+                    </TableCell>
 
                     <TableCell className="text-right text-sm text-muted-foreground whitespace-nowrap">
-                      {format(item.createdAt, "dd/MM/yyyy • HH:mm", { locale: ptBR })}
+                      {rowDateLabel(item)}
                     </TableCell>
 
                     {canDelete && (
@@ -279,17 +506,29 @@ export function ImportsClient({
 
       {imports.length > 0 && (
         <p className="text-xs text-muted-foreground px-1">
-          {imports.length} importaç{imports.length === 1 ? "ão" : "ões"} no total
-          {selected.size > 0 && ` · ${selected.size} selecionada${selected.size > 1 ? "s" : ""}`}
+          {filtered.length} visível{filtered.length !== 1 ? "is" : ""}
+          {anyFilter && ` (de ${imports.length} no total)`}
+          {selected.size > 0 &&
+            ` · ${selected.size} selecionada${selected.size > 1 ? "s" : ""}`}
         </p>
       )}
 
-      <AlertDialog open={!!idsToDelete} onOpenChange={(open) => !open && setIdsToDelete(null)}>
+      <AlertDialog
+        open={!!idsToDelete}
+        onOpenChange={(open) => !open && setIdsToDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir {idsToDelete?.length === 1 ? "importação" : "importações"}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Excluir {idsToDelete?.length === 1 ? "importação" : "importações"}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Isso removerá {idsToDelete?.length === 1 ? "esta importação" : "as importações selecionadas"}, todos os torneios contidos nelas e as revisões associadas. Esta ação não pode ser desfeita.
+              Isso removerá{" "}
+              {idsToDelete?.length === 1
+                ? "esta importação"
+                : "as importações selecionadas"}
+              , todos os torneios contidos nelas e as revisões associadas. Esta
+              ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -6,15 +6,18 @@ import { Button } from "@/components/ui/button";
 import { deleteGrade } from "@/app/dashboard/grades/actions";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 
 const log = createLogger("grades.ui");
 
 export function DeleteGradeButton({
   gradeId,
   gradeName,
+  className,
 }: {
   gradeId: string;
   gradeName: string;
+  className?: string;
 }) {
   const router = useRouter();
 
@@ -24,7 +27,10 @@ export function DeleteGradeButton({
       size="icon"
       type="button"
       title="Excluir grade"
-      className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+      className={cn(
+        "h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity",
+        className
+      )}
       onClick={async () => {
         try {
           log.info("Usuário solicitou exclusão de grade", {

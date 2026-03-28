@@ -10,13 +10,16 @@ import {
   TrendingDown,
   ArrowRight,
   Grid3X3,
+  Info,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
 import { DeleteImportButton } from "@/app/dashboard/imports/[id]/delete-import-button";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cardClassName } from "@/lib/constants";
 
 export default async function DashboardPage() {
   const session = await requireSession();
@@ -54,9 +57,9 @@ export default async function DashboardPage() {
         }),
   ]);
 
-  const totalTournaments = recentImports.reduce((s, i) => s + i.totalRows, 0);
+  const totalPlayed = recentImports.reduce((s, i) => s + (i.matchedInGrade + i.outOfGrade), 0);
   const inGrade = recentImports.reduce((s, i) => s + i.matchedInGrade, 0);
-  const adherencePct = totalTournaments > 0 ? Math.round((inGrade / totalTournaments) * 100) : null;
+  const adherencePct = totalPlayed > 0 ? Math.round((inGrade / totalPlayed) * 100) : null;
 
   const onTrack = targetsStats.find((t) => t.status === "ON_TRACK")?._count ?? 0;
   const offTrack = targetsStats.find((t) => t.status === "OFF_TRACK")?._count ?? 0;
@@ -80,7 +83,7 @@ export default async function DashboardPage() {
 
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-300 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)] group hover:glow-primary">
+        <Card className={cardClassName}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">Jogadores Ativos</CardTitle>
             <Users className="h-5 w-5 text-primary" />
@@ -95,9 +98,19 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-300 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)] group hover:glow-primary">
+        <Card className={cardClassName}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-semibold text-muted-foreground  tracking-wide">Aderência de Grade</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">Aderência de Grade</CardTitle>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-muted-foreground/50 cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="p-2 max-w-[200px]">
+                  Cálculo: (Programados / Jogados Totais). Não considera torneios não jogados.
+                </TooltipContent>
+              </Tooltip>
+            </div>
             <ShieldCheck className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
@@ -105,20 +118,20 @@ export default async function DashboardPage() {
               {adherencePct != null ? `${adherencePct}%` : "—"}
             </div>
             <p className="text-sm text-muted-foreground mt-2 font-medium">
-              {totalTournaments > 0
-                ? `${inGrade} / ${totalTournaments} torneios recentes`
+              {totalPlayed > 0
+                ? `${inGrade} de ${totalPlayed} jogados foram na grade`
                 : "Nenhuma importação ainda"}
             </p>
           </CardContent>
         </Card>
 
-        <Card className={`bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-300 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)] group ${pendingReviews > 0 ? "hover:glow-primary" : ""}`}>
+        <Card className={`${cardClassName} ${pendingReviews > 0 ? "hover:glow-primary" : ""}`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-lg font-semibold text-muted-foreground  tracking-wide">Revisões Pendentes</CardTitle>
-            <AlertTriangle className={`h-5 w-5 ${pendingReviews > 0 ? "text-primary" : "text-muted-foreground"}`} />
+            <AlertTriangle className={`h-5 w-5 ${pendingReviews > 0 ? "text-red-500" : "text-muted-foreground"}`} />
           </CardHeader>
           <CardContent>
-            <div className={`text-4xl font-bold ${pendingReviews > 0 ? "text-primary" : ""}`}>
+            <div className={`text-4xl font-bold ${pendingReviews > 0 ? "text-primary" : "text-primary"}`}>
               {pendingReviews}
             </div>
             <p className="text-sm text-muted-foreground mt-2 font-medium">
@@ -133,7 +146,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-300 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)] group hover:glow-primary">
+        <Card className={cardClassName}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-lg font-semibold text-muted-foreground  tracking-wide">Targets On Track</CardTitle>
             <Target className="h-5 w-5 text-primary" />
@@ -171,9 +184,10 @@ export default async function DashboardPage() {
             ) : (
               <div className="space-y-4">
                 {recentImports.map((imp) => {
+                  const playedCount = imp.matchedInGrade + imp.outOfGrade;
                   const pct =
-                    imp.totalRows > 0
-                      ? Math.round((imp.matchedInGrade / imp.totalRows) * 100)
+                    playedCount > 0
+                      ? Math.round((imp.matchedInGrade / playedCount) * 100)
                       : 0;
                   return (
                     <div key={imp.id} className="flex items-center gap-4 group">
@@ -194,7 +208,18 @@ export default async function DashboardPage() {
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <span className="text-[13px] font-bold text-muted-foreground shrink-0">{pct}%</span>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="text-[11px] p-2">
+                                Fora da grade: {imp.outOfGrade} <br/>
+                                Dentro da grade: {imp.matchedInGrade}
+                              </TooltipContent>
+                            </Tooltip>
+                            <span className="text-[13px] font-bold text-muted-foreground">{pct}%</span>
+                          </div>
                         </div>
                       </div>
                       <div className="text-right shrink-0">

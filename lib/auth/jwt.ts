@@ -15,6 +15,8 @@ export type SessionJwtPayload = JWTPayload & {
   jti: string;
   playerId?: string | null;
   coachId?: string | null;
+  displayName?: string | null;
+  email?: string;
 };
 
 export async function signSessionToken(input: {
@@ -23,6 +25,8 @@ export async function signSessionToken(input: {
   sessionId: string;
   playerId: string | null;
   coachId: string | null;
+  displayName: string | null;
+  email: string;
 }): Promise<string> {
   const secret = getSecret();
   return new SignJWT({
@@ -30,6 +34,8 @@ export async function signSessionToken(input: {
     jti: input.sessionId,
     playerId: input.playerId,
     coachId: input.coachId,
+    displayName: input.displayName,
+    email: input.email,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(input.userId)

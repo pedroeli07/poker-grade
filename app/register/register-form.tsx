@@ -275,7 +275,7 @@ export function RegisterForm() {
         </div>
         {submitted && !canSubmit && submitBlockerHint ? (
           <p
-            className="rounded-lg border border-border bg-muted px-3 py-2 font-mono text-[10px] leading-relaxed text-muted-foreground"
+            className="rounded-lg border border-border bg-red-500/90 px-3 py-2 font-mono text-[12px] shadow-lg shadow-red-500 leading-relaxed text-white animate-bounce"
             data-testid="register-blockers-hint"
           >
             {submitBlockerHint}

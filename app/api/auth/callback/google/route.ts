@@ -41,7 +41,7 @@ export async function GET(request: Request) {
     return redirectTo(baseUrl, "/login?error=oauth_state");
   }
 
-  const redirectUri = `${baseUrl}/api/auth/google/callback`;
+  const redirectUri = `${baseUrl}/api/auth/callback/google`;
 
   let accessToken: string;
   let profile: Awaited<ReturnType<typeof fetchGoogleUserInfo>>;
@@ -125,6 +125,8 @@ export async function GET(request: Request) {
         role: true,
         playerId: true,
         coachId: true,
+        displayName: true,
+        email: true,
       },
     });
 

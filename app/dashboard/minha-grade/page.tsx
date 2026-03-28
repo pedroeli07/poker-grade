@@ -1,6 +1,10 @@
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("minha-grade.page");
+
 import {
   ArrowUpCircle,
   Circle,
@@ -16,7 +20,6 @@ import {
   Minus,
   ChevronRight,
   Ban,
-  CalendarDays,
   Timer,
 } from "lucide-react";
 import Link from "next/link";
@@ -70,7 +73,7 @@ const GRADE_TYPE_CONFIG = {
   },
   MAIN: {
     label: "Minha Grade",
-    desc: "Grade atual — você está aqui",
+    desc: "Grade atual - você está aqui",
     icon: Circle,
     color: "text-primary",
     bg: "bg-primary/5 border-primary/20",
@@ -97,13 +100,30 @@ export const metadata = { title: "Minha Grade | CL Team" };
 export default async function MinhaGradePage() {
   const session = await requireSession();
 
-  // Players and coaches: only players see their own grade here
+  log.info("Acesso a Minha Grade", {
+    userId: session.userId,
+    role: session.role,
+    playerId: session.playerId ?? "none",
+  });
+
   if (session.role !== "PLAYER") {
-    redirect("/dashboard/players");
+    log.warn("Acesso negado - role nao e PLAYER", {
+      role: session.role,
+      userId: session.userId,
+    });
+    redirect("/dashboard");
   }
 
   if (!session.playerId) {
-    redirect("/dashboard");
+    log.warn("PLAYER sem playerId vinculado", { userId: session.userId });
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8">
+        <h2 className="text-2xl font-bold text-foreground mb-2">Conta em análise</h2>
+        <p className="text-muted-foreground max-w-md">
+          Sua conta foi criada com sucesso. Aguarde enquanto um coach ou administrador vincula seu perfil de jogador.
+        </p>
+      </div>
+    );
   }
 
   const player = await prisma.player.findUnique({
@@ -198,8 +218,8 @@ export default async function MinhaGradePage() {
                     <Icon className={`h-4 w-4 ${isMain ? cfg.color : ""}`} />
                     <span className="hidden sm:block text-xs">
                       {assignment
-                        ? assignment.gradeProfile.name.split(" — ")[0]
-                        : "—"}
+                        ? assignment.gradeProfile.name.split(" - ")[0]
+                        : "?"}
                     </span>
                   </div>
                 </div>
@@ -290,11 +310,11 @@ export default async function MinhaGradePage() {
                         >
                           {cfg.label}
                         </span>
-                        {isMain && (
-                          <span className="text-xs text-muted-foreground">
-                            ← você está aqui
-                          </span>
-                        )}
+                          {isMain && (
+                            <span className="text-xs text-muted-foreground">
+                              - você está aqui
+                            </span>
+                          )}
                       </div>
                       <h3 className="text-lg font-bold text-foreground mt-1">
                         {grade.name}
@@ -306,7 +326,7 @@ export default async function MinhaGradePage() {
                   </span>
                 </div>
 
-                {/* Rules (for main grade only, expanded; others collapsed) */}
+                {/* Rules - main grade expanded; others collapsed */}
                 {isMain && grade.rules.length > 0 && (
                   <div className="grid gap-4 sm:grid-cols-2 p-6">
                     {grade.rules.map((rule, idx) => {
@@ -331,7 +351,6 @@ export default async function MinhaGradePage() {
                             </span>
                           </div>
 
-                          {/* Sites */}
                           {sites.length > 0 && (
                             <div className="flex items-start gap-2.5">
                               <Zap className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -343,17 +362,15 @@ export default async function MinhaGradePage() {
                             </div>
                           )}
 
-                          {/* Buy-in */}
                           {(rule.buyInMin || rule.buyInMax) && (
                             <div className="flex items-center gap-2.5">
                               <DollarSign className="h-4 w-4 text-emerald-500 shrink-0" />
                               <span className="font-mono text-lg font-bold text-emerald-600">
-                                ${rule.buyInMin ?? "—"} — ${rule.buyInMax ?? "—"}
+                                ${rule.buyInMin ?? "?"} - ${rule.buyInMax ?? "?"}
                               </span>
                             </div>
                           )}
 
-                          {/* Speed */}
                           {speed.length > 0 && (
                             <div className="flex items-start gap-2.5">
                               <Clock className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
@@ -365,19 +382,21 @@ export default async function MinhaGradePage() {
                             </div>
                           )}
 
-                          {/* Variant/Type */}
                           {(variant.length > 0 || tournamentType.length > 0) && (
                             <div className="flex items-start gap-2.5">
                               <Tag className="h-4 w-4 text-violet-500 shrink-0 mt-0.5" />
                               <div className="flex flex-wrap gap-1.5">
                                 {[...tournamentType, ...variant].map((s, i) => (
-                                  <Pill key={i} text={s.item_text} variant="format" />
+                                  <Pill
+                                    key={i}
+                                    text={s.item_text}
+                                    variant="format"
+                                  />
                                 ))}
                               </div>
                             </div>
                           )}
 
-                          {/* Extra constraints */}
                           {rule.prizePoolMin && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground border-t border-border pt-3">
                               <TrendingUp className="h-4 w-4 text-emerald-500" />
@@ -399,7 +418,7 @@ export default async function MinhaGradePage() {
                           {rule.fromTime && rule.toTime && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground border-t border-border pt-3">
                               <Timer className="h-4 w-4 text-primary/70" />
-                              Horário: {rule.fromTime} — {rule.toTime}
+                              Horário: {rule.fromTime} - {rule.toTime}
                             </div>
                           )}
                         </div>
@@ -440,7 +459,9 @@ export default async function MinhaGradePage() {
                 target.numericValue && target.numericCurrent !== null
                   ? Math.min(
                       100,
-                      Math.round((target.numericCurrent / target.numericValue) * 100)
+                      Math.round(
+                        (target.numericCurrent / target.numericValue) * 100
+                      )
                     )
                   : null;
 
@@ -470,7 +491,7 @@ export default async function MinhaGradePage() {
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Atual</span>
                           <span className="font-bold text-foreground">
-                            {target.numericCurrent ?? "—"}
+                            {target.numericCurrent ?? "?"}
                             {target.unit && (
                               <span className="text-muted-foreground ml-0.5 font-normal">
                                 {target.unit}
@@ -587,7 +608,7 @@ export default async function MinhaGradePage() {
         </div>
       )}
 
-      {/* Quick link for coach to see full grade */}
+      {/* Quick link for player to see full grade detail */}
       {mainGrade && (
         <div className="flex justify-center">
           <Link
