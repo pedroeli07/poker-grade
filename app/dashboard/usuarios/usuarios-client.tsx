@@ -536,7 +536,7 @@ function UserTableRow({
   };
 
   return (
-    <div className="grid grid-cols-[1fr_120px_100px_100px] items-center gap-2 px-4 py-3 text-sm bg-blue-500/10 hover:bg-blue-500/20 transition-colors">
+    <div className="grid grid-cols-[1fr_120px_100px_100px] items-center gap-2 px-4 py-3 text-sm bg-white hover:bg-blue-500/10 transition-colors">
       <div className="flex min-w-0 items-center gap-2">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-[10px] font-semibold">
           {getInitials(row.email)}

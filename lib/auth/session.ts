@@ -2,8 +2,11 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { createLogger } from "@/lib/logger";
 import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC } from "./constants";
 import { signSessionToken, verifySessionJwt } from "./jwt";
+
+const log = createLogger("auth.session");
 
 export type AppSession = {
   userId: string;
@@ -12,6 +15,38 @@ export type AppSession = {
   playerId: string | null;
   coachId: string | null;
 };
+
+const DB_ERROR = Symbol("DB_ERROR");
+
+async function querySessionFromDb(
+  jti: string
+): Promise<{ expiresAt: Date; userId: string } | null | typeof DB_ERROR> {
+  const maxRetries = 2;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await prisma.authSession.findFirst({
+        where: { id: jti },
+        select: { expiresAt: true, userId: true },
+      });
+    } catch (err) {
+      if (attempt < maxRetries) {
+        log.warn("DB session query failed, retrying", {
+          attempt: attempt + 1,
+          err: err instanceof Error ? err.message : String(err),
+        });
+        await new Promise((r) => setTimeout(r, 150 * (attempt + 1)));
+      } else {
+        log.error(
+          "DB session query failed after retries",
+          err instanceof Error ? err : undefined,
+          { jti }
+        );
+        return DB_ERROR;
+      }
+    }
+  }
+  return DB_ERROR;
+}
 
 export async function getSession(): Promise<AppSession | null> {
   const jar = await cookies();
@@ -29,15 +64,22 @@ export async function getSession(): Promise<AppSession | null> {
   const sub = typeof payload.sub === "string" ? payload.sub : null;
   if (!jti || !sub) return null;
 
-  let row: { expiresAt: Date; userId: string } | null;
-  try {
-    row = await prisma.authSession.findFirst({
-      where: { id: jti },
-      select: { expiresAt: true, userId: true },
-    });
-  } catch {
-    return null;
+  const row = await querySessionFromDb(jti);
+
+  // DB was unreachable — trust the cryptographically verified JWT.
+  // This prevents false login redirects during Prisma hot-reload or transient DB errors.
+  if (row === DB_ERROR) {
+    log.warn("Trusting JWT — DB unavailable for session validation", { userId: sub });
+    return {
+      userId: sub,
+      role: payload.role,
+      sessionId: jti,
+      playerId: (payload.playerId as string | null | undefined) ?? null,
+      coachId: (payload.coachId as string | null | undefined) ?? null,
+    };
   }
+
+  // Session not found or expired — genuinely invalid
   if (!row || row.expiresAt < new Date() || row.userId !== sub) {
     return null;
   }

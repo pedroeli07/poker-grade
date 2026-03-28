@@ -22,10 +22,41 @@ type UploadResult =
 function generateCuid(): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   let id = "c";
-  for (let i = 0; i < 24; i++) {
-    id += chars[Math.floor(Math.random() * chars.length)];
-  }
+  for (let i = 0; i < 24; i++) id += chars[Math.floor(Math.random() * chars.length)];
   return id;
+}
+
+/** Classify the Lobbyze scheduling field */
+function classifyScheduling(scheduling: string | null) {
+  const s = (scheduling ?? "").toLowerCase().trim();
+  if (s.includes("extra")) return "extra" as const;
+  if (s === "played") return "played" as const;
+  return "missed" as const; // "Didn't play" or anything else
+}
+
+export async function deleteImports(ids: string[]): Promise<{ success: boolean; error?: string }> {
+  const session = await requireSession();
+
+  if (!["ADMIN", "MANAGER", "COACH"].includes(session.role)) {
+    return { success: false, error: "Sem permissão para excluir importações." };
+  }
+  if (!ids.length) return { success: false, error: "Nenhuma importação selecionada." };
+
+  try {
+    await prisma.playedTournament.deleteMany({ where: { importId: { in: ids } } });
+    await prisma.tournamentImport.deleteMany({ where: { id: { in: ids } } });
+
+    revalidatePath("/dashboard/imports");
+    revalidatePath("/dashboard/review");
+    revalidatePath("/dashboard");
+
+    log.success("Importações excluídas", { count: ids.length });
+    return { success: true };
+  } catch (err) {
+    if (isRedirectError(err)) throw err;
+    log.error("Erro ao excluir importações", err instanceof Error ? err : undefined);
+    return { success: false, error: "Erro ao excluir importações." };
+  }
 }
 
 export async function uploadTournaments(formData: FormData): Promise<UploadResult> {
@@ -36,35 +67,54 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
   }
 
   const file = formData.get("file") as File | null;
-  if (!file) {
-    return { success: false, error: "Arquivo não encontrado." };
-  }
+  if (!file) return { success: false, error: "Arquivo não encontrado." };
 
   if (file.size > MAX_UPLOAD_BYTES) {
     return { success: false, error: "Arquivo muito grande (máx. 12 MB)." };
   }
 
-  log.info("Iniciando processamento de importação", {
-    fileName: file.name,
-    size: file.size,
-  });
+  log.sep("INÍCIO DA IMPORTAÇÃO");
+  log.info("Arquivo recebido", { fileName: file.name, sizeKB: Math.round(file.size / 1024) });
 
   try {
     const arrayBuffer = await file.arrayBuffer();
     const parseResults = parseExcelBuffer(arrayBuffer);
-    log.info("Excel parseado", { sheets: parseResults.length, file: file.name });
+
+    log.info("Excel parseado", {
+      abas: parseResults.length,
+      totalLinhas: parseResults.reduce((s, r) => s + r.tournaments.length, 0),
+    });
 
     let totalProcessed = 0;
     const summary: string[] = [];
 
     for (const sheetResult of parseResults) {
-      if (sheetResult.tournaments.length === 0) continue;
+      log.sep(sheetResult.playerName);
 
-      log.info("Processando aba", {
+      if (sheetResult.tournaments.length === 0) {
+        log.warn("Aba vazia — ignorada", { sheet: sheetResult.playerName });
+        continue;
+      }
+
+      // ── Pre-analyze scheduling from Lobbyze (source of truth) ──────────────
+      const schedulingStats = sheetResult.tournaments.reduce(
+        (acc, t) => {
+          const cat = classifyScheduling(t.scheduling);
+          acc[cat]++;
+          return acc;
+        },
+        { played: 0, extra: 0, missed: 0 }
+      );
+
+      log.info("Scheduling Lobbyze (antes de qualquer matching)", {
         sheet: sheetResult.playerName,
-        rows: sheetResult.tournaments.length,
+        played: schedulingStats.played,
+        extraPlay: schedulingStats.extra,
+        didntPlay: schedulingStats.missed,
+        total: sheetResult.tournaments.length,
       });
 
+      // ── Find or create player ───────────────────────────────────────────────
       const allPlayers = await prisma.player.findMany({
         include: {
           gradeAssignments: {
@@ -78,14 +128,14 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
       const target = normalize(sheetResult.playerName);
 
       let player = allPlayers.find(
-        (p) =>
-          normalize(p.name) === target ||
-          (p.nickname && normalize(p.nickname) === target)
+        (p) => normalize(p.name) === target || (p.nickname && normalize(p.nickname) === target)
       );
 
       if (!player) {
         if (session.role === "ADMIN" || session.role === "MANAGER") {
-          log.info("Jogador não encontrado — criando", { sheet: sheetResult.playerName });
+          log.warn("Jogador não encontrado — criando automaticamente", {
+            sheetName: sheetResult.playerName,
+          });
           player = await prisma.player.create({
             data: { name: sheetResult.playerName, nickname: sheetResult.playerName, status: "ACTIVE" },
             include: {
@@ -95,73 +145,98 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
               },
             },
           });
+          log.success("Novo jogador criado", { id: player.id, name: player.name });
           summary.push(`Novo jogador criado: ${player.name}`);
         } else {
+          log.warn("Jogador não encontrado — aba ignorada", { sheet: sheetResult.playerName });
           summary.push(`Jogador não encontrado: ${sheetResult.playerName}`);
           continue;
         }
+      } else {
+        log.debug("Jogador encontrado", { id: player.id, name: player.name });
       }
 
+      // ── Permission check ────────────────────────────────────────────────────
       if (session.role === "PLAYER") {
         if (!session.playerId || player.id !== session.playerId) {
+          log.warn("Permissão negada — jogador não é o próprio", { sheet: sheetResult.playerName });
           summary.push(`Sem permissão para a aba: ${sheetResult.playerName}`);
           continue;
         }
       } else if (session.role === "COACH" && session.coachId) {
         if (player.coachId !== session.coachId && player.driId !== session.coachId) {
+          log.warn("Permissão negada — jogador não é da carteira do coach", {
+            sheet: sheetResult.playerName,
+            coachId: session.coachId,
+          });
           summary.push(`Sem permissão para a aba: ${sheetResult.playerName}`);
           continue;
         }
       }
 
+      // ── Grade matching ──────────────────────────────────────────────────────
       const mainGrade = player.gradeAssignments.find((a) => a.gradeType === "MAIN")?.gradeProfile;
+
       if (!mainGrade) {
-        log.warn("Jogador sem grade principal — matching desativado", { player: player.name });
+        log.warn("Sem grade principal — grade matching desativado (stats baseados em scheduling)", {
+          player: player.name,
+        });
+      } else {
+        log.info("Grade principal encontrada", {
+          player: player.name,
+          grade: mainGrade.name,
+          regras: mainGrade.rules.length,
+        });
       }
 
+      // ── Create import record ────────────────────────────────────────────────
       const importRecord = await prisma.tournamentImport.create({
         data: { fileName: file.name, importType: "excel", playerName: player.name, importedBy: session.userId },
       });
 
-      // ── Batch processing: prepare all data in-memory, then insert in bulk ──
-      let matchedInGrade = 0;
-      let suspect = 0;
-      let outOfGrade = 0;
+      log.debug("Import record criado", { importId: importRecord.id });
+
+      // ── Build tournament rows in memory ─────────────────────────────────────
+      //
+      // STATS STRATEGY:
+      //   • matchedInGrade = scheduling "Played"   (Lobbyze says it's in schedule)
+      //   • outOfGrade     = scheduling "Extra play" (Lobbyze says outside schedule)
+      //   • suspect        = scheduling "Didn't play" (in schedule but not played)
+      //
+      // This ensures stats reflect Lobbyze's ground truth, not just our grade matching.
+      // Grade matching (matchStatus) is stored per-tournament for filtering but does NOT
+      // override the primary stats.
+
+      let playedCount = 0;
+      let extraPlayCount = 0;
+      let didntPlayCount = 0;
 
       const tournamentRows: Array<{
-        id: string;
-        playerId: string;
-        importId: string;
-        date: Date;
-        site: string;
-        buyInCurrency: string;
-        buyInValue: number;
-        buyInUsd: number;
-        tournamentName: string;
-        scheduling: string;
-        rebuy: boolean;
-        speed: string;
-        sharkId: string | null;
-        priority: string;
-        matchStatus: MatchResult;
-        matchedRuleId: string | null;
+        id: string; playerId: string; importId: string; date: Date;
+        site: string; buyInCurrency: string; buyInValue: number; buyInUsd: number;
+        tournamentName: string; scheduling: string; rebuy: boolean; speed: string;
+        sharkId: string | null; priority: string; matchStatus: MatchResult; matchedRuleId: string | null;
       }> = [];
 
       const reviewRows: Array<{
-        playerId: string;
-        tournamentId: string;
-        status: "PENDING";
-        isInfraction: boolean;
+        playerId: string; tournamentId: string; status: "PENDING"; isInfraction: boolean;
       }> = [];
 
       for (const t of sheetResult.tournaments) {
         const dateObj = parseLobbyzeDate(t.date) ?? new Date();
         const buyInNumeric = Number(t.buyInValue) || 0;
+        const schedulingCat = classifyScheduling(t.scheduling);
 
-        let matchStatus: MatchResult = "OUT_OF_GRADE";
+        // ── Count by Lobbyze scheduling ───────────────────────────────────
+        if (schedulingCat === "played") playedCount++;
+        else if (schedulingCat === "extra") extraPlayCount++;
+        else didntPlayCount++;
+
+        // ── Grade matching (only informational when grade exists) ─────────
+        let matchStatus: MatchResult = schedulingCat === "played" ? "IN_GRADE" : "OUT_OF_GRADE";
         let matchedRuleId: string | null = null;
 
-        if (mainGrade && mainGrade.rules.length > 0) {
+        if (mainGrade && mainGrade.rules.length > 0 && schedulingCat === "played") {
           const matchResult = matchTournamentToGrade(
             { site: t.site, buyInValue: buyInNumeric, tournamentName: t.tournamentName, speed: t.speed },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -171,33 +246,19 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
           matchedRuleId = matchResult.matchedRuleId;
         }
 
-        if (matchStatus === "IN_GRADE") matchedInGrade++;
-        else if (matchStatus === "SUSPECT") suspect++;
-        else outOfGrade++;
-
         const tournamentId = generateCuid();
 
         tournamentRows.push({
-          id: tournamentId,
-          playerId: player.id,
-          importId: importRecord.id,
-          date: dateObj,
-          site: t.site,
-          buyInCurrency: t.buyInCurrency,
-          buyInValue: buyInNumeric,
-          buyInUsd: Number(t.buyInUsd) || buyInNumeric,
-          tournamentName: t.tournamentName,
-          scheduling: t.scheduling ?? "",
-          rebuy: t.rebuy,
-          speed: t.speed,
-          sharkId: t.sharkId || null,
-          priority: t.priority,
-          matchStatus,
-          matchedRuleId,
+          id: tournamentId, playerId: player.id, importId: importRecord.id,
+          date: dateObj, site: t.site, buyInCurrency: t.buyInCurrency,
+          buyInValue: buyInNumeric, buyInUsd: Number(t.buyInUsd) || buyInNumeric,
+          tournamentName: t.tournamentName, scheduling: t.scheduling ?? "",
+          rebuy: t.rebuy, speed: t.speed, sharkId: t.sharkId || null,
+          priority: t.priority, matchStatus, matchedRuleId,
         });
 
-        const isExtraPlay = (t.scheduling ?? "").toLowerCase().includes("extra");
-        if (isExtraPlay || matchStatus === "SUSPECT" || matchStatus === "OUT_OF_GRADE") {
+        // ── Review items: ONLY for actual Extra play from Lobbyze ─────────
+        if (schedulingCat === "extra") {
           reviewRows.push({
             playerId: player.id,
             tournamentId,
@@ -207,36 +268,54 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
         }
       }
 
-      // Batch insert tournaments (single query)
-      await prisma.playedTournament.createMany({ data: tournamentRows });
-      log.info("Torneios inseridos em batch", { count: tournamentRows.length });
+      log.info("Processamento in-memory concluído", {
+        player: player.name,
+        played: playedCount,
+        extraPlay: extraPlayCount,
+        didntPlay: didntPlayCount,
+        reviewItems: reviewRows.length,
+      });
 
-      // Batch insert review items (single query)
+      // ── Batch insert ────────────────────────────────────────────────────────
+      await prisma.playedTournament.createMany({ data: tournamentRows });
+      log.debug("Torneios inseridos no banco", { count: tournamentRows.length });
+
       if (reviewRows.length > 0) {
         await prisma.gradeReviewItem.createMany({ data: reviewRows });
-        log.info("Review items inseridos em batch", { count: reviewRows.length });
+        log.debug("Review items inseridos", { count: reviewRows.length });
+      } else {
+        log.debug("Nenhum review item necessário (sem extra plays)");
       }
 
-      // Update import stats
+      // ── Update import stats ─────────────────────────────────────────────────
+      // matchedInGrade → played count
+      // outOfGrade     → extra play count
+      // suspect        → didn't play count
       await prisma.tournamentImport.update({
         where: { id: importRecord.id },
-        data: { totalRows: sheetResult.tournaments.length, matchedInGrade, suspect, outOfGrade },
+        data: {
+          totalRows:      sheetResult.tournaments.length,
+          matchedInGrade: playedCount,
+          outOfGrade:     extraPlayCount,
+          suspect:        didntPlayCount,
+        },
       });
 
       totalProcessed += tournamentRows.length;
 
-      log.success("Aba processada", {
+      log.success("✔ Aba processada com sucesso", {
         player: player.name,
         total: sheetResult.tournaments.length,
-        inGrade: matchedInGrade,
-        suspect,
-        outOfGrade,
+        played: playedCount,
+        extraPlay: extraPlayCount,
+        didntPlay: didntPlayCount,
       });
 
-      void notifyImportDone(player.name, player.id, importRecord.id, outOfGrade);
+      void notifyImportDone(player.name, player.id, importRecord.id, extraPlayCount);
 
       summary.push(
-        `${player.name}: ${sheetResult.tournaments.length} torneios (${outOfGrade} extra play)`
+        `${player.name}: ${sheetResult.tournaments.length} torneios — ` +
+        `${playedCount} jogados, ${extraPlayCount} extra play, ${didntPlayCount} não jogados`
       );
     }
 
@@ -244,7 +323,8 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
     revalidatePath("/dashboard/review");
     revalidatePath("/dashboard");
 
-    log.success("Importação concluída", { file: file.name, processed: totalProcessed });
+    log.sep("IMPORTAÇÃO CONCLUÍDA");
+    log.success("Importação finalizada", { file: file.name, processed: totalProcessed });
     return { success: true, processed: totalProcessed, summary };
   } catch (err) {
     if (isRedirectError(err)) throw err;

@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ReviewDecisionButtons } from "@/components/review-decision-buttons";
+import { DeleteImportButton } from "./delete-import-button";
 import {
   ArrowLeft,
   AlertTriangle,
@@ -94,6 +95,7 @@ export default async function ImportDetailPage({
   const sp = await searchParams;
   const activeTab = (sp.tab as Tab) || "extra";
   const showActions = canReview(session);
+  const canDelete = ["ADMIN", "MANAGER", "COACH"].includes(session.role);
 
   const importRecord = await getImportDetailForSession(session, id);
   if (!importRecord) notFound();
@@ -112,7 +114,7 @@ export default async function ImportDetailPage({
       icon: AlertTriangle,
       accent: "red",
       activeCls:
-        "border-red-500 text-red-500 bg-red-500/5",
+        "border-red-500 text-red-500 bg-red-500/10",
       inactiveCls: "border-transparent text-muted-foreground",
       countCls: "bg-red-500/20 text-red-500",
     },
@@ -122,7 +124,7 @@ export default async function ImportDetailPage({
       count: withRebuy.length,
       icon: RefreshCw,
       accent: "orange",
-      activeCls: "border-orange-500 text-orange-500 bg-orange-500/5",
+      activeCls: "border-orange-500 text-orange-500 bg-orange-500/10",
       inactiveCls: "border-transparent text-muted-foreground",
       countCls: "bg-orange-500/20 text-orange-500",
     },
@@ -132,7 +134,7 @@ export default async function ImportDetailPage({
       count: played.length,
       icon: CheckCircle2,
       accent: "emerald",
-      activeCls: "border-emerald-500 text-emerald-500 bg-emerald-500/5",
+      activeCls: "border-emerald-500 text-emerald-500 bg-emerald-500/10",
       inactiveCls: "border-transparent text-muted-foreground",
       countCls: "bg-emerald-500/20 text-emerald-500",
     },
@@ -142,7 +144,7 @@ export default async function ImportDetailPage({
       count: missed.length,
       icon: MinusCircle,
       accent: "zinc",
-      activeCls: "border-zinc-400 text-zinc-500 bg-zinc-500/5",
+      activeCls: "border-zinc-400 text-zinc-500 bg-zinc-500/10",
       inactiveCls: "border-transparent text-muted-foreground",
       countCls: "bg-zinc-500/20 text-zinc-500",
     },
@@ -166,8 +168,8 @@ export default async function ImportDetailPage({
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div className="min-w-0">
-          <h2 className="text-2xl font-bold tracking-tight truncate">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-2xl font-bold tracking-tight truncate text-primary">
             {importRecord.fileName}
           </h2>
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mt-0.5">
@@ -187,6 +189,7 @@ export default async function ImportDetailPage({
             <span>{all.length} torneios no total</span>
           </div>
         </div>
+        {canDelete && <DeleteImportButton importId={id} />}
       </div>
 
       {/* Stat cards */}
@@ -201,13 +204,13 @@ export default async function ImportDetailPage({
               className={`group rounded-xl border p-5 transition-all hover:scale-[1.02] ${
                 isActive
                   ? tab.id === "extra"
-                    ? "border-red-500/40 bg-red-500/8"
+                    ? "border-red-500/30 bg-red-500/20 shadow-md shadow-red-500 hover:shadow-lg hover:shadow-red-400"
                     : tab.id === "rebuy"
-                      ? "border-orange-500/40 bg-orange-500/8"
+                      ? "border-orange-500/30 bg-orange-500/20 shadow-md shadow-orange-500 hover:shadow-lg hover:shadow-orange-400"
                       : tab.id === "played"
-                        ? "border-emerald-500/40 bg-emerald-500/8"
-                        : "border-zinc-500/40 bg-zinc-500/8"
-                  : "border-border bg-card/50 hover:border-border/80"
+                        ? "border-emerald-500/30 bg-emerald-500/20 shadow-md shadow-emerald-500 hover:shadow-lg hover:shadow-emerald-400"
+                        : "border-zinc-500/30 bg-zinc-500/20 shadow-md shadow-zinc-500 hover:shadow-lg hover:shadow-zinc-400"
+                  : "border-border bg-white hover:border-blue-300"
               }`}
             >
               <div className="flex items-center justify-between mb-3">
@@ -288,7 +291,7 @@ export default async function ImportDetailPage({
         <div className="rounded-xl border border-border overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-blue-500/30 border-b border-border">
+              <TableRow className="bg-blue-500/20">
                 <TableHead className="pl-6 w-[380px]">Torneio</TableHead>
                 <TableHead>
                   <span className="flex items-center gap-1.5">
@@ -319,11 +322,11 @@ export default async function ImportDetailPage({
               {activeTournaments.map((t) => (
                 <TableRow
                   key={t.id}
-                  className="bg-blue-500/10 hover:bg-sidebar-accent/20 group border-b border-border/50 last:border-0"
+                  className="bg-white hover:bg-sidebar-accent/30 group border-b border-border/50 last:border-0"
                 >
                   <TableCell className="pl-6">
                     <div
-                      className="font-medium text-[15px] line-clamp-1 max-w-[360px]"
+                      className="font-medium text-[15px] line-clamp-2 max-w-[360px]"
                       title={t.tournamentName}
                     >
                       {t.tournamentName}

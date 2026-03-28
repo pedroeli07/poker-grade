@@ -12,6 +12,7 @@ import {
   Grid3X3,
 } from "lucide-react";
 import Link from "next/link";
+import { DeleteImportButton } from "@/app/dashboard/imports/[id]/delete-import-button";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
@@ -65,6 +66,8 @@ export default async function DashboardPage() {
     MAINTAIN: { label: "Manutenção", icon: ArrowRight, color: "text-muted-foreground" },
     DOWNGRADE: { label: "Descida", icon: TrendingDown, color: "text-primary" },
   };
+
+  const canDeleteImports = ["ADMIN", "MANAGER", "COACH"].includes(session.role);
 
   return (
     <div className="space-y-6">
@@ -173,7 +176,7 @@ export default async function DashboardPage() {
                       ? Math.round((imp.matchedInGrade / imp.totalRows) * 100)
                       : 0;
                   return (
-                    <div key={imp.id} className="flex items-center gap-4">
+                    <div key={imp.id} className="flex items-center gap-4 group">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-[15px] font-semibold truncate text-foreground">{imp.fileName}</p>
@@ -200,6 +203,11 @@ export default async function DashboardPage() {
                           {format(imp.createdAt, "dd/MM", { locale: ptBR })}
                         </p>
                       </div>
+                      {canDeleteImports && (
+                        <div className="shrink-0 ml-1">
+                          <DeleteImportButton importId={imp.id} iconOnly />
+                        </div>
+                      )}
                     </div>
                   );
                 })}

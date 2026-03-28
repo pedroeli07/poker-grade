@@ -286,7 +286,7 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
                   key={notif.id}
                   className={cn(
                     "flex items-start gap-4 px-6 py-5 transition-colors group hover:bg-muted/30",
-                    !notif.read && "bg-primary/[0.025]",
+                    !notif.read && "bg-primary/2.5",
                     isSelected && "bg-primary/5"
                   )}
                 >
@@ -359,7 +359,7 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
                           <Link
                             href={notif.link}
                             title="Abrir"
-                            className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
+                            className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-40 group-hover:opacity-100"
                           >
                             <ExternalLink className="h-4 w-4" />
                           </Link>
@@ -369,7 +369,7 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
                             type="button"
                             title="Marcar como lida"
                             onClick={() => handleMarkRead(notif.id)}
-                            className="p-2 rounded-lg text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                            className="p-2 rounded-lg text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 transition-colors cursor-pointer opacity-40 group-hover:opacity-100"
                           >
                             <Check className="h-4 w-4" />
                           </button>
@@ -378,9 +378,9 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
                           type="button"
                           title="Excluir"
                           onClick={() => handleDelete(notif.id)}
-                          className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                          className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer opacity-40 group-hover:opacity-100"
                         >
-                          <Check className={cn("h-4 w-4", notif.read ? "text-emerald-500" : "text-muted-foreground/30")} />
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
