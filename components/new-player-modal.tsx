@@ -21,20 +21,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { UserPlus, User, AtSign, Mail, ChevronRight, Loader2 } from "lucide-react";
+import Link from "next/link";
+import {
+  UserPlus,
+  User,
+  AtSign,
+  Mail,
+  ChevronRight,
+  Loader2,
+  Grid3X3,
+  DollarSign,
+} from "lucide-react";
 import { createPlayer } from "@/app/dashboard/players/actions";
 import { toast } from "@/lib/toast";
 
 type Coach = { id: string; name: string; role: string };
+type GradeOpt = { id: string; name: string };
 
 interface NewPlayerModalProps {
   coaches: Coach[];
+  grades: GradeOpt[];
 }
 
-export function NewPlayerModal({ coaches }: NewPlayerModalProps) {
+export function NewPlayerModal({ coaches, grades }: NewPlayerModalProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [coachId, setCoachId] = useState("none");
+  const [mainGradeId, setMainGradeId] = useState("none");
+  const [abiAlvoValue, setAbiAlvoValue] = useState("");
+  const [abiAlvoUnit, setAbiAlvoUnit] = useState("none");
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
 
@@ -45,6 +60,9 @@ export function NewPlayerModal({ coaches }: NewPlayerModalProps) {
       setTimeout(() => {
         formRef.current?.reset();
         setCoachId("none");
+        setMainGradeId("none");
+        setAbiAlvoValue("");
+        setAbiAlvoUnit("none");
       }, 150);
     }
   }
@@ -53,6 +71,9 @@ export function NewPlayerModal({ coaches }: NewPlayerModalProps) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     formData.set("coachId", coachId);
+    formData.set("mainGradeId", mainGradeId);
+    formData.set("abiAlvoValue", abiAlvoValue);
+    formData.set("abiAlvoUnit", abiAlvoUnit);
 
     startTransition(async () => {
       try {
@@ -60,8 +81,12 @@ export function NewPlayerModal({ coaches }: NewPlayerModalProps) {
         toast.success("Jogador criado!", "O jogador foi adicionado ao time com sucesso.");
         handleOpenChange(false);
         router.refresh();
-      } catch {
-        toast.error("Erro ao criar jogador", "Verifique os dados e tente novamente.");
+      } catch (e) {
+        const msg =
+          e instanceof Error && e.message
+            ? e.message
+            : "Verifique os dados e tente novamente.";
+        toast.error("Erro ao criar jogador", msg);
       }
     });
   }
@@ -175,6 +200,93 @@ export function NewPlayerModal({ coaches }: NewPlayerModalProps) {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="mainGradeId" className="text-[15px] font-medium">
+                  Grade principal
+                </Label>
+                <Select
+                  value={mainGradeId}
+                  onValueChange={setMainGradeId}
+                  disabled={isPending}
+                >
+                  <SelectTrigger
+                    id="mainGradeId"
+                    className="w-full h-12 bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors text-[15px] flex items-center gap-2"
+                  >
+                    <Grid3X3 className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <SelectValue
+                      placeholder={
+                        grades.length === 0
+                          ? "Nenhuma grade — só \"Não atribuída\""
+                          : "Selecione a grade principal..."
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none" className="text-[15px] py-2.5">
+                      <span className="text-muted-foreground">Não atribuída</span>
+                    </SelectItem>
+                    {grades.map((g) => (
+                      <SelectItem key={g.id} value={g.id} className="text-[15px] py-2.5">
+                        {g.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Mesmas grades da página{" "}
+                  <Link href="/dashboard/grades" className="text-primary underline-offset-2 hover:underline">
+                    Grades
+                  </Link>
+                  .
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="abiAlvoValue" className="text-[15px] font-medium">
+                  ABI alvo
+                </Label>
+                <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                    <Input
+                      id="abiAlvoValue"
+                      inputMode="decimal"
+                      placeholder="Ex: 35"
+                      value={abiAlvoValue}
+                      onChange={(e) => setAbiAlvoValue(e.target.value)}
+                      className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60"
+                      disabled={isPending}
+                    />
+                  </div>
+                  <Select
+                    value={abiAlvoUnit}
+                    onValueChange={setAbiAlvoUnit}
+                    disabled={isPending}
+                  >
+                    <SelectTrigger className="h-12 bg-muted/40 border-border/60 text-[15px]">
+                      <SelectValue placeholder="Moeda" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Só número</SelectItem>
+                      <SelectItem value="$">$</SelectItem>
+                      <SelectItem value="€">€</SelectItem>
+                      <SelectItem value="¥">¥</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Opcional. Cria o target &quot;ABI alvo&quot; em{" "}
+                  <Link
+                    href="/dashboard/targets"
+                    className="text-primary underline-offset-2 hover:underline"
+                  >
+                    Targets
+                  </Link>
+                  .
+                </p>
               </div>
             </div>
 

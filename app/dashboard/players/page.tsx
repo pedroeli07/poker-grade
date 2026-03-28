@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
 import { STAFF_WRITE_ROLES } from "@/lib/auth/rbac";
-import { getPlayersForSession } from "@/lib/data/queries";
+import { getGradesForSession, getPlayersForSession } from "@/lib/data/queries";
 import { prisma } from "@/lib/prisma";
+import { syncOrphanCoachProfiles } from "@/lib/auth/ensure-coach-profile";
 import { NewPlayerModal } from "@/components/new-player-modal";
 import {
   PlayersTableClient,
@@ -11,19 +12,54 @@ import {
 
 const NONE = "__none__";
 
+function formatAbiAlvo(value: number, unit: string | null): string {
+  const u = unit?.trim() ?? "";
+  if (u === "$" || u === "€" || u === "¥") return `${u}${value}`;
+  if (u) return `${value} ${u}`.trim();
+  return String(value);
+}
+
+function buildAbiByPlayer(
+  targets: Array<{
+    playerId: string;
+    name: string;
+    numericValue: number | null;
+    unit: string | null;
+  }>
+): Map<string, { numericValue: number; unit: string | null }> {
+  const map = new Map<string, { numericValue: number; unit: string | null }>();
+  for (const t of targets) {
+    if (t.numericValue == null) continue;
+    if (!/\babi\b/i.test(t.name.trim())) continue;
+    if (!map.has(t.playerId)) {
+      map.set(t.playerId, { numericValue: t.numericValue, unit: t.unit });
+    }
+  }
+  return map;
+}
+
 function toTableRows(
-  players: Awaited<ReturnType<typeof getPlayersForSession>>
+  players: Awaited<ReturnType<typeof getPlayersForSession>>,
+  abiByPlayer: Map<string, { numericValue: number; unit: string | null }>
 ): PlayerTableRow[] {
   return players.map((player) => {
     const mainGrade = player.gradeAssignments[0]?.gradeProfile;
+    const abi = abiByPlayer.get(player.id);
+    const abiKey = abi ? `v-${abi.numericValue}` : NONE;
+    const abiLabel = abi ? formatAbiAlvo(abi.numericValue, abi.unit) : "—";
     return {
       id: player.id,
       name: player.name,
       nickname: player.nickname,
+      email: player.email ?? null,
       coachKey: player.coachId ?? NONE,
       coachLabel: player.coach?.name ?? "Sem Coach",
       gradeKey: mainGrade?.id ?? NONE,
       gradeLabel: mainGrade?.name ?? "Não atribuída",
+      abiKey,
+      abiLabel,
+      abiNumericValue: abi?.numericValue ?? null,
+      abiUnit: abi?.unit ?? null,
       status: player.status,
     };
   });
@@ -31,7 +67,8 @@ function toTableRows(
 
 export default async function PlayersPage() {
   const session = await requireSession();
-  const [players, coaches] = await Promise.all([
+  await syncOrphanCoachProfiles();
+  const [players, coaches, gradeProfiles] = await Promise.all([
     getPlayersForSession(session),
     session.role === "COACH" && session.coachId
       ? prisma.coach.findMany({
@@ -39,9 +76,36 @@ export default async function PlayersPage() {
           orderBy: { name: "asc" },
         })
       : prisma.coach.findMany({ orderBy: { name: "asc" } }),
+    getGradesForSession(session),
   ]);
+  const grades = gradeProfiles.map((g) => ({ id: g.id, name: g.name }));
+
+  const playerIds = players.map((p) => p.id);
+  const abiTargets =
+    playerIds.length === 0
+      ? []
+      : await prisma.playerTarget.findMany({
+          where: {
+            playerId: { in: playerIds },
+            isActive: true,
+            targetType: "NUMERIC",
+            numericValue: { not: null },
+          },
+          select: {
+            playerId: true,
+            name: true,
+            numericValue: true,
+            unit: true,
+          },
+          orderBy: [{ playerId: "asc" }, { name: "asc" }],
+        });
+  const abiByPlayer = buildAbiByPlayer(abiTargets);
+
   const canCreate = STAFF_WRITE_ROLES.includes(session.role);
-  const rows = toTableRows(players);
+  const canEditPlayers = STAFF_WRITE_ROLES.includes(session.role);
+  const allowCoachSelect =
+    session.role === "ADMIN" || session.role === "MANAGER";
+  const rows = toTableRows(players, abiByPlayer);
 
   return (
     <div className="space-y-6">
@@ -54,7 +118,9 @@ export default async function PlayersPage() {
             Gerencie o time de jogadores e aloque coaches responsáveis.
           </p>
         </div>
-        {canCreate ? <NewPlayerModal coaches={coaches} /> : null}
+        {canCreate ? (
+          <NewPlayerModal coaches={coaches} grades={grades} />
+        ) : null}
       </div>
 
       <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
@@ -64,7 +130,13 @@ export default async function PlayersPage() {
               Nenhum jogador cadastrado ainda.
             </div>
           ) : (
-            <PlayersTableClient rows={rows} />
+            <PlayersTableClient
+              rows={rows}
+              coaches={coaches}
+              grades={grades}
+              canEditPlayers={canEditPlayers}
+              allowCoachSelect={allowCoachSelect}
+            />
           )}
         </CardContent>
       </Card>

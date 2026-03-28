@@ -10,7 +10,6 @@ import {
   Ban,
   Timer,
   CalendarDays,
-  Info,
   Target,
   TrendingUp,
 } from "lucide-react";
@@ -18,7 +17,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { LobbyzeFilterItem } from "@/lib/types";
 import { requireSession } from "@/lib/auth/session";
+import { canEditGradeCoachNote } from "@/lib/auth/rbac";
 import { getGradeByIdForSession } from "@/lib/data/queries";
+import { GradeCoachNoteSection } from "@/components/grade-coach-note";
 
 function parseJson<T>(val: unknown): T[] {
   if (Array.isArray(val)) return val as T[];
@@ -46,13 +47,13 @@ function Pills({
     variant === "sites"
       ? (text: string) =>
           text.toLowerCase().includes("pokerstars")
-            ? "bg-red-500/12 text-red-300 border-red-500/25"
-            : "bg-blue-500/12 text-blue-300 border-blue-500/25"
+            ? "bg-blue-500/12 text-blue-600 border-blue-500/25"
+            : "bg-blue-500/12 text-blue-600 border-blue-500/25"
       : variant === "speed"
-        ? () => "bg-amber-500/12 text-amber-300 border-amber-500/25"
+        ? () => "bg-blue-500/12 text-blue-600 border-blue-500/25"
         : variant === "variant"
-          ? () => "bg-violet-500/12 text-violet-300 border-violet-500/25"
-          : () => "bg-secondary text-secondary-foreground border-border";
+          ? () => "bg-blue-500/12 text-blue-600 border-blue-500/25"
+          : () => "bg-blue-500/12 text-blue-600 border-blue-500/25";
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -85,18 +86,18 @@ function BuyInRange({
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="font-mono text-lg font-bold text-emerald-400">
+        <span className="font-mono text-lg font-bold text-blue-400">
           ${min ?? "—"}
         </span>
         <span className="text-muted-foreground/60">—</span>
-        <span className="font-mono text-lg font-bold text-emerald-400">
+        <span className="font-mono text-lg font-bold text-blue-400">
           ${max ?? "—"}
         </span>
       </div>
       {min && max && (
         <div className="h-2 rounded-full bg-muted/50 overflow-hidden w-full max-w-[140px]">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400"
+            className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400"
             style={{ width: `${100 - Number(pct)}%` }}
           />
         </div>
@@ -116,6 +117,8 @@ export default async function GradeRulesPage({
 
   if (!grade) notFound();
 
+  const canEditNote = canEditGradeCoachNote(session);
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Header */}
@@ -130,15 +133,14 @@ export default async function GradeRulesPage({
             <h2 className="text-4xl font-bold tracking-tight">{grade.name}</h2>
             <Badge
               variant="outline"
-              className="border-primary/30 text-primary bg-primary/8 text-sm px-3"
+              className="border-blue-500/30 text-blue-600 bg-blue-500/8 text-sm px-3"
             >
               {grade.rules.length} filtro{grade.rules.length !== 1 ? "s" : ""}
             </Badge>
             <Badge
               variant="outline"
-              className="border-border text-muted-foreground text-sm px-3"
+              className="border-blue-500/30 text-blue-600 bg-blue-500/8 text-sm px-3"
             >
-              <Users className="h-4 w-4 mr-1.5" />
               {grade._count.assignments} jogador
               {grade._count.assignments !== 1 ? "es" : ""}
             </Badge>
@@ -146,32 +148,19 @@ export default async function GradeRulesPage({
         </div>
       </div>
 
-      {/* Coach explanation */}
-      {grade.description && (
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 flex gap-5">
-          <div className="shrink-0 mt-0.5">
-            <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
-              <Info className="h-5 w-5 text-primary" />
-            </div>
-          </div>
-          <div>
-            <p className="text-base font-semibold text-primary mb-1.5">
-              Nota do Coach
-            </p>
-            <p className="text-[15px] text-foreground/80 leading-relaxed whitespace-pre-line">
-              {grade.description}
-            </p>
-          </div>
-        </div>
-      )}
+      <GradeCoachNoteSection
+        gradeId={grade.id}
+        initialDescription={grade.description}
+        canEdit={canEditNote}
+      />
 
       {/* Section header */}
       <div className="flex items-center gap-4">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-3">
+        <div className="h-px flex-1 bg-blue-500/30" />
+        <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider px-3">
           Filtros da grade
         </span>
-        <div className="h-px flex-1 bg-border" />
+        <div className="h-px flex-1 bg-blue-500/30" />
       </div>
 
       {/* Filter cards grid */}
@@ -193,20 +182,20 @@ export default async function GradeRulesPage({
           return (
             <div
               key={rule.id}
-              className="rounded-xl border border-border bg-card/60 overflow-hidden hover:border-border/80 transition-colors group"
+              className="rounded-xl border border-blue-500/30 bg-white overflow-hidden hover:border-blue-500/40 transition-colors group"
             >
               {/* Card header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-border/60 bg-muted/10">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-blue-500/30 bg-blue-500/8">
                 <div className="flex items-center gap-2.5">
-                  <span className="w-7 h-7 rounded-md bg-primary/15 flex items-center justify-center text-[13px] font-bold text-primary">
+                  <span className="w-7 h-7 rounded-md bg-blue-500/15 flex items-center justify-center text-[13px] font-bold text-blue-600">
                     {idx + 1}
                   </span>
-                  <span className="font-semibold text-base text-foreground">
+                  <span className="font-semibold text-base text-blue-600">
                     {rule.filterName}
                   </span>
                 </div>
                 {rule.lobbyzeFilterId && (
-                  <span className="text-xs text-muted-foreground/50 font-mono">
+                  <span className="text-xs text-blue-600/50 font-mono">
                     #{rule.lobbyzeFilterId}
                   </span>
                 )}
@@ -217,10 +206,10 @@ export default async function GradeRulesPage({
                 {/* Sites */}
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center shrink-0 mt-0.5">
-                    <Zap className="h-5 w-5 text-muted-foreground" />
+                    <Zap className="h-5 w-5 text-blue-600" />
                   </div>
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                    <p className="text-sm font-medium text-black uppercase tracking-wide">
                       Sites
                     </p>
                     <Pills items={sites} variant="sites" />
@@ -229,11 +218,11 @@ export default async function GradeRulesPage({
 
                 {/* Buy-in */}
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <DollarSign className="h-5 w-5 text-emerald-500" />
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <DollarSign className="h-5 w-5 text-blue-600" />
                   </div>
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                    <p className="text-sm font-medium text-black uppercase tracking-wide">
                       Buy-in
                     </p>
                     <BuyInRange min={rule.buyInMin} max={rule.buyInMax} />
@@ -243,11 +232,11 @@ export default async function GradeRulesPage({
                 {/* Speed */}
                 {speed.length > 0 && (
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Clock className="h-5 w-5 text-amber-500" />
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Clock className="h-5 w-5 text-blue-600" />
                     </div>
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                      <p className="text-sm font-medium text-black uppercase tracking-wide">
                         Speed
                       </p>
                       <Pills items={speed} variant="speed" />
@@ -258,11 +247,11 @@ export default async function GradeRulesPage({
                 {/* Variant / Tournament type */}
                 {(variant.length > 0 || tournamentType.length > 0) && (
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Tag className="h-5 w-5 text-violet-500" />
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Tag className="h-5 w-5 text-blue-600" />
                     </div>
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                      <p className="text-sm font-medium text-black uppercase tracking-wide">
                         Formato / Variante
                       </p>
                       <Pills
@@ -275,35 +264,35 @@ export default async function GradeRulesPage({
 
                 {/* Extra constraints */}
                 {hasExtra && (
-                  <div className="pt-4 border-t border-border/50 space-y-3">
+                  <div className="pt-4 border-t border-blue-500/30 space-y-3">
                     {rule.prizePoolMin && (
-                      <div className="flex items-center gap-3 text-base text-muted-foreground">
-                        <TrendingUp className="h-5 w-5 text-emerald-500/70" />
+                      <div className="flex items-center gap-3 text-base text-blue-600">
+                        <TrendingUp className="h-5 w-5 text-blue-600" />
                         <span>
                           Garantido mín:{" "}
-                          <strong className="text-foreground/80">
+                          <strong className="text-blue-600/80">
                             ${rule.prizePoolMin.toLocaleString()}
                           </strong>
                         </span>
                       </div>
                     )}
                     {rule.minParticipants && (
-                      <div className="flex items-center gap-3 text-base text-muted-foreground">
-                        <Users className="h-5 w-5 text-blue-500/70" />
+                      <div className="flex items-center gap-3 text-base text-blue-600">
+                        <Users className="h-5 w-5 text-blue-600" />
                         <span>
                           Mín. entrants:{" "}
-                          <strong className="text-foreground/80">
+                          <strong className="text-blue-600/80">
                             {rule.minParticipants}
                           </strong>
                         </span>
                       </div>
                     )}
                     {rule.fromTime && rule.toTime && (
-                      <div className="flex items-center gap-3 text-base text-muted-foreground">
-                        <Timer className="h-5 w-5 text-primary/70" />
+                      <div className="flex items-center gap-3 text-base text-blue-600">
+                        <Timer className="h-5 w-5 text-blue-600/70" />
                         <span>
                           Horário:{" "}
-                          <strong className="text-foreground/80">
+                          <strong className="text-blue-600/80">
                             {rule.fromTime} — {rule.toTime}
                           </strong>
                         </span>

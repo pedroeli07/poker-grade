@@ -135,11 +135,14 @@ function StatusBadge({ registered }: { registered: boolean }) {
   );
 }
 
-type Props = { initialRows: UsuarioDirectoryRow[] };
+type Props = {
+  initialRows: UsuarioDirectoryRow[];
+  canManageUsers: boolean;
+};
 type ColumnKey = "email" | "role" | "status";
 type ColumnFilters = Record<ColumnKey, Set<string> | null>;
 
-export function UsuariosClient({ initialRows }: Props) {
+export function UsuariosClient({ initialRows, canManageUsers }: Props) {
   const router = useRouter();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -225,7 +228,9 @@ export function UsuariosClient({ initialRows }: Props) {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <UsuariosInviteModal open={inviteOpen} onOpenChange={setInviteOpen} />
+      {canManageUsers ? (
+        <UsuariosInviteModal open={inviteOpen} onOpenChange={setInviteOpen} />
+      ) : null}
 
       <div className="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
         <div>
@@ -236,16 +241,24 @@ export function UsuariosClient({ initialRows }: Props) {
           <p className="mt-1 text-sm text-muted-foreground">
             Contas ativas e convites pendentes. Apenas o e-mail administrador
             principal registra sem convite; os demais precisam estar na lista.
+            {!canManageUsers ? (
+              <span className="mt-2 block text-xs">
+                Sua função tem acesso somente leitura. Convites e edições ficam
+                com admin e manager.
+              </span>
+            ) : null}
           </p>
         </div>
-        <Button
-          type="button"
-          className="glow-primary shrink-0"
-          onClick={() => setInviteOpen(true)}
-        >
-          <UserPlus className="h-4 w-4" />
-          Novo convite
-        </Button>
+        {canManageUsers ? (
+          <Button
+            type="button"
+            className="glow-primary shrink-0"
+            onClick={() => setInviteOpen(true)}
+          >
+            <UserPlus className="h-4 w-4" />
+            Novo convite
+          </Button>
+        ) : null}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -317,7 +330,10 @@ export function UsuariosClient({ initialRows }: Props) {
       )}
 
       {filtered.length === 0 ? (
-        <EmptyState hasFilters={Boolean(searchQuery || anyFilter)} />
+        <EmptyState
+          hasFilters={Boolean(searchQuery || anyFilter)}
+          canManageUsers={canManageUsers}
+        />
       ) : viewMode === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((row) => (
@@ -325,6 +341,7 @@ export function UsuariosClient({ initialRows }: Props) {
               key={`${row.kind}-${row.id}`}
               row={row}
               disabled={pending}
+              canManage={canManageUsers}
               onAction={(fn, ok) => runAction(fn, ok)}
             />
           ))}
@@ -381,7 +398,9 @@ export function UsuariosClient({ initialRows }: Props) {
                     onApply={setCol("status")}
                   />
                 </TableHead>
-                <TableHead className="text-right w-[140px]">Ações</TableHead>
+                {canManageUsers ? (
+                  <TableHead className="text-right w-[140px]">Ações</TableHead>
+                ) : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -390,6 +409,7 @@ export function UsuariosClient({ initialRows }: Props) {
                   key={`${row.kind}-${row.id}`}
                   row={row}
                   disabled={pending}
+                  canManage={canManageUsers}
                   onAction={(fn, ok) => runAction(fn, ok)}
                 />
               ))}
@@ -426,7 +446,13 @@ function StatCard({
   );
 }
 
-function EmptyState({ hasFilters }: { hasFilters: boolean }) {
+function EmptyState({
+  hasFilters,
+  canManageUsers,
+}: {
+  hasFilters: boolean;
+  canManageUsers: boolean;
+}) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
       <Users className="mb-3 h-10 w-10 text-muted-foreground/50" />
@@ -434,7 +460,9 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
       <p className="mt-1 max-w-sm text-sm text-muted-foreground">
         {hasFilters
           ? "Ajuste os filtros ou a busca."
-          : "Adicione um convite para autorizar um novo cadastro."}
+          : canManageUsers
+            ? "Adicione um convite para autorizar um novo cadastro."
+            : "Não há usuários ou convites listados no momento."}
       </p>
     </div>
   );
@@ -443,10 +471,12 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
 function UserCard({
   row,
   disabled,
+  canManage,
   onAction,
 }: {
   row: UsuarioDirectoryRow;
   disabled: boolean;
+  canManage: boolean;
   onAction: (
     fn: () => Promise<{ error?: string; success?: boolean }>,
     onSuccess?: () => void
@@ -549,7 +579,7 @@ function UserCard({
             </>
           )}
         </div>
-        {!editing && (
+        {!editing && canManage && (
           <div className="flex shrink-0 flex-col gap-1">
             <Button
               size="icon"
@@ -579,10 +609,12 @@ function UserCard({
 function UserTableRow({
   row,
   disabled,
+  canManage,
   onAction,
 }: {
   row: UsuarioDirectoryRow;
   disabled: boolean;
+  canManage: boolean;
   onAction: (
     fn: () => Promise<{ error?: string; success?: boolean }>,
     onSuccess?: () => void
@@ -670,50 +702,52 @@ function UserTableRow({
       <TableCell>
         <StatusBadge registered={row.isRegistered} />
       </TableCell>
-      <TableCell className="text-right">
-        <div className="inline-flex items-center justify-end gap-1">
-          {editing ? (
-            <>
-              <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={save} disabled={disabled}>
-                {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 text-muted-foreground"
-                onClick={() => {
-                  setEditing(false);
-                  setEmail(row.email);
-                  setRole(row.role);
-                }}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => setEditing(true)}
-                disabled={disabled}
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
-                onClick={remove}
-                disabled={disabled}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </>
-          )}
-        </div>
-      </TableCell>
+      {canManage ? (
+        <TableCell className="text-right">
+          <div className="inline-flex items-center justify-end gap-1">
+            {editing ? (
+              <>
+                <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={save} disabled={disabled}>
+                  {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 text-muted-foreground"
+                  onClick={() => {
+                    setEditing(false);
+                    setEmail(row.email);
+                    setRole(row.role);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+                  onClick={() => setEditing(true)}
+                  disabled={disabled}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
+                  onClick={remove}
+                  disabled={disabled}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        </TableCell>
+      ) : null}
     </TableRow>
   );
 }

@@ -166,7 +166,7 @@ export default async function DashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-7">
         {/* Últimas importações */}
-        <Card className="col-span-4 bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
+        <Card className={`col-span-4 ${cardClassName}`}>
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-lg">Importações Recentes</CardTitle>
             <Button variant="ghost" size="sm" asChild className="text-[15px]">
@@ -242,7 +242,7 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Últimas movimentações de limite */}
-        <Card className="col-span-3 bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
+        <Card className={`col-span-3 ${cardClassName}`}>
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-lg">Movimentações de Limite</CardTitle>
             <Button variant="ghost" size="sm" asChild className="text-[15px]">

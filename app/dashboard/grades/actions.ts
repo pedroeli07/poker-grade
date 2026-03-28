@@ -6,8 +6,15 @@ import { parseLobbyzeFilters } from "@/lib/grade-matcher";
 import { revalidatePath } from "next/cache";
 import { createLogger } from "@/lib/logger";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanManageGrades } from "@/lib/auth/rbac";
-import { deleteGradeSchema, importGradeFormSchema } from "@/lib/validation/schemas";
+import {
+  assertCanManageGrades,
+  canEditGradeCoachNote,
+} from "@/lib/auth/rbac";
+import {
+  deleteGradeSchema,
+  importGradeFormSchema,
+  updateGradeCoachNoteSchema,
+} from "@/lib/validation/schemas";
 import { sanitizeOptional, sanitizeText } from "@/lib/sanitize";
 import { notifyGradeCreated } from "@/lib/notifications";
 
@@ -141,6 +148,50 @@ export async function createGradeProfile(formData: FormData) {
   revalidatePath("/dashboard/grades");
   log.success("Grade criada manualmente", { name, id: grade.id });
   return { success: true, id: grade.id };
+}
+
+export async function updateGradeCoachNote(
+  gradeId: string,
+  description: string | null
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const session = await requireSession();
+  if (!canEditGradeCoachNote(session)) {
+    return { ok: false, error: "Sem permissão para editar esta nota." };
+  }
+
+  const parsed = updateGradeCoachNoteSchema.safeParse({
+    gradeId,
+    description: description ?? null,
+  });
+  if (!parsed.success) {
+    return { ok: false, error: "Dados inválidos." };
+  }
+
+  const exists = await prisma.gradeProfile.findUnique({
+    where: { id: parsed.data.gradeId },
+    select: { id: true },
+  });
+  if (!exists) {
+    return { ok: false, error: "Grade não encontrada." };
+  }
+
+  const cleaned = sanitizeOptional(
+    parsed.data.description != null && parsed.data.description !== ""
+      ? parsed.data.description
+      : null,
+    2000
+  );
+
+  await prisma.gradeProfile.update({
+    where: { id: parsed.data.gradeId },
+    data: { description: cleaned },
+  });
+
+  revalidatePath(`/dashboard/grades/${parsed.data.gradeId}`);
+  revalidatePath("/dashboard/grades");
+  revalidatePath("/dashboard/minha-grade");
+  log.info("Nota do coach atualizada", { gradeId: parsed.data.gradeId });
+  return { ok: true };
 }
 
 export async function deleteGrade(id: string) {

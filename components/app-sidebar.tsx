@@ -139,7 +139,7 @@ function AppSidebar({ userRole }: { userRole: UserRole }) {
       : SIDEBAR_NAV_ITEMS.filter((item) => {
           if (item.href === "/dashboard/minha-grade") return false;
           if (item.href === "/dashboard/usuarios")
-            return ["ADMIN", "MANAGER"].includes(userRole);
+            return ["ADMIN", "MANAGER", "COACH"].includes(userRole);
           return true;
         });
 

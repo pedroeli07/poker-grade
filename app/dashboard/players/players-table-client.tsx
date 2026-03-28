@@ -12,34 +12,43 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Settings2 } from "lucide-react";
-import type { PlayerStatus } from "@prisma/client";
+import { Pencil, Settings2 } from "lucide-react";
 import { ColumnFilter } from "@/components/column-filter";
 import { distinctOptions } from "@/lib/distinct-options";
+import { EditPlayerModal } from "@/components/edit-player-modal";
+import type { PlayerTableRow } from "@/lib/types/player-table-row";
 
-export type PlayerTableRow = {
-  id: string;
-  name: string;
-  nickname: string | null;
-  coachKey: string;
-  coachLabel: string;
-  gradeKey: string;
-  gradeLabel: string;
-  status: PlayerStatus;
-};
+export type { PlayerTableRow };
 
-type ColumnKey = "name" | "nickname" | "coach" | "grade" | "status";
+type ColumnKey = "name" | "nickname" | "coach" | "grade" | "abi" | "status";
 
 type ColumnFilters = Record<ColumnKey, Set<string> | null>;
 
 const EMPTY_NICK = "__empty__";
 
-export function PlayersTableClient({ rows }: { rows: PlayerTableRow[] }) {
+type CoachOpt = { id: string; name: string; role: string };
+type GradeOpt = { id: string; name: string };
+
+export function PlayersTableClient({
+  rows,
+  coaches,
+  grades,
+  canEditPlayers,
+  allowCoachSelect,
+}: {
+  rows: PlayerTableRow[];
+  coaches: CoachOpt[];
+  grades: GradeOpt[];
+  canEditPlayers: boolean;
+  allowCoachSelect: boolean;
+}) {
+  const [editRow, setEditRow] = useState<PlayerTableRow | null>(null);
   const [filters, setFilters] = useState<ColumnFilters>({
     name: null,
     nickname: null,
     coach: null,
     grade: null,
+    abi: null,
     status: null,
   });
 
@@ -60,6 +69,10 @@ export function PlayersTableClient({ rows }: { rows: PlayerTableRow[] }) {
       grade: distinctOptions(rows, (r) => ({
         value: r.gradeKey,
         label: r.gradeLabel,
+      })),
+      abi: distinctOptions(rows, (r) => ({
+        value: r.abiKey,
+        label: r.abiLabel,
       })),
       status: distinctOptions(rows, (r) => ({
         value: r.status,
@@ -84,6 +97,7 @@ export function PlayersTableClient({ rows }: { rows: PlayerTableRow[] }) {
         return false;
       if (filters.coach && !filters.coach.has(r.coachKey)) return false;
       if (filters.grade && !filters.grade.has(r.gradeKey)) return false;
+      if (filters.abi && !filters.abi.has(r.abiKey)) return false;
       if (filters.status && !filters.status.has(r.status)) return false;
       return true;
     });
@@ -98,10 +112,21 @@ export function PlayersTableClient({ rows }: { rows: PlayerTableRow[] }) {
     filters.nickname !== null ||
     filters.coach !== null ||
     filters.grade !== null ||
+    filters.abi !== null ||
     filters.status !== null;
 
   return (
     <div className="space-y-3">
+      <EditPlayerModal
+        player={editRow}
+        open={editRow !== null}
+        onOpenChange={(o) => {
+          if (!o) setEditRow(null);
+        }}
+        coaches={coaches}
+        grades={grades}
+        allowCoachSelect={allowCoachSelect}
+      />
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
         <span>
           Mostrando{" "}
@@ -122,6 +147,7 @@ export function PlayersTableClient({ rows }: { rows: PlayerTableRow[] }) {
                 nickname: null,
                 coach: null,
                 grade: null,
+                abi: null,
                 status: null,
               })
             }
@@ -172,6 +198,15 @@ export function PlayersTableClient({ rows }: { rows: PlayerTableRow[] }) {
               </TableHead>
               <TableHead>
                 <ColumnFilter
+                  columnId="abi"
+                  label="ABI ALVO"
+                  options={options.abi}
+                  applied={filters.abi}
+                  onApply={setCol("abi")}
+                />
+              </TableHead>
+              <TableHead>
+                <ColumnFilter
                   columnId="status"
                   label="Status"
                   options={options.status}
@@ -186,7 +221,7 @@ export function PlayersTableClient({ rows }: { rows: PlayerTableRow[] }) {
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="text-center py-10 text-muted-foreground"
                 >
                   Nenhum jogador com os filtros atuais.
@@ -226,6 +261,15 @@ export function PlayersTableClient({ rows }: { rows: PlayerTableRow[] }) {
                     )}
                   </TableCell>
                   <TableCell>
+                    {player.abiKey !== "__none__" ? (
+                      <span className="font-mono text-sm font-semibold tabular-nums">
+                        {player.abiLabel}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
                     {player.status === "ACTIVE" ? (
                       <Badge className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 glow-success border-emerald-500/20">
                         Ativo
@@ -239,16 +283,29 @@ export function PlayersTableClient({ rows }: { rows: PlayerTableRow[] }) {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      asChild
-                      title="Gerenciar Perfil"
-                    >
-                      <Link href={`/dashboard/players/${player.id}`}>
-                        <Settings2 className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
-                      </Link>
-                    </Button>
+                    <div className="inline-flex items-center justify-end gap-0.5">
+                      {canEditPlayers ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          title="Editar jogador"
+                          onClick={() => setEditRow(player)}
+                        >
+                          <Pencil className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                        </Button>
+                      ) : null}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        asChild
+                        title="Gerenciar perfil"
+                      >
+                        <Link href={`/dashboard/players/${player.id}`}>
+                          <Settings2 className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                        </Link>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

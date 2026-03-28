@@ -20,7 +20,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Archive, LayoutGrid, Table2, Users } from "lucide-react";
-import { cardClassName } from "@/lib/constants";
 import { DeleteGradeButton } from "@/components/delete-grade-button";
 import { ColumnFilter } from "@/components/column-filter";
 import { distinctOptions } from "@/lib/distinct-options";
@@ -30,6 +29,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { cardClassName } from "@/lib/constants";
 
 export type GradeListRow = {
   id: string;
@@ -58,20 +58,20 @@ function GradePlayersHover({
 }) {
   const badgeClass =
     variant === "card"
-      ? "bg-primary/10 text-primary border-primary/20 text-xs px-2.5 py-0.5"
-      : "bg-primary/10 text-primary border-primary/20 text-xs tabular-nums";
+      ? "border-primary/20 bg-primary/[0.06] text-primary text-xs font-medium px-2 py-0.5"
+      : "border-primary/20 bg-primary/[0.06] text-primary text-xs tabular-nums font-medium";
 
   const trigger = (
     <button
       type="button"
       className={cn(
-        "cursor-help rounded-md border-0 bg-transparent p-0 text-left transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "cursor-help rounded-md border-0 bg-transparent p-0 text-left transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
         variant === "table" && "inline-flex"
       )}
       aria-label={`${count} jogador${count !== 1 ? "es" : ""} — passar o mouse para ver a lista`}
     >
-      <Badge variant="secondary" className={badgeClass}>
-        {variant === "card" ? `${count} Jogadores` : count}
+      <Badge variant="outline" className={badgeClass}>
+        {variant === "card" ? `${count} jogadores` : count}
       </Badge>
     </button>
   );
@@ -84,12 +84,9 @@ function GradePlayersHover({
         align="center"
         sideOffset={8}
         collisionPadding={12}
-        className={cn(
-          "z-[90] w-[min(92vw,22rem)] p-0 bg-blue-500/10 backdrop-blur-md border border-blue-500/20 shadow-[0_10px_40px_-10px_rgba(59,130,246,0.3)]",
-          "[scrollbar-width:thin]"
-        )}
+        className="z-[90] w-[min(92vw,22rem)] p-0 border border-border bg-popover shadow-lg"
       >
-        <div className="border-b border-border px-3 py-2 flex items-center gap-2 bg-muted/30">
+        <div className="border-b border-border px-3 py-2 flex items-center gap-2 bg-muted/40">
           <Users className="h-4 w-4 text-primary shrink-0" />
           <div className="min-w-0">
             <p className="text-xs font-semibold text-foreground truncate">
@@ -111,7 +108,7 @@ function GradePlayersHover({
                 <li key={p.id}>
                   <Link
                     href={`/dashboard/players/${p.id}`}
-                    className="block rounded-md px-2 py-1.5 text-sm hover:bg-primary/10 hover:text-primary transition-colors"
+                    className="block rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-primary/[0.08] transition-colors"
                   >
                     {p.name}
                   </Link>
@@ -200,128 +197,174 @@ export function GradesPageClient({
     filters.rules !== null ||
     filters.players !== null;
 
+  const clearFilters = () =>
+    setFilters({
+      name: null,
+      description: null,
+      rules: null,
+      players: null,
+    });
+
   const descriptionCell = (r: GradeListRow) =>
     r.description?.trim() ? (
-      <span className="text-sm line-clamp-2 max-w-md">{r.description}</span>
-    ) : (
-      <span className="text-muted-foreground text-xs italic">
-        Sem descrição
+      <span className="text-sm text-foreground/90 line-clamp-2 max-w-xl">
+        {r.description}
       </span>
+    ) : (
+      <span className="text-muted-foreground text-sm">—</span>
     );
 
+  const filterControls = (compact: boolean) => (
+    <>
+      <ColumnFilter
+        columnId="g-name"
+        label="Nome"
+        options={options.name}
+        applied={filters.name}
+        onApply={setCol("name")}
+        compact={compact}
+      />
+      <ColumnFilter
+        columnId="g-desc"
+        label="Descrição"
+        options={options.description}
+        applied={filters.description}
+        onApply={setCol("description")}
+        compact={compact}
+      />
+      <ColumnFilter
+        columnId="g-rules"
+        label="Regras"
+        options={options.rules}
+        applied={filters.rules}
+        onApply={setCol("rules")}
+        compact={compact}
+      />
+      <ColumnFilter
+        columnId="g-players"
+        label="Jogadores"
+        options={options.players}
+        applied={filters.players}
+        onApply={setCol("players")}
+        compact={compact}
+      />
+    </>
+  );
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="w-full max-w-[1920px] mx-auto space-y-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
         <div
-          className="inline-flex rounded-lg border border-border p-1 bg-muted/40"
+          className="inline-flex shrink-0 rounded-lg border border-border p-0.5 bg-muted/30"
           role="group"
           aria-label="Modo de visualização"
         >
           <Button
             type="button"
-            variant={view === "cards" ? "default" : "ghost"}
+            variant={view === "cards" ? "secondary" : "ghost"}
             size="sm"
-            className="gap-2"
+            className={cn(
+              "gap-2 h-8 text-xs",
+              view === "cards" && "bg-primary/[0.12] text-primary shadow-none"
+            )}
             onClick={() => setView("cards")}
           >
-            <LayoutGrid className="h-4 w-4" />
+            <LayoutGrid className="h-3.5 w-3.5" />
             Cards
           </Button>
           <Button
             type="button"
-            variant={view === "table" ? "default" : "ghost"}
+            variant={view === "table" ? "secondary" : "ghost"}
             size="sm"
-            className="gap-2"
+            className={cn(
+              "gap-2 h-8 text-xs",
+              view === "table" && "bg-primary/[0.12] text-primary shadow-none"
+            )}
             onClick={() => setView("table")}
           >
-            <Table2 className="h-4 w-4" />
+            <Table2 className="h-3.5 w-3.5" />
             Tabela
           </Button>
         </div>
-        {view === "table" && (
-          <span className="text-sm text-muted-foreground">
-            Mostrando{" "}
-            <span className="font-medium text-foreground">
-              {filtered.length}
-            </span>{" "}
-            de{" "}
-            <span className="font-medium text-foreground">{rows.length}</span>
-          </span>
+
+        {view === "cards" && (
+          <div className="flex flex-1 flex-col gap-2 min-w-0 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+            <span className="text-xs font-medium text-muted-foreground shrink-0 sm:mr-1">
+              Filtros
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {filterControls(true)}
+            </div>
+          </div>
         )}
+
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground shrink-0">
+          <span>
+            <span className="font-medium text-foreground">{filtered.length}</span>
+            {" / "}
+            <span className="font-medium text-foreground">{rows.length}</span>
+            {" grades"}
+          </span>
+          {anyFilter && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs text-primary"
+              onClick={clearFilters}
+            >
+              Limpar filtros
+            </Button>
+          )}
+        </div>
       </div>
 
-      {view === "cards" && anyFilter && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm">
-          <span className="text-muted-foreground">
-            Filtros de coluna ativos ({filtered.length} de {rows.length}{" "}
-            grades). Ajuste na visão <strong className="text-foreground">Tabela</strong>.
-          </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 text-xs shrink-0"
-            onClick={() =>
-              setFilters({
-                name: null,
-                description: null,
-                rules: null,
-                players: null,
-              })
-            }
-          >
-            Limpar filtros
-          </Button>
-        </div>
-      )}
-
       {view === "cards" ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((grade) => (
-            <Card key={grade.id} className={cardClassName}>
-              <CardHeader className="pb-4">
-                <div className="flex justify-between items-start gap-4">
-                  <CardTitle className="text-xl line-clamp-1">
+            <Card
+              key={grade.id}
+              className={`${cardClassName}`}
+            >
+              <CardHeader className="space-y-2 pb-3">
+                <div className="flex justify-between items-start gap-3">
+                  <CardTitle className="text-lg font-semibold leading-snug text-foreground line-clamp-2 pr-1">
                     {grade.name}
                   </CardTitle>
                   {manage ? (
                     <DeleteGradeButton
                       gradeId={grade.id}
                       gradeName={grade.name}
+                      className="opacity-100 shrink-0"
                     />
                   ) : null}
                 </div>
-                <CardDescription className="line-clamp-2 min-h-[44px] text-sm mt-1.5">
-                  {grade.description || "Sem descrição"}
+                <CardDescription className="text-sm leading-relaxed text-muted-foreground line-clamp-3 min-h-[3.75rem]">
+                  {grade.description?.trim() || "Sem descrição."}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-5 text-[15px] text-muted-foreground">
+              <CardContent className="pt-0">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground border-t border-border pt-4">
                   <div className="flex items-center gap-2">
-                    <Archive className="h-4 w-4 text-primary" />
-                    <span className="font-semibold text-foreground">
-                      {grade.rulesCount}
-                    </span>{" "}
-                    Regras
+                    <Archive className="h-4 w-4 text-primary shrink-0 opacity-80" />
+                    <span>
+                      <span className="font-semibold tabular-nums text-foreground">
+                        {grade.rulesCount}
+                      </span>{" "}
+                      regras
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <GradePlayersHover
-                      count={grade.assignmentsCount}
-                      players={grade.assignedPlayers}
-                      gradeName={grade.name}
-                      variant="card"
-                    />
-                  </div>
+                  <GradePlayersHover
+                    count={grade.assignmentsCount}
+                    players={grade.assignedPlayers}
+                    gradeName={grade.name}
+                    variant="card"
+                  />
                 </div>
-                <div className="mt-5 pt-4 border-t border-border flex justify-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    asChild
-                    className="text-[14px]"
-                  >
+                <div className="mt-4 flex justify-end">
+                  <Button variant="outline" size="sm" asChild className="text-xs border-primary/20">
                     <Link href={`/dashboard/grades/${grade.id}`}>
-                      Ver Regras
+                      Ver regras
                     </Link>
                   </Button>
                 </div>
@@ -329,130 +372,125 @@ export function GradesPageClient({
             </Card>
           ))}
           {filtered.length === 0 && (
-            <div className="col-span-full py-12 text-center border border-dashed border-border rounded-lg text-muted-foreground">
-              <Archive className="h-10 w-10 mx-auto mb-4 opacity-50" />
-              <p>Nenhuma grade neste filtro.</p>
+            <div className="col-span-full py-16 text-center rounded-xl border border-dashed border-border bg-muted/20 text-muted-foreground">
+              <Archive className="h-10 w-10 mx-auto mb-3 opacity-40 text-primary" />
+              <p className="text-foreground/80 font-medium">Nenhuma grade neste filtro.</p>
+              {anyFilter && (
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="mt-2 text-primary"
+                  onClick={clearFilters}
+                >
+                  Limpar filtros
+                </Button>
+              )}
             </div>
           )}
         </div>
       ) : (
-        <div className="space-y-3">
-          {anyFilter && (
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs"
-                onClick={() =>
-                  setFilters({
-                    name: null,
-                    description: null,
-                    rules: null,
-                    players: null,
-                  })
-                }
-              >
-                Limpar todos os filtros
-              </Button>
-            </div>
-          )}
-          <div className="rounded-md border border-border overflow-x-auto bg-[oklch(1_0_0/80%)]">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-blue-500/10 hover:bg-transparent">
-                  <TableHead>
-                    <ColumnFilter
-                      columnId="g-name"
-                      label="Nome"
-                      options={options.name}
-                      applied={filters.name}
-                      onApply={setCol("name")}
-                    />
-                  </TableHead>
-                  <TableHead>
-                    <ColumnFilter
-                      columnId="g-desc"
-                      label="Descrição"
-                      options={options.description}
-                      applied={filters.description}
-                      onApply={setCol("description")}
-                    />
-                  </TableHead>
-                  <TableHead>
-                    <ColumnFilter
-                      columnId="g-rules"
-                      label="Regras"
-                      options={options.rules}
-                      applied={filters.rules}
-                      onApply={setCol("rules")}
-                    />
-                  </TableHead>
-                  <TableHead>
-                    <ColumnFilter
-                      columnId="g-players"
-                      label="Jogadores"
-                      options={options.players}
-                      applied={filters.players}
-                      onApply={setCol("players")}
-                    />
-                  </TableHead>
-                  <TableHead className="text-right w-[140px]">Ações</TableHead>
+        <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+          <Table className="min-w-[720px] w-full table-fixed">
+            <TableHeader>
+              <TableRow className="border-b border-border bg-primary/[0.05] hover:bg-primary/[0.05]">
+                <TableHead className="w-[18%] align-bottom">
+                  <ColumnFilter
+                    columnId="g-name-t"
+                    label="Nome"
+                    options={options.name}
+                    applied={filters.name}
+                    onApply={setCol("name")}
+                  />
+                </TableHead>
+                <TableHead className="w-[40%] align-bottom">
+                  <ColumnFilter
+                    columnId="g-desc-t"
+                    label="Descrição"
+                    options={options.description}
+                    applied={filters.description}
+                    onApply={setCol("description")}
+                  />
+                </TableHead>
+                <TableHead className="w-[10%] align-bottom">
+                  <ColumnFilter
+                    columnId="g-rules-t"
+                    label="Regras"
+                    options={options.rules}
+                    applied={filters.rules}
+                    onApply={setCol("rules")}
+                  />
+                </TableHead>
+                <TableHead className="w-[12%] align-bottom">
+                  <ColumnFilter
+                    columnId="g-players-t"
+                    label="Jogadores"
+                    options={options.players}
+                    applied={filters.players}
+                    onApply={setCol("players")}
+                  />
+                </TableHead>
+                <TableHead className="text-right w-[140px] align-bottom text-foreground font-semibold">
+                  Ações
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-12 text-muted-foreground"
+                  >
+                    Nenhuma grade com os filtros atuais.
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center py-10 text-muted-foreground"
-                    >
-                      Nenhuma grade com os filtros atuais.
+              ) : (
+                filtered.map((grade) => (
+                  <TableRow
+                    key={grade.id}
+                    className="group border-border hover:bg-primary/[0.03]"
+                  >
+                    <TableCell className="font-medium text-foreground align-top py-3">
+                      {grade.name}
+                    </TableCell>
+                    <TableCell className="align-top py-3">
+                      {descriptionCell(grade)}
+                    </TableCell>
+                    <TableCell className="align-top py-3">
+                      <span className="tabular-nums font-medium text-foreground">
+                        {grade.rulesCount}
+                      </span>
+                    </TableCell>
+                    <TableCell className="align-top py-3">
+                      <GradePlayersHover
+                        count={grade.assignmentsCount}
+                        players={grade.assignedPlayers}
+                        gradeName={grade.name}
+                        variant="table"
+                      />
+                    </TableCell>
+                    <TableCell className="text-right align-top py-3">
+                      <div className="inline-flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
+                          <Link href={`/dashboard/grades/${grade.id}`}>
+                            Ver regras
+                          </Link>
+                        </Button>
+                        {manage ? (
+                          <DeleteGradeButton
+                            gradeId={grade.id}
+                            gradeName={grade.name}
+                            className="opacity-100"
+                          />
+                        ) : null}
+                      </div>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  filtered.map((grade) => (
-                    <TableRow
-                      key={grade.id}
-                      className="group hover:bg-sidebar-accent/50"
-                    >
-                      <TableCell className="font-medium">{grade.name}</TableCell>
-                      <TableCell>{descriptionCell(grade)}</TableCell>
-                      <TableCell>
-                        <span className="tabular-nums font-medium">
-                          {grade.rulesCount}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <GradePlayersHover
-                          count={grade.assignmentsCount}
-                          players={grade.assignedPlayers}
-                          gradeName={grade.name}
-                          variant="table"
-                        />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="inline-flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/dashboard/grades/${grade.id}`}>
-                              Ver regras
-                            </Link>
-                          </Button>
-                          {manage ? (
-                            <DeleteGradeButton
-                              gradeId={grade.id}
-                              gradeName={grade.name}
-                              className="opacity-100"
-                            />
-                          ) : null}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

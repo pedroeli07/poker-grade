@@ -12,6 +12,7 @@ import {
 } from "@/lib/security-log";
 import { createLogger } from "@/lib/logger";
 import { createAuthSession, applySessionCookie } from "@/lib/auth/issue-session";
+import { ensureCoachProfileLinked } from "@/lib/auth/ensure-coach-profile";
 
 const log = createLogger("auth.login");
 
@@ -127,11 +128,13 @@ export async function POST(request: Request) {
     },
   });
 
+  const linkedCoachId = await ensureCoachProfileLinked(user.id);
+
   const { token, sessionId } = await createAuthSession({
     id: user.id,
     role: user.role,
     playerId: user.playerId,
-    coachId: user.coachId,
+    coachId: linkedCoachId ?? user.coachId,
     displayName: user.displayName,
     email: user.email,
   });

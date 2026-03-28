@@ -206,52 +206,7 @@ async function main() {
     console.log("👤 Admin já existe:", adminEmail);
   }
 
-  // ── 3. Coaches (com auth) ────────────────────
-  console.log("\n🏋️  Criando coaches...");
-  const coachPwd = await hashPassword("TestPass123!");
-
-  async function createCoach(data: {
-    name: string;
-    email: string;
-    authEmail: string;
-  }) {
-    const coach = await prisma.coach.create({
-      data: { name: data.name, email: data.email },
-    });
-    const auth = await prisma.authUser.create({
-      data: {
-        email: data.authEmail,
-        passwordHash: coachPwd,
-        role: "COACH",
-        displayName: data.name,
-        coachId: coach.id,
-      },
-    });
-    await prisma.coach.update({
-      where: { id: coach.id },
-      data: {},
-    });
-    console.log(`  ✅ Coach: ${data.name} (login: ${data.authEmail})`);
-    return { coach, auth };
-  }
-
-  const { coach: coachRafael } = await createCoach({
-    name: "Rafael Costa",
-    email: "rafael.costa@clteam.com",
-    authEmail: "coach.rafael@clteam.com",
-  });
-  const { coach: coachAna } = await createCoach({
-    name: "Ana Lima",
-    email: "ana.lima@clteam.com",
-    authEmail: "coach.ana@clteam.com",
-  });
-  const { coach: coachBruno } = await createCoach({
-    name: "Bruno Melo",
-    email: "bruno.melo@clteam.com",
-    authEmail: "coach.bruno@clteam.com",
-  });
-
-  // ── 4. Grade Profiles ────────────────────────
+  // ── 3. Grade Profiles ────────────────────────
   console.log("\n📊 Criando grades...");
 
   const gradeMicro = await prisma.gradeProfile.create({
@@ -409,14 +364,15 @@ async function main() {
 
   console.log("  ✅ 5 grades criadas");
 
-  // ── 5. Players ───────────────────────────────
+  // ── 4. Players ───────────────────────────────
   console.log("\n👥 Criando jogadores...");
 
   interface PlayerConfig {
     name: string;
     nickname: string;
     email: string;
-    coachId: string;
+    /** Opcional — seed não inclui coaches mock */
+    coachId?: string | null;
     mainGrade: typeof gradeMicro;
     aboveGrade?: typeof gradeMicro;
     belowGrade?: typeof gradeMicro;
@@ -449,7 +405,6 @@ async function main() {
       name: "Fabiano Alvarez",
       nickname: "Fabiano",
       email: "fabiano@clteam.com",
-      coachId: coachRafael.id,
       mainGrade: gradeLow,
       aboveGrade: gradeMid,
       belowGrade: gradeMicro,
@@ -472,7 +427,6 @@ async function main() {
       name: "Adriana Silva",
       nickname: "Adriana",
       email: "adriana@clteam.com",
-      coachId: coachRafael.id,
       mainGrade: gradeMicro,
       aboveGrade: gradeLow,
       inGradePool: [...TOURNAMENTS_STARS_MICRO, ...TOURNAMENTS_GG_MICRO],
@@ -490,7 +444,6 @@ async function main() {
       name: "Pedro Victor",
       nickname: "PedroV",
       email: "pedro@clteam.com",
-      coachId: coachRafael.id,
       mainGrade: gradeMicro,
       aboveGrade: gradeLow,
       inGradePool: [...TOURNAMENTS_STARS_MICRO, ...TOURNAMENTS_GG_MICRO],
@@ -508,7 +461,6 @@ async function main() {
       name: "Victor Santos",
       nickname: "VictorBc",
       email: "victor@clteam.com",
-      coachId: coachRafael.id,
       mainGrade: gradeMicro,
       aboveGrade: gradeLow,
       inGradePool: [...TOURNAMENTS_STARS_MICRO, ...TOURNAMENTS_GG_MICRO],
@@ -526,7 +478,6 @@ async function main() {
       name: "Bernardo Gomes",
       nickname: "Bernardo",
       email: "bernardo@clteam.com",
-      coachId: coachAna.id,
       mainGrade: gradeLowLS,
       aboveGrade: gradeMid,
       belowGrade: gradeMicro,
@@ -549,7 +500,6 @@ async function main() {
       name: "Magno Ferreira",
       nickname: "Magno",
       email: "magno@clteam.com",
-      coachId: coachAna.id,
       mainGrade: gradeLowLS,
       aboveGrade: gradeMid,
       belowGrade: gradeMicro,
@@ -568,7 +518,6 @@ async function main() {
       name: "Bruno Bianchini",
       nickname: "BrunoBi",
       email: "bianchini@clteam.com",
-      coachId: coachAna.id,
       mainGrade: gradeLow,
       aboveGrade: gradeMid,
       belowGrade: gradeMicro,
@@ -587,7 +536,6 @@ async function main() {
       name: "João Marcello",
       nickname: "JMarcello",
       email: "joao@clteam.com",
-      coachId: coachAna.id,
       mainGrade: gradeMid,
       aboveGrade: gradeHigh,
       belowGrade: gradeLow,
@@ -610,7 +558,6 @@ async function main() {
       name: "Savin Weber",
       nickname: "Savin",
       email: "savin@clteam.com",
-      coachId: coachBruno.id,
       mainGrade: gradeMid,
       aboveGrade: gradeHigh,
       belowGrade: gradeLow,
@@ -629,7 +576,6 @@ async function main() {
       name: "mlalarina Lopez",
       nickname: "mlalarina",
       email: "mlalarina@clteam.com",
-      coachId: coachBruno.id,
       mainGrade: gradeMid,
       aboveGrade: gradeHigh,
       belowGrade: gradeLow,
@@ -650,7 +596,7 @@ async function main() {
     },
   ];
 
-  // ── 6. Create players + assignments + targets + imports ──
+  // ── 5. Create players + assignments + targets + imports ──
   for (const cfg of playersConfig) {
     console.log(`\n  ▸ Criando jogador: ${cfg.name} (${cfg.nickname})`);
 
@@ -659,7 +605,7 @@ async function main() {
         name: cfg.name,
         nickname: cfg.nickname,
         email: cfg.email,
-        coachId: cfg.coachId,
+        coachId: cfg.coachId ?? null,
         status: "ACTIVE",
       },
     });
@@ -868,7 +814,7 @@ async function main() {
         where: { id: extraItems[0].id },
         data: {
           status: "APPROVED",
-          reviewedBy: cfg.coachId,
+          reviewedBy: adminUser!.id,
           reviewedAt: daysAgo(6),
           reviewNotes: "Torneio autorizado pelo coach — campo especial este dia.",
         },
@@ -886,7 +832,7 @@ async function main() {
     );
   }
 
-  // ── 7. Summary ───────────────────────────────
+  // ── 6. Summary ───────────────────────────────
   const [totalPlayers, totalGrades, totalImports, totalTournaments, totalReviews] =
     await Promise.all([
       prisma.player.count(),
@@ -903,11 +849,9 @@ async function main() {
   console.log(`   📁 Importações:    ${totalImports}`);
   console.log(`   🎯 Torneios:       ${totalTournaments}`);
   console.log(`   🔍 Revisões:       ${totalReviews}`);
-  console.log("\n   Logins de teste:");
-  console.log(`   Admin:  admin@clteam.com / ChangeMeNow!123`);
-  console.log(`   Coach:  coach.rafael@clteam.com / TestPass123!`);
-  console.log(`   Coach:  coach.ana@clteam.com / TestPass123!`);
-  console.log(`   Coach:  coach.bruno@clteam.com / TestPass123!`);
+  console.log("\n   Login de teste:");
+  console.log(`   Admin:  ${adminEmail} / (BOOTSTRAP_ADMIN_PASSWORD ou ChangeMeNow!123)`);
+  console.log("   Coaches: cadastre via Usuários / convite (não há mais coaches mock no seed).");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 }
 

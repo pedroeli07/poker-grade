@@ -5,6 +5,7 @@ import { getGradesForSession } from "@/lib/data/queries";
 import { prisma } from "@/lib/prisma";
 import { NewGradeModal, ImportGradeModal } from "@/components/grade-modals";
 import { GradesPageClient } from "./grades-page-client";
+import { cardClassName } from "@/lib/constants";
 
 function buildAssignedPlayersByGrade(
   assignments: {
@@ -66,7 +67,7 @@ export default async function GradesPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-primary">Grades</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">Grades</h2>
           <p className="text-muted-foreground mt-1">
             Gerencie os perfis de grades e filtros da Lobbyze.
           </p>
@@ -80,7 +81,7 @@ export default async function GradesPage() {
       </div>
 
       {grades.length === 0 ? (
-        <div className="py-12 text-center border border-dashed border-border rounded-lg text-muted-foreground">
+        <div className={`${cardClassName} py-12 text-center`}>
           <Archive className="h-10 w-10 mx-auto mb-4 opacity-50" />
           <p>Nenhuma grade cadastrada.</p>
           <p className="text-sm">Importe um JSON da Lobbyze para começar.</p>

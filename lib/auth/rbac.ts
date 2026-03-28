@@ -24,6 +24,15 @@ export function canManageGrades(session: AppSession): boolean {
   return GRADE_ADMIN_ROLES.includes(session.role);
 }
 
+/** Texto livre da grade (nota do coach) — admin, manager e coach. */
+export function canEditGradeCoachNote(session: AppSession): boolean {
+  return (
+    session.role === "ADMIN" ||
+    session.role === "MANAGER" ||
+    session.role === "COACH"
+  );
+}
+
 export function canReview(session: AppSession): boolean {
   return (
     session.role === "ADMIN" ||

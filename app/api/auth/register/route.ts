@@ -93,8 +93,18 @@ export async function POST(request: Request) {
   let newUserId: string;
   try {
     const result = await prisma.$transaction(async (tx) => {
+      let coachId: string | null = null;
+      if (role === "COACH") {
+        const coachName =
+          displayName?.trim() || email.split("@")[0] || "Coach";
+        const coach = await tx.coach.create({
+          data: { name: coachName, email },
+        });
+        coachId = coach.id;
+      }
+
       const user = await tx.authUser.create({
-        data: { email, displayName, passwordHash, role },
+        data: { email, displayName, passwordHash, role, coachId },
         select: { id: true, playerId: true, coachId: true },
       });
       if (!isSuperAdminEmail(email)) {

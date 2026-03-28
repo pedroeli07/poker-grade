@@ -100,12 +100,15 @@ export function ColumnFilter({
   options,
   applied,
   onApply,
+  compact = false,
 }: {
   columnId: string;
   label: string;
   options: { value: string; label: string }[];
   applied: Set<string> | null;
   onApply: (next: Set<string> | null) => void;
+  /** Estilo de botão outline para toolbar (ex.: grades em cards). */
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -165,15 +168,24 @@ export function ColumnFilter({
         <button
           type="button"
           className={cn(
-            "cursor-pointer inline-flex items-center gap-1.5 rounded-md px-1 py-0.5 -mx-1 text-left font-semibold text-foreground hover:bg-primary/10 transition-colors",
-            active && "text-primary"
+            "cursor-pointer inline-flex items-center gap-1.5 transition-colors",
+            compact
+              ? cn(
+                  "h-8 shrink-0 rounded-md border border-border bg-card px-2.5 text-xs font-medium text-foreground shadow-sm hover:border-primary/25 hover:bg-primary/[0.04]",
+                  active && "border-primary/30 bg-primary/[0.06] text-primary"
+                )
+              : cn(
+                  "rounded-md px-1 py-0.5 -mx-1 text-left font-semibold text-foreground hover:bg-primary/10",
+                  active && "text-primary"
+                )
           )}
           aria-label={`Filtrar ${label}`}
         >
           <span>{label}</span>
           <ListFilter
             className={cn(
-              "h-4 w-4 shrink-0 text-muted-foreground",
+              "h-3.5 w-3.5 shrink-0 text-muted-foreground",
+              !compact && "h-4 w-4",
               active && "text-primary"
             )}
           />

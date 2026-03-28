@@ -7,10 +7,19 @@ export const metadata = {
   title: "Usuários | Gestão de Grades",
 };
 
+const USUARIOS_VIEW_ROLES = [
+  UserRole.ADMIN,
+  UserRole.MANAGER,
+  UserRole.COACH,
+] as const;
+
 export default async function UsuariosPage() {
-  await requireRoles([UserRole.ADMIN]);
-
+  const session = await requireRoles(USUARIOS_VIEW_ROLES);
   const rows = await getUsuarioDirectoryRows();
+  const canManageUsers =
+    session.role === UserRole.ADMIN || session.role === UserRole.MANAGER;
 
-  return <UsuariosClient initialRows={rows} />;
+  return (
+    <UsuariosClient initialRows={rows} canManageUsers={canManageUsers} />
+  );
 }

@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { createLogger } from "@/lib/logger";
 
@@ -21,6 +22,10 @@ import {
   ChevronRight,
   Ban,
   Timer,
+  AlertTriangle,
+  CheckCircle2,
+  CircleSlash,
+  Repeat2,
 } from "lucide-react";
 import Link from "next/link";
 import type { LobbyzeFilterItem } from "@/lib/types";
@@ -95,6 +100,35 @@ const TARGET_STATUS_CONFIG = {
   OFF_TRACK: { icon: TrendingDown, color: "text-red-500", label: "Abaixo" },
 };
 
+async function getPlayerTournamentStats(playerId: string) {
+  const rows = await prisma.$queryRaw<
+    Array<{
+      played: bigint;
+      extra_play: bigint;
+      didnt_play: bigint;
+      reentries: bigint;
+    }>
+  >(Prisma.sql`
+    SELECT
+      COUNT(*) FILTER (WHERE LOWER(TRIM(COALESCE(scheduling, ''))) = 'played')::bigint AS played,
+      COUNT(*) FILTER (WHERE LOWER(TRIM(COALESCE(scheduling, ''))) LIKE '%extra%')::bigint AS extra_play,
+      COUNT(*) FILTER (WHERE NOT (
+        LOWER(TRIM(COALESCE(scheduling, ''))) = 'played'
+        OR LOWER(TRIM(COALESCE(scheduling, ''))) LIKE '%extra%'
+      ))::bigint AS didnt_play,
+      COUNT(*) FILTER (WHERE rebuy = true)::bigint AS reentries
+    FROM played_tournaments
+    WHERE "playerId" = ${playerId}
+  `);
+  const r = rows[0];
+  return {
+    played: Number(r?.played ?? 0),
+    extraPlay: Number(r?.extra_play ?? 0),
+    didntPlay: Number(r?.didnt_play ?? 0),
+    reentries: Number(r?.reentries ?? 0),
+  };
+}
+
 export const metadata = { title: "Minha Grade | CL Team" };
 
 export default async function MinhaGradePage() {
@@ -154,6 +188,13 @@ export default async function MinhaGradePage() {
   });
 
   if (!player) redirect("/dashboard");
+
+  const [tourneyStats, pendingExtraReviews] = await Promise.all([
+    getPlayerTournamentStats(player.id),
+    prisma.gradeReviewItem.count({
+      where: { playerId: player.id, status: "PENDING" },
+    }),
+  ]);
 
   const gradeOrder: ("ABOVE" | "MAIN" | "BELOW")[] = ["ABOVE", "MAIN", "BELOW"];
   const assignmentsByType = Object.fromEntries(
@@ -225,6 +266,96 @@ export default async function MinhaGradePage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      {/* Resumo: targets + importações Lobbyize */}
+      <div>
+        <div className="flex items-center gap-4 mb-4">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest px-3">
+            Resumo
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <Link
+            href="#meus-targets"
+            className="rounded-xl border border-primary/15 bg-primary/[0.02] p-4 transition-colors hover:bg-primary/[0.05] hover:border-primary/25"
+          >
+            <div className="flex items-center gap-2 text-primary mb-2">
+              <Target className="h-4 w-4 shrink-0" />
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Targets
+              </span>
+            </div>
+            <p className="text-2xl font-bold tabular-nums text-foreground">
+              {player.targets.length}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-1">ativos</p>
+          </Link>
+          <div className="rounded-xl border border-primary/15 bg-primary/[0.02] p-4">
+            <div className="flex items-center gap-2 text-primary mb-2">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Extra plays
+              </span>
+            </div>
+            <p className="text-2xl font-bold tabular-nums text-foreground">
+              {tourneyStats.extraPlay}
+            </p>
+            {pendingExtraReviews > 0 ? (
+              <p className="text-[11px] text-primary/80 mt-1">
+                {pendingExtraReviews} conferência
+                {pendingExtraReviews !== 1 ? "ões" : ""} pendente
+                {pendingExtraReviews !== 1 ? "s" : ""}
+              </p>
+            ) : (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Lobbyize: extra play
+              </p>
+            )}
+          </div>
+          <div className="rounded-xl border border-primary/15 bg-primary/[0.02] p-4">
+            <div className="flex items-center gap-2 text-primary mb-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Torneios jogados
+              </span>
+            </div>
+            <p className="text-2xl font-bold tabular-nums text-foreground">
+              {tourneyStats.played}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-1">Played</p>
+          </div>
+          <div className="rounded-xl border border-primary/15 bg-primary/[0.02] p-4">
+            <div className="flex items-center gap-2 text-primary mb-2">
+              <CircleSlash className="h-4 w-4 shrink-0" />
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Não jogados
+              </span>
+            </div>
+            <p className="text-2xl font-bold tabular-nums text-foreground">
+              {tourneyStats.didntPlay}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Didn&apos;t play
+            </p>
+          </div>
+          <div className="rounded-xl border border-primary/15 bg-primary/[0.02] p-4 col-span-2 sm:col-span-1 lg:col-span-1">
+            <div className="flex items-center gap-2 text-primary mb-2">
+              <Repeat2 className="h-4 w-4 shrink-0" />
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Reentradas
+              </span>
+            </div>
+            <p className="text-2xl font-bold tabular-nums text-foreground">
+              {tourneyStats.reentries}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Torneios com rebuy
+            </p>
           </div>
         </div>
       </div>
@@ -441,8 +572,7 @@ export default async function MinhaGradePage() {
       </div>
 
       {/* Targets */}
-      {player.targets.length > 0 && (
-        <div>
+      <div id="meus-targets">
           <div className="flex items-center gap-4 mb-5">
             <div className="h-px flex-1 bg-border" />
             <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest px-3">
@@ -451,6 +581,12 @@ export default async function MinhaGradePage() {
             <div className="h-px flex-1 bg-border" />
           </div>
 
+          {player.targets.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border bg-muted/20 px-6 py-10 text-center text-muted-foreground text-sm">
+              Nenhum target ativo no momento. Seu coach pode cadastrar metas
+              para você acompanhar.
+            </div>
+          ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {player.targets.map((target) => {
               const cfg = TARGET_STATUS_CONFIG[target.status];
@@ -534,8 +670,8 @@ export default async function MinhaGradePage() {
               );
             })}
           </div>
-        </div>
-      )}
+          )}
+      </div>
 
       {/* Limit history */}
       {player.limitChanges.length > 0 && (

@@ -125,18 +125,24 @@ export async function notifyImportDone(
   importId: string,
   extraPlayCount: number
 ): Promise<void> {
-  // Notify the coaches and admins
   const staffIds = await getStaffUserIds();
+  const reviewLink =
+    extraPlayCount > 0 ? "/dashboard/review" : `/dashboard/imports/${importId}`;
+  const staffMessage =
+    extraPlayCount > 0
+      ? `${extraPlayCount} extra play${extraPlayCount > 1 ? "s" : ""} — abra Conferência de Torneios para revisar. (Importação: ${playerName})`
+      : `Importação de ${playerName} sem extra plays. Detalhes em Importações.`;
+
   await createMany(
     staffIds.map((userId) => ({
       userId,
       type: "IMPORT_DONE" as NotificationType,
-      title: `Importação: ${playerName}`,
-      message:
+      title:
         extraPlayCount > 0
-          ? `${extraPlayCount} extra play${extraPlayCount > 1 ? "s" : ""} detectado${extraPlayCount > 1 ? "s" : ""}. Revisão necessária.`
-          : "Importação concluída sem extra plays.",
-      link: `/dashboard/imports/${importId}`,
+          ? `Conferência: ${playerName}`
+          : `Importação: ${playerName}`,
+      message: staffMessage,
+      link: reviewLink,
     }))
   );
 

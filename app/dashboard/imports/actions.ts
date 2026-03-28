@@ -9,6 +9,7 @@ import { createLogger } from "@/lib/logger";
 import { requireSession } from "@/lib/auth/session";
 import { IMPORT_ROLES } from "@/lib/auth/rbac";
 import { notifyImportDone } from "@/lib/notifications";
+import { notifyImportBatchExternal } from "@/lib/notify-import-external";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 const log = createLogger("imports.actions");
@@ -87,6 +88,8 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
 
     let totalProcessed = 0;
     const summary: string[] = [];
+    let importSheetsProcessed = 0;
+    let totalExtraPlaysAll = 0;
 
     for (const sheetResult of parseResults) {
       log.sep(sheetResult.playerName);
@@ -311,6 +314,8 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
         didntPlay: didntPlayCount,
       });
 
+      importSheetsProcessed += 1;
+      totalExtraPlaysAll += extraPlayCount;
       void notifyImportDone(player.name, player.id, importRecord.id, extraPlayCount);
 
       summary.push(
@@ -322,6 +327,15 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
     revalidatePath("/dashboard/imports");
     revalidatePath("/dashboard/review");
     revalidatePath("/dashboard");
+
+    if (importSheetsProcessed > 0) {
+      void notifyImportBatchExternal({
+        fileName: file.name,
+        sheetsProcessed: importSheetsProcessed,
+        totalExtraPlays: totalExtraPlaysAll,
+        summaryLines: summary,
+      });
+    }
 
     log.sep("IMPORTAÇÃO CONCLUÍDA");
     log.success("Importação finalizada", { file: file.name, processed: totalProcessed });

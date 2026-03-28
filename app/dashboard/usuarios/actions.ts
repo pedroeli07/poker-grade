@@ -15,7 +15,7 @@ import { createLogger } from "@/lib/logger";
 
 const log = createLogger("usuarios.actions");
 
-const ADMIN_ONLY = [UserRole.ADMIN] as const;
+const USUARIOS_MANAGE_ROLES = [UserRole.ADMIN, UserRole.MANAGER] as const;
 
 async function assertLastAdminGuard(
   userId: string,
@@ -35,7 +35,7 @@ async function assertLastAdminGuard(
 }
 
 export async function addAllowedInvite(formData: FormData) {
-  const session = await requireRoles(ADMIN_ONLY);
+  const session = await requireRoles(USUARIOS_MANAGE_ROLES);
 
   const parsed = allowedInviteFormSchema.safeParse({
     email: formData.get("email")?.toString(),
@@ -74,7 +74,7 @@ export async function addAllowedInvite(formData: FormData) {
 }
 
 export async function updatePendingInvite(formData: FormData) {
-  await requireRoles(ADMIN_ONLY);
+  await requireRoles(USUARIOS_MANAGE_ROLES);
 
   const parsed = updatePendingInviteFormSchema.safeParse({
     id: formData.get("id")?.toString(),
@@ -121,7 +121,7 @@ export async function updatePendingInvite(formData: FormData) {
 }
 
 export async function updateAuthAccount(formData: FormData) {
-  await requireRoles(ADMIN_ONLY);
+  await requireRoles(USUARIOS_MANAGE_ROLES);
 
   const parsed = updateAuthAccountFormSchema.safeParse({
     id: formData.get("id")?.toString(),
@@ -173,7 +173,7 @@ export async function updateAuthAccount(formData: FormData) {
 }
 
 export async function deletePendingInvite(formData: FormData) {
-  await requireRoles(ADMIN_ONLY);
+  await requireRoles(USUARIOS_MANAGE_ROLES);
 
   const parsed = idParamSchema.safeParse({
     id: formData.get("id")?.toString(),
@@ -191,7 +191,7 @@ export async function deletePendingInvite(formData: FormData) {
 }
 
 export async function deleteAuthAccount(formData: FormData) {
-  const session = await requireRoles(ADMIN_ONLY);
+  const session = await requireRoles(USUARIOS_MANAGE_ROLES);
 
   const parsed = idParamSchema.safeParse({
     id: formData.get("id")?.toString(),

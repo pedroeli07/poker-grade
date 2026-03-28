@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ReviewStatus, UserRole } from "@prisma/client";
+import { PlayerStatus, ReviewStatus, UserRole } from "@prisma/client";
 import {
   PASSWORD_MAX_LENGTH,
   passwordMeetsPolicy,
@@ -62,6 +62,21 @@ export const createPlayerFormSchema = z.object({
   nickname: z.string().max(120).optional().nullable(),
   email: z.union([z.email().max(320), z.literal("")]).optional(),
   coachId: z.union([cuid, z.literal("none"), z.literal("")]),
+  mainGradeId: z.union([cuid, z.literal("none"), z.literal("")]),
+  abiAlvoValue: z.string().max(40).optional().transform((s) => s ?? ""),
+  abiAlvoUnit: z.string().max(30).optional().transform((s) => s ?? ""),
+});
+
+export const updatePlayerFormSchema = z.object({
+  id: cuid,
+  name: z.string().min(1).max(200),
+  nickname: z.string().max(120).optional().nullable(),
+  email: z.union([z.email().max(320), z.literal("")]).optional(),
+  coachId: z.union([cuid, z.literal("none"), z.literal("")]),
+  mainGradeId: z.union([cuid, z.literal("none"), z.literal("")]),
+  abiAlvoValue: z.string().max(40).optional().transform((s) => s ?? ""),
+  abiAlvoUnit: z.string().max(30).optional().transform((s) => s ?? ""),
+  status: z.nativeEnum(PlayerStatus),
 });
 
 export const importGradeFormSchema = z.object({
@@ -72,6 +87,11 @@ export const importGradeFormSchema = z.object({
 
 export const deleteGradeSchema = z.object({
   id: cuid,
+});
+
+export const updateGradeCoachNoteSchema = z.object({
+  gradeId: cuid,
+  description: z.string().max(2000).optional().nullable(),
 });
 
 export const processReviewSchema = z.object({

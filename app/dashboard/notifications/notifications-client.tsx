@@ -298,7 +298,7 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
                       "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors cursor-pointer",
                       isSelected
                         ? "bg-primary border-primary"
-                        : "border-border hover:border-primary/60"
+                        : "border-border hover:border-red-500/60"
                     )}
                   >
                     {isSelected && <Check className="h-3 w-3 text-white" />}

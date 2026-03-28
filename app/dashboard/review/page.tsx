@@ -14,10 +14,12 @@ import { getPendingReviewsForSession } from "@/lib/data/queries";
 import { ReviewDecisionButtons } from "@/components/review-decision-buttons";
 import Link from "next/link";
 import {
+  ReviewCoachSelect,
   ReviewPlayerSelect,
   ReviewPagination,
+  REVIEW_NO_COACH_SENTINEL,
 } from "./review-filters";
-
+import { cardClassName } from "@/lib/constants";
 const PLAYERS_PER_PAGE = 5;
 
 type ReviewItem = Awaited<ReturnType<typeof getPendingReviewsForSession>>[number];
@@ -53,7 +55,7 @@ function avatarColor() {
 export default async function ReviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; player?: string }>;
+  searchParams: Promise<{ page?: string; player?: string; coach?: string }>;
 }) {
   const sp = await searchParams;
   const session = await requireSession();
@@ -61,8 +63,30 @@ export default async function ReviewPage({
   const showActions = canReview(session);
   const groups = groupByPlayer(pendingReviews);
 
+  const coachIdsInData = new Set(
+    groups
+      .map((g) => g.player.coach?.id)
+      .filter((id): id is string => Boolean(id))
+  );
+  const hasPlayersWithoutCoach = groups.some((g) => !g.player.coachId);
+
+  const coachParam = typeof sp.coach === "string" ? sp.coach : undefined;
+  let filterCoachId: string | null = null;
+  if (coachParam === "none" && hasPlayersWithoutCoach) {
+    filterCoachId = REVIEW_NO_COACH_SENTINEL;
+  } else if (coachParam && coachIdsInData.has(coachParam)) {
+    filterCoachId = coachParam;
+  }
+
+  const groupsAfterCoach =
+    filterCoachId === null
+      ? groups
+      : filterCoachId === REVIEW_NO_COACH_SENTINEL
+        ? groups.filter((g) => !g.player.coachId)
+        : groups.filter((g) => g.player.coach?.id === filterCoachId);
+
   const playerIdParam = typeof sp.player === "string" ? sp.player : undefined;
-  const validIds = new Set(groups.map((g) => g.player.id));
+  const validIds = new Set(groupsAfterCoach.map((g) => g.player.id));
   const filterPlayerId =
     playerIdParam && validIds.has(playerIdParam) ? playerIdParam : null;
 
@@ -70,8 +94,8 @@ export default async function ReviewPage({
   const pageRequested = Number.isFinite(pageRaw) && pageRaw >= 1 ? pageRaw : 1;
 
   const filteredGroups = filterPlayerId
-    ? groups.filter((g) => g.player.id === filterPlayerId)
-    : groups;
+    ? groupsAfterCoach.filter((g) => g.player.id === filterPlayerId)
+    : groupsAfterCoach;
 
   const totalPages = Math.max(
     1,
@@ -93,13 +117,44 @@ export default async function ReviewPage({
     0
   );
 
-  const playerOptions = [...groups]
+  const coachCountById = new Map<string, number>();
+  const coachNameById = new Map<string, string>();
+  for (const g of groups) {
+    const cid = g.player.coach?.id;
+    if (cid) {
+      coachCountById.set(cid, (coachCountById.get(cid) ?? 0) + 1);
+      coachNameById.set(cid, g.player.coach!.name);
+    }
+  }
+  const coachOptions = [...coachCountById.entries()]
+    .map(([id, playerCount]) => ({
+      id,
+      name: coachNameById.get(id) ?? id,
+      playerCount,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  if (hasPlayersWithoutCoach) {
+    coachOptions.push({
+      id: REVIEW_NO_COACH_SENTINEL,
+      name: "Sem coach",
+      playerCount: groups.filter((g) => !g.player.coachId).length,
+    });
+  }
+
+  const playerOptions = [...groupsAfterCoach]
     .sort((a, b) => a.player.name.localeCompare(b.player.name, "pt-BR"))
     .map((g) => ({
       id: g.player.id,
       name: g.player.name,
       extraPlayCount: g.reviews.length,
     }));
+
+  const filterCoachLabel =
+    filterCoachId === REVIEW_NO_COACH_SENTINEL
+      ? "Sem coach"
+      : filterCoachId
+        ? (coachNameById.get(filterCoachId) ?? null)
+        : null;
 
   return (
     <div className="space-y-6">
@@ -118,14 +173,16 @@ export default async function ReviewPage({
             <span className="text-sm font-semibold text-amber-600">
               {filterPlayerId
                 ? `${totalFilteredPending} pendente${totalFilteredPending !== 1 ? "s" : ""} (${groups.find((g) => g.player.id === filterPlayerId)?.player.name ?? ""})`
-                : `${pendingReviews.length} pendente${pendingReviews.length !== 1 ? "s" : ""}`}
+                : filterCoachLabel
+                  ? `${totalFilteredPending} pendente${totalFilteredPending !== 1 ? "s" : ""} (${filterCoachLabel})`
+                  : `${pendingReviews.length} pendente${pendingReviews.length !== 1 ? "s" : ""}`}
             </span>
           </div>
         )}
       </div>
 
       {pendingReviews.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-xl text-muted-foreground">
+        <div className={`${cardClassName} flex flex-col items-center justify-center py-20`}>
           <CheckCircle2 className="h-12 w-12 mb-4 text-emerald-500/40" />
           <p className="font-medium text-foreground/70">Tudo em dia!</p>
           <p className="text-sm mt-1">
@@ -134,11 +191,19 @@ export default async function ReviewPage({
         </div>
       ) : (
         <>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-white border border-primary/10 shadow-sm transition-all hover:border-primary/20 group">
-            <ReviewPlayerSelect
-              playerOptions={playerOptions}
-              playerId={filterPlayerId}
-            />
+          <div className={`${cardClassName} flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4`}>
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4 w-full lg:flex-1 lg:min-w-0">
+              <ReviewCoachSelect
+                coachOptions={coachOptions}
+                coachId={filterCoachId}
+                playerId={filterPlayerId}
+              />
+              <ReviewPlayerSelect
+                playerOptions={playerOptions}
+                playerId={filterPlayerId}
+                coachId={filterCoachId}
+              />
+            </div>
             <div className="flex items-center gap-4 shrink-0 transition-opacity">
               <p className="text-sm font-medium text-muted-foreground mr-2">
                 {pendingInView} torneio{pendingInView !== 1 ? "s" : ""}
@@ -150,6 +215,7 @@ export default async function ReviewPage({
               </p>
               <ReviewPagination
                 playerId={filterPlayerId}
+                coachId={filterCoachId}
                 page={page}
                 totalPages={totalPages}
               />
@@ -157,7 +223,7 @@ export default async function ReviewPage({
           </div>
 
           {paginatedGroups.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border py-12 text-center text-muted-foreground">
+            <div className={`${cardClassName} py-12 text-center`}>
               Nenhum jogador nesta página.
             </div>
           ) : (
@@ -165,7 +231,7 @@ export default async function ReviewPage({
                 {paginatedGroups.map(({ player, reviews }) => (
                   <div
                     key={player.id}
-                    className="rounded-xl border border-border overflow-hidden bg-blue-500/5 shadow-sm"
+                    className={`${cardClassName} overflow-hidden`}
                   >
                     <div className="flex items-center gap-4 px-5 py-4 bg-primary/10 border-b border-border/60">
                       <div

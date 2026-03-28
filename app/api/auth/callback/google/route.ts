@@ -10,6 +10,7 @@ import {
 import { createAuthSession, applySessionCookie } from "@/lib/auth/issue-session";
 import { isSuperAdminEmail, normalizeAuthEmail } from "@/lib/auth/bootstrap";
 import { createLogger } from "@/lib/logger";
+import { ensureCoachProfileLinked } from "@/lib/auth/ensure-coach-profile";
 
 const log = createLogger("auth.google.callback");
 
@@ -87,6 +88,18 @@ export async function GET(request: Request) {
       }
 
       await prisma.$transaction(async (tx) => {
+        let coachId: string | null = null;
+        if (role === "COACH") {
+          const coachName =
+            nameFromGoogle?.trim() || email.split("@")[0] || "Coach";
+          let coach = await tx.coach.findUnique({ where: { email } });
+          if (!coach) {
+            coach = await tx.coach.create({
+              data: { name: coachName, email },
+            });
+          }
+          coachId = coach.id;
+        }
         await tx.authUser.create({
           data: {
             email,
@@ -94,6 +107,7 @@ export async function GET(request: Request) {
             passwordHash: null,
             googleSub: googleId,
             role,
+            coachId,
           },
         });
         if (!isSuperAdminEmail(email)) {
@@ -117,6 +131,12 @@ export async function GET(request: Request) {
         });
       }
     }
+
+    const beforeSession = await prisma.authUser.findUniqueOrThrow({
+      where: { email },
+      select: { id: true },
+    });
+    await ensureCoachProfileLinked(beforeSession.id);
 
     const authUser = await prisma.authUser.findUniqueOrThrow({
       where: { email },
