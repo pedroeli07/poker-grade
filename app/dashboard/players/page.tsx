@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
 import { STAFF_WRITE_ROLES } from "@/lib/auth/rbac";
+import { getCoachesWithActiveLogin } from "@/lib/data/coaches";
 import { getGradesForSession, getPlayersForSession } from "@/lib/data/queries";
 import { prisma } from "@/lib/prisma";
 import { syncOrphanCoachProfiles } from "@/lib/auth/ensure-coach-profile";
@@ -72,10 +73,13 @@ export default async function PlayersPage() {
     getPlayersForSession(session),
     session.role === "COACH" && session.coachId
       ? prisma.coach.findMany({
-          where: { id: session.coachId },
+          where: {
+            id: session.coachId,
+            authAccount: { isNot: null },
+          },
           orderBy: { name: "asc" },
         })
-      : prisma.coach.findMany({ orderBy: { name: "asc" } }),
+      : getCoachesWithActiveLogin(),
     getGradesForSession(session),
   ]);
   const grades = gradeProfiles.map((g) => ({ id: g.id, name: g.name }));

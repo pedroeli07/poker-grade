@@ -200,7 +200,7 @@ export async function deleteAuthAccount(formData: FormData) {
 
   const target = await prisma.authUser.findUnique({
     where: { id: parsed.data.id },
-    select: { email: true, role: true },
+    select: { email: true, role: true, coachId: true },
   });
   if (!target) return { error: "Usuário não encontrado." };
 
@@ -217,10 +217,18 @@ export async function deleteAuthAccount(formData: FormData) {
     if (n <= 1) return { error: "Não é possível remover o único administrador." };
   }
 
+  const coachId = target.coachId;
+
   try {
-    await prisma.authUser.delete({ where: { id: parsed.data.id } });
-    log.info("Conta removida", { id: parsed.data.id });
+    await prisma.$transaction(async (tx) => {
+      await tx.authUser.delete({ where: { id: parsed.data.id } });
+      if (coachId) {
+        await tx.coach.delete({ where: { id: coachId } });
+      }
+    });
+    log.info("Conta removida", { id: parsed.data.id, coachRemoved: Boolean(coachId) });
     revalidatePath("/dashboard/usuarios");
+    revalidatePath("/dashboard/players");
     return { success: true as const };
   } catch (e) {
     log.error("deleteAuthAccount", e instanceof Error ? e : undefined);

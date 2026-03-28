@@ -59,4 +59,13 @@ export async function syncOrphanCoachProfiles(): Promise<void> {
   if (orphans.length === 0) return;
   log.info("Sincronizando coaches órfãos", { count: orphans.length });
   await Promise.all(orphans.map((o) => ensureCoachProfileLinked(o.id)));
+
+  const pruned = await prisma.coach.deleteMany({
+    where: { authAccount: null },
+  });
+  if (pruned.count > 0) {
+    log.info("Removidos perfis coach sem login vinculado", {
+      count: pruned.count,
+    });
+  }
 }
