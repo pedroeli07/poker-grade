@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,7 @@ import { deleteGrade } from "@/app/dashboard/grades/actions";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
+import { useInvalidateGrades } from "@/hooks/use-invalidate-grades";
 
 const log = createLogger("grades.ui");
 
@@ -30,7 +30,7 @@ export function DeleteGradeButton({
   gradeName: string;
   className?: string;
 }) {
-  const router = useRouter();
+  const invalidateGrades = useInvalidateGrades();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
 
@@ -42,10 +42,14 @@ export function DeleteGradeButton({
         id: gradeId,
         name: gradeName,
       });
-      await deleteGrade(gradeId);
+      const res = await deleteGrade(gradeId);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
       toast.success("Grade removida", gradeName);
       setOpen(false);
-      router.refresh();
+      invalidateGrades();
     } catch {
       log.error("Falha ao excluir grade no cliente", undefined, {
         id: gradeId,

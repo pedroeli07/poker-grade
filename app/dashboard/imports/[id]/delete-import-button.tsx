@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { deleteImports } from "../actions";
 import { toast } from "@/lib/toast";
+import { useInvalidateImports } from "@/hooks/use-invalidate-imports";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +22,7 @@ export function DeleteImportButton({ importId, iconOnly = false }: { importId: s
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const invalidateImports = useInvalidateImports();
 
   function handleDelete() {
     startTransition(async () => {
@@ -28,7 +30,7 @@ export function DeleteImportButton({ importId, iconOnly = false }: { importId: s
       if (res.success) {
         toast.success("Importação excluída");
         setOpen(false);
-        // Só redireciona se não for iconOnly (estiver na página de detalhe)
+        invalidateImports();
         if (!iconOnly) {
           router.push("/dashboard/imports");
         } else {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,9 @@ import { ColumnFilter } from "@/components/column-filter";
 import { distinctOptions } from "@/lib/distinct-options";
 import { EditPlayerModal } from "@/components/edit-player-modal";
 import type { PlayerTableRow } from "@/lib/types/player-table-row";
+import type { PlayersTablePayload } from "@/lib/data/players-table";
+import { getPlayersTableDataAction } from "./actions";
+import { playerKeys } from "@/lib/queries/player-query-keys";
 
 export type { PlayerTableRow };
 
@@ -26,22 +30,26 @@ type ColumnFilters = Record<ColumnKey, Set<string> | null>;
 
 const EMPTY_NICK = "__empty__";
 
-type CoachOpt = { id: string; name: string; role: string };
-type GradeOpt = { id: string; name: string };
-
 export function PlayersTableClient({
-  rows,
-  coaches,
-  grades,
+  initialPayload,
   canEditPlayers,
-  allowCoachSelect,
 }: {
-  rows: PlayerTableRow[];
-  coaches: CoachOpt[];
-  grades: GradeOpt[];
+  initialPayload: PlayersTablePayload;
   canEditPlayers: boolean;
-  allowCoachSelect: boolean;
 }) {
+  const { data: payload = initialPayload } = useQuery({
+    queryKey: playerKeys.list(),
+    queryFn: async () => {
+      const r = await getPlayersTableDataAction();
+      if (!r.ok) throw new Error(r.error);
+      return r.payload;
+    },
+    initialData: initialPayload,
+    staleTime: 30_000,
+  });
+
+  const { rows, coaches, grades, allowCoachSelect } = payload;
+
   const [editRow, setEditRow] = useState<PlayerTableRow | null>(null);
   const [filters, setFilters] = useState<ColumnFilters>({
     name: null,

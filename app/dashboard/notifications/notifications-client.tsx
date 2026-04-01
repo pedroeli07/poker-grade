@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useQuery } from "@tanstack/react-query";
 import {
   getNotificationsPage,
   markNotificationRead,
@@ -12,6 +13,9 @@ import {
   deleteSelectedNotifications,
 } from "./actions";
 import { cn } from "@/lib/utils";
+import { notificationKeys } from "@/lib/queries/notification-query-keys";
+import { useInvalidateNotifications } from "@/hooks/use-invalidate-notifications";
+import { toast } from "@/lib/toast";
 import {
   Bell,
   Check,
@@ -67,34 +71,45 @@ const TYPE_CONFIG: Record<NotificationType, { icon: typeof Bell; color: string; 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function NotificationsClient({ initialData }: { initialData: PageData }) {
-  const [data, setData] = useState<PageData>(initialData);
+  const [page, setPage] = useState(initialData.page);
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(false);
   const [, startTransition] = useTransition();
+  const invalidateNotifications = useInvalidateNotifications();
 
-  const reload = useCallback(
-    async (page = data.page, f = filter) => {
-      setLoading(true);
-      try {
-        const fresh = await getNotificationsPage(page, f);
-        setData(fresh as PageData);
-        setSelected(new Set());
-      } finally {
-        setLoading(false);
-      }
+  const { data, isFetching, error } = useQuery({
+    queryKey: notificationKeys.list(page, filter),
+    queryFn: async () => {
+      const r = await getNotificationsPage(page, filter);
+      if (!r.ok) throw new Error(r.error);
+      const d: PageData = {
+        items: r.items as NotifItem[],
+        total: r.total,
+        unreadCount: r.unreadCount,
+        page: r.page,
+        pageSize: r.pageSize,
+        totalPages: r.totalPages,
+      };
+      return d;
     },
-    [data.page, filter]
-  );
+    initialData:
+      page === initialData.page && filter === "all" ? initialData : undefined,
+    staleTime: 30_000,
+  });
+
+  const dataResolved = data ?? initialData;
+  const loading = isFetching;
 
   function changePage(next: number) {
-    if (next < 1 || next > data.totalPages) return;
-    reload(next, filter);
+    if (next < 1 || next > dataResolved.totalPages) return;
+    setPage(next);
+    setSelected(new Set());
   }
 
   function changeFilter(f: typeof filter) {
     setFilter(f);
-    reload(1, f);
+    setPage(1);
+    setSelected(new Set());
   }
 
   function toggleSelect(id: string) {
@@ -106,43 +121,68 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
   }
 
   function toggleAll() {
-    if (selected.size === data.items.length) {
+    if (selected.size === dataResolved.items.length) {
       setSelected(new Set());
     } else {
-      setSelected(new Set(data.items.map((i) => i.id)));
+      setSelected(new Set(dataResolved.items.map((i) => i.id)));
     }
   }
 
   function handleMarkRead(id: string) {
     startTransition(async () => {
-      await markNotificationRead(id);
-      reload(data.page);
+      const r = await markNotificationRead(id);
+      if (!r.ok) {
+        toast.error("Erro", r.error);
+        return;
+      }
+      invalidateNotifications();
     });
   }
 
   function handleMarkAllRead() {
     startTransition(async () => {
-      await markAllNotificationsRead();
-      reload(data.page);
+      const r = await markAllNotificationsRead();
+      if (!r.ok) {
+        toast.error("Erro", r.error);
+        return;
+      }
+      invalidateNotifications();
     });
   }
 
   function handleDelete(id: string) {
     startTransition(async () => {
-      await deleteNotification(id);
-      reload(data.page);
+      const r = await deleteNotification(id);
+      if (!r.ok) {
+        toast.error("Erro", r.error);
+        return;
+      }
+      invalidateNotifications();
     });
   }
 
   function handleDeleteSelected() {
     const ids = Array.from(selected);
     startTransition(async () => {
-      await deleteSelectedNotifications(ids);
-      reload(data.page);
+      const r = await deleteSelectedNotifications(ids);
+      if (!r.ok) {
+        toast.error("Erro", r.error);
+        return;
+      }
+      invalidateNotifications();
     });
   }
 
-  const allSelected = selected.size === data.items.length && data.items.length > 0;
+  const allSelected =
+    selected.size === dataResolved.items.length && dataResolved.items.length > 0;
+
+  if (error) {
+    return (
+      <div className="text-center py-16 text-destructive text-sm">
+        {error instanceof Error ? error.message : "Erro ao carregar notificações."}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -155,7 +195,7 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {data.unreadCount > 0 && (
+          {dataResolved.unreadCount > 0 && (
             <button
               type="button"
               onClick={handleMarkAllRead}
@@ -205,9 +245,9 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
               )}
             >
               {f === "all" ? "Todas" : f === "unread" ? "Não lidas" : "Lidas"}
-              {f === "unread" && data.unreadCount > 0 && (
+              {f === "unread" && dataResolved.unreadCount > 0 && (
                 <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold">
-                  {data.unreadCount}
+                  {dataResolved.unreadCount}
                 </span>
               )}
             </button>
@@ -229,13 +269,14 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
         {/* Pagination summary */}
         <div className="ml-auto flex items-center gap-3 text-sm text-muted-foreground">
           <span>
-            Página {data.page} de {data.totalPages} ({data.total} itens)
+            Página {dataResolved.page} de {dataResolved.totalPages} ({dataResolved.total}{" "}
+            itens)
           </span>
           <div className="flex items-center gap-1">
             <button
               type="button"
-              disabled={data.page === 1}
-              onClick={() => changePage(data.page - 1)}
+              disabled={dataResolved.page === 1}
+              onClick={() => changePage(dataResolved.page - 1)}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -243,8 +284,8 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
             </button>
             <button
               type="button"
-              disabled={data.page === data.totalPages}
-              onClick={() => changePage(data.page + 1)}
+              disabled={dataResolved.page === dataResolved.totalPages}
+              onClick={() => changePage(dataResolved.page + 1)}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-sm font-semibold text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               Próximo
@@ -261,7 +302,7 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
             <div key={i} className="h-24 rounded-xl bg-muted/40 animate-pulse" />
           ))}
         </div>
-      ) : data.items.length === 0 ? (
+      ) : dataResolved.items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-xl text-muted-foreground">
           <Bell className="h-12 w-12 mb-4 opacity-20" />
           <p className="text-lg font-semibold text-foreground/60">
@@ -276,7 +317,7 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
           <div className="divide-y divide-border">
-            {data.items.map((notif) => {
+            {dataResolved.items.map((notif) => {
               const cfg = TYPE_CONFIG[notif.type];
               const Icon = cfg.icon;
               const isSelected = selected.has(notif.id);

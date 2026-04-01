@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { updateGradeProfile } from "@/app/dashboard/grades/actions";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { useInvalidateGrades } from "@/hooks/use-invalidate-grades";
 
 export function EditGradeDialog({
   gradeId,
@@ -30,7 +30,7 @@ export function EditGradeDialog({
   initialDescription: string | null;
   className?: string;
 }) {
-  const router = useRouter();
+  const invalidateGrades = useInvalidateGrades();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(
@@ -59,7 +59,7 @@ export function EditGradeDialog({
       }
       toast.success("Grade atualizada", initialName);
       setOpen(false);
-      router.refresh();
+      invalidateGrades();
     } catch {
       toast.error("Não foi possível salvar");
     } finally {

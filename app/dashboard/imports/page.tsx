@@ -1,14 +1,16 @@
 import { requireSession } from "@/lib/auth/session";
-import { IMPORT_ROLES } from "@/lib/auth/rbac";
-import { getImportsForSession } from "@/lib/data/queries";
+import { canDeleteImports, IMPORT_ROLES } from "@/lib/auth/rbac";
+import { getImportsListRowsForSession } from "@/lib/data/imports-list";
 import { NewImportModal } from "@/components/new-import-modal";
 import { ImportsClient } from "./imports-client";
 
+export const dynamic = "force-dynamic";
+
 export default async function ImportsPage() {
   const session = await requireSession();
-  const imports = await getImportsForSession(session);
+  const imports = await getImportsListRowsForSession(session);
   const canImport = IMPORT_ROLES.includes(session.role);
-  const canDelete = ["ADMIN", "MANAGER", "COACH"].includes(session.role);
+  const canDelete = canDeleteImports(session);
 
   return (
     <div className="space-y-6">

@@ -5,25 +5,30 @@ import { Button } from "@/components/ui/button";
 import { processReview } from "@/app/dashboard/review/actions";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
+import { useInvalidateReview } from "@/hooks/use-invalidate-review";
 import type { ReviewStatus } from "@/lib/types";
 
 const log = createLogger("review.ui");
 
 export function ReviewDecisionButtons({ reviewId }: { reviewId: string }) {
   const router = useRouter();
+  const invalidateReview = useInvalidateReview();
 
   async function decide(status: ReviewStatus, label: string) {
     try {
       log.info("Decisão na fila de revisão", { reviewId, status });
       await processReview(reviewId, status);
       toast.success(label);
+      invalidateReview();
       router.refresh();
-    } catch {
+    } catch (e) {
       log.error("Erro ao salvar decisão de revisão", undefined, {
         reviewId,
         status,
       });
-      toast.error("Não foi possível salvar a decisão");
+      const msg =
+        e instanceof Error ? e.message : "Não foi possível salvar a decisão";
+      toast.error("Erro", msg);
     }
   }
 

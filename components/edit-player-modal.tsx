@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { deletePlayer, updatePlayer } from "@/app/dashboard/players/actions";
 import { toast } from "@/lib/toast";
+import { useInvalidatePlayers } from "@/hooks/use-invalidate-players";
 import type { PlayerTableRow } from "@/lib/types/player-table-row";
 
 const NONE = "__none__";
@@ -104,6 +105,7 @@ function EditPlayerModalInner({
   const [status, setStatus] = useState<PlayerStatus>(player.status);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const router = useRouter();
+  const invalidatePlayers = useInvalidatePlayers();
   const formDisabled = isPending || deleteOpen;
 
   const gradeOptions = useMemo(() => {
@@ -130,6 +132,7 @@ function EditPlayerModalInner({
           );
           setDeleteOpen(false);
           onClose();
+          invalidatePlayers();
           router.refresh();
         } catch (err) {
           const msg =
@@ -163,6 +166,7 @@ function EditPlayerModalInner({
           await updatePlayer(formData);
           toast.success("Jogador atualizado", "As alterações foram salvas.");
           onClose();
+          invalidatePlayers();
           router.refresh();
         } catch (err) {
           const msg =

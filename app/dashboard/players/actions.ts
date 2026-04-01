@@ -5,6 +5,9 @@ import { revalidatePath } from "next/cache";
 import { createLogger } from "@/lib/logger";
 import { requireSession } from "@/lib/auth/session";
 import { assertCanWrite } from "@/lib/auth/rbac";
+import { limitDashboardMutation, limitDashboardRead } from "@/lib/rate-limit";
+import { getPlayersTablePayloadForSession } from "@/lib/data/players-table";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import {
   createPlayerFormSchema,
   idParamSchema,
@@ -20,9 +23,26 @@ import {
 
 const log = createLogger("players.actions");
 
+export async function getPlayersTableDataAction() {
+  const session = await requireSession();
+  const rl = await limitDashboardRead(session.userId);
+  if (!rl.ok) {
+    return {
+      ok: false as const,
+      error: `Muitas consultas. Aguarde ${rl.retryAfterSec}s.`,
+    };
+  }
+  const payload = await getPlayersTablePayloadForSession(session);
+  return { ok: true as const, payload };
+}
+
 export async function createPlayer(formData: FormData) {
   const session = await requireSession();
   assertCanWrite(session);
+  const gate = await limitDashboardMutation(session.userId);
+  if (!gate.ok) {
+    throw new Error(`Aguarde ${gate.retryAfterSec}s.`);
+  }
 
   const parsed = createPlayerFormSchema.safeParse({
     name: formData.get("name"),
@@ -64,34 +84,46 @@ export async function createPlayer(formData: FormData) {
 
   log.info("Criando jogador", { name, hasCoach: Boolean(coachId) });
 
-  const player = await prisma.player.create({
-    data: {
-      name,
-      nickname,
-      email: email ?? null,
-      coachId,
-      status: "ACTIVE",
-    },
-  });
-
-  const mainGradeRaw = parsed.data.mainGradeId;
-  const mainGradeId =
-    mainGradeRaw === "none" || mainGradeRaw === "" ? null : mainGradeRaw;
+  let player;
   try {
-    await setPlayerMainGrade(player.id, mainGradeId);
-  } catch (e) {
-    if (e instanceof Error && e.message === "GRADE_NOT_FOUND") {
-      await prisma.player.delete({ where: { id: player.id } });
-      throw new Error("Grade principal inválida.");
-    }
-    throw e;
-  }
+    player = await prisma.player.create({
+      data: {
+        name,
+        nickname,
+        email: email ?? null,
+        coachId,
+        status: "ACTIVE",
+      },
+    });
 
-  await syncPlayerAbiAlvoTarget(
-    player.id,
-    abiParsed.value,
-    abiParsed.unit
-  );
+    const mainGradeRaw = parsed.data.mainGradeId;
+    const mainGradeId =
+      mainGradeRaw === "none" || mainGradeRaw === "" ? null : mainGradeRaw;
+    try {
+      await setPlayerMainGrade(player.id, mainGradeId);
+    } catch (e) {
+      if (e instanceof Error && e.message === "GRADE_NOT_FOUND") {
+        await prisma.player.delete({ where: { id: player.id } });
+        throw new Error("Grade principal inválida.");
+      }
+      throw e;
+    }
+
+    await syncPlayerAbiAlvoTarget(
+      player.id,
+      abiParsed.value,
+      abiParsed.unit
+    );
+  } catch (e) {
+    if (isRedirectError(e)) throw e;
+    if (e instanceof Error && e.message === "Grade principal inválida.") throw e;
+    log.error(
+      "createPlayer falhou",
+      e instanceof Error ? e : undefined,
+      { name }
+    );
+    throw new Error("Não foi possível criar o jogador.");
+  }
 
   void notifyPlayerCreated(name, player.id);
 
@@ -105,6 +137,10 @@ export async function createPlayer(formData: FormData) {
 export async function updatePlayer(formData: FormData) {
   const session = await requireSession();
   assertCanWrite(session);
+  const gate = await limitDashboardMutation(session.userId);
+  if (!gate.ok) {
+    throw new Error(`Aguarde ${gate.retryAfterSec}s.`);
+  }
 
   const parsed = updatePlayerFormSchema.safeParse({
     id: formData.get("id"),
@@ -171,34 +207,52 @@ export async function updatePlayer(formData: FormData) {
   if (email === "") email = undefined;
   if (email) email = sanitizeText(email, 320);
 
-  await prisma.player.update({
-    where: { id: parsed.data.id },
-    data: {
-      name,
-      nickname,
-      email: email ?? null,
-      coachId,
-      status: parsed.data.status,
-    },
-  });
-
-  const mainGradeRaw = parsed.data.mainGradeId;
-  const mainGradeId =
-    mainGradeRaw === "none" || mainGradeRaw === "" ? null : mainGradeRaw;
   try {
-    await setPlayerMainGrade(parsed.data.id, mainGradeId);
-  } catch (e) {
-    if (e instanceof Error && e.message === "GRADE_NOT_FOUND") {
-      throw new Error("Grade principal inválida.");
-    }
-    throw e;
-  }
+    await prisma.player.update({
+      where: { id: parsed.data.id },
+      data: {
+        name,
+        nickname,
+        email: email ?? null,
+        coachId,
+        status: parsed.data.status,
+      },
+    });
 
-  await syncPlayerAbiAlvoTarget(
-    parsed.data.id,
-    abiParsed.value,
-    abiParsed.unit
-  );
+    const mainGradeRaw = parsed.data.mainGradeId;
+    const mainGradeId =
+      mainGradeRaw === "none" || mainGradeRaw === "" ? null : mainGradeRaw;
+    try {
+      await setPlayerMainGrade(parsed.data.id, mainGradeId);
+    } catch (e) {
+      if (e instanceof Error && e.message === "GRADE_NOT_FOUND") {
+        throw new Error("Grade principal inválida.");
+      }
+      throw e;
+    }
+
+    await syncPlayerAbiAlvoTarget(
+      parsed.data.id,
+      abiParsed.value,
+      abiParsed.unit
+    );
+  } catch (e) {
+    if (isRedirectError(e)) throw e;
+    if (
+      e instanceof Error &&
+      (e.message === "Grade principal inválida." ||
+        e.message === "NOT_FOUND" ||
+        e.message === "FORBIDDEN")
+    ) {
+      throw e;
+    }
+    log.error(
+      "updatePlayer falhou",
+      e instanceof Error ? e : undefined,
+      { id: parsed.data.id }
+    );
+    throw new Error("Não foi possível atualizar o jogador.");
+  }
 
   revalidatePath("/dashboard/players");
   revalidatePath(`/dashboard/players/${parsed.data.id}`);
@@ -211,6 +265,10 @@ export async function updatePlayer(formData: FormData) {
 export async function deletePlayer(formData: FormData) {
   const session = await requireSession();
   assertCanWrite(session);
+  const gate = await limitDashboardMutation(session.userId);
+  if (!gate.ok) {
+    throw new Error(`Aguarde ${gate.retryAfterSec}s.`);
+  }
 
   const parsed = idParamSchema.safeParse({
     id: formData.get("id"),
@@ -238,7 +296,17 @@ export async function deletePlayer(formData: FormData) {
     }
   }
 
-  await prisma.player.delete({ where: { id: parsed.data.id } });
+  try {
+    await prisma.player.delete({ where: { id: parsed.data.id } });
+  } catch (e) {
+    if (isRedirectError(e)) throw e;
+    log.error(
+      "deletePlayer falhou",
+      e instanceof Error ? e : undefined,
+      { id: parsed.data.id }
+    );
+    throw new Error("Não foi possível excluir o jogador.");
+  }
 
   revalidatePath("/dashboard/players");
   revalidatePath("/dashboard/grades");

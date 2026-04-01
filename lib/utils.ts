@@ -1,8 +1,11 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { PlayerStatus } from "@prisma/client";
-import { LobbyzeFilterItem } from "./types";
+import { GradeListRow, LobbyzeFilterItem } from "./types";
 import { PlayerTableRow } from "./types/player-table-row";
+import { EMPTY_DESC, STATUS_CONFIG } from "./constants";
+import { TargetListRow } from "./types/target-list-row";
+import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 
 export function isNextRedirectError(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
@@ -125,3 +128,60 @@ export function toTableRows(
     };
   });
 }
+
+
+export function buildAssignedPlayersByGrade(
+  assignments: {
+    gradeId: string;
+    player: { id: string; name: string };
+  }[]
+) {
+  const m = new Map<string, Map<string, { id: string; name: string }>>();
+  for (const a of assignments) {
+    if (!m.has(a.gradeId)) m.set(a.gradeId, new Map());
+    m.get(a.gradeId)!.set(a.player.id, {
+      id: a.player.id,
+      name: a.player.name,
+    });
+  }
+  const out = new Map<string, { id: string; name: string }[]>();
+  for (const [gradeId, pmap] of m) {
+    out.set(
+      gradeId,
+      [...pmap.values()].sort((a, b) =>
+        a.name.localeCompare(b.name, "pt-BR")
+      )
+    );
+  }
+  return out;
+}
+
+
+export function descriptionPick(r: GradeListRow) {
+  const raw = r.description?.trim() ?? "";
+  const value = raw || EMPTY_DESC;
+  const label = raw
+    ? raw.length > 80
+      ? `${raw.slice(0, 80)}…`
+      : raw
+    : "(sem descrição)";
+  return { value, label };
+}
+
+
+export function progressLabel(r: TargetListRow) {
+  if (r.targetType === "NUMERIC" && r.numericValue != null) {
+    return `${r.numericCurrent ?? "—"} / ${r.numericValue}${r.unit ? ` ${r.unit}` : ""}`;
+  }
+  if (r.targetType === "TEXT") {
+    const cur = r.textCurrent ?? "—";
+    const val = r.textValue ?? "—";
+    return `${cur} / ${val}`;
+  }
+  return "—";
+}
+
+export function statusLabel(s: TargetListRow["status"]) {
+  return STATUS_CONFIG[s].label;
+}
+

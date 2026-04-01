@@ -235,3 +235,26 @@ export interface MatchDetail {
 }
 
 export type Tab = "extra" | "rebuy" | "played" | "missed";
+
+export type GradeListRow = {
+  id: string;
+  name: string;
+  description: string | null;
+  rulesCount: number;
+  assignmentsCount: number;
+  assignedPlayers: { id: string; name: string }[];
+};
+
+
+export type ColumnKey = "name" | "description" | "rules" | "players";
+export type ColumnFilters = Record<ColumnKey, Set<string> | null>;
+
+export type ColKey =
+  | "name"
+  | "category"
+  | "player"
+  | "status"
+  | "targetType"
+  | "limitAction";
+
+export type Filters = Record<ColKey, Set<string> | null>;

@@ -1,7 +1,7 @@
 import { requireSession } from "@/lib/auth/session";
 import { notFound } from "next/navigation";
 import { getImportDetailForSession } from "@/lib/data/queries";
-import { canReview } from "@/lib/auth/rbac";
+import { canDeleteImports, canReview } from "@/lib/auth/rbac";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -30,6 +30,7 @@ import {
 import { schedulingCategory } from "@/lib/utils";
 import { Tab } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
 
 function SchedulingBadge({ scheduling }: { scheduling: string | null }) {
   const cat = schedulingCategory(scheduling);
@@ -89,7 +90,7 @@ export default async function ImportDetailPage({
   const sp = await searchParams;
   const activeTab = (sp.tab as Tab) || "extra";
   const showActions = canReview(session);
-  const canDelete = ["ADMIN", "MANAGER", "COACH"].includes(session.role);
+  const canDelete = canDeleteImports(session);
 
   const importRecord = await getImportDetailForSession(session, id);
   if (!importRecord) notFound();

@@ -22,6 +22,7 @@ import { ptBR } from "date-fns/locale";
 import { canViewPlayer } from "@/lib/utils";
 import { GRADE_TYPE_LABEL, LIMIT_ACTION_CONFIG, TARGET_STATUS_CONFIG } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
 
 export default async function PlayerProfilePage({
   params,

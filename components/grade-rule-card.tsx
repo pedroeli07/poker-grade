@@ -7,7 +7,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
 import {
   Ban,
   CalendarDays,
@@ -36,37 +35,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { LobbyzeFilterItem } from "@/lib/types";
 import {
   deleteGradeRule,
   updateGradeRule,
 } from "@/app/dashboard/grades/actions";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import type { LobbyzeFilterItem } from "@/lib/types";
+import type { GradeRuleCardRule } from "@/lib/types/grade-rule-card";
+import { useQueryClient } from "@tanstack/react-query";
+import { gradeKeys } from "@/lib/queries/grade-query-keys";
 
-export type GradeRuleCardRule = {
-  id: string;
-  filterName: string;
-  lobbyzeFilterId: number | null;
-  sites: LobbyzeFilterItem[];
-  buyInMin: number | null;
-  buyInMax: number | null;
-  speed: LobbyzeFilterItem[];
-  variant: LobbyzeFilterItem[];
-  tournamentType: LobbyzeFilterItem[];
-  gameType: LobbyzeFilterItem[];
-  playerCount: LobbyzeFilterItem[];
-  weekDay: LobbyzeFilterItem[];
-  prizePoolMin: number | null;
-  prizePoolMax: number | null;
-  minParticipants: number | null;
-  fromTime: string | null;
-  toTime: string | null;
-  excludePattern: string | null;
-  timezone: number | null;
-  autoOnly: boolean;
-  manualOnly: boolean;
-};
+export type { GradeRuleCardRule } from "@/lib/types/grade-rule-card";
 
 const SPEED_PRESETS: LobbyzeFilterItem[] = [
   { item_id: 1001, item_text: "Regular" },
@@ -323,12 +303,19 @@ export function GradeRuleCard({
   rule,
   idx,
   manage,
+  gradeProfileId,
 }: {
   rule: GradeRuleCardRule;
   idx: number;
   manage: boolean;
+  gradeProfileId: string;
 }) {
-  const router = useRouter();
+  const qc = useQueryClient();
+
+  function invalidateGradeQueries() {
+    void qc.invalidateQueries({ queryKey: gradeKeys.detail(gradeProfileId) });
+    void qc.invalidateQueries({ queryKey: gradeKeys.list() });
+  }
   const [filterNameStr, setFilterNameStr] = useState(rule.filterName);
   const [localSites, setLocalSites] = useState(rule.sites);
   const [minStr, setMinStr] = useState(
@@ -527,7 +514,7 @@ export function GradeRuleCard({
       }
       toast.success("Regra atualizada");
       setEditing(false);
-      router.refresh();
+      invalidateGradeQueries();
     } catch {
       toast.error("Não foi possível salvar");
     } finally {
@@ -546,7 +533,7 @@ export function GradeRuleCard({
       }
       toast.success("Filtro removido");
       setDeleteOpen(false);
-      router.refresh();
+      invalidateGradeQueries();
     } catch {
       toast.error("Não foi possível excluir");
     } finally {

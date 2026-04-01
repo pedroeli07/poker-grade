@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import Link from "next/link";
 import { DeleteImportButton } from "@/app/dashboard/imports/[id]/delete-import-button";
 import { requireSession } from "@/lib/auth/session";
+import { canDeleteImports } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -70,7 +71,7 @@ export default async function DashboardPage() {
     DOWNGRADE: { label: "Descida", icon: TrendingDown, color: "text-primary" },
   };
 
-  const canDeleteImports = ["ADMIN", "MANAGER", "COACH"].includes(session.role);
+  const showDeleteImport = canDeleteImports(session);
 
   return (
     <div className="space-y-6">
@@ -228,7 +229,7 @@ export default async function DashboardPage() {
                           {format(imp.createdAt, "dd/MM", { locale: ptBR })}
                         </p>
                       </div>
-                      {canDeleteImports && (
+                      {showDeleteImport && (
                         <div className="shrink-0 ml-1">
                           <DeleteImportButton importId={imp.id} iconOnly />
                         </div>

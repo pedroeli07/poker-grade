@@ -2,17 +2,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, AlertTriangle, XCircle } from "lucide-react";
 import { requireSession } from "@/lib/auth/session";
 import { STAFF_WRITE_ROLES } from "@/lib/auth/rbac";
-import { getTargetsForSession } from "@/lib/data/queries";
+import { getTargetsListRowsForSession } from "@/lib/data/targets-list";
 import { prisma } from "@/lib/prisma";
 import { NewTargetModal } from "@/components/new-target-modal";
 import { TargetsPageClient } from "./targets-page-client";
+
+export const dynamic = "force-dynamic";
 
 export default async function TargetsPage() {
   const session = await requireSession();
   const canCreate = STAFF_WRITE_ROLES.includes(session.role);
 
-  const [targets, players] = await Promise.all([
-    getTargetsForSession(session),
+  const [rows, players] = await Promise.all([
+    getTargetsListRowsForSession(session),
     canCreate
       ? session.role === "COACH" && session.coachId
         ? prisma.player.findMany({
@@ -29,26 +31,9 @@ export default async function TargetsPage() {
       : [],
   ]);
 
-  const onTrack = targets.filter((t) => t.status === "ON_TRACK");
-  const attention = targets.filter((t) => t.status === "ATTENTION");
-  const offTrack = targets.filter((t) => t.status === "OFF_TRACK");
-
-  const rows = targets.map((t) => ({
-    id: t.id,
-    name: t.name,
-    category: t.category,
-    playerId: t.player.id,
-    playerName: t.player.name,
-    status: t.status,
-    targetType: t.targetType,
-    limitAction: t.limitAction,
-    numericValue: t.numericValue,
-    numericCurrent: t.numericCurrent,
-    textValue: t.textValue,
-    textCurrent: t.textCurrent,
-    unit: t.unit,
-    coachNotes: t.coachNotes,
-  }));
+  const onTrack = rows.filter((t) => t.status === "ON_TRACK");
+  const attention = rows.filter((t) => t.status === "ATTENTION");
+  const offTrack = rows.filter((t) => t.status === "OFF_TRACK");
 
   return (
     <div className="space-y-6">
@@ -110,7 +95,7 @@ export default async function TargetsPage() {
         </Card>
       </div>
 
-      <TargetsPageClient rows={rows} />
+      <TargetsPageClient initialRows={rows} />
     </div>
   );
 }

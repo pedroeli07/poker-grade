@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   Card,
@@ -23,84 +24,16 @@ import {
   Target,
   LayoutGrid,
   Table2,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
 } from "lucide-react";
 import { ColumnFilter } from "@/components/column-filter";
 import { distinctOptions } from "@/lib/distinct-options";
+import type { TargetListRow } from "@/lib/types/target-list-row";
+import { getTargetsListDataAction } from "./actions";
+import { targetKeys } from "@/lib/queries/target-query-keys";
+import { STATUS_CONFIG, LIMIT_ACTION_LABEL, NONE_LIMIT } from "@/lib/constants";
+import { progressLabel, statusLabel } from "@/lib/utils";
+import { ColKey, Filters } from "@/lib/types";
 
-export type TargetListRow = {
-  id: string;
-  name: string;
-  category: string;
-  playerId: string;
-  playerName: string;
-  status: "ON_TRACK" | "ATTENTION" | "OFF_TRACK";
-  targetType: "NUMERIC" | "TEXT";
-  limitAction: "UPGRADE" | "MAINTAIN" | "DOWNGRADE" | null;
-  numericValue: number | null;
-  numericCurrent: number | null;
-  textValue: string | null;
-  textCurrent: string | null;
-  unit: string | null;
-  coachNotes: string | null;
-};
-
-const STATUS_CONFIG = {
-  ON_TRACK: {
-    label: "No Caminho",
-    icon: CheckCircle2,
-    bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
-  },
-  ATTENTION: {
-    label: "Atenção",
-    icon: AlertTriangle,
-    bg: "bg-amber-500/10 border-amber-500/20 text-amber-500",
-  },
-  OFF_TRACK: {
-    label: "Fora da Meta",
-    icon: XCircle,
-    bg: "bg-red-500/10 border-red-500/20 text-red-500",
-  },
-} as const;
-
-const LIMIT_ACTION_LABEL: Record<
-  "UPGRADE" | "MAINTAIN" | "DOWNGRADE",
-  { label: string; color: string }
-> = {
-  UPGRADE: { label: "Subida", color: "text-emerald-600" },
-  MAINTAIN: { label: "Manutenção", color: "text-muted-foreground" },
-  DOWNGRADE: { label: "Descida", color: "text-red-600" },
-};
-
-const NONE_LIMIT = "__none__";
-
-type ColKey =
-  | "name"
-  | "category"
-  | "player"
-  | "status"
-  | "targetType"
-  | "limitAction";
-
-type Filters = Record<ColKey, Set<string> | null>;
-
-function progressLabel(r: TargetListRow) {
-  if (r.targetType === "NUMERIC" && r.numericValue != null) {
-    return `${r.numericCurrent ?? "—"} / ${r.numericValue}${r.unit ? ` ${r.unit}` : ""}`;
-  }
-  if (r.targetType === "TEXT") {
-    const cur = r.textCurrent ?? "—";
-    const val = r.textValue ?? "—";
-    return `${cur} / ${val}`;
-  }
-  return "—";
-}
-
-function statusLabel(s: TargetListRow["status"]) {
-  return STATUS_CONFIG[s].label;
-}
 
 function targetCardInner(target: TargetListRow) {
   const cfg = STATUS_CONFIG[target.status];
@@ -191,7 +124,21 @@ function targetCardInner(target: TargetListRow) {
   );
 }
 
-export function TargetsPageClient({ rows }: { rows: TargetListRow[] }) {
+export function TargetsPageClient({
+  initialRows,
+}: {
+  initialRows: TargetListRow[];
+}) {
+  const { data: rows = initialRows } = useQuery({
+    queryKey: targetKeys.list(),
+    queryFn: async () => {
+      const r = await getTargetsListDataAction();
+      if (!r.ok) throw new Error(r.error);
+      return r.rows;
+    },
+    initialData: initialRows,
+    staleTime: 30_000,
+  });
   const [view, setView] = useState<"cards" | "table">("cards");
   const [filters, setFilters] = useState<Filters>({
     name: null,

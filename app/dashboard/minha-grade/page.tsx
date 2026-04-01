@@ -130,6 +130,7 @@ async function getPlayerTournamentStats(playerId: string) {
 }
 
 export const metadata = { title: "Minha Grade | CL Team" };
+export const dynamic = "force-dynamic";
 
 export default async function MinhaGradePage() {
   const session = await requireSession();

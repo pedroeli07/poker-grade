@@ -21,7 +21,14 @@ import {
 } from "lucide-react";
 import { STAFF_WRITE_ROLES } from "./auth/rbac";
 
+
+export const EMPTY_DESC = "__empty__";
+
 export const cardClassName="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_32px_-4px_oklch(0.45_0.18_250/26%),0_2px_8px_-2px_oklch(0.45_0.18_250/14%)] transition-all duration-200 hover:border-[oklch(0.45_0.18_250)] hover:shadow-[0_8px_48px_-6px_oklch(0.45_0.18_250/38%),0_4px_24px_-6px_oklch(0.45_0.18_250/20%)] overflow-hidden group"
+export const playersHoverScrollClass =
+  "max-h-[min(320px,50vh)] overflow-y-auto overflow-x-hidden space-y-0.5 pr-1 " +
+  "[scrollbar-width:thin] [scrollbar-color:color-mix(in_oklab,var(--muted-foreground)_45%,transparent)_color-mix(in_oklab,var(--muted)_80%,transparent)] " +
+  "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/35";
 
 export const SIDEBAR_NAV_ITEMS = [
   {
@@ -124,3 +131,33 @@ export const LIMIT_ACTION_CONFIG = {
   MAINTAIN: { label: "Manutenção", icon: Minus, color: "text-muted-foreground" },
   DOWNGRADE: { label: "Descida", icon: TrendingDown, color: "text-red-500" },
 };
+
+
+export const STATUS_CONFIG = {
+  ON_TRACK: {
+    label: "No Caminho",
+    icon: CheckCircle2,
+    bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
+  },
+  ATTENTION: {
+    label: "Atenção",
+    icon: AlertTriangle,
+    bg: "bg-amber-500/10 border-amber-500/20 text-amber-500",
+  },
+  OFF_TRACK: {
+    label: "Fora da Meta",
+    icon: XCircle,
+    bg: "bg-red-500/10 border-red-500/20 text-red-500",
+  },
+} as const;
+
+export const LIMIT_ACTION_LABEL: Record<
+  "UPGRADE" | "MAINTAIN" | "DOWNGRADE",
+  { label: string; color: string }
+> = {
+  UPGRADE: { label: "Subida", color: "text-emerald-600" },
+  MAINTAIN: { label: "Manutenção", color: "text-muted-foreground" },
+  DOWNGRADE: { label: "Descida", color: "text-red-600" },
+};
+
+export const NONE_LIMIT = "__none__";

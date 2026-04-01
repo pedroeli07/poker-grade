@@ -61,6 +61,14 @@ export function assertCanImport(session: AppSession): void {
   }
 }
 
+export function canDeleteImports(session: AppSession): boolean {
+  return (
+    session.role === "ADMIN" ||
+    session.role === "MANAGER" ||
+    session.role === "COACH"
+  );
+}
+
 export function assertCanManageGrades(session: AppSession): void {
   if (!canManageGrades(session)) {
     throw new Error("FORBIDDEN");

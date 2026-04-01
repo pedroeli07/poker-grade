@@ -13,6 +13,8 @@ import {
   deleteNotification,
   deleteSelectedNotifications,
 } from "@/app/dashboard/notifications/actions";
+import { toast } from "@/lib/toast";
+import { useInvalidateNotifications } from "@/hooks/use-invalidate-notifications";
 import {
   Bell,
   X,
@@ -87,6 +89,7 @@ function timeAgo(date: Date): string {
 
 export function NotificationSheet() {
   const { open, setOpen, setUnreadCount } = useNotificationStore();
+  const invalidateNotifications = useInvalidateNotifications();
 
   const [items, setItems] = useState<NotifItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -102,6 +105,13 @@ export function NotificationSheet() {
       setLoading(true);
       try {
         const data = await getNotificationsPage(p, f);
+        if (!data.ok) {
+          setItems([]);
+          setTotal(0);
+          setTotalPages(1);
+          setUnreadCount(0);
+          return;
+        }
         setItems(data.items as NotifItem[]);
         setTotal(data.total);
         setTotalPages(data.totalPages);
@@ -145,7 +155,12 @@ export function NotificationSheet() {
 
   function handleMarkRead(id: string) {
     startTransition(async () => {
-      await markNotificationRead(id);
+      const r = await markNotificationRead(id);
+      if (!r.ok) {
+        toast.error("Erro", r.error);
+        return;
+      }
+      invalidateNotifications();
       setItems((prev) =>
         prev.map((n) => (n.id === id ? { ...n, read: true } : n))
       );
@@ -160,7 +175,12 @@ export function NotificationSheet() {
 
   function handleMarkAllRead() {
     startTransition(async () => {
-      await markAllNotificationsRead();
+      const r = await markAllNotificationsRead();
+      if (!r.ok) {
+        toast.error("Erro", r.error);
+        return;
+      }
+      invalidateNotifications();
       setItems((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
     });
@@ -168,7 +188,12 @@ export function NotificationSheet() {
 
   function handleDelete(id: string) {
     startTransition(async () => {
-      await deleteNotification(id);
+      const r = await deleteNotification(id);
+      if (!r.ok) {
+        toast.error("Erro", r.error);
+        return;
+      }
+      invalidateNotifications();
       setItems((prev) => prev.filter((n) => n.id !== id));
       setTotal((prev) => prev - 1);
       setSelected((prev) => {
@@ -182,7 +207,12 @@ export function NotificationSheet() {
   function handleDeleteSelected() {
     const ids = Array.from(selected);
     startTransition(async () => {
-      await deleteSelectedNotifications(ids);
+      const r = await deleteSelectedNotifications(ids);
+      if (!r.ok) {
+        toast.error("Erro", r.error);
+        return;
+      }
+      invalidateNotifications();
       setItems((prev) => prev.filter((n) => !ids.includes(n.id)));
       setTotal((prev) => prev - ids.length);
       setSelected(new Set());

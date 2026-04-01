@@ -28,6 +28,7 @@ import { createGradeProfile, importGradeFromJson } from "@/app/dashboard/grades/
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { cn, isNextRedirectError } from "@/lib/utils";
+import { useInvalidateGrades } from "@/hooks/use-invalidate-grades";
 
 const log = createLogger("grade-modals");
 
@@ -39,6 +40,7 @@ export function NewGradeModal() {
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
+  const invalidateGrades = useInvalidateGrades();
 
   function handleOpenChange(value: boolean) {
     if (isPending) return;
@@ -54,6 +56,7 @@ export function NewGradeModal() {
         const result = await createGradeProfile(formData);
         toast.success("Grade criada!", "Importe um JSON Lobbyze para adicionar regras.");
         handleOpenChange(false);
+        invalidateGrades();
         router.push(`/dashboard/grades/${result.id}`);
       } catch (err) {
         if (isNextRedirectError(err)) throw err;
@@ -174,6 +177,7 @@ export function ImportGradeModal() {
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
+  const invalidateGrades = useInvalidateGrades();
 
   function resetState() {
     setFile(null);
@@ -221,7 +225,7 @@ export function ImportGradeModal() {
         await importGradeFromJson(formData);
         toast.success("Grade importada!", "Filtros Lobbyze convertidos em regras.");
         handleOpenChange(false);
-        router.refresh();
+        invalidateGrades();
         router.push("/dashboard/grades");
       } catch (err) {
         if (isNextRedirectError(err)) throw err;

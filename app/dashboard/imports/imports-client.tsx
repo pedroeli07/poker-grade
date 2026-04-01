@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -23,9 +23,12 @@ import {
   Trash2,
   Check,
 } from "lucide-react";
-import { deleteImports } from "./actions";
+import { deleteImports, getImportsListRowsAction } from "./actions";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { importKeys } from "@/lib/queries/import-query-keys";
+import { useInvalidateImports } from "@/hooks/use-invalidate-imports";
+import type { ImportListRow } from "@/lib/types/import-list";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,16 +42,7 @@ import {
 import { ColumnFilter } from "@/components/column-filter";
 import { distinctOptions } from "@/lib/distinct-options";
 
-export type ImportRow = {
-  id: string;
-  fileName: string;
-  playerName: string | null;
-  totalRows: number;
-  matchedInGrade: number;
-  suspect: number;
-  outOfGrade: number;
-  createdAt: Date | string;
-};
+export type ImportRow = ImportListRow;
 
 const EMPTY_PLAYER = "__empty__";
 
@@ -68,12 +62,24 @@ function rowDateLabel(r: ImportRow) {
 }
 
 export function ImportsClient({
-  imports,
+  imports: initialImports,
   canDelete,
 }: {
   imports: ImportRow[];
   canDelete: boolean;
 }) {
+  const invalidateImports = useInvalidateImports();
+  const { data: imports = initialImports } = useQuery({
+    queryKey: importKeys.list(),
+    queryFn: async () => {
+      const r = await getImportsListRowsAction();
+      if (!r.ok) throw new Error(r.error);
+      return r.rows;
+    },
+    initialData: initialImports,
+    staleTime: 30_000,
+  });
+
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<Filters>({
     fileName: null,
@@ -86,7 +92,6 @@ export function ImportsClient({
   });
   const [isPending, startTransition] = useTransition();
   const [idsToDelete, setIdsToDelete] = useState<string[] | null>(null);
-  const router = useRouter();
 
   const options = useMemo(
     () => ({
@@ -200,7 +205,7 @@ export function ImportsClient({
         );
         setSelected(new Set());
         setIdsToDelete(null);
-        router.refresh();
+        invalidateImports();
       } else {
         toast.error("Erro ao excluir", res.error ?? "Tente novamente.");
         setIdsToDelete(null);

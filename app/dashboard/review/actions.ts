@@ -10,6 +10,8 @@ import { processReviewSchema } from "@/lib/validation/schemas";
 import { sanitizeOptional } from "@/lib/sanitize";
 import { assertReviewAccessible } from "@/lib/data/queries";
 import { notifyReviewDecision } from "@/lib/notifications";
+import { limitDashboardMutation } from "@/lib/rate-limit";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 const log = createLogger("review.actions");
 
@@ -20,6 +22,10 @@ export async function processReview(
 ) {
   const session = await requireSession();
   assertCanReview(session);
+  const gate = await limitDashboardMutation(session.userId);
+  if (!gate.ok) {
+    throw new Error(`Aguarde ${gate.retryAfterSec}s.`);
+  }
 
   const parsed = processReviewSchema.safeParse({
     reviewId,
@@ -41,19 +47,30 @@ export async function processReview(
   const isInfraction = parsed.data.status === "REJECTED";
   const reviewNotes = sanitizeOptional(parsed.data.notes ?? null, 5000);
 
-  const updated = await prisma.gradeReviewItem.update({
-    where: { id: parsed.data.reviewId },
-    data: {
-      status: parsed.data.status,
-      isInfraction,
-      reviewNotes,
-      reviewedAt: new Date(),
-      reviewedBy: session.userId,
-    },
-    include: {
-      tournament: { select: { tournamentName: true } },
-    },
-  });
+  let updated;
+  try {
+    updated = await prisma.gradeReviewItem.update({
+      where: { id: parsed.data.reviewId },
+      data: {
+        status: parsed.data.status,
+        isInfraction,
+        reviewNotes,
+        reviewedAt: new Date(),
+        reviewedBy: session.userId,
+      },
+      include: {
+        tournament: { select: { tournamentName: true } },
+      },
+    });
+  } catch (e) {
+    if (isRedirectError(e)) throw e;
+    log.error(
+      "processReview persistência",
+      e instanceof Error ? e : undefined,
+      { reviewId: parsed.data.reviewId }
+    );
+    throw new Error("Não foi possível salvar a revisão.");
+  }
 
   if (parsed.data.status === "APPROVED" || parsed.data.status === "EXCEPTION" || parsed.data.status === "REJECTED") {
     void notifyReviewDecision(

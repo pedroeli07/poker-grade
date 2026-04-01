@@ -138,6 +138,48 @@ export async function getImportsForSession(session: AppSession) {
   return [];
 }
 
+/** IDs que o usuário pode excluir (escopo igual à lista visível para admin/manager/coach). */
+export async function filterImportIdsDeletableBySession(
+  session: AppSession,
+  ids: string[]
+): Promise<string[]> {
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return [];
+
+  if (session.role === "ADMIN" || session.role === "MANAGER") {
+    const rows = await prisma.tournamentImport.findMany({
+      where: { id: { in: unique } },
+      select: { id: true },
+    });
+    return rows.map((r) => r.id);
+  }
+
+  if (session.role === "COACH" && session.coachId) {
+    const players = await prisma.player.findMany({
+      where: coachPlayerFilter(session.coachId),
+      select: { name: true, nickname: true },
+    });
+    const nameSet = new Set(
+      players
+        .flatMap((p) => [p.name, p.nickname].filter(Boolean) as string[])
+        .map((n) => n.toLowerCase())
+    );
+    if (nameSet.size === 0) return [];
+    const imports = await prisma.tournamentImport.findMany({
+      where: {
+        id: { in: unique },
+        OR: [...nameSet].map((n) => ({
+          playerName: { equals: n, mode: "insensitive" as const },
+        })),
+      },
+      select: { id: true },
+    });
+    return imports.map((i) => i.id);
+  }
+
+  return [];
+}
+
 export async function getGradesForSession(session: AppSession) {
   if (session.role === "PLAYER") {
     if (!session.playerId) return [];
@@ -232,6 +274,33 @@ export async function getImportDetailForSession(session: AppSession, importId: s
   }
 
   return importRecord;
+}
+
+export async function assertTargetWritableBySession(
+  session: AppSession,
+  targetId: string
+): Promise<void> {
+  const t = await prisma.playerTarget.findUnique({
+    where: { id: targetId },
+    select: { id: true, playerId: true },
+  });
+  if (!t) throw new Error("NOT_FOUND");
+
+  if (session.role === "ADMIN" || session.role === "MANAGER") return;
+
+  if (session.role === "COACH" && session.coachId) {
+    const p = await prisma.player.findFirst({
+      where: {
+        id: t.playerId,
+        ...coachPlayerFilter(session.coachId),
+      },
+      select: { id: true },
+    });
+    if (!p) throw new Error("FORBIDDEN");
+    return;
+  }
+
+  throw new Error("FORBIDDEN");
 }
 
 export async function assertReviewAccessible(

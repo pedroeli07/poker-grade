@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { createPlayer } from "@/app/dashboard/players/actions";
 import { toast } from "@/lib/toast";
+import { useInvalidatePlayers } from "@/hooks/use-invalidate-players";
 
 type Coach = { id: string; name: string; role: string };
 type GradeOpt = { id: string; name: string };
@@ -52,6 +53,7 @@ export function NewPlayerModal({ coaches, grades }: NewPlayerModalProps) {
   const [abiAlvoUnit, setAbiAlvoUnit] = useState("none");
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
+  const invalidatePlayers = useInvalidatePlayers();
 
   function handleOpenChange(value: boolean) {
     if (isPending) return;
@@ -80,6 +82,7 @@ export function NewPlayerModal({ coaches, grades }: NewPlayerModalProps) {
         await createPlayer(formData);
         toast.success("Jogador criado!", "O jogador foi adicionado ao time com sucesso.");
         handleOpenChange(false);
+        invalidatePlayers();
         router.refresh();
       } catch (e) {
         const msg =

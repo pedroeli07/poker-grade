@@ -20,6 +20,9 @@ import {
   REVIEW_NO_COACH_SENTINEL,
 } from "./review-filters";
 import { cardClassName } from "@/lib/constants";
+
+export const dynamic = "force-dynamic";
+
 const PLAYERS_PER_PAGE = 5;
 
 type ReviewItem = Awaited<ReturnType<typeof getPendingReviewsForSession>>[number];

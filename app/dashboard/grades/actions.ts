@@ -10,10 +10,12 @@ import { requireSession } from "@/lib/auth/session";
 import {
   assertCanManageGrades,
   canEditGradeCoachNote,
+  canManageGrades,
 } from "@/lib/auth/rbac";
 import {
   deleteGradeRuleSchema,
   deleteGradeSchema,
+  gradeIdParamSchema,
   importGradeFormSchema,
   updateGradeCoachNoteSchema,
   updateGradeProfileSchema,
@@ -21,6 +23,12 @@ import {
 } from "@/lib/validation/schemas";
 import { sanitizeOptional, sanitizeText } from "@/lib/sanitize";
 import { notifyGradeCreated } from "@/lib/notifications";
+import { getGradesListRowsForSession } from "@/lib/data/grades-list";
+import { getGradeByIdForSession } from "@/lib/data/queries";
+import { mapPrismaRuleToCard } from "@/lib/grades/map-prisma-rule-to-card";
+import { limitGradesMutation, limitGradesRead } from "@/lib/rate-limit";
+import type { GradeListRow } from "@/lib/types";
+import type { GradeDetailQueryData } from "@/lib/types/grades-detail";
 
 const log = createLogger("grades.actions");
 
@@ -35,9 +43,90 @@ function toPrismaJsonOptional(
   return value as Prisma.InputJsonValue;
 }
 
+async function gradesMutationRateOrError(session: {
+  userId: string;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const r = await limitGradesMutation(session.userId);
+  if (!r.ok) {
+    return {
+      ok: false,
+      error: `Muitas alterações. Aguarde ${r.retryAfterSec}s e tente novamente.`,
+    };
+  }
+  return { ok: true };
+}
+
+export async function getGradesListRowsAction(): Promise<
+  { ok: true; rows: GradeListRow[] } | { ok: false; error: string }
+> {
+  const session = await requireSession();
+  const rl = await limitGradesRead(session.userId);
+  if (!rl.ok) {
+    return {
+      ok: false,
+      error: `Aguarde ${rl.retryAfterSec}s e atualize a página.`,
+    };
+  }
+  try {
+    const rows = await getGradesListRowsForSession(session);
+    return { ok: true, rows };
+  } catch (e) {
+    log.error(
+      "getGradesListRowsAction falhou",
+      e instanceof Error ? e : undefined
+    );
+    return { ok: false, error: "Não foi possível carregar as grades." };
+  }
+}
+
+export async function getGradeDetailQueryAction(
+  gradeId: string
+): Promise<
+  | { ok: true; data: GradeDetailQueryData }
+  | { ok: false; error: string }
+> {
+  const session = await requireSession();
+  const rl = await limitGradesRead(session.userId);
+  if (!rl.ok) {
+    return {
+      ok: false,
+      error: `Aguarde ${rl.retryAfterSec}s e tente novamente.`,
+    };
+  }
+  const parsed = gradeIdParamSchema.safeParse({ id: gradeId });
+  if (!parsed.success) {
+    return { ok: false, error: "Grade inválida." };
+  }
+  try {
+    const grade = await getGradeByIdForSession(session, parsed.data.id);
+    if (!grade) {
+      return { ok: false, error: "Grade não encontrada." };
+    }
+    const data: GradeDetailQueryData = {
+      id: grade.id,
+      name: grade.name,
+      description: grade.description,
+      assignmentsCount: grade._count.assignments,
+      manageRules: canManageGrades(session),
+      canEditNote: canEditGradeCoachNote(session),
+      rules: grade.rules.map(mapPrismaRuleToCard),
+    };
+    return { ok: true, data };
+  } catch (e) {
+    log.error(
+      "getGradeDetailQueryAction falhou",
+      e instanceof Error ? e : undefined,
+      { gradeId }
+    );
+    return { ok: false, error: "Não foi possível carregar a grade." };
+  }
+}
+
 export async function importGradeFromJson(formData: FormData) {
   const session = await requireSession();
   assertCanManageGrades(session);
+  const gate = await gradesMutationRateOrError(session);
+  if (!gate.ok) throw new Error(gate.error);
 
   const parsedForm = importGradeFormSchema.safeParse({
     name: formData.get("name"),
@@ -124,13 +213,15 @@ export async function importGradeFromJson(formData: FormData) {
       err instanceof Error ? err : undefined,
       { name }
     );
-    throw err;
+    throw new Error("Não foi possível salvar a grade importada.");
   }
 }
 
 export async function createGradeProfile(formData: FormData) {
   const session = await requireSession();
   assertCanManageGrades(session);
+  const gate = await gradesMutationRateOrError(session);
+  if (!gate.ok) throw new Error(gate.error);
 
   const name = sanitizeText(String(formData.get("name") ?? ""), 200);
   const description = sanitizeOptional(
@@ -144,9 +235,19 @@ export async function createGradeProfile(formData: FormData) {
 
   log.info("Criando grade manualmente", { name });
 
-  const grade = await prisma.gradeProfile.create({
-    data: { name, description, isTemplate: false },
-  });
+  let grade;
+  try {
+    grade = await prisma.gradeProfile.create({
+      data: { name, description, isTemplate: false },
+    });
+  } catch (e) {
+    log.error(
+      "createGradeProfile persistência",
+      e instanceof Error ? e : undefined,
+      { name }
+    );
+    throw new Error("Não foi possível criar a grade.");
+  }
 
   void notifyGradeCreated(name, grade.id);
   revalidatePath("/dashboard/grades");
@@ -162,6 +263,8 @@ export async function updateGradeCoachNote(
   if (!canEditGradeCoachNote(session)) {
     return { ok: false, error: "Sem permissão para editar esta nota." };
   }
+  const gate = await gradesMutationRateOrError(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
 
   const parsed = updateGradeCoachNoteSchema.safeParse({
     gradeId,
@@ -198,19 +301,33 @@ export async function updateGradeCoachNote(
   return { ok: true };
 }
 
-export async function deleteGrade(id: string) {
+export async function deleteGrade(
+  id: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
   const session = await requireSession();
   assertCanManageGrades(session);
+  const gate = await gradesMutationRateOrError(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
 
   const parsed = deleteGradeSchema.safeParse({ id });
   if (!parsed.success) {
-    throw new Error("ID inválido");
+    return { ok: false, error: "Solicitação inválida." };
   }
 
   log.info("Excluindo grade", { id: parsed.data.id });
-  await prisma.gradeProfile.delete({ where: { id: parsed.data.id } });
+  try {
+    await prisma.gradeProfile.delete({ where: { id: parsed.data.id } });
+  } catch (e) {
+    log.error(
+      "deleteGrade persistência",
+      e instanceof Error ? e : undefined,
+      { id: parsed.data.id }
+    );
+    return { ok: false, error: "Não foi possível excluir a grade." };
+  }
   revalidatePath("/dashboard/grades");
   log.success("Grade excluída", { id: parsed.data.id });
+  return { ok: true };
 }
 
 export async function updateGradeProfile(
@@ -220,6 +337,8 @@ export async function updateGradeProfile(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const session = await requireSession();
   assertCanManageGrades(session);
+  const gate = await gradesMutationRateOrError(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
 
   const parsed = updateGradeProfileSchema.safeParse({
     gradeId,
@@ -278,6 +397,8 @@ export async function updateGradeRule(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const session = await requireSession();
   assertCanManageGrades(session);
+  const gate = await gradesMutationRateOrError(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
 
   const parsed = updateGradeRuleSchema.safeParse({
     ruleId,
@@ -356,6 +477,8 @@ export async function deleteGradeRule(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const session = await requireSession();
   assertCanManageGrades(session);
+  const gate = await gradesMutationRateOrError(session);
+  if (!gate.ok) return { ok: false, error: gate.error };
 
   const parsed = deleteGradeRuleSchema.safeParse({ ruleId });
   if (!parsed.success) {

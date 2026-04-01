@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { parseExcelBuffer, parseLobbyzeDate } from "@/lib/excel-parser";
 import { matchTournamentToGrade } from "@/lib/grade-matcher";
@@ -7,10 +8,19 @@ import { revalidatePath } from "next/cache";
 import { MatchResult } from "@/lib/types";
 import { createLogger } from "@/lib/logger";
 import { requireSession } from "@/lib/auth/session";
-import { IMPORT_ROLES } from "@/lib/auth/rbac";
+import { canDeleteImports, IMPORT_ROLES } from "@/lib/auth/rbac";
 import { notifyImportDone } from "@/lib/notifications";
 import { notifyImportBatchExternal } from "@/lib/notify-import-external";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
+import {
+  limitImportsDelete,
+  limitImportsRead,
+  limitImportsUpload,
+} from "@/lib/rate-limit";
+import { deleteImportIdsSchema } from "@/lib/validation/schemas";
+import { filterImportIdsDeletableBySession } from "@/lib/data/queries";
+import { getImportsListRowsForSession } from "@/lib/data/imports-list";
+import type { ImportListRow } from "@/lib/types/import-list";
 
 const log = createLogger("imports.actions");
 
@@ -20,13 +30,6 @@ type UploadResult =
   | { success: true; processed: number; summary: string[] }
   | { success: false; error: string };
 
-function generateCuid(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let id = "c";
-  for (let i = 0; i < 24; i++) id += chars[Math.floor(Math.random() * chars.length)];
-  return id;
-}
-
 /** Classify the Lobbyze scheduling field */
 function classifyScheduling(scheduling: string | null) {
   const s = (scheduling ?? "").toLowerCase().trim();
@@ -35,23 +38,59 @@ function classifyScheduling(scheduling: string | null) {
   return "missed" as const; // "Didn't play" or anything else
 }
 
+export async function getImportsListRowsAction(): Promise<
+  { ok: true; rows: ImportListRow[] } | { ok: false; error: string }
+> {
+  const session = await requireSession();
+  const rl = await limitImportsRead(session.userId);
+  if (!rl.ok) {
+    return {
+      ok: false,
+      error: `Muitas consultas. Aguarde ${rl.retryAfterSec}s.`,
+    };
+  }
+  const rows = await getImportsListRowsForSession(session);
+  return { ok: true, rows };
+}
+
 export async function deleteImports(ids: string[]): Promise<{ success: boolean; error?: string }> {
   const session = await requireSession();
 
-  if (!["ADMIN", "MANAGER", "COACH"].includes(session.role)) {
+  if (!canDeleteImports(session)) {
     return { success: false, error: "Sem permissão para excluir importações." };
   }
-  if (!ids.length) return { success: false, error: "Nenhuma importação selecionada." };
+
+  const parsed = deleteImportIdsSchema.safeParse(ids);
+  if (!parsed.success) {
+    return { success: false, error: "Seleção inválida." };
+  }
+
+  const rl = await limitImportsDelete(session.userId);
+  if (!rl.ok) {
+    return {
+      success: false,
+      error: `Muitas exclusões. Aguarde ${rl.retryAfterSec}s.`,
+    };
+  }
+
+  const requested = [...new Set(parsed.data)];
+  const allowed = await filterImportIdsDeletableBySession(session, requested);
+  if (allowed.length !== requested.length) {
+    return {
+      success: false,
+      error: "Uma ou mais importações não existem ou você não tem permissão para removê-las.",
+    };
+  }
 
   try {
-    await prisma.playedTournament.deleteMany({ where: { importId: { in: ids } } });
-    await prisma.tournamentImport.deleteMany({ where: { id: { in: ids } } });
+    await prisma.playedTournament.deleteMany({ where: { importId: { in: allowed } } });
+    await prisma.tournamentImport.deleteMany({ where: { id: { in: allowed } } });
 
     revalidatePath("/dashboard/imports");
     revalidatePath("/dashboard/review");
     revalidatePath("/dashboard");
 
-    log.success("Importações excluídas", { count: ids.length });
+    log.success("Importações excluídas", { count: allowed.length });
     return { success: true };
   } catch (err) {
     if (isRedirectError(err)) throw err;
@@ -74,6 +113,14 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
     return { success: false, error: "Arquivo muito grande (máx. 12 MB)." };
   }
 
+  const uploadRl = await limitImportsUpload(session.userId);
+  if (!uploadRl.ok) {
+    return {
+      success: false,
+      error: `Limite de importações por hora. Aguarde ${uploadRl.retryAfterSec}s.`,
+    };
+  }
+
   log.sep("INÍCIO DA IMPORTAÇÃO");
   log.info("Arquivo recebido", { fileName: file.name, sizeKB: Math.round(file.size / 1024) });
 
@@ -84,6 +131,15 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
     log.info("Excel parseado", {
       abas: parseResults.length,
       totalLinhas: parseResults.reduce((s, r) => s + r.tournaments.length, 0),
+    });
+
+    const allPlayers = await prisma.player.findMany({
+      include: {
+        gradeAssignments: {
+          where: { isActive: true },
+          include: { gradeProfile: { include: { rules: true } } },
+        },
+      },
     });
 
     let totalProcessed = 0;
@@ -118,15 +174,6 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
       });
 
       // ── Find or create player ───────────────────────────────────────────────
-      const allPlayers = await prisma.player.findMany({
-        include: {
-          gradeAssignments: {
-            where: { isActive: true },
-            include: { gradeProfile: { include: { rules: true } } },
-          },
-        },
-      });
-
       const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, "");
       const target = normalize(sheetResult.playerName);
 
@@ -150,6 +197,7 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
           });
           log.success("Novo jogador criado", { id: player.id, name: player.name });
           summary.push(`Novo jogador criado: ${player.name}`);
+          allPlayers.push(player);
         } else {
           log.warn("Jogador não encontrado — aba ignorada", { sheet: sheetResult.playerName });
           summary.push(`Jogador não encontrado: ${sheetResult.playerName}`);
@@ -249,7 +297,7 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
           matchedRuleId = matchResult.matchedRuleId;
         }
 
-        const tournamentId = generateCuid();
+        const tournamentId = randomUUID();
 
         tournamentRows.push({
           id: tournamentId, playerId: player.id, importId: importRecord.id,
@@ -342,8 +390,11 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
     return { success: true, processed: totalProcessed, summary };
   } catch (err) {
     if (isRedirectError(err)) throw err;
-    const msg = err instanceof Error ? err.message : "Erro desconhecido ao processar arquivo";
     log.error("Falha na importação", err instanceof Error ? err : undefined, { file: file.name });
-    return { success: false, error: msg };
+    return {
+      success: false,
+      error:
+        "Não foi possível processar o arquivo. Verifique o formato e tente novamente.",
+    };
   }
 }

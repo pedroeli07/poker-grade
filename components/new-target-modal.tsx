@@ -25,6 +25,7 @@ import { Separator } from "@/components/ui/separator";
 import { Plus, Target, Loader2, ChevronRight } from "lucide-react";
 import { createTarget } from "@/app/dashboard/targets/actions";
 import { toast } from "@/lib/toast";
+import { useInvalidateTargets } from "@/hooks/use-invalidate-targets";
 import { isNextRedirectError } from "@/lib/utils";
 
 type Player = { id: string; name: string; nickname: string | null };
@@ -57,6 +58,7 @@ export function NewTargetModal({ players }: NewTargetModalProps) {
   const [limitAction, setLimitAction] = useState("none");
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
+  const invalidateTargets = useInvalidateTargets();
 
   function handleOpenChange(value: boolean) {
     if (isPending) return;
@@ -85,6 +87,7 @@ export function NewTargetModal({ players }: NewTargetModalProps) {
         await createTarget(formData);
         toast.success("Target criado!", "A meta foi adicionada ao jogador.");
         handleOpenChange(false);
+        invalidateTargets();
         router.refresh();
       } catch (err) {
         if (isNextRedirectError(err)) throw err;

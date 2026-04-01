@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   Card,
@@ -24,27 +25,17 @@ import { DeleteGradeButton } from "@/components/delete-grade-button";
 import { EditGradeDialog } from "@/components/edit-grade-dialog";
 import { ColumnFilter } from "@/components/column-filter";
 import { distinctOptions } from "@/lib/distinct-options";
-import { cn } from "@/lib/utils";
+import { cn, descriptionPick } from "@/lib/utils";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { cardClassName } from "@/lib/constants";
+import { cardClassName, EMPTY_DESC, playersHoverScrollClass } from "@/lib/constants";
+import type { GradeListRow, ColumnFilters, ColumnKey } from "@/lib/types";
+import { getGradesListRowsAction } from "@/app/dashboard/grades/actions";
+import { gradeKeys } from "@/lib/queries/grade-query-keys";
 
-export type GradeListRow = {
-  id: string;
-  name: string;
-  description: string | null;
-  rulesCount: number;
-  assignmentsCount: number;
-  assignedPlayers: { id: string; name: string }[];
-};
-
-const playersHoverScrollClass =
-  "max-h-[min(320px,50vh)] overflow-y-auto overflow-x-hidden space-y-0.5 pr-1 " +
-  "[scrollbar-width:thin] [scrollbar-color:color-mix(in_oklab,var(--muted-foreground)_45%,transparent)_color-mix(in_oklab,var(--muted)_80%,transparent)] " +
-  "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/35";
 
 function GradePlayersHover({
   count,
@@ -123,29 +114,25 @@ function GradePlayersHover({
   );
 }
 
-type ColumnKey = "name" | "description" | "rules" | "players";
-type ColumnFilters = Record<ColumnKey, Set<string> | null>;
 
-const EMPTY_DESC = "__empty__";
-
-function descriptionPick(r: GradeListRow) {
-  const raw = r.description?.trim() ?? "";
-  const value = raw || EMPTY_DESC;
-  const label = raw
-    ? raw.length > 80
-      ? `${raw.slice(0, 80)}…`
-      : raw
-    : "(sem descrição)";
-  return { value, label };
-}
-
-export function GradesPageClient({
-  rows,
+export default function GradesPageClient({
+  rows: initialRows,
   manage,
 }: {
   rows: GradeListRow[];
   manage: boolean;
 }) {
+  const { data: rows = initialRows } = useQuery({
+    queryKey: gradeKeys.list(),
+    queryFn: async () => {
+      const r = await getGradesListRowsAction();
+      if (!r.ok) throw new Error(r.error);
+      return r.rows;
+    },
+    initialData: initialRows,
+    staleTime: 30_000,
+  });
+
   const [view, setView] = useState<"cards" | "table">("cards");
   const [filters, setFilters] = useState<ColumnFilters>({
     name: null,

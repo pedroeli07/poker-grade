@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Info, Pencil, Loader2 } from "lucide-react";
 import { updateGradeCoachNote } from "@/app/dashboard/grades/actions";
 import { toast } from "@/lib/toast";
+import { gradeKeys } from "@/lib/queries/grade-query-keys";
 
 export function GradeCoachNoteSection({
   gradeId,
@@ -24,7 +25,7 @@ export function GradeCoachNoteSection({
   initialDescription: string | null;
   canEdit: boolean;
 }) {
-  const router = useRouter();
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState(initialDescription ?? "");
   const [pending, startTransition] = useTransition();
@@ -48,7 +49,8 @@ export function GradeCoachNoteSection({
       }
       toast.success("Nota do coach atualizada");
       setOpen(false);
-      router.refresh();
+      void qc.invalidateQueries({ queryKey: gradeKeys.detail(gradeId) });
+      void qc.invalidateQueries({ queryKey: gradeKeys.list() });
     });
   }
 
