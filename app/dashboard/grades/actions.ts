@@ -1,5 +1,6 @@
 "use server";
 
+import type { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { parseLobbyzeFilters } from "@/lib/grade-matcher";
@@ -11,9 +12,12 @@ import {
   canEditGradeCoachNote,
 } from "@/lib/auth/rbac";
 import {
+  deleteGradeRuleSchema,
   deleteGradeSchema,
   importGradeFormSchema,
   updateGradeCoachNoteSchema,
+  updateGradeProfileSchema,
+  updateGradeRuleSchema,
 } from "@/lib/validation/schemas";
 import { sanitizeOptional, sanitizeText } from "@/lib/sanitize";
 import { notifyGradeCreated } from "@/lib/notifications";
@@ -207,4 +211,169 @@ export async function deleteGrade(id: string) {
   await prisma.gradeProfile.delete({ where: { id: parsed.data.id } });
   revalidatePath("/dashboard/grades");
   log.success("Grade excluída", { id: parsed.data.id });
+}
+
+export async function updateGradeProfile(
+  gradeId: string,
+  name: string,
+  description: string | null
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const session = await requireSession();
+  assertCanManageGrades(session);
+
+  const parsed = updateGradeProfileSchema.safeParse({
+    gradeId,
+    name,
+    description: description ?? null,
+  });
+  if (!parsed.success) {
+    return { ok: false, error: "Dados inválidos." };
+  }
+
+  const exists = await prisma.gradeProfile.findUnique({
+    where: { id: parsed.data.gradeId },
+    select: { id: true },
+  });
+  if (!exists) {
+    return { ok: false, error: "Grade não encontrada." };
+  }
+
+  const cleanedName = sanitizeText(parsed.data.name, 200);
+  const cleanedDesc = sanitizeOptional(
+    parsed.data.description != null && parsed.data.description !== ""
+      ? parsed.data.description
+      : null,
+    2000
+  );
+
+  await prisma.gradeProfile.update({
+    where: { id: parsed.data.gradeId },
+    data: { name: cleanedName, description: cleanedDesc },
+  });
+
+  revalidatePath("/dashboard/grades");
+  revalidatePath(`/dashboard/grades/${parsed.data.gradeId}`);
+  revalidatePath("/dashboard/minha-grade");
+  log.info("Grade atualizada", { gradeId: parsed.data.gradeId });
+  return { ok: true };
+}
+
+function sanitizeLobbyzeItems(
+  items: { item_id: number | string; item_text: string }[]
+) {
+  return items.map((s) => ({
+    item_id: s.item_id,
+    item_text: sanitizeText(s.item_text, 200),
+  }));
+}
+
+export type UpdateGradeRuleInput = Omit<
+  z.infer<typeof updateGradeRuleSchema>,
+  "ruleId"
+>;
+
+export async function updateGradeRule(
+  ruleId: string,
+  payload: UpdateGradeRuleInput
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const session = await requireSession();
+  assertCanManageGrades(session);
+
+  const parsed = updateGradeRuleSchema.safeParse({
+    ruleId,
+    filterName: payload.filterName,
+    sites: sanitizeLobbyzeItems(payload.sites),
+    buyInMin: payload.buyInMin,
+    buyInMax: payload.buyInMax,
+    speed: sanitizeLobbyzeItems(payload.speed),
+    tournamentType: sanitizeLobbyzeItems(payload.tournamentType),
+    variant: sanitizeLobbyzeItems(payload.variant),
+    gameType: sanitizeLobbyzeItems(payload.gameType),
+    playerCount: sanitizeLobbyzeItems(payload.playerCount),
+    weekDay: sanitizeLobbyzeItems(payload.weekDay),
+    prizePoolMin: payload.prizePoolMin,
+    prizePoolMax: payload.prizePoolMax,
+    minParticipants: payload.minParticipants,
+    fromTime: payload.fromTime,
+    toTime: payload.toTime,
+    excludePattern: payload.excludePattern,
+    timezone: payload.timezone,
+    autoOnly: payload.autoOnly,
+    manualOnly: payload.manualOnly,
+  });
+  if (!parsed.success) {
+    const msg = parsed.error.issues[0]?.message;
+    return { ok: false, error: msg ?? "Dados inválidos." };
+  }
+
+  const rule = await prisma.gradeRule.findUnique({
+    where: { id: parsed.data.ruleId },
+    select: { id: true, gradeProfileId: true },
+  });
+  if (!rule) {
+    return { ok: false, error: "Regra não encontrada." };
+  }
+
+  const cleanedName = sanitizeText(parsed.data.filterName, 500);
+  const cleanedExclude = sanitizeOptional(
+    parsed.data.excludePattern ?? null,
+    2000
+  );
+
+  await prisma.gradeRule.update({
+    where: { id: parsed.data.ruleId },
+    data: {
+      filterName: cleanedName,
+      sites: toPrismaJson(parsed.data.sites),
+      buyInMin: parsed.data.buyInMin,
+      buyInMax: parsed.data.buyInMax,
+      speed: toPrismaJsonOptional(parsed.data.speed),
+      tournamentType: toPrismaJsonOptional(parsed.data.tournamentType),
+      variant: toPrismaJsonOptional(parsed.data.variant),
+      gameType: toPrismaJsonOptional(parsed.data.gameType),
+      playerCount: toPrismaJsonOptional(parsed.data.playerCount),
+      weekDay: toPrismaJsonOptional(parsed.data.weekDay),
+      prizePoolMin: parsed.data.prizePoolMin,
+      prizePoolMax: parsed.data.prizePoolMax,
+      minParticipants: parsed.data.minParticipants,
+      fromTime: parsed.data.fromTime,
+      toTime: parsed.data.toTime,
+      excludePattern: cleanedExclude,
+      timezone: parsed.data.timezone,
+      autoOnly: parsed.data.autoOnly,
+      manualOnly: parsed.data.manualOnly,
+    },
+  });
+
+  revalidatePath("/dashboard/grades");
+  revalidatePath(`/dashboard/grades/${rule.gradeProfileId}`);
+  log.info("Regra de grade atualizada", { ruleId: parsed.data.ruleId });
+  return { ok: true };
+}
+
+export async function deleteGradeRule(
+  ruleId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const session = await requireSession();
+  assertCanManageGrades(session);
+
+  const parsed = deleteGradeRuleSchema.safeParse({ ruleId });
+  if (!parsed.success) {
+    return { ok: false, error: "ID inválido." };
+  }
+
+  const rule = await prisma.gradeRule.findUnique({
+    where: { id: parsed.data.ruleId },
+    select: { id: true, gradeProfileId: true },
+  });
+  if (!rule) {
+    return { ok: false, error: "Regra não encontrada." };
+  }
+
+  await prisma.gradeRule.delete({ where: { id: parsed.data.ruleId } });
+
+  revalidatePath("/dashboard/grades");
+  revalidatePath(`/dashboard/grades/${rule.gradeProfileId}`);
+  log.info("Regra de grade excluída", { ruleId: parsed.data.ruleId });
+  return { ok: true };
 }

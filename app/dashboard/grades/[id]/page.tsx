@@ -1,25 +1,17 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowLeft,
-  DollarSign,
-  Clock,
-  Users,
-  Zap,
-  Tag,
-  Ban,
-  Timer,
-  CalendarDays,
-  Target,
-  TrendingUp,
-} from "lucide-react";
+import { ArrowLeft, Target } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { LobbyzeFilterItem } from "@/lib/types";
 import { requireSession } from "@/lib/auth/session";
-import { canEditGradeCoachNote } from "@/lib/auth/rbac";
+import { canEditGradeCoachNote, canManageGrades } from "@/lib/auth/rbac";
 import { getGradeByIdForSession } from "@/lib/data/queries";
 import { GradeCoachNoteSection } from "@/components/grade-coach-note";
+import {
+  GradeRuleCard,
+  type GradeRuleCardRule,
+} from "@/components/grade-rule-card";
 
 function parseJson<T>(val: unknown): T[] {
   if (Array.isArray(val)) return val as T[];
@@ -34,76 +26,52 @@ function parseJson<T>(val: unknown): T[] {
   return [];
 }
 
-function Pills({
-  items,
-  variant = "default",
-}: {
-  items: LobbyzeFilterItem[];
-  variant?: "sites" | "default" | "speed" | "variant";
-}) {
-  if (!items.length) return <span className="text-muted-foreground/50 text-sm">Todos</span>;
-
-  const cls =
-    variant === "sites"
-      ? (text: string) =>
-          text.toLowerCase().includes("pokerstars")
-            ? "bg-blue-500/12 text-blue-600 border-blue-500/25"
-            : "bg-blue-500/12 text-blue-600 border-blue-500/25"
-      : variant === "speed"
-        ? () => "bg-blue-500/12 text-blue-600 border-blue-500/25"
-        : variant === "variant"
-          ? () => "bg-blue-500/12 text-blue-600 border-blue-500/25"
-          : () => "bg-blue-500/12 text-blue-600 border-blue-500/25";
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item, i) => (
-        <span
-          key={i}
-          className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${cls(item.item_text)}`}
-        >
-          {item.item_text}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function BuyInRange({
-  min,
-  max,
-}: {
-  min: number | null;
-  max: number | null;
-}) {
-  if (!min && !max)
-    return (
-      <span className="text-muted-foreground/50 text-sm">Sem restrição</span>
-    );
-
-  const pct = min && max ? ((min / max) * 100).toFixed(0) : null;
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="font-mono text-lg font-bold text-blue-400">
-          ${min ?? "—"}
-        </span>
-        <span className="text-muted-foreground/60">—</span>
-        <span className="font-mono text-lg font-bold text-blue-400">
-          ${max ?? "—"}
-        </span>
-      </div>
-      {min && max && (
-        <div className="h-2 rounded-full bg-muted/50 overflow-hidden w-full max-w-[140px]">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400"
-            style={{ width: `${100 - Number(pct)}%` }}
-          />
-        </div>
-      )}
-    </div>
-  );
+function toRuleCard(rule: {
+  id: string;
+  filterName: string;
+  lobbyzeFilterId: number | null;
+  sites: unknown;
+  buyInMin: number | null;
+  buyInMax: number | null;
+  speed: unknown;
+  variant: unknown;
+  tournamentType: unknown;
+  gameType: unknown;
+  playerCount: unknown;
+  weekDay: unknown;
+  prizePoolMin: number | null;
+  prizePoolMax: number | null;
+  minParticipants: number | null;
+  fromTime: string | null;
+  toTime: string | null;
+  excludePattern: string | null;
+  timezone: number | null;
+  autoOnly: boolean;
+  manualOnly: boolean;
+}): GradeRuleCardRule {
+  return {
+    id: rule.id,
+    filterName: rule.filterName,
+    lobbyzeFilterId: rule.lobbyzeFilterId,
+    sites: parseJson<LobbyzeFilterItem>(rule.sites),
+    buyInMin: rule.buyInMin,
+    buyInMax: rule.buyInMax,
+    speed: parseJson<LobbyzeFilterItem>(rule.speed),
+    variant: parseJson<LobbyzeFilterItem>(rule.variant),
+    tournamentType: parseJson<LobbyzeFilterItem>(rule.tournamentType),
+    gameType: parseJson<LobbyzeFilterItem>(rule.gameType),
+    playerCount: parseJson<LobbyzeFilterItem>(rule.playerCount),
+    weekDay: parseJson<LobbyzeFilterItem>(rule.weekDay),
+    prizePoolMin: rule.prizePoolMin,
+    prizePoolMax: rule.prizePoolMax,
+    minParticipants: rule.minParticipants,
+    fromTime: rule.fromTime,
+    toTime: rule.toTime,
+    excludePattern: rule.excludePattern,
+    timezone: rule.timezone,
+    autoOnly: rule.autoOnly,
+    manualOnly: rule.manualOnly,
+  };
 }
 
 export default async function GradeRulesPage({
@@ -118,10 +86,10 @@ export default async function GradeRulesPage({
   if (!grade) notFound();
 
   const canEditNote = canEditGradeCoachNote(session);
+  const manageRules = canManageGrades(session);
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* Header */}
+    <div className="space-y-8 w-full max-w-[min(100%,92rem)] mx-auto px-1 sm:px-0">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/grades">
@@ -154,7 +122,6 @@ export default async function GradeRulesPage({
         canEdit={canEditNote}
       />
 
-      {/* Section header */}
       <div className="flex items-center gap-4">
         <div className="h-px flex-1 bg-blue-500/30" />
         <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider px-3">
@@ -163,169 +130,23 @@ export default async function GradeRulesPage({
         <div className="h-px flex-1 bg-blue-500/30" />
       </div>
 
-      {/* Filter cards grid */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {grade.rules.map((rule, idx) => {
-          const sites = parseJson<LobbyzeFilterItem>(rule.sites);
-          const speed = parseJson<LobbyzeFilterItem>(rule.speed);
-          const variant = parseJson<LobbyzeFilterItem>(rule.variant);
-          const tournamentType = parseJson<LobbyzeFilterItem>(rule.tournamentType);
-          const weekDay = parseJson<LobbyzeFilterItem>(rule.weekDay);
+      {manageRules && (
+        <p className="text-sm text-muted-foreground -mt-4">
+          Admin/Manager: clique em{" "}
+          <span className="font-medium text-foreground">Editar</span> no cartão,
+          ajuste os campos e salve.
+        </p>
+      )}
 
-          const hasExtra =
-            rule.prizePoolMin ||
-            rule.minParticipants ||
-            rule.excludePattern ||
-            (rule.fromTime && rule.toTime) ||
-            weekDay.length > 0;
-
-          return (
-            <div
-              key={rule.id}
-              className="rounded-xl border border-blue-500/30 bg-white overflow-hidden hover:border-blue-500/40 transition-colors group"
-            >
-              {/* Card header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-blue-500/30 bg-blue-500/8">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-7 h-7 rounded-md bg-blue-500/15 flex items-center justify-center text-[13px] font-bold text-blue-600">
-                    {idx + 1}
-                  </span>
-                  <span className="font-semibold text-base text-blue-600">
-                    {rule.filterName}
-                  </span>
-                </div>
-                {rule.lobbyzeFilterId && (
-                  <span className="text-xs text-blue-600/50 font-mono">
-                    #{rule.lobbyzeFilterId}
-                  </span>
-                )}
-              </div>
-
-              {/* Card body */}
-              <div className="p-6 space-y-6">
-                {/* Sites */}
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center shrink-0 mt-0.5">
-                    <Zap className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-black uppercase tracking-wide">
-                      Sites
-                    </p>
-                    <Pills items={sites} variant="sites" />
-                  </div>
-                </div>
-
-                {/* Buy-in */}
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <DollarSign className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-black uppercase tracking-wide">
-                      Buy-in
-                    </p>
-                    <BuyInRange min={rule.buyInMin} max={rule.buyInMax} />
-                  </div>
-                </div>
-
-                {/* Speed */}
-                {speed.length > 0 && (
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Clock className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-black uppercase tracking-wide">
-                        Speed
-                      </p>
-                      <Pills items={speed} variant="speed" />
-                    </div>
-                  </div>
-                )}
-
-                {/* Variant / Tournament type */}
-                {(variant.length > 0 || tournamentType.length > 0) && (
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Tag className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-black uppercase tracking-wide">
-                        Formato / Variante
-                      </p>
-                      <Pills
-                        items={[...tournamentType, ...variant]}
-                        variant="variant"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Extra constraints */}
-                {hasExtra && (
-                  <div className="pt-4 border-t border-blue-500/30 space-y-3">
-                    {rule.prizePoolMin && (
-                      <div className="flex items-center gap-3 text-base text-blue-600">
-                        <TrendingUp className="h-5 w-5 text-blue-600" />
-                        <span>
-                          Garantido mín:{" "}
-                          <strong className="text-blue-600/80">
-                            ${rule.prizePoolMin.toLocaleString()}
-                          </strong>
-                        </span>
-                      </div>
-                    )}
-                    {rule.minParticipants && (
-                      <div className="flex items-center gap-3 text-base text-blue-600">
-                        <Users className="h-5 w-5 text-blue-600" />
-                        <span>
-                          Mín. entrants:{" "}
-                          <strong className="text-blue-600/80">
-                            {rule.minParticipants}
-                          </strong>
-                        </span>
-                      </div>
-                    )}
-                    {rule.fromTime && rule.toTime && (
-                      <div className="flex items-center gap-3 text-base text-blue-600">
-                        <Timer className="h-5 w-5 text-blue-600/70" />
-                        <span>
-                          Horário:{" "}
-                          <strong className="text-blue-600/80">
-                            {rule.fromTime} — {rule.toTime}
-                          </strong>
-                        </span>
-                      </div>
-                    )}
-                    {weekDay.length > 0 && (
-                      <div className="flex items-center gap-3 text-base text-muted-foreground">
-                        <CalendarDays className="h-5 w-5 text-primary/70" />
-                        <span>
-                          Dias:{" "}
-                          <strong className="text-foreground/80">
-                            {weekDay.map((d) => d.item_text).join(", ")}
-                          </strong>
-                        </span>
-                      </div>
-                    )}
-                    {rule.excludePattern && (
-                      <div className="flex items-center gap-3 text-base text-muted-foreground">
-                        <Ban className="h-5 w-5 text-red-500/70" />
-                        <span>
-                          Excluir:{" "}
-                          <strong className="text-red-500/80">
-                            {rule.excludePattern.replace(/\|/g, ", ")}
-                          </strong>
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
+        {grade.rules.map((rule, idx) => (
+          <GradeRuleCard
+            key={rule.id}
+            rule={toRuleCard(rule)}
+            idx={idx}
+            manage={manageRules}
+          />
+        ))}
       </div>
 
       {grade.rules.length === 0 && (

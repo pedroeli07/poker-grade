@@ -1,70 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
-import { STAFF_WRITE_ROLES } from "@/lib/auth/rbac";
 import { getCoachesWithActiveLogin } from "@/lib/data/coaches";
 import { getGradesForSession, getPlayersForSession } from "@/lib/data/queries";
 import { prisma } from "@/lib/prisma";
 import { syncOrphanCoachProfiles } from "@/lib/auth/ensure-coach-profile";
 import { NewPlayerModal } from "@/components/new-player-modal";
-import {
-  PlayersTableClient,
-  type PlayerTableRow,
-} from "./players-table-client";
-
-const NONE = "__none__";
-
-function formatAbiAlvo(value: number, unit: string | null): string {
-  const u = unit?.trim() ?? "";
-  if (u === "$" || u === "€" || u === "¥") return `${u}${value}`;
-  if (u) return `${value} ${u}`.trim();
-  return String(value);
-}
-
-function buildAbiByPlayer(
-  targets: Array<{
-    playerId: string;
-    name: string;
-    numericValue: number | null;
-    unit: string | null;
-  }>
-): Map<string, { numericValue: number; unit: string | null }> {
-  const map = new Map<string, { numericValue: number; unit: string | null }>();
-  for (const t of targets) {
-    if (t.numericValue == null) continue;
-    if (!/\babi\b/i.test(t.name.trim())) continue;
-    if (!map.has(t.playerId)) {
-      map.set(t.playerId, { numericValue: t.numericValue, unit: t.unit });
-    }
-  }
-  return map;
-}
-
-function toTableRows(
-  players: Awaited<ReturnType<typeof getPlayersForSession>>,
-  abiByPlayer: Map<string, { numericValue: number; unit: string | null }>
-): PlayerTableRow[] {
-  return players.map((player) => {
-    const mainGrade = player.gradeAssignments[0]?.gradeProfile;
-    const abi = abiByPlayer.get(player.id);
-    const abiKey = abi ? `v-${abi.numericValue}` : NONE;
-    const abiLabel = abi ? formatAbiAlvo(abi.numericValue, abi.unit) : "—";
-    return {
-      id: player.id,
-      name: player.name,
-      nickname: player.nickname,
-      email: player.email ?? null,
-      coachKey: player.coachId ?? NONE,
-      coachLabel: player.coach?.name ?? "Sem Coach",
-      gradeKey: mainGrade?.id ?? NONE,
-      gradeLabel: mainGrade?.name ?? "Não atribuída",
-      abiKey,
-      abiLabel,
-      abiNumericValue: abi?.numericValue ?? null,
-      abiUnit: abi?.unit ?? null,
-      status: player.status,
-    };
-  });
-}
+import { toTableRows, buildAbiByPlayer } from "@/lib/utils";
+import { canCreate, canEditPlayers } from "@/lib/constants";
+import { PlayersTableClient } from "./players-table-client";
 
 export default async function PlayersPage() {
   const session = await requireSession();
@@ -82,8 +25,8 @@ export default async function PlayersPage() {
       : getCoachesWithActiveLogin(),
     getGradesForSession(session),
   ]);
-  const grades = gradeProfiles.map((g) => ({ id: g.id, name: g.name }));
 
+  const grades = gradeProfiles.map((g) => ({ id: g.id, name: g.name }));
   const playerIds = players.map((p) => p.id);
   const abiTargets =
     playerIds.length === 0
@@ -103,10 +46,9 @@ export default async function PlayersPage() {
           },
           orderBy: [{ playerId: "asc" }, { name: "asc" }],
         });
+
   const abiByPlayer = buildAbiByPlayer(abiTargets);
 
-  const canCreate = STAFF_WRITE_ROLES.includes(session.role);
-  const canEditPlayers = STAFF_WRITE_ROLES.includes(session.role);
   const allowCoachSelect =
     session.role === "ADMIN" || session.role === "MANAGER";
   const rows = toTableRows(players, abiByPlayer);
@@ -122,7 +64,7 @@ export default async function PlayersPage() {
             Gerencie o time de jogadores e aloque coaches responsáveis.
           </p>
         </div>
-        {canCreate ? (
+        {canCreate(session) ? (
           <NewPlayerModal coaches={coaches} grades={grades} />
         ) : null}
       </div>
@@ -138,7 +80,7 @@ export default async function PlayersPage() {
               rows={rows}
               coaches={coaches}
               grades={grades}
-              canEditPlayers={canEditPlayers}
+              canEditPlayers={canEditPlayers(session)}
               allowCoachSelect={allowCoachSelect}
             />
           )}

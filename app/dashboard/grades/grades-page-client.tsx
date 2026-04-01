@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Archive, LayoutGrid, Table2, Users } from "lucide-react";
 import { DeleteGradeButton } from "@/components/delete-grade-button";
+import { EditGradeDialog } from "@/components/edit-grade-dialog";
 import { ColumnFilter } from "@/components/column-filter";
 import { distinctOptions } from "@/lib/distinct-options";
 import { cn } from "@/lib/utils";
@@ -332,11 +333,19 @@ export function GradesPageClient({
                     {grade.name}
                   </CardTitle>
                   {manage ? (
-                    <DeleteGradeButton
-                      gradeId={grade.id}
-                      gradeName={grade.name}
-                      className="opacity-100 shrink-0"
-                    />
+                    <div className="flex shrink-0 items-center gap-0.5">
+                      <EditGradeDialog
+                        gradeId={grade.id}
+                        initialName={grade.name}
+                        initialDescription={grade.description}
+                        className="opacity-100"
+                      />
+                      <DeleteGradeButton
+                        gradeId={grade.id}
+                        gradeName={grade.name}
+                        className="opacity-100"
+                      />
+                    </div>
                   ) : null}
                 </div>
                 <CardDescription className="text-sm leading-relaxed text-muted-foreground line-clamp-3 min-h-[3.75rem]">
@@ -478,11 +487,19 @@ export function GradesPageClient({
                           </Link>
                         </Button>
                         {manage ? (
-                          <DeleteGradeButton
-                            gradeId={grade.id}
-                            gradeName={grade.name}
-                            className="opacity-100"
-                          />
+                          <>
+                            <EditGradeDialog
+                              gradeId={grade.id}
+                              initialName={grade.name}
+                              initialDescription={grade.description}
+                              className="opacity-100"
+                            />
+                            <DeleteGradeButton
+                              gradeId={grade.id}
+                              gradeName={grade.name}
+                              className="opacity-100"
+                            />
+                          </>
                         ) : null}
                       </div>
                     </TableCell>

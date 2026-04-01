@@ -1,3 +1,4 @@
+import { UserRole } from "@prisma/client";
 import {
   Grid3X3,
   LayoutDashboard,
@@ -18,6 +19,7 @@ import {
   TrendingUp,
   Layers,
 } from "lucide-react";
+import { STAFF_WRITE_ROLES } from "./auth/rbac";
 
 export const cardClassName="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_32px_-4px_oklch(0.45_0.18_250/26%),0_2px_8px_-2px_oklch(0.45_0.18_250/14%)] transition-all duration-200 hover:border-[oklch(0.45_0.18_250)] hover:shadow-[0_8px_48px_-6px_oklch(0.45_0.18_250/38%),0_4px_24px_-6px_oklch(0.45_0.18_250/20%)] overflow-hidden group"
 
@@ -96,6 +98,11 @@ export const TOPBAR_PAGE_TITLES: Record<string, string> = {
   "/dashboard/notifications": "",
   "/dashboard/profile": "",
 };
+
+export const canCreate = (session: { role: UserRole }) => STAFF_WRITE_ROLES.includes(session.role);
+export const canEditPlayers = (session: { role: UserRole }) => STAFF_WRITE_ROLES.includes(session.role);
+
+export const USUARIOS_MANAGE_ROLES = [UserRole.ADMIN, UserRole.MANAGER] as const;
 
 export const GRADE_TYPE_LABEL: Record<
   string,

@@ -94,6 +94,80 @@ export const updateGradeCoachNoteSchema = z.object({
   description: z.string().max(2000).optional().nullable(),
 });
 
+export const updateGradeProfileSchema = z.object({
+  gradeId: cuid,
+  name: z.string().min(2).max(200),
+  description: z.string().max(2000).optional().nullable(),
+});
+
+const lobbyzeItemSchema = z.object({
+  item_id: z.union([z.number(), z.string()]),
+  item_text: z.string().min(1).max(200),
+});
+
+function emptyToNullUnknown(v: unknown) {
+  if (v === "" || v === undefined) return null;
+  return v;
+}
+
+export const updateGradeRuleSchema = z
+  .object({
+    ruleId: cuid,
+    filterName: z.string().min(1).max(500),
+    sites: z.array(lobbyzeItemSchema).min(1),
+    buyInMin: z.number().nonnegative().nullable(),
+    buyInMax: z.number().nonnegative().nullable(),
+    speed: z.array(lobbyzeItemSchema),
+    tournamentType: z.array(lobbyzeItemSchema),
+    variant: z.array(lobbyzeItemSchema),
+    gameType: z.array(lobbyzeItemSchema),
+    playerCount: z.array(lobbyzeItemSchema),
+    weekDay: z.array(lobbyzeItemSchema),
+    prizePoolMin: z.number().nonnegative().nullable(),
+    prizePoolMax: z.number().nonnegative().nullable(),
+    minParticipants: z.number().int().nonnegative().nullable(),
+    fromTime: z.preprocess(
+      emptyToNullUnknown,
+      z.union([z.string().max(8), z.null()])
+    ),
+    toTime: z.preprocess(
+      emptyToNullUnknown,
+      z.union([z.string().max(8), z.null()])
+    ),
+    excludePattern: z.preprocess(
+      emptyToNullUnknown,
+      z.union([z.string().max(2000), z.null()])
+    ),
+    timezone: z.number().int().min(-840).max(840).nullable(),
+    autoOnly: z.boolean(),
+    manualOnly: z.boolean(),
+  })
+  .refine(
+    (d) => {
+      if (d.buyInMin != null && d.buyInMax != null) {
+        return d.buyInMin <= d.buyInMax;
+      }
+      return true;
+    },
+    { message: "Buy-in mínimo não pode ser maior que o máximo.", path: ["buyInMax"] }
+  )
+  .refine(
+    (d) => {
+      if (d.prizePoolMin != null && d.prizePoolMax != null) {
+        return d.prizePoolMin <= d.prizePoolMax;
+      }
+      return true;
+    },
+    {
+      message: "Garantido mínimo não pode ser maior que o máximo.",
+      path: ["prizePoolMax"],
+    }
+  );
+
+export const deleteGradeRuleSchema = z.object({
+  ruleId: cuid,
+});
+
 export const processReviewSchema = z.object({
   reviewId: cuid,
   status: z.enum(ReviewStatus),
