@@ -15,14 +15,22 @@ import {
   History,
   ShieldCheck,
   Target,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { canViewPlayer } from "@/lib/utils";
-import { GRADE_TYPE_LABEL, LIMIT_ACTION_CONFIG, TARGET_STATUS_CONFIG } from "@/lib/constants";
+import { canManagePlayerProfile, canViewPlayer } from "@/lib/utils";
+import { cardClassName, GRADE_TYPE_LABEL, LIMIT_ACTION_CONFIG, TARGET_STATUS_CONFIG } from "@/lib/constants";
+import { PlayerNicksSection } from "@/components/player-nicks-section";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Detalhes de um Jogador",
+  description: "Visualize os detalhes de um jogador e suas grades, targets e histórico de limites.",
+};
 
 export default async function PlayerProfilePage({
   params,
@@ -53,6 +61,10 @@ export default async function PlayerProfilePage({
         orderBy: { createdAt: "desc" },
         take: 5,
       },
+      nicks: {
+        orderBy: { createdAt: "asc" },
+        select: { id: true, nick: true, network: true, isActive: true, createdAt: true },
+      },
       _count: {
         select: {
           playedTournaments: true,
@@ -74,14 +86,10 @@ export default async function PlayerProfilePage({
   const attentionCount = player.targets.filter((t) => t.status === "ATTENTION").length;
   const offTrackCount = player.targets.filter((t) => t.status === "OFF_TRACK").length;
 
-  const canManage =
-    session.role === "ADMIN" ||
-    session.role === "MANAGER" ||
-    (session.role === "COACH" &&
-      (player.coachId === session.coachId || player.driId === session.coachId));
+  const canManage = canManagePlayerProfile(session, player);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-start gap-4">
         <Button variant="ghost" size="icon" asChild className="mt-0.5 shrink-0">
@@ -122,13 +130,19 @@ export default async function PlayerProfilePage({
                 Coach: <strong className="text-foreground ml-0.5">{player.coach.name}</strong>
               </span>
             )}
+            {player.playerGroup && (
+              <span className="flex items-center gap-1">
+                <Users className="h-3.5 w-3.5" />
+                Grupo: <strong className="text-foreground ml-0.5">{player.playerGroup}</strong>
+              </span>
+            )}
           </div>
         </div>
       </div>
 
       {/* Stats rápidos */}
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
+        <Card className={`${cardClassName}`}>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <Grid3X3 className="h-4 w-4 text-primary" />
@@ -139,10 +153,10 @@ export default async function PlayerProfilePage({
           </CardContent>
         </Card>
 
-        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
+        <Card className={`${cardClassName}`}>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
-              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+              <ShieldCheck className="h-4 w-4 text-blue-500" />
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Torneios</span>
             </div>
             <div className="text-2xl font-bold">{player._count.playedTournaments}</div>
@@ -150,7 +164,7 @@ export default async function PlayerProfilePage({
           </CardContent>
         </Card>
 
-        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
+        <Card className={`${cardClassName}`}>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -161,7 +175,7 @@ export default async function PlayerProfilePage({
           </CardContent>
         </Card>
 
-        <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
+        <Card className={`${cardClassName}`}>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <Target className="h-4 w-4 text-primary" />
@@ -211,7 +225,7 @@ export default async function PlayerProfilePage({
 
             const grade = assignment.gradeProfile;
             return (
-              <Card key={type} className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)] overflow-hidden">
+              <Card key={type} className={`${cardClassName} overflow-hidden`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -344,6 +358,24 @@ export default async function PlayerProfilePage({
             )}
           </div>
         </div>
+      </div>
+
+      {/* SharkScope — Nicks por rede */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Nicks SharkScope</h3>
+          <span className="text-xs text-muted-foreground">
+            {player.nicks.length} nick{player.nicks.length !== 1 ? "s" : ""} cadastrado{player.nicks.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+        <PlayerNicksSection
+          playerId={player.id}
+          initialNicks={player.nicks.map((n) => ({
+            ...n,
+            createdAt: n.createdAt.toISOString(),
+          }))}
+          canManage={canManage}
+        />
       </div>
     </div>
   );

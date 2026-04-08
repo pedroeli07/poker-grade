@@ -15,7 +15,7 @@ import { z } from "zod";
 
 const log = createLogger("targets.actions");
 
-const playerIdFieldSchema = z.string().cuid();
+const playerIdFieldSchema = z.cuid();
 
 export async function getTargetsListDataAction() {
   const session = await requireSession();
@@ -103,7 +103,7 @@ export async function createTarget(formData: FormData) {
   return { success: true };
 }
 
-const targetIdSchema = z.string().cuid();
+const targetIdSchema = z.cuid();
 
 export async function deleteTarget(id: string) {
   const session = await requireSession();

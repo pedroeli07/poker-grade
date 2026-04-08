@@ -1,10 +1,8 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, useCallback } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,10 +23,9 @@ import {
 } from "lucide-react";
 import { deleteImports, getImportsListRowsAction } from "./actions";
 import { toast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 import { importKeys } from "@/lib/queries/import-query-keys";
-import { useInvalidateImports } from "@/hooks/use-invalidate-imports";
-import type { ImportListRow } from "@/lib/types/import-list";
+import { useInvalidate } from "@/hooks/use-invalidate";
+import type { ImportListRow, ImportsColumnKey } from "@/lib/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,35 +37,18 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ColumnFilter } from "@/components/column-filter";
-import { distinctOptions } from "@/lib/distinct-options";
-
-export type ImportRow = ImportListRow;
-
-const EMPTY_PLAYER = "__empty__";
-
-type ColKey =
-  | "fileName"
-  | "player"
-  | "totalRows"
-  | "played"
-  | "extraPlay"
-  | "didntPlay"
-  | "date";
-
-type Filters = Record<ColKey, Set<string> | null>;
-
-function rowDateLabel(r: ImportRow) {
-  return format(new Date(r.createdAt), "dd/MM/yyyy • HH:mm", { locale: ptBR });
-}
+import { cn, distinctOptions, importRowDateLabel } from "@/lib/utils";
+import { EMPTY_PLAYER, STALE_TIME } from "@/lib/constants";
+import { useImportsStore } from "@/lib/stores/use-imports-store";
 
 export function ImportsClient({
   imports: initialImports,
   canDelete,
 }: {
-  imports: ImportRow[];
+  imports: ImportListRow[];
   canDelete: boolean;
 }) {
-  const invalidateImports = useInvalidateImports();
+  const invalidateImports = useInvalidate("imports");
   const { data: imports = initialImports } = useQuery({
     queryKey: importKeys.list(),
     queryFn: async () => {
@@ -77,19 +57,12 @@ export function ImportsClient({
       return r.rows;
     },
     initialData: initialImports,
-    staleTime: 30_000,
+    staleTime: STALE_TIME,
   });
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [filters, setFilters] = useState<Filters>({
-    fileName: null,
-    player: null,
-    totalRows: null,
-    played: null,
-    extraPlay: null,
-    didntPlay: null,
-    date: null,
-  });
+  const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
+    useImportsStore();
   const [isPending, startTransition] = useTransition();
   const [idsToDelete, setIdsToDelete] = useState<string[] | null>(null);
 
@@ -123,7 +96,7 @@ export function ImportsClient({
         label: String(r.suspect),
       })),
       date: distinctOptions(imports, (r) => {
-        const label = rowDateLabel(r);
+        const label = importRowDateLabel(r);
         return { value: label, label };
       }),
     }),
@@ -144,13 +117,11 @@ export function ImportsClient({
         return false;
       if (filters.didntPlay && !filters.didntPlay.has(String(r.suspect)))
         return false;
-      const dl = rowDateLabel(r);
+      const dl = importRowDateLabel(r);
       if (filters.date && !filters.date.has(dl)) return false;
       return true;
     });
   }, [imports, filters]);
-
-  const anyFilter = Object.values(filters).some((x) => x !== null);
 
   const allSelected =
     filtered.length > 0 && filtered.every((i) => selected.has(i.id));
@@ -183,9 +154,12 @@ export function ImportsClient({
     });
   }
 
-  const setCol = (col: ColKey) => (next: Set<string> | null) => {
-    setFilters((f) => ({ ...f, [col]: next }));
-  };
+  const setCol = useCallback(
+    (col: ImportsColumnKey) => (next: Set<string> | null) => {
+      setColumnFilter(col, next);
+    },
+    [setColumnFilter]
+  );
 
   function requestDelete(ids: string[]) {
     if (!ids.length) return;
@@ -258,17 +232,7 @@ export function ImportsClient({
               variant="ghost"
               size="sm"
               className="h-8 text-xs"
-              onClick={() =>
-                setFilters({
-                  fileName: null,
-                  player: null,
-                  totalRows: null,
-                  played: null,
-                  extraPlay: null,
-                  didntPlay: null,
-                  date: null,
-                })
-              }
+              onClick={clearFilters}
             >
               Limpar todos os filtros
             </Button>
@@ -485,7 +449,7 @@ export function ImportsClient({
                     </TableCell>
 
                     <TableCell className="text-right text-sm text-muted-foreground whitespace-nowrap">
-                      {rowDateLabel(item)}
+                      {importRowDateLabel(item)}
                     </TableCell>
 
                     {canDelete && (

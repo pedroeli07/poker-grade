@@ -1,6 +1,12 @@
+import type { PlayerStatus, UserRole } from "@prisma/client";
+import { ReactNode } from "react";
+import { getPendingReviewsForSession } from "./data/queries";
+import { POKER_NETWORKS } from "./constants";
+
 // ==========================================
 // Core Domain Types
 // ==========================================
+
 
 export type {
   Player,
@@ -26,6 +32,11 @@ export type {
   TargetType,
   LimitAction,
 } from "@prisma/client";
+
+export type AppProvidersProps = {
+  children: ReactNode;
+};
+
 
 // ==========================================
 // Lobbyze Filter JSON Shape
@@ -85,6 +96,110 @@ export interface LobbyzeFilter {
   max_blind: number | null;
   favorites: boolean;
 }
+
+export type GradeRuleCardRule = {
+  id: string;
+  filterName: string;
+  lobbyzeFilterId: number | null;
+  sites: LobbyzeFilterItem[];
+  buyInMin: number | null;
+  buyInMax: number | null;
+  speed: LobbyzeFilterItem[];
+  variant: LobbyzeFilterItem[];
+  tournamentType: LobbyzeFilterItem[];
+  gameType: LobbyzeFilterItem[];
+  playerCount: LobbyzeFilterItem[];
+  weekDay: LobbyzeFilterItem[];
+  prizePoolMin: number | null;
+  prizePoolMax: number | null;
+  minParticipants: number | null;
+  fromTime: string | null;
+  toTime: string | null;
+  excludePattern: string | null;
+  timezone: number | null;
+  autoOnly: boolean;
+  manualOnly: boolean;
+};
+
+export type GradeDetailQueryData = {
+  id: string;
+  name: string;
+  description: string | null;
+  assignmentsCount: number;
+  manageRules: boolean;
+  canEditNote: boolean;
+  rules: GradeRuleCardRule[];
+};
+
+export type ImportListRow = {
+  id: string;
+  fileName: string;
+  playerName: string | null;
+  totalRows: number;
+  matchedInGrade: number;
+  suspect: number;
+  outOfGrade: number;
+  createdAt: Date | string;
+};
+
+export type PlayerTableRow = {
+  id: string;
+  name: string;
+  nickname: string | null;
+  email: string | null;
+  coachKey: string;
+  coachLabel: string;
+  gradeKey: string;
+  gradeLabel: string;
+  abiKey: string;
+  abiLabel: string;
+  abiNumericValue: number | null;
+  abiUnit: string | null;
+  status: PlayerStatus;
+  playerGroup: string | null;
+  roiTenDay: number | null;
+  fpTenDay: number | null;
+  ftTenDay: number | null;
+  nicks: { network: string; nick: string }[];
+};
+
+export type TargetListRow = {
+  id: string;
+  name: string;
+  category: string;
+  playerId: string;
+  playerName: string;
+  status: "ON_TRACK" | "ATTENTION" | "OFF_TRACK";
+  targetType: "NUMERIC" | "TEXT";
+  limitAction: "UPGRADE" | "MAINTAIN" | "DOWNGRADE" | null;
+  numericValue: number | null;
+  numericCurrent: number | null;
+  textValue: string | null;
+  textCurrent: string | null;
+  unit: string | null;
+  coachNotes: string | null;
+};
+
+export type UsuarioDirectoryRow =
+  | {
+      kind: "pending";
+      id: string;
+      email: string;
+      role: UserRole;
+      createdAt: string;
+      isRegistered: false;
+    }
+  | {
+      kind: "account";
+      id: string;
+      email: string;
+      role: UserRole;
+      createdAt: string;
+      isRegistered: true;
+    };
+
+export type UsuariosColumnKey = "email" | "role" | "status";
+export type UsuariosColumnFilters = Record<UsuariosColumnKey, Set<string> | null>;
 
 // ==========================================
 // Excel Tournament Row Shape
@@ -258,3 +373,211 @@ export type ColKey =
   | "limitAction";
 
 export type Filters = Record<ColKey, Set<string> | null>;
+
+export type PlayerRowInput = {
+  id: string;
+  name: string;
+  nickname: string | null;
+  email: string | null;
+  coachId: string | null;
+  status: PlayerStatus;
+  playerGroup: string | null;
+  coach: { name: string } | null;
+  gradeAssignments: Array<{ gradeProfile: { id: string; name: string } }>;
+  nicks: { network: string; nick: string }[];
+};
+
+export type RoleVisual = { label: string; text: string; bg: string; icon: React.ReactNode };
+
+// ==========================================
+// SharkScope — dashboard (serialização / UI)
+// ==========================================
+
+export type SharkscopeAnalyticsPeriod = "30d" | "90d";
+
+export type SharkscopeAnalyticsTab = "site" | "ranking" | "tier" | "bounty";
+
+export type SharkscopeAlertRow = {
+  id: string;
+  playerId: string;
+  alertType: string;
+  severity: string;
+  metricValue: number;
+  threshold: number;
+  context: unknown;
+  triggeredAt: string;
+  acknowledged: boolean;
+  acknowledgedAt: string | null;
+  acknowledgedBy: string | null;
+  player: { id: string; name: string; nickname: string | null };
+};
+
+export type ScoutingAnalysisRow = {
+  id: string;
+  nick: string;
+  network: string;
+  rawData: unknown;
+  nlqAnswer: unknown;
+  notes: string | null;
+  createdAt: string;
+  savedBy: string;
+};
+
+export type PokerNetworkOption = { value: string; label: string };
+
+
+export type ImportsColumnKey =
+  | "fileName"
+  | "player"
+  | "totalRows"
+  | "played"
+  | "extraPlay"
+  | "didntPlay"
+  | "date";
+
+export type ImportsFilters = Record<ImportsColumnKey, Set<string> | null>;
+
+export type PlayersTableColumnKey = "name" | "nickname" | "playerGroup" | "coach" | "grade" | "abi" | "status";
+
+export type PlayersTableColumnFilters = Record<PlayersTableColumnKey, Set<string> | null>;
+
+export interface ProfileData {
+  email: string;
+  displayName: string | null;
+  role: string;
+  createdAt: string;
+}
+
+export type ReviewPlayerOption = {
+  id: string;
+  name: string;
+  extraPlayCount: number;
+};
+
+export type ReviewCoachOption = {
+  id: string;
+  name: string;
+  playerCount: number;
+};
+
+
+
+export type ReviewPathFilters = {
+  playerId: string | null;
+  coachId: string | null;
+  page: number;
+};
+
+export type ReviewItem = Awaited<ReturnType<typeof getPendingReviewsForSession>>[number];
+
+
+export type PlayersTablePayload = {
+  rows: PlayerTableRow[];
+  coaches: { id: string; name: string; role: string }[];
+  grades: { id: string; name: string }[];
+  allowCoachSelect: boolean;
+};
+
+export type NetworkStat = {
+  network: string;
+  label: string;
+  roi: number | null;
+  profit: number | null;
+  count: number | null;
+};
+
+export type TierStat = {
+  tier: "Low" | "Mid" | "High";
+  roi: number | null;
+  profit: number | null;
+  count: number | null;
+  players: number;
+};
+
+export type TypeStat = {
+  type: "Bounty" | "Vanilla";
+  roi: number | null;
+  profit: number | null;
+  count: number | null;
+};
+
+export type RankingEntry = {
+  player: { id: string; name: string; nickname: string | null };
+  roi: number;
+  count: number;
+};
+
+export type PokerNetworkKey = keyof typeof POKER_NETWORKS;
+
+
+
+
+export type SharkScopeResponse<T = unknown> = {
+  Response: {
+    "@success": "true" | "false";
+    "@error"?: string;
+    RemainingSearches?: number;
+    PlayerResponse?: T;
+    [key: string]: unknown;
+  };
+};
+
+
+
+export type CoachOpt = { id: string; name: string; role: string };
+export type GradeOpt = { id: string; name: string };
+
+
+export type EditPlayerModalProps = {
+  player: PlayerTableRow | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  coaches: CoachOpt[];
+  grades: GradeOpt[];
+  allowCoachSelect: boolean;
+};
+
+export interface Nick {
+  id: string;
+  nick: string;
+  network: string;
+  isActive: boolean;
+  createdAt: string | Date;
+};
+
+export interface PlayerNicksSectionProps {
+  playerId: string;
+  initialNicks: Nick[];
+  canManage: boolean;
+}
+
+export type UserLimiter = (userId: string) => Promise<{
+  ok: boolean;
+  retryAfterSec: number;
+}>;
+
+export type SharkscopeScoutingSavedCardProps = {
+  analysis: ScoutingAnalysisRow;
+  expanded: boolean;
+  isPending: boolean;
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
+};
+
+export type UsuariosInviteModalProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+export type PlayerDataRowProps = {
+  player: PlayerTableRow;
+  canEditPlayers: boolean;
+  onEdit: (p: PlayerTableRow) => void;
+};
+
+export type ImportBatchNotifyPayload = {
+  fileName: string;
+  sheetsProcessed: number;
+  totalExtraPlays: number;
+  summaryLines: string[];
+};

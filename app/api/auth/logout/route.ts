@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
+import { SESSION_COOKIE_NAME } from "@/lib/constants";
 import { verifySessionJwt } from "@/lib/auth/jwt";
 import { assertSameOrigin } from "@/lib/api/origin";
 import { logLogout } from "@/lib/security-log";

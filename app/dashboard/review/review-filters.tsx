@@ -10,27 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { NO_COACH_QUERY, REVIEW_NO_COACH_SENTINEL } from "@/lib/constants";
+import type { ReviewPathFilters, ReviewCoachOption, ReviewPlayerOption } from "@/lib/types";
 
-export type ReviewPlayerOption = {
-  id: string;
-  name: string;
-  extraPlayCount: number;
-};
-
-export type ReviewCoachOption = {
-  id: string;
-  name: string;
-  playerCount: number;
-};
-
-const NO_COACH_QUERY = "none";
-export const REVIEW_NO_COACH_SENTINEL = "__no_coach__";
-
-export type ReviewPathFilters = {
-  playerId: string | null;
-  coachId: string | null;
-  page: number;
-};
 
 export function buildReviewPath({
   playerId,

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
-import { canManageGrades } from "@/lib/auth/rbac";
+import { canManageGrades } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 

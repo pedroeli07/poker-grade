@@ -1,23 +1,20 @@
-import { UserRole } from "@prisma/client";
 import { requireRoles } from "@/lib/auth/session";
 import { getUsuarioDirectoryRows } from "@/lib/data/usuarios-directory";
 import { UsuariosClient } from "./usuarios-client";
+import { Metadata } from "next";
 
-export const metadata = {
-  title: "Usuários | Gestão de Grades",
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Usuários",
+  description: "Gerencie os usuários do sistema e suas permissões.",
 };
 
-const USUARIOS_VIEW_ROLES = [
-  UserRole.ADMIN,
-  UserRole.MANAGER,
-  UserRole.COACH,
-] as const;
-
 export default async function UsuariosPage() {
-  const session = await requireRoles(USUARIOS_VIEW_ROLES);
+  const session = await requireRoles(["ADMIN", "MANAGER", "COACH"]);
   const rows = await getUsuarioDirectoryRows();
   const canManageUsers =
-    session.role === UserRole.ADMIN || session.role === UserRole.MANAGER;
+    session.role === "ADMIN" || session.role === "MANAGER";
 
   return (
     <UsuariosClient initialRows={rows} canManageUsers={canManageUsers} />

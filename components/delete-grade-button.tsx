@@ -17,7 +17,7 @@ import { deleteGrade } from "@/app/dashboard/grades/actions";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
-import { useInvalidateGrades } from "@/hooks/use-invalidate-grades";
+import { useInvalidate } from "@/hooks/use-invalidate";
 
 const log = createLogger("grades.ui");
 
@@ -30,7 +30,7 @@ export function DeleteGradeButton({
   gradeName: string;
   className?: string;
 }) {
-  const invalidateGrades = useInvalidateGrades();
+  const invalidateGrades = useInvalidate("grades");
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
 

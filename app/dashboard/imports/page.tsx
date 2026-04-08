@@ -1,10 +1,29 @@
+import dynamicImport from "next/dynamic";
 import { requireSession } from "@/lib/auth/session";
-import { canDeleteImports, IMPORT_ROLES } from "@/lib/auth/rbac";
+import { canDeleteImports } from "@/lib/utils";
 import { getImportsListRowsForSession } from "@/lib/data/imports-list";
 import { NewImportModal } from "@/components/new-import-modal";
-import { ImportsClient } from "./imports-client";
+import { Metadata } from "next";
+import { IMPORT_ROLES } from "@/lib/constants";
+
+const ImportsClient = dynamicImport(
+  () => import("./imports-client").then((m) => ({ default: m.ImportsClient })),
+  {
+    loading: () => (
+      <div className="animate-pulse space-y-4">
+        <div className="h-10 w-full rounded-md bg-muted" />
+        <div className="h-72 rounded-lg bg-muted" />
+      </div>
+    ),
+  }
+);
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Importações",
+  description: "Histórico de arquivos de torneios da Lobbyze importados no sistema.",
+};
 
 export default async function ImportsPage() {
   const session = await requireSession();

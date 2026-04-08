@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { processReview } from "@/app/dashboard/review/actions";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
-import { useInvalidateReview } from "@/hooks/use-invalidate-review";
+import { useInvalidate } from "@/hooks/use-invalidate";
 import type { ReviewStatus } from "@/lib/types";
 
 const log = createLogger("review.ui");
 
 export function ReviewDecisionButtons({ reviewId }: { reviewId: string }) {
   const router = useRouter();
-  const invalidateReview = useInvalidateReview();
+  const invalidateReview = useInvalidate("review");
 
   async function decide(status: ReviewStatus, label: string) {
     try {

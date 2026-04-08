@@ -28,7 +28,7 @@ import { createGradeProfile, importGradeFromJson } from "@/app/dashboard/grades/
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { cn, isNextRedirectError } from "@/lib/utils";
-import { useInvalidateGrades } from "@/hooks/use-invalidate-grades";
+import { useInvalidate } from "@/hooks/use-invalidate";
 
 const log = createLogger("grade-modals");
 
@@ -40,7 +40,7 @@ export function NewGradeModal() {
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
-  const invalidateGrades = useInvalidateGrades();
+  const invalidateGrades = useInvalidate("grades");
 
   function handleOpenChange(value: boolean) {
     if (isPending) return;
@@ -177,7 +177,7 @@ export function ImportGradeModal() {
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
-  const invalidateGrades = useInvalidateGrades();
+  const invalidateGrades = useInvalidate("grades");
 
   function resetState() {
     setFile(null);

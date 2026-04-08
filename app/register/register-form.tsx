@@ -12,6 +12,7 @@ import {
 } from "@/lib/auth/password-policy";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const inputClass =
   "h-11 w-full rounded-xl border border-border bg-card/50 px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20";
@@ -27,6 +28,8 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [step, setStep] = useState<"CREDENTIALS" | "OTP">("CREDENTIALS");
+  const [code, setCode] = useState("");
   const inviteWarned = useRef(false);
 
   /** Autofill do browser pode preencher o DOM sem disparar onChange no React. */
@@ -94,22 +97,50 @@ export function RegisterForm() {
     }
   }, [params]);
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSendCode(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitted(true);
     if (!canSubmit) return;
     setLoading(true);
-    const em = email.trim();
+
+    try {
+      const res = await fetch("/api/auth/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), type: "REGISTER" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error || "Acesso negado para este e-mail.");
+        return;
+      }
+      toast.success("Código enviado para " + email);
+      setStep("OTP");
+    } catch {
+      toast.error("Erro ao enviar código.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onCompleteRegister(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (code.length !== 6) {
+      toast.error("Preencha o código de 6 dígitos.");
+      return;
+    }
+    setLoading(true);
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: em,
+          email: email.trim(),
           password,
           confirmPassword: confirm,
           displayName: displayName.trim() || undefined,
+          code,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as {
@@ -145,153 +176,203 @@ export function RegisterForm() {
       </p>
       */}
 
-      <form onSubmit={onSubmit} noValidate className="space-y-5">
-        <div className="space-y-2">
-          <label
-            htmlFor="reg-name"
-            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
-          >
-            Nome completo
-          </label>
-          <input
-            id="reg-name"
-            name="displayName"
-            type="text"
-            autoComplete="name"
-            maxLength={200}
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            onInput={(e) => setDisplayName(e.currentTarget.value)}
-            placeholder="Seu nome"
-            className={inputClass}
-          />
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor="reg-email"
-            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
-          >
-            E-mail
-          </label>
-          <input
-            id="reg-email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            maxLength={320}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onInput={(e) => setEmail(e.currentTarget.value)}
-            placeholder="seu@email.com"
-            className={inputClass}
-          />
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor="reg-password"
-            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
-          >
-            Senha
-          </label>
-          <div className="relative isolate h-11">
+      {step === "CREDENTIALS" ? (
+        <form onSubmit={onSendCode} noValidate className="space-y-5">
+          <div className="space-y-2">
+            <label
+              htmlFor="reg-name"
+              className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
+            >
+              Nome completo
+            </label>
             <input
-              id="reg-password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              required
-              maxLength={128}
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onInput={(e) => setPassword(e.currentTarget.value)}
-              placeholder="••••••••••••"
-              className={cn(inputClass, "pr-11")}
+              id="reg-name"
+              name="displayName"
+              type="text"
+              autoComplete="name"
+              maxLength={200}
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              onInput={(e) => setDisplayName(e.currentTarget.value)}
+              placeholder="Seu nome"
+              className={inputClass}
             />
-            <button
-              type="button"
-              tabIndex={-1}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => setShowPassword((s) => !s)}
-              className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
           </div>
-          <PasswordStrength password={password} compact />
-          {password.length > 0 && policyGaps.length > 0 ? (
-            <p
-              className="font-mono text-[10px] leading-relaxed text-muted-foreground"
-              data-testid="password-policy-gaps"
+          <div className="space-y-2">
+            <label
+              htmlFor="reg-email"
+              className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
             >
-              Falta: {policyGaps.join(" · ")}
+              E-mail
+            </label>
+            <input
+              id="reg-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              maxLength={320}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onInput={(e) => setEmail(e.currentTarget.value)}
+              placeholder="seu@email.com"
+              className={inputClass}
+            />
+          </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="reg-password"
+              className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
+            >
+              Senha
+            </label>
+            <div className="relative isolate h-11">
+              <input
+                id="reg-password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                maxLength={128}
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onInput={(e) => setPassword(e.currentTarget.value)}
+                placeholder="••••••••••••"
+                className={cn(inputClass, "pr-11")}
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setShowPassword((s) => !s)}
+                className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            <PasswordStrength password={password} compact />
+            {password.length > 0 && policyGaps.length > 0 ? (
+              <p
+                className="font-mono text-[10px] leading-relaxed text-muted-foreground"
+                data-testid="password-policy-gaps"
+              >
+                Falta: {policyGaps.join(" · ")}
+              </p>
+            ) : null}
+          </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="reg-confirm"
+              className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
+            >
+              Confirmar senha
+            </label>
+            <div className="relative isolate h-11">
+              <input
+                id="reg-confirm"
+                name="confirm"
+                type={showConfirm ? "text" : "password"}
+                required
+                maxLength={128}
+                autoComplete="new-password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                onInput={(e) => setConfirm(e.currentTarget.value)}
+                placeholder="••••••••••••"
+                className={cn(inputClass, "pr-11")}
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setShowConfirm((s) => !s)}
+                className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                aria-label={showConfirm ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {showConfirm ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            {confirm.length > 0 && password !== confirm ? (
+              <p className="text-xs text-destructive">As senhas não coincidem.</p>
+            ) : null}
+          </div>
+          {submitted && !canSubmit && submitBlockerHint ? (
+            <p
+              className="rounded-lg border border-border bg-red-500/90 px-3 py-2 font-mono text-[12px] shadow-lg shadow-red-500 leading-relaxed text-white animate-bounce"
+              data-testid="register-blockers-hint"
+            >
+              {submitBlockerHint}
             </p>
           ) : null}
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor="reg-confirm"
-            className="block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
+          <button
+            type="submit"
+            data-testid="register-submit"
+            disabled={loading}
+            className={cn(
+              "cursor-pointer h-12 w-full rounded-xl bg-primary font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
+            )}
           >
-            Confirmar senha
-          </label>
-          <div className="relative isolate h-11">
-            <input
-              id="reg-confirm"
-              name="confirm"
-              type={showConfirm ? "text" : "password"}
-              required
-              maxLength={128}
-              autoComplete="new-password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              onInput={(e) => setConfirm(e.currentTarget.value)}
-              placeholder="••••••••••••"
-              className={cn(inputClass, "pr-11")}
-            />
+            {loading ? "Aguarde…" : "Avançar"}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={onCompleteRegister} className="space-y-6">
+          <div className="text-center space-y-1">
+            <h3 className="font-semibold text-foreground">Verifique seu E-mail</h3>
+            <p className="text-sm text-muted-foreground">
+              Enviamos um código de 6 dígitos para o e-mail: <br />
+              <strong className="text-foreground">{email}</strong>
+            </p>
+          </div>
+          
+          <div className="flex justify-center py-4">
+            <InputOTP
+              maxLength={6}
+              value={code}
+              onChange={setCode}
+              pattern="^[0-9]+$"
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} className="w-12 h-14 text-xl bg-card border-border/80" />
+                <InputOTPSlot index={1} className="w-12 h-14 text-xl bg-card border-border/80" />
+                <InputOTPSlot index={2} className="w-12 h-14 text-xl bg-card border-border/80" />
+                <InputOTPSlot index={3} className="w-12 h-14 text-xl bg-card border-border/80" />
+                <InputOTPSlot index={4} className="w-12 h-14 text-xl bg-card border-border/80" />
+                <InputOTPSlot index={5} className="w-12 h-14 text-xl bg-card border-border/80" />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <button
+              type="submit"
+              disabled={loading || code.length !== 6}
+              className={cn(
+                "cursor-pointer h-12 w-full rounded-xl bg-primary font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
+              )}
+            >
+              {loading ? "Registrando…" : "Concluir Cadastro"}
+            </button>
             <button
               type="button"
-              tabIndex={-1}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => setShowConfirm((s) => !s)}
-              className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-              aria-label={showConfirm ? "Ocultar senha" : "Mostrar senha"}
+              disabled={loading}
+              onClick={() => setStep("CREDENTIALS")}
+              className="text-sm text-muted-foreground hover:text-foreground"
             >
-              {showConfirm ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
+              Voltar e corrigir dados
             </button>
           </div>
-          {confirm.length > 0 && password !== confirm ? (
-            <p className="text-xs text-destructive">As senhas não coincidem.</p>
-          ) : null}
-        </div>
-        {submitted && !canSubmit && submitBlockerHint ? (
-          <p
-            className="rounded-lg border border-border bg-red-500/90 px-3 py-2 font-mono text-[12px] shadow-lg shadow-red-500 leading-relaxed text-white animate-bounce"
-            data-testid="register-blockers-hint"
-          >
-            {submitBlockerHint}
-          </p>
-        ) : null}
-        <button
-          type="submit"
-          data-testid="register-submit"
-          disabled={loading}
-          className={cn(
-            "cursor-pointer h-12 w-full rounded-xl bg-primary font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
-          )}
-        >
-          {loading ? "Registrando…" : "Registrar"}
-        </button>
-      </form>
+        </form>
+      )}
 
       <div className="flex items-center gap-3">
         <div className="h-px flex-1 bg-border" />

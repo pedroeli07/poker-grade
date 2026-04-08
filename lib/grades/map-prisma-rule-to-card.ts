@@ -1,5 +1,4 @@
-import type { LobbyzeFilterItem } from "@/lib/types";
-import type { GradeRuleCardRule } from "@/lib/types/grade-rule-card";
+import type { GradeRuleCardRule, LobbyzeFilterItem } from "@/lib/types";
 
 function parseJson<T>(val: unknown): T[] {
   if (Array.isArray(val)) return val as T[];

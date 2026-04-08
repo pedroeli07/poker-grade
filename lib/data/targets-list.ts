@@ -1,5 +1,5 @@
 import type { AppSession } from "@/lib/auth/session";
-import type { TargetListRow } from "@/lib/types/target-list-row";
+import type { TargetListRow } from "@/lib/types";
 import { getTargetsForSession } from "./queries";
 
 export async function getTargetsListRowsForSession(

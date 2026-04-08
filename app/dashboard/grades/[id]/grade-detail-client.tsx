@@ -9,7 +9,9 @@ import { getGradeDetailQueryAction } from "@/app/dashboard/grades/actions";
 import { GradeCoachNoteSection } from "@/components/grade-coach-note";
 import { GradeRuleCard } from "@/components/grade-rule-card";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
-import type { GradeDetailQueryData } from "@/lib/types/grades-detail";
+import type { GradeDetailQueryData } from "@/lib/types";
+import { STALE_TIME } from "@/lib/constants";
+
 
 export function GradeDetailClient({
   gradeId,
@@ -18,7 +20,7 @@ export function GradeDetailClient({
   gradeId: string;
   initialData: GradeDetailQueryData;
 }) {
-  const { data = initialData } = useQuery({
+  const { data = initialData } = useQuery<GradeDetailQueryData>({
     queryKey: gradeKeys.detail(gradeId),
     queryFn: async () => {
       const r = await getGradeDetailQueryAction(gradeId);
@@ -26,7 +28,7 @@ export function GradeDetailClient({
       return r.data;
     },
     initialData,
-    staleTime: 30_000,
+    staleTime: STALE_TIME,
   });
 
   return (

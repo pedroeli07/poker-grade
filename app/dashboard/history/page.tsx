@@ -5,26 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus, History } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { ACTION_CONFIG } from "@/lib/constants";
+import { Metadata } from "next";
 
-const ACTION_CONFIG = {
-  UPGRADE: {
-    label: "Subida de Limite",
-    icon: TrendingUp,
-    color: "text-emerald-500",
-    bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
-  },
-  MAINTAIN: {
-    label: "Manutenção",
-    icon: Minus,
-    color: "text-muted-foreground",
-    bg: "bg-muted/50 border-border text-muted-foreground",
-  },
-  DOWNGRADE: {
-    label: "Descida de Limite",
-    icon: TrendingDown,
-    color: "text-red-500",
-    bg: "bg-red-500/10 border-red-500/20 text-red-500",
-  },
+export const metadata: Metadata = {
+  title: "Histórico de Limites",
+  description: "Visualize o histórico de subidas, manutenções e descidas de grade dos jogadores.",
 };
 
 export default async function HistoryPage() {

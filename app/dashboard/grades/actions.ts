@@ -8,10 +8,10 @@ import { revalidatePath } from "next/cache";
 import { createLogger } from "@/lib/logger";
 import { requireSession } from "@/lib/auth/session";
 import {
-  assertCanManageGrades,
-  canEditGradeCoachNote,
-  canManageGrades,
-} from "@/lib/auth/rbac";
+      assertCanManageGrades,
+      canEditGradeCoachNote,
+      canManageGrades,
+    } from "@/lib/utils";
 import {
   deleteGradeRuleSchema,
   deleteGradeSchema,
@@ -27,21 +27,10 @@ import { getGradesListRowsForSession } from "@/lib/data/grades-list";
 import { getGradeByIdForSession } from "@/lib/data/queries";
 import { mapPrismaRuleToCard } from "@/lib/grades/map-prisma-rule-to-card";
 import { limitGradesMutation, limitGradesRead } from "@/lib/rate-limit";
-import type { GradeListRow } from "@/lib/types";
-import type { GradeDetailQueryData } from "@/lib/types/grades-detail";
+import type { GradeListRow, GradeDetailQueryData } from "@/lib/types";
+import { toPrismaJson, toPrismaJsonOptional } from "@/lib/utils";
 
 const log = createLogger("grades.actions");
-
-function toPrismaJson(value: unknown): Prisma.InputJsonValue {
-  return value as Prisma.InputJsonValue;
-}
-
-function toPrismaJsonOptional(
-  value: unknown | null | undefined
-): Prisma.InputJsonValue | undefined {
-  if (value == null) return undefined;
-  return value as Prisma.InputJsonValue;
-}
 
 async function gradesMutationRateOrError(session: {
   userId: string;

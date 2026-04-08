@@ -20,7 +20,7 @@ import {
 import { deleteImportIdsSchema } from "@/lib/validation/schemas";
 import { filterImportIdsDeletableBySession } from "@/lib/data/queries";
 import { getImportsListRowsForSession } from "@/lib/data/imports-list";
-import type { ImportListRow } from "@/lib/types/import-list";
+import type { ImportListRow } from "@/lib/types";
 
 const log = createLogger("imports.actions");
 

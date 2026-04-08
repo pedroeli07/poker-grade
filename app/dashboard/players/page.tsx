@@ -4,9 +4,26 @@ import { syncOrphanCoachProfiles } from "@/lib/auth/ensure-coach-profile";
 import { getPlayersTablePayloadForSession } from "@/lib/data/players-table";
 import { NewPlayerModal } from "@/components/new-player-modal";
 import { canCreate, canEditPlayers } from "@/lib/constants";
-import { PlayersTableClient } from "./players-table-client";
+import { Metadata } from "next";
+import dynamicImport from "next/dynamic";
+
+const PlayersTableClient = dynamicImport(
+  () => import("./players-table-client").then((m) => ({ default: m.PlayersTableClient })),
+  {
+    loading: () => (
+      <div className="animate-pulse space-y-4">
+        <div className="h-10 w-full rounded-md bg-muted" />
+        <div className="h-64 rounded-lg bg-muted" />
+      </div>
+    ),
+  }
+);
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Jogadores",
+  description: "Gerencie o time de jogadores e aloque coaches responsáveis.",
+};
 
 export default async function PlayersPage() {
   const session = await requireSession();

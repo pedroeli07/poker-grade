@@ -132,6 +132,20 @@ model AuthSession {
 // CORE MODELS
 // ==========================================
 
+model VerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  code      String   // OTP de 6 dígitos
+  type      String   // "REGISTER" | "PASSWORD_RESET"
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([email, code])
+  @@map("verification_tokens")
+}
+
+
 model Player {
   id        String       @id @default(cuid())
   name      String
@@ -141,6 +155,9 @@ model Player {
   status    PlayerStatus @default(ACTIVE)
   avatarUrl String?
 
+  // SharkScope player group identifier (e.g. "CL Team")
+  playerGroup String?
+
   authAccount AuthUser? @relation("AuthPlayer")
 
   // Relationships
@@ -149,11 +166,16 @@ model Player {
   driId     String?
   dri       Coach?   @relation("DriPlayers", fields: [driId], references: [id], onDelete: SetNull)
 
-  gradeAssignments PlayerGradeAssignment[]
-  targets          PlayerTarget[]
+  gradeAssignments  PlayerGradeAssignment[]
+  targets           PlayerTarget[]
   playedTournaments PlayedTournament[]
-  reviewItems      GradeReviewItem[]
-  limitChanges     LimitChangeHistory[]
+  reviewItems       GradeReviewItem[]
+  limitChanges      LimitChangeHistory[]
+
+  // SharkScope integration
+  nicks         PlayerNick[]
+  alerts        AlertLog[]
+  gradeApproval GradeApproval?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -460,6 +482,99 @@ model Notification {
   @@index([userId, read])
   @@index([createdAt])
   @@map("notifications")
+}
+
+// ==========================================
+// SHARKSCOPE INTEGRATION
+// ==========================================
+
+model PlayerNick {
+  id        String  @id @default(cuid())
+  playerId  String
+  nick      String
+  // "gg" | "pokerstars" | "888" | "partypoker" | "ipoker" | "wpt" | "coinpoker"
+  network   String
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+
+  player     Player             @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  sharkCache SharkScopeCache[]
+
+  @@unique([playerId, nick, network])
+  @@index([playerId])
+  @@map("player_nicks")
+}
+
+model SharkScopeCache {
+  id           String @id @default(cuid())
+  playerNickId String
+  // "summary" | "stats_10d" | "stats_30d" | "stats_90d" | "insights"
+  dataType     String
+  filterKey    String
+  rawData      Json
+  fetchedAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  playerNick PlayerNick @relation(fields: [playerNickId], references: [id], onDelete: Cascade)
+
+  @@unique([playerNickId, dataType, filterKey])
+  @@index([playerNickId, dataType])
+  @@index([expiresAt])
+  @@map("sharkscope_cache")
+}
+
+model AlertLog {
+  id             String    @id @default(cuid())
+  playerId       String
+  // "roi_drop" | "reentry_high" | "abi_deviation" | "high_variance" | "low_volume"
+  alertType      String
+  // "red" | "yellow" | "green"
+  severity       String
+  metricValue    Float
+  threshold      Float
+  context        Json?
+  triggeredAt    DateTime  @default(now())
+  acknowledged   Boolean   @default(false)
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, severity])
+  @@index([triggeredAt])
+  @@index([acknowledged])
+  @@map("alert_logs")
+}
+
+model GradeApproval {
+  id                String   @id @default(cuid())
+  playerId          String   @unique
+  minAbi            Float?
+  maxAbi            Float?
+  allowedNetworks   String[]
+  maxReentryRatePct Float?   @default(25)
+  minVolumeMensal   Int?
+  validFrom         DateTime @default(now())
+  notes             String?
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@map("grade_approvals")
+}
+
+model ScoutingAnalysis {
+  id        String   @id @default(cuid())
+  nick      String
+  network   String
+  savedBy   String
+  rawData   Json
+  nlqAnswer Json?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([savedBy])
+  @@index([createdAt])
+  @@map("scouting_analyses")
 }
 
 model AuditLog {

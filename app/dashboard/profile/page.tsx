@@ -3,9 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { ProfileClient } from "./profile-client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Metadata } from "next";
 
-export const metadata = {
-  title: "Meu Perfil | Gestão de Grades",
+export const metadata: Metadata = {
+  title: "Meu Perfil",
+  description: "Gerencie suas informações pessoais e credenciais",
 };
 
 export const dynamic = "force-dynamic";

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { requireSession } from "@/lib/auth/session";
-import { canReview } from "@/lib/auth/rbac";
+import { canReview } from "@/lib/utils";
 import { getPendingReviewsForSession } from "@/lib/data/queries";
 import { ReviewDecisionButtons } from "@/components/review-decision-buttons";
 import Link from "next/link";
@@ -17,43 +17,23 @@ import {
   ReviewCoachSelect,
   ReviewPlayerSelect,
   ReviewPagination,
-  REVIEW_NO_COACH_SENTINEL,
 } from "./review-filters";
-import { cardClassName } from "@/lib/constants";
+import {
+  cardClassName,
+  PLAYERS_PER_PAGE,
+  REVIEW_NO_COACH_SENTINEL,
+} from "@/lib/constants";
+import { Metadata } from "next";
+import { avatarColor, groupByPlayer, initials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-const PLAYERS_PER_PAGE = 5;
+export const metadata: Metadata = {
+  title: "Conferência de Torneios",
+  description: "Torneios extra-play e suspeitos aguardando decisão do coach.",
+};
 
-type ReviewItem = Awaited<ReturnType<typeof getPendingReviewsForSession>>[number];
 
-function groupByPlayer(reviews: ReviewItem[]) {
-  const map = new Map<
-    string,
-    { player: ReviewItem["player"]; reviews: ReviewItem[] }
-  >();
-  for (const r of reviews) {
-    const pid = r.player.id;
-    if (!map.has(pid)) map.set(pid, { player: r.player, reviews: [] });
-    map.get(pid)!.reviews.push(r);
-  }
-  return Array.from(map.values()).sort(
-    (a, b) => b.reviews.length - a.reviews.length
-  );
-}
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-}
-
-function avatarColor() {
-  return "bg-primary/15 text-primary";
-}
 
 export default async function ReviewPage({
   searchParams,

@@ -1,32 +1,6 @@
 import { prisma } from "@/lib/prisma";
-
-export const ABI_ALVO_TARGET_NAME = "ABI alvo";
-
-export function isAbiAlvoTargetName(name: string): boolean {
-  return /\babi\b/i.test(name.trim());
-}
-
-export function parseAbiAlvoInput(
-  valueRaw: string | undefined | null,
-  unitRaw: string | undefined | null
-):
-  | { ok: true; value: number | null; unit: string | null }
-  | { ok: false; message: string } {
-  const v = String(valueRaw ?? "")
-    .trim()
-    .replace(/\s/g, "")
-    .replace(",", ".");
-  const u = String(unitRaw ?? "").trim();
-  const unit = u === "" || u === "none" ? null : u.slice(0, 30);
-  if (v === "") {
-    return { ok: true, value: null, unit: null };
-  }
-  const n = Number(v);
-  if (!Number.isFinite(n) || n < 0 || n > 1_000_000) {
-    return { ok: false, message: "ABI alvo inválido." };
-  }
-  return { ok: true, value: n, unit };
-}
+import { ABI_ALVO_TARGET_NAME } from "@/lib/constants";
+import { isAbiAlvoTargetName } from "@/lib/utils";
 
 export async function syncPlayerAbiAlvoTarget(
   playerId: string,

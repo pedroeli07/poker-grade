@@ -1,15 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { createLogger } from "@/lib/logger";
-import { getAppBaseUrl } from "@/lib/app-url";
+import { getAppBaseUrl } from "@/lib/utils";
+import type { ImportBatchNotifyPayload } from "./types";
 
 const log = createLogger("notify-import-external");
-
-export type ImportBatchNotifyPayload = {
-  fileName: string;
-  sheetsProcessed: number;
-  totalExtraPlays: number;
-  summaryLines: string[];
-};
 
 async function staffEmailsForImport(): Promise<string[]> {
   const users = await prisma.authUser.findMany({

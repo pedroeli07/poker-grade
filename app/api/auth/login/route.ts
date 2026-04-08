@@ -13,6 +13,7 @@ import {
 import { createLogger } from "@/lib/logger";
 import { createAuthSession, applySessionCookie } from "@/lib/auth/issue-session";
 import { ensureCoachProfileLinked } from "@/lib/auth/ensure-coach-profile";
+import { LOCKOUT_MINUTES, MAX_LOGIN_ATTEMPTS } from "@/lib/constants";
 
 const log = createLogger("auth.login");
 
@@ -97,11 +98,11 @@ export async function POST(request: Request) {
   const passwordOk = await verifyPassword(password, user.passwordHash);
   if (!passwordOk) {
     const attempts = user.failedAttempts + 1;
-    if (attempts >= 5) {
+    if (attempts >= MAX_LOGIN_ATTEMPTS) {
       await prisma.authUser.update({
         where: { id: user.id },
         data: {
-          lockedUntil: new Date(Date.now() + 15 * 60 * 1000),
+          lockedUntil: new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000),
           failedAttempts: 0,
           lastFailedAt: new Date(),
         },

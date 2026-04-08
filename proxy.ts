@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
+import { SESSION_COOKIE_NAME } from "@/lib/constants";
 import { verifySessionJwt } from "@/lib/auth/jwt";
 
 /**

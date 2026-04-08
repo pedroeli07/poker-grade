@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { deleteImports } from "../actions";
 import { toast } from "@/lib/toast";
-import { useInvalidateImports } from "@/hooks/use-invalidate-imports";
+import { useInvalidate } from "@/hooks/use-invalidate";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +22,7 @@ export function DeleteImportButton({ importId, iconOnly = false }: { importId: s
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const invalidateImports = useInvalidateImports();
+  const invalidateImports = useInvalidate("imports");
 
   function handleDelete() {
     startTransition(async () => {

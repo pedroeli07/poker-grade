@@ -133,15 +133,23 @@ export function LoginForm() {
             className="border-border bg-card/50 pr-11 pl-3.5 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20 text-black"
           />
         </div>
-        <label className="flex cursor-pointer items-center gap-2 font-mono text-[11px] text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
-            className="size-3.5 rounded border-border bg-card accent-primary"
-          />
-          Lembrar e-mail
-        </label>
+        <div className="flex items-center justify-between font-mono text-[11px] text-muted-foreground mt-2">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="size-3.5 rounded border-border bg-card accent-primary"
+            />
+            Lembrar e-mail
+          </label>
+          <Link 
+            href="/forgot-password" 
+            className="text-primary hover:text-primary/80 hover:underline cursor-pointer"
+          >
+            Esqueceu a senha?
+          </Link>
+        </div>
         <button
           type="submit"
           disabled={loading}

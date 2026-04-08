@@ -41,31 +41,15 @@ import {
   Pencil,
   Grid3X3,
   DollarSign,
+  Users,
 } from "lucide-react";
 import { deletePlayer, updatePlayer } from "@/app/dashboard/players/actions";
 import { toast } from "@/lib/toast";
-import { useInvalidatePlayers } from "@/hooks/use-invalidate-players";
-import type { PlayerTableRow } from "@/lib/types/player-table-row";
+import { useInvalidate } from "@/hooks/use-invalidate";
+import type { CoachOpt, GradeOpt, PlayerTableRow, EditPlayerModalProps } from "@/lib/types";
+import { NONE, POKER_NETWORKS_UI, STATUS_OPTIONS } from "@/lib/constants";
 
-const NONE = "__none__";
 
-type CoachOpt = { id: string; name: string; role: string };
-type GradeOpt = { id: string; name: string };
-
-const STATUS_OPTIONS: { value: PlayerStatus; label: string }[] = [
-  { value: "ACTIVE", label: "Ativo" },
-  { value: "SUSPENDED", label: "Suspenso" },
-  { value: "INACTIVE", label: "Inativo" },
-];
-
-type Props = {
-  player: PlayerTableRow | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  coaches: CoachOpt[];
-  grades: GradeOpt[];
-  allowCoachSelect: boolean;
-};
 
 function EditPlayerModalInner({
   player,
@@ -85,8 +69,11 @@ function EditPlayerModalInner({
   onClose: () => void;
 }) {
   const [name, setName] = useState(player.name);
-  const [nickname, setNickname] = useState(player.nickname ?? "");
   const [email, setEmail] = useState(player.email ?? "");
+  const [playerGroup, setPlayerGroup] = useState(player.playerGroup ?? "");
+  const [nicks, setNicks] = useState<{ network: string; nick: string }[]>(
+    player.nicks ?? []
+  );
   const [coachId, setCoachId] = useState(
     player.coachKey === NONE ? "none" : player.coachKey
   );
@@ -105,7 +92,7 @@ function EditPlayerModalInner({
   const [status, setStatus] = useState<PlayerStatus>(player.status);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const router = useRouter();
-  const invalidatePlayers = useInvalidatePlayers();
+  const invalidatePlayers = useInvalidate("players");
   const formDisabled = isPending || deleteOpen;
 
   const gradeOptions = useMemo(() => {
@@ -152,13 +139,14 @@ function EditPlayerModalInner({
     const formData = new FormData(e.currentTarget);
     formData.set("id", player.id);
     formData.set("name", name.trim());
-    formData.set("nickname", nickname.trim());
     formData.set("email", email.trim());
     formData.set("coachId", coachId);
     formData.set("mainGradeId", mainGradeId);
     formData.set("abiAlvoValue", abiAlvoValue);
     formData.set("abiAlvoUnit", abiAlvoUnit);
     formData.set("status", status);
+    formData.set("playerGroup", playerGroup.trim());
+    formData.set("nicksData", JSON.stringify(nicks));
 
     startTransition(() => {
       void (async () => {
@@ -236,67 +224,48 @@ function EditPlayerModalInner({
 
       <Separator />
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="flex flex-col max-h-[90vh]">
         <input type="hidden" name="id" value={player.id} />
 
-        <div className="px-7 py-6 space-y-5">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name" className="text-[15px] font-medium">
-                Nome completo <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                <Input
-                  id="edit-name"
-                  name="name"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60"
-                  disabled={formDisabled}
-                />
+        <div className="px-7 py-6 overflow-y-auto">
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Left Column */}
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name" className="text-[15px] font-medium">
+                  Nome completo <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                  <Input
+                    id="edit-name"
+                    name="name"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60"
+                    disabled={formDisabled}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="edit-nickname"
-                className="text-[15px] font-medium"
-              >
-                Nickname
-              </Label>
-              <div className="relative">
-                <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                <Input
-                  id="edit-nickname"
-                  name="nickname"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60"
-                  disabled={formDisabled}
-                />
+              <div className="space-y-2">
+                <Label htmlFor="edit-email" className="text-[15px] font-medium">
+                  E-mail
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                  <Input
+                    id="edit-email"
+                    name="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60"
+                    disabled={formDisabled}
+                  />
+                </div>
               </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit-email" className="text-[15px] font-medium">
-              E-mail
-            </Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-              <Input
-                id="edit-email"
-                name="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60"
-                disabled={formDisabled}
-              />
-            </div>
-          </div>
 
           {allowCoachSelect ? (
             <div className="space-y-2">
@@ -441,6 +410,106 @@ function EditPlayerModalInner({
               </SelectContent>
             </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-playerGroup" className="text-[15px] font-medium">
+              Grupo SharkScope
+            </Label>
+            <div className="relative">
+              <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+              <Input
+                id="edit-playerGroup"
+                value={playerGroup}
+                onChange={(e) => setPlayerGroup(e.target.value)}
+                placeholder="Ex: CL Team"
+                className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60"
+                disabled={formDisabled}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Opcional. Grupo no SharkScope para análise agregada do time.
+            </p>
+          </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-5">
+              <div className="space-y-3">
+                <Label className="text-[15px] font-medium">Contas de Poker (SharkScope)</Label>
+                <div className="space-y-3">
+                  {nicks.map((nickObj, index) => (
+                    <div key={index} className="grid grid-cols-[auto_1fr_auto] gap-2 items-center">
+                      <Select
+                        value={nickObj.network}
+                        onValueChange={(val) => {
+                          const newNicks = [...nicks];
+                          newNicks[index].network = val;
+                          setNicks(newNicks);
+                        }}
+                        disabled={formDisabled}
+                      >
+                        <SelectTrigger className="h-10 w-[160px] bg-muted/40 border-border/60">
+                          <SelectValue placeholder="Rede" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {POKER_NETWORKS_UI.map((net) => (
+                            <SelectItem key={net.value} value={net.value}>
+                                  <div className="flex items-center gap-2">
+                                    {net.icon && (
+                                      <img src={net.icon} alt={net.label} className="w-5 h-5 rounded object-contain" />
+                                    )}
+                                    <span>{net.label}</span>
+                                  </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <div className="relative">
+                        <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Input
+                          placeholder="Nickname na rede"
+                          value={nickObj.nick}
+                          onChange={(e) => {
+                            const newNicks = [...nicks];
+                            newNicks[index].nick = e.target.value;
+                            setNicks(newNicks);
+                          }}
+                          className="pl-9 h-10 text-[14px] bg-muted/40 border-border/60"
+                          disabled={formDisabled}
+                        />
+                      </div>
+                      
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          const newNicks = [...nicks];
+                          newNicks.splice(index, 1);
+                          setNicks(newNicks);
+                        }}
+                        disabled={formDisabled}
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  ))}
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-10 border-dashed border-border/60 text-muted-foreground hover:bg-muted/30 hover:text-foreground"
+                    onClick={() => setNicks([...nicks, { network: "", nick: "" }])}
+                    disabled={formDisabled}
+                  >
+                    + Adicionar Conta (Nick)
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <Separator />
@@ -493,7 +562,7 @@ export function EditPlayerModal({
   coaches,
   grades,
   allowCoachSelect,
-}: Props) {
+}: EditPlayerModalProps) {
   const [isPending, startTransition] = useTransition();
 
   function handleDialogOpenChange(value: boolean) {
@@ -503,7 +572,7 @@ export function EditPlayerModal({
 
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
+      <DialogContent className="sm:max-w-3xl p-0 gap-0 overflow-hidden">
         {player ? (
           <EditPlayerModalInner
             key={player.id}

@@ -1,4 +1,4 @@
-import type { ImportListRow } from "@/lib/types/import-list";
+import type { ImportListRow } from "@/lib/types";
 import type { AppSession } from "@/lib/auth/session";
 import { getImportsForSession } from "./queries";
 

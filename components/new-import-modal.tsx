@@ -27,7 +27,7 @@ import { uploadTournaments } from "@/app/dashboard/imports/actions";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { cn, isNextRedirectError } from "@/lib/utils";
-import { useInvalidateImports } from "@/hooks/use-invalidate-imports";
+import { useInvalidate } from "@/hooks/use-invalidate";
 
 const log = createLogger("imports.modal");
 
@@ -42,7 +42,7 @@ export function NewImportModal() {
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const invalidateImports = useInvalidateImports();
+  const invalidateImports = useInvalidate("imports");
 
   const loading = isPending;
 

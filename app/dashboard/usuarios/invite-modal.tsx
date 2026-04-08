@@ -23,21 +23,11 @@ import { UserRole } from "@prisma/client";
 import { addAllowedInvite } from "./actions";
 import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
+import { UsuariosInviteModalProps } from "@/lib/types";
+import { INVITE_ROLES } from "@/lib/constants";
 
-const INVITE_ROLES: { value: UserRole; label: string }[] = [
-  { value: UserRole.VIEWER, label: "Viewer" },
-  { value: UserRole.PLAYER, label: "Player" },
-  { value: UserRole.COACH, label: "Coach" },
-  { value: UserRole.MANAGER, label: "Manager" },
-  { value: UserRole.ADMIN, label: "Admin" },
-];
 
-type Props = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-};
-
-export function UsuariosInviteModal({ open, onOpenChange }: Props) {
+export function UsuariosInviteModal({ open, onOpenChange }: UsuariosInviteModalProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [email, setEmail] = useState("");

@@ -14,7 +14,7 @@ import {
   deleteSelectedNotifications,
 } from "@/app/dashboard/notifications/actions";
 import { toast } from "@/lib/toast";
-import { useInvalidateNotifications } from "@/hooks/use-invalidate-notifications";
+import { useInvalidate } from "@/hooks/use-invalidate";
 import {
   Bell,
   X,
@@ -89,7 +89,7 @@ function timeAgo(date: Date): string {
 
 export function NotificationSheet() {
   const { open, setOpen, setUnreadCount } = useNotificationStore();
-  const invalidateNotifications = useInvalidateNotifications();
+  const invalidateNotifications = useInvalidate("notifications");
 
   const [items, setItems] = useState<NotifItem[]>([]);
   const [total, setTotal] = useState(0);

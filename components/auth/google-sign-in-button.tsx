@@ -36,7 +36,7 @@ export function GoogleSignInButton({
     <a
       href="/api/auth/google"
       className={cn(
-        "border border-gray-300 flex h-11 w-full items-center justify-center gap-3 rounded-xl bg-blue-500/10 font-mono text-[12px] font-medium uppercase tracking-wider text-black transition-colors hover:border-white/25 hover:bg-white/[0.04]",
+        "border border-gray-300 flex h-11 w-full items-center justify-center gap-3 rounded-xl bg-blue-500/10 font-mono text-[12px] font-medium uppercase tracking-wider text-black transition-colors hover:border-white/25 hover:bg-blue-500/20",
         className
       )}
     >

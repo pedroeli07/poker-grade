@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
 import type { UserRole } from "@prisma/client";
-import { SESSION_MAX_AGE_SEC } from "./constants";
+import { SESSION_MAX_AGE_SEC } from "@/lib/constants";
 
 function getSecret(): Uint8Array {
   const s = process.env.AUTH_SECRET;

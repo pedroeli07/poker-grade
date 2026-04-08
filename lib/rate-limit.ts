@@ -291,3 +291,47 @@ export async function limitDashboardMutation(userId: string): Promise<{
     retryAfterSec: Math.max(1, Math.ceil((reset - Date.now()) / 1000)),
   };
 }
+
+type SlidingWindow = `${number} m` | `${number} h`;
+
+function createUserLimiter(
+  prefix: string,
+  max: number,
+  window: SlidingWindow,
+  memoryWindowMs: number
+) {
+  return async (userId: string): Promise<{
+    ok: boolean;
+    retryAfterSec: number;
+  }> => {
+    const redis = getRedis();
+    if (redis) {
+      const rl = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(max, window),
+        analytics: false,
+        prefix: `rl:${prefix}`,
+      });
+      const { success, reset } = await rl.limit(userId);
+      return {
+        ok: success,
+        retryAfterSec: Math.max(1, Math.ceil((reset - Date.now()) / 1000)),
+      };
+    }
+    log.warn("Upstash ausente — rate limit em memória (não distribuído)");
+    const { success, reset } = memoryLimit(`${prefix}:${userId}`, max, memoryWindowMs);
+    return {
+      ok: success,
+      retryAfterSec: Math.max(1, Math.ceil((reset - Date.now()) / 1000)),
+    };
+  };
+}
+
+/** Leituras SharkScope (proxy cache, lista de nicks, GET alertas). */
+export const limitSharkscopeRead = createUserLimiter("shark:read", 90, "1 m", 60_000);
+
+/** Buscas que consomem cota SharkScope (NLQ, scouting-search). */
+export const limitSharkscopeSearch = createUserLimiter("shark:search", 15, "1 m", 60_000);
+
+/** Mutações SharkScope (nicks, acknowledge, scouting save/delete). */
+export const limitSharkscopeMutation = createUserLimiter("shark:mut", 45, "1 m", 60_000);

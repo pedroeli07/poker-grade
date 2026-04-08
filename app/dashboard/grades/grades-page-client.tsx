@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
@@ -24,17 +24,17 @@ import { Archive, LayoutGrid, Table2, Users } from "lucide-react";
 import { DeleteGradeButton } from "@/components/delete-grade-button";
 import { EditGradeDialog } from "@/components/edit-grade-dialog";
 import { ColumnFilter } from "@/components/column-filter";
-import { distinctOptions } from "@/lib/distinct-options";
-import { cn, descriptionPick } from "@/lib/utils";
+import { cn, descriptionPick, distinctOptions } from "@/lib/utils";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { cardClassName, EMPTY_DESC, playersHoverScrollClass } from "@/lib/constants";
-import type { GradeListRow, ColumnFilters, ColumnKey } from "@/lib/types";
+import { cardClassName, EMPTY_DESC, playersHoverScrollClass, STALE_TIME } from "@/lib/constants";
+import type { GradeListRow, ColumnKey } from "@/lib/types";
 import { getGradesListRowsAction } from "@/app/dashboard/grades/actions";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
+import { useGradesListStore } from "@/lib/stores/use-grades-list-store";
 
 
 function GradePlayersHover({
@@ -76,7 +76,7 @@ function GradePlayersHover({
         align="center"
         sideOffset={8}
         collisionPadding={12}
-        className="z-[90] w-[min(92vw,22rem)] p-0 border border-border bg-popover shadow-lg"
+        className="z-90 w-[min(92vw,22rem)] p-0 border border-border bg-popover shadow-lg"
       >
         <div className="border-b border-border px-3 py-2 flex items-center gap-2 bg-muted/40">
           <Users className="h-4 w-4 text-primary shrink-0" />
@@ -100,7 +100,7 @@ function GradePlayersHover({
                 <li key={p.id}>
                   <Link
                     href={`/dashboard/players/${p.id}`}
-                    className="block rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-primary/[0.08] transition-colors"
+                    className="block rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-primary/8 transition-colors"
                   >
                     {p.name}
                   </Link>
@@ -130,16 +130,12 @@ export default function GradesPageClient({
       return r.rows;
     },
     initialData: initialRows,
-    staleTime: 30_000,
+    staleTime: STALE_TIME,
   });
 
   const [view, setView] = useState<"cards" | "table">("cards");
-  const [filters, setFilters] = useState<ColumnFilters>({
-    name: null,
-    description: null,
-    rules: null,
-    players: null,
-  });
+  const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
+    useGradesListStore();
 
   const options = useMemo(
     () => ({
@@ -175,23 +171,12 @@ export default function GradesPageClient({
     });
   }, [rows, filters]);
 
-  const setCol = (col: ColumnKey) => (next: Set<string> | null) => {
-    setFilters((f) => ({ ...f, [col]: next }));
-  };
-
-  const anyFilter =
-    filters.name !== null ||
-    filters.description !== null ||
-    filters.rules !== null ||
-    filters.players !== null;
-
-  const clearFilters = () =>
-    setFilters({
-      name: null,
-      description: null,
-      rules: null,
-      players: null,
-    });
+  const setCol = useCallback(
+    (col: ColumnKey) => (next: Set<string> | null) => {
+      setColumnFilter(col, next);
+    },
+    [setColumnFilter]
+  );
 
   const descriptionCell = (r: GradeListRow) =>
     r.description?.trim() ? (
@@ -253,7 +238,7 @@ export default function GradesPageClient({
             size="sm"
             className={cn(
               "gap-2 h-8 text-xs",
-              view === "cards" && "bg-primary/[0.12] text-primary shadow-none"
+              view === "cards" && "bg-primary/12 text-primary shadow-none"
             )}
             onClick={() => setView("cards")}
           >
@@ -266,7 +251,7 @@ export default function GradesPageClient({
             size="sm"
             className={cn(
               "gap-2 h-8 text-xs",
-              view === "table" && "bg-primary/[0.12] text-primary shadow-none"
+              view === "table" && "bg-primary/12 text-primary shadow-none"
             )}
             onClick={() => setView("table")}
           >
@@ -389,7 +374,7 @@ export default function GradesPageClient({
         <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
           <Table className="min-w-[720px] w-full table-fixed">
             <TableHeader>
-              <TableRow className="border-b border-border bg-primary/[0.05] hover:bg-primary/[0.05]">
+              <TableRow className="border-b border-border bg-primary/5 hover:bg-primary/5">
                 <TableHead className="w-[18%] align-bottom">
                   <ColumnFilter
                     columnId="g-name-t"
@@ -445,7 +430,7 @@ export default function GradesPageClient({
                 filtered.map((grade) => (
                   <TableRow
                     key={grade.id}
-                    className="group border-border hover:bg-primary/[0.03]"
+                    className="group border-border hover:bg-primary/3"
                   >
                     <TableCell className="font-medium text-foreground align-top py-3">
                       {grade.name}

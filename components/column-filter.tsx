@@ -101,14 +101,17 @@ export function ColumnFilter({
   applied,
   onApply,
   compact = false,
+  triggerClassName,
 }: {
   columnId: string;
-  label: string;
+  label: React.ReactNode;
   options: { value: string; label: string }[];
   applied: Set<string> | null;
   onApply: (next: Set<string> | null) => void;
   /** Estilo de botão outline para toolbar (ex.: grades em cards). */
   compact?: boolean;
+  /** Classes extras no trigger (ex.: coluna estreita, centralizar). */
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -177,7 +180,8 @@ export function ColumnFilter({
               : cn(
                   "rounded-md px-1 py-0.5 -mx-1 text-left font-semibold text-foreground hover:bg-primary/10",
                   active && "text-primary"
-                )
+                ),
+            triggerClassName
           )}
           aria-label={`Filtrar ${label}`}
         >

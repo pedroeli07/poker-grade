@@ -3,21 +3,9 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ProfileData, UserRole } from "@/lib/types";
+import { ROLE_LABELS } from "@/lib/constants";
 
-interface ProfileData {
-  email: string;
-  displayName: string | null;
-  role: string;
-  createdAt: string;
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Admin",
-  COACH: "Coach",
-  MANAGER: "Manager",
-  PLAYER: "Jogador",
-  VIEWER: "Visualizador",
-};
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -166,7 +154,7 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
             <FieldLabel>Função</FieldLabel>
             <TextInput
               id="profile-role"
-              value={ROLE_LABELS[profile.role] ?? profile.role}
+              value={ROLE_LABELS[profile.role as UserRole] ?? profile.role}
               disabled
             />
           </div>

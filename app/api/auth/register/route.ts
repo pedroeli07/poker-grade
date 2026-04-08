@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
   const parsed = registerBodySchema.safeParse(body);
   if (!parsed.success) {
     logValidationFailure("register.fields");
-    const first = parsed.error.flatten().fieldErrors;
+    const first = z.flattenError(parsed.error).fieldErrors;
     const msg =
       first.password?.[0] ||
       first.confirmPassword?.[0] ||
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
-  const { email, password, displayName: rawName } = parsed.data;
+  const { email, password, displayName: rawName, code } = parsed.data;
   const displayName =
     rawName?.trim().replace(/\s+/g, " ").slice(0, 200) || null;
 
@@ -70,6 +71,20 @@ export async function POST(request: Request) {
       { error: "Este e-mail já está cadastrado." },
       { status: 409 }
     );
+  }
+
+  // Verificar OTP
+  const tokenRecord = await prisma.verificationToken.findFirst({
+    where: { email, type: "REGISTER" },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!tokenRecord || tokenRecord.code !== code) {
+    return NextResponse.json({ error: "Código de verificação inválido." }, { status: 400 });
+  }
+
+  if (new Date() > tokenRecord.expiresAt) {
+    return NextResponse.json({ error: "Código expirado. Solicite outro." }, { status: 400 });
   }
 
   let role: UserRole;
@@ -110,6 +125,7 @@ export async function POST(request: Request) {
       if (!isSuperAdminEmail(email)) {
         await tx.allowedEmail.deleteMany({ where: { email } });
       }
+      await tx.verificationToken.deleteMany({ where: { email, type: "REGISTER" } });
       return user;
     });
     newUserId = result.id;

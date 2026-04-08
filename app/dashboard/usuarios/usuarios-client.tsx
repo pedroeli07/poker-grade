@@ -3,7 +3,8 @@
 import { useMemo, useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { UserRole } from "@prisma/client";
-import type { UsuarioDirectoryRow } from "@/lib/types/usuarios";
+import type { UsuarioDirectoryRow, UsuariosColumnKey } from "@/lib/types";
+import { useUsuariosStore } from "@/lib/stores/use-usuarios-store";
 import {
   Search,
   UserPlus,
@@ -49,7 +50,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cardClassName } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn, distinctOptions } from "@/lib/utils";
 import { UsuariosInviteModal } from "./invite-modal";
 import {
   deleteAuthAccount,
@@ -60,17 +61,8 @@ import {
 import { toast } from "@/lib/toast";
 import { isSuperAdminEmail } from "@/lib/auth/bootstrap";
 import { ColumnFilter } from "@/components/column-filter";
-import { distinctOptions } from "@/lib/distinct-options";
-
-const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
-  { value: UserRole.VIEWER, label: "Viewer" },
-  { value: UserRole.PLAYER, label: "Player" },
-  { value: UserRole.COACH, label: "Coach" },
-  { value: UserRole.MANAGER, label: "Manager" },
-  { value: UserRole.ADMIN, label: "Admin" },
-];
-
-type RoleVisual = { label: string; text: string; bg: string; icon: React.ReactNode };
+import { ROLE_OPTIONS } from "@/lib/constants";
+import { RoleVisual } from "@/lib/types";
 
 const ROLE_VISUAL: Record<UserRole, RoleVisual> = {
   [UserRole.ADMIN]: {
@@ -235,18 +227,13 @@ type Props = {
   initialRows: UsuarioDirectoryRow[];
   canManageUsers: boolean;
 };
-type ColumnKey = "email" | "role" | "status";
-type ColumnFilters = Record<ColumnKey, Set<string> | null>;
 
 export function UsuariosClient({ initialRows, canManageUsers }: Props) {
   const router = useRouter();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<ColumnFilters>({
-    email: null,
-    role: null,
-    status: null,
-  });
+  const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
+    useUsuariosStore();
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const [pending, startTransition] = useTransition();
 
@@ -258,7 +245,7 @@ export function UsuariosClient({ initialRows, canManageUsers }: Props) {
       })),
       role: distinctOptions(initialRows, (r: UsuarioDirectoryRow) => ({
         value: r.role,
-        label: ROLE_VISUAL[r.role].label,
+        label: ROLE_VISUAL[r.role as UserRole].label,
       })),
       status: distinctOptions(initialRows, (r: UsuarioDirectoryRow) => ({
         value: r.isRegistered ? "REGISTERED" : "PENDING",
@@ -286,14 +273,12 @@ export function UsuariosClient({ initialRows, canManageUsers }: Props) {
     });
   }, [initialRows, searchQuery, filters]);
 
-  const setCol = (col: ColumnKey) => (next: Set<string> | null) => {
-    setFilters((f: ColumnFilters) => ({ ...f, [col]: next }));
-  };
-
-  const anyFilter =
-    filters.email !== null ||
-    filters.role !== null ||
-    filters.status !== null;
+  const setCol = useCallback(
+    (col: UsuariosColumnKey) => (next: Set<string> | null) => {
+      setColumnFilter(col, next);
+    },
+    [setColumnFilter]
+  );
 
   const stats = useMemo(() => {
     const registeredCount = initialRows.filter((u) => u.isRegistered).length;
@@ -424,13 +409,7 @@ export function UsuariosClient({ initialRows, canManageUsers }: Props) {
             variant="ghost"
             size="sm"
             className="h-8 text-xs shrink-0"
-            onClick={() =>
-              setFilters({
-                email: null,
-                role: null,
-                status: null,
-              })
-            }
+            onClick={clearFilters}
           >
             Limpar filtros
           </Button>
@@ -463,13 +442,7 @@ export function UsuariosClient({ initialRows, canManageUsers }: Props) {
                 variant="ghost"
                 size="sm"
                 className="h-8 text-xs"
-                onClick={() =>
-                  setFilters({
-                    email: null,
-                    role: null,
-                    status: null,
-                  })
-                }
+                onClick={clearFilters}
               >
                 Limpar todos os filtros de coluna
               </Button>

@@ -5,6 +5,7 @@ import {
   passwordMeetsPolicy,
   PASSWORD_POLICY_MESSAGE,
 } from "@/lib/auth/password-policy";
+import { zodPokerNetwork } from "../sharkscope/schemas";
 
 const cuid = z.cuid();
 
@@ -19,6 +20,7 @@ export const registerBodySchema = z
     password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
     confirmPassword: z.string().min(1).max(PASSWORD_MAX_LENGTH),
     displayName: z.string().max(200).optional(),
+    code: z.string().length(6, "Código deve ter exatos 6 dígitos"),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: "As senhas não coincidem.",
@@ -27,9 +29,25 @@ export const registerBodySchema = z
   .superRefine((d, ctx) => {
     if (!passwordMeetsPolicy(d.password)) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: PASSWORD_POLICY_MESSAGE,
         path: ["password"],
+      });
+    }
+  });
+
+export const resetPasswordSchema = z
+  .object({
+    email: z.email().max(320).transform((s) => s.toLowerCase().trim()),
+    code: z.string().length(6, "Código deve ter exatos 6 dígitos"),
+    newPassword: z.string().min(1).max(PASSWORD_MAX_LENGTH),
+  })
+  .superRefine((d, ctx) => {
+    if (!passwordMeetsPolicy(d.newPassword)) {
+      ctx.addIssue({
+        code: "custom",
+        message: PASSWORD_POLICY_MESSAGE,
+        path: ["newPassword"],
       });
     }
   });
@@ -65,6 +83,8 @@ export const createPlayerFormSchema = z.object({
   mainGradeId: z.union([cuid, z.literal("none"), z.literal("")]),
   abiAlvoValue: z.string().max(40).optional().transform((s) => s ?? ""),
   abiAlvoUnit: z.string().max(30).optional().transform((s) => s ?? ""),
+  playerGroup: z.string().max(120).optional().nullable(),
+  nicksData: z.string().optional().nullable(),
 });
 
 export const updatePlayerFormSchema = z.object({
@@ -77,6 +97,8 @@ export const updatePlayerFormSchema = z.object({
   abiAlvoValue: z.string().max(40).optional().transform((s) => s ?? ""),
   abiAlvoUnit: z.string().max(30).optional().transform((s) => s ?? ""),
   status: z.nativeEnum(PlayerStatus),
+  playerGroup: z.string().max(120).optional().nullable(),
+  nicksData: z.string().optional().nullable(),
 });
 
 export const importGradeFormSchema = z.object({
@@ -194,3 +216,49 @@ export const notificationsPageParamsSchema = z.object({
 });
 
 export const notificationIdsDeleteSchema = z.array(cuid).min(1).max(100);
+
+export const querySchema = z.object({
+  severity: z.enum(["red", "yellow", "green"]).optional(),
+  alertType: z.string().max(50).optional(),
+  playerId: z.string().max(40).optional(),
+  acknowledged: z
+    .string()
+    .optional()
+    .transform((v) => (v === "true" ? true : v === "false" ? false : undefined)),
+});
+
+export const updateNickSchema = z.object({
+  nick: z.string().min(1).max(120).trim().optional(),
+  network: zodPokerNetwork.optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const addNickSchema = z.object({
+  nick: z.string().min(1).max(120).trim(),
+  network: zodPokerNetwork,
+});
+
+export const bodySchema = z.object({
+  playerNickId: z.string().min(1).max(40),
+  question: z.string().min(3).max(500),
+  timezone: z.string().max(60).optional().default("America/Sao_Paulo"),
+});
+
+export const playerQuerySchema = z.object({
+  nickId: z.string().min(1),
+  dataType: z.enum(["summary", "stats_10d", "stats_30d", "stats_90d", "insights"]),
+  filter: z.string().max(200).optional(),
+});
+
+export const scoutBodySchema = z.object({
+  nick: z.string().min(1).max(120).trim(),
+  network: zodPokerNetwork,
+  rawData: z.unknown(),
+  nlqAnswer: z.unknown().optional(),
+  notes: z.string().max(2000).optional().nullable(),
+});
+
+export const scoutSearchQuerySchema = z.object({
+  nick: z.string().min(1).max(120).trim(),
+  network: zodPokerNetwork,
+});

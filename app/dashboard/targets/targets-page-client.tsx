@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
@@ -26,13 +26,13 @@ import {
   Table2,
 } from "lucide-react";
 import { ColumnFilter } from "@/components/column-filter";
-import { distinctOptions } from "@/lib/distinct-options";
 import type { TargetListRow } from "@/lib/types/target-list-row";
 import { getTargetsListDataAction } from "./actions";
 import { targetKeys } from "@/lib/queries/target-query-keys";
 import { STATUS_CONFIG, LIMIT_ACTION_LABEL, NONE_LIMIT } from "@/lib/constants";
-import { progressLabel, statusLabel } from "@/lib/utils";
-import { ColKey, Filters } from "@/lib/types";
+import { distinctOptions, progressLabel, statusLabel } from "@/lib/utils";
+import type { ColKey } from "@/lib/types";
+import { useTargetsListStore } from "@/lib/stores/use-targets-list-store";
 
 
 function targetCardInner(target: TargetListRow) {
@@ -140,14 +140,8 @@ export function TargetsPageClient({
     staleTime: 30_000,
   });
   const [view, setView] = useState<"cards" | "table">("cards");
-  const [filters, setFilters] = useState<Filters>({
-    name: null,
-    category: null,
-    player: null,
-    status: null,
-    targetType: null,
-    limitAction: null,
-  });
+  const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
+    useTargetsListStore();
 
   const options = useMemo(
     () => ({
@@ -195,11 +189,12 @@ export function TargetsPageClient({
     });
   }, [rows, filters]);
 
-  const setCol = (col: ColKey) => (next: Set<string> | null) => {
-    setFilters((f) => ({ ...f, [col]: next }));
-  };
-
-  const anyFilter = Object.values(filters).some((x) => x !== null);
+  const setCol = useCallback(
+    (col: ColKey) => (next: Set<string> | null) => {
+      setColumnFilter(col, next);
+    },
+    [setColumnFilter]
+  );
 
   if (rows.length === 0) {
     return (
@@ -278,16 +273,7 @@ export function TargetsPageClient({
               variant="ghost"
               size="sm"
               className="h-8 text-xs shrink-0"
-              onClick={() =>
-                setFilters({
-                  name: null,
-                  category: null,
-                  player: null,
-                  status: null,
-                  targetType: null,
-                  limitAction: null,
-                })
-              }
+              onClick={clearFilters}
             >
               Limpar filtros
             </Button>
@@ -320,16 +306,7 @@ export function TargetsPageClient({
                   variant="ghost"
                   size="sm"
                   className="h-8 text-xs"
-                  onClick={() =>
-                    setFilters({
-                      name: null,
-                      category: null,
-                      player: null,
-                      status: null,
-                      targetType: null,
-                      limitAction: null,
-                    })
-                  }
+                  onClick={clearFilters}
                 >
                   Limpar todos os filtros
                 </Button>

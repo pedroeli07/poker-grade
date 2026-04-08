@@ -1,7 +1,7 @@
 import { requireSession } from "@/lib/auth/session";
 import { notFound } from "next/navigation";
 import { getImportDetailForSession } from "@/lib/data/queries";
-import { canDeleteImports, canReview } from "@/lib/auth/rbac";
+import { canDeleteImports, canReview } from "@/lib/utils";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -29,8 +29,13 @@ import {
 } from "lucide-react";
 import { schedulingCategory } from "@/lib/utils";
 import { Tab } from "@/lib/types";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Detalhes de uma Importação",
+  description: "Visualize os detalhes de uma importação da Lobbyze.",
+};
 
 function SchedulingBadge({ scheduling }: { scheduling: string | null }) {
   const cat = schedulingCategory(scheduling);

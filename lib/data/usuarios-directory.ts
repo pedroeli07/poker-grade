@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { UsuarioDirectoryRow } from "@/lib/types/usuarios";
+import type { UsuarioDirectoryRow } from "@/lib/types";
 
 /** Lista convites pendentes + contas (uma query paralela por tipo). */
 export async function getUsuarioDirectoryRows(): Promise<UsuarioDirectoryRow[]> {

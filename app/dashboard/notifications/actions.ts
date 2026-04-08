@@ -16,7 +16,7 @@ const log = createLogger("notifications.actions");
 
 const PAGE_SIZE = 10;
 
-const notificationIdSchema = z.string().cuid();
+const notificationIdSchema = z.cuid();
 
 export type NotificationsPageResult =
   | {

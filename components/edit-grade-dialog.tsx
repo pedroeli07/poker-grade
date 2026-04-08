@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { updateGradeProfile } from "@/app/dashboard/grades/actions";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { useInvalidateGrades } from "@/hooks/use-invalidate-grades";
+import { useInvalidate } from "@/hooks/use-invalidate";
 
 export function EditGradeDialog({
   gradeId,
@@ -30,7 +30,7 @@ export function EditGradeDialog({
   initialDescription: string | null;
   className?: string;
 }) {
-  const invalidateGrades = useInvalidateGrades();
+  const invalidateGrades = useInvalidate("grades");
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(

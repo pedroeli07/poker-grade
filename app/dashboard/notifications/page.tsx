@@ -1,9 +1,26 @@
+import dynamicImport from "next/dynamic";
 import { requireSession } from "@/lib/auth/session";
 import { getNotificationsPage } from "./actions";
-import { NotificationsClient } from "./notifications-client";
+import { Metadata } from "next";
 
-export const metadata = {
-  title: "Notificações | Gestão de Grades",
+const NotificationsClient = dynamicImport(
+  () =>
+    import("./notifications-client").then((m) => ({
+      default: m.NotificationsClient,
+    })),
+  {
+    loading: () => (
+      <div className="animate-pulse space-y-4">
+        <div className="h-9 w-48 rounded-md bg-muted" />
+        <div className="h-64 rounded-lg bg-muted" />
+      </div>
+    ),
+  }
+);
+
+export const metadata: Metadata = {
+  title: "Notificações",
+  description: "Visualize suas notificações e marque como lidas.",
 };
 
 export const dynamic = "force-dynamic";

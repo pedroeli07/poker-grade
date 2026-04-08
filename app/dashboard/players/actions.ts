@@ -17,9 +17,9 @@ import { sanitizeOptional, sanitizeText } from "@/lib/sanitize";
 import { notifyPlayerCreated } from "@/lib/notifications";
 import { setPlayerMainGrade } from "@/lib/data/player-main-grade";
 import {
-  parseAbiAlvoInput,
   syncPlayerAbiAlvoTarget,
 } from "@/lib/data/player-abi-target";
+import { parseAbiAlvoInput } from "@/lib/utils";
 
 const log = createLogger("players.actions");
 
@@ -52,6 +52,7 @@ export async function createPlayer(formData: FormData) {
     mainGradeId: formData.get("mainGradeId") || "none",
     abiAlvoValue: String(formData.get("abiAlvoValue") ?? ""),
     abiAlvoUnit: String(formData.get("abiAlvoUnit") ?? ""),
+    playerGroup: formData.get("playerGroup") || null,
   });
 
   if (!parsed.success) {
@@ -70,6 +71,7 @@ export async function createPlayer(formData: FormData) {
 
   const name = sanitizeText(parsed.data.name, 200);
   const nickname = sanitizeOptional(parsed.data.nickname, 120);
+  const playerGroup = sanitizeOptional(parsed.data.playerGroup, 120);
   let email = parsed.data.email;
   if (email === "") email = undefined;
   if (email) email = sanitizeText(email, 320);
@@ -80,6 +82,21 @@ export async function createPlayer(formData: FormData) {
   );
   if (!abiParsed.ok) {
     throw new Error(abiParsed.message);
+  }
+
+  let parsedNicks: { network: string; nick: string }[] = [];
+  try {
+    if (parsed.data.nicksData) {
+      const parsedArr = JSON.parse(parsed.data.nicksData);
+      if (Array.isArray(parsedArr)) {
+        parsedNicks = parsedArr.map((n) => ({
+          network: String(n.network).trim(),
+          nick: String(n.nick).trim(),
+        })).filter(n => n.nick.length > 0 && n.network.length > 0);
+      }
+    }
+  } catch (e) {
+    log.error("Falha ao fazer parse dos Nicks", e instanceof Error ? e : undefined, { nicksData: parsed.data.nicksData });
   }
 
   log.info("Criando jogador", { name, hasCoach: Boolean(coachId) });
@@ -93,6 +110,13 @@ export async function createPlayer(formData: FormData) {
         email: email ?? null,
         coachId,
         status: "ACTIVE",
+        playerGroup,
+        nicks: {
+          create: parsedNicks.map((n) => ({
+            network: n.network,
+            nick: n.nick,
+          })),
+        },
       },
     });
 
@@ -152,6 +176,8 @@ export async function updatePlayer(formData: FormData) {
     abiAlvoValue: String(formData.get("abiAlvoValue") ?? ""),
     abiAlvoUnit: String(formData.get("abiAlvoUnit") ?? ""),
     status: formData.get("status"),
+    playerGroup: formData.get("playerGroup") || null,
+    nicksData: formData.get("nicksData") || null,
   });
 
   if (!parsed.success) {
@@ -203,9 +229,25 @@ export async function updatePlayer(formData: FormData) {
 
   const name = sanitizeText(parsed.data.name, 200);
   const nickname = sanitizeOptional(parsed.data.nickname, 120);
+  const playerGroup = sanitizeOptional(parsed.data.playerGroup, 120);
   let email = parsed.data.email;
   if (email === "") email = undefined;
   if (email) email = sanitizeText(email, 320);
+
+  let parsedNicks: { network: string; nick: string }[] | null = null;
+  if (parsed.data.nicksData !== undefined && parsed.data.nicksData !== null) {
+    try {
+      const parsedArr = JSON.parse(parsed.data.nicksData);
+      if (Array.isArray(parsedArr)) {
+        parsedNicks = parsedArr.map((n) => ({
+          network: String(n.network).trim(),
+          nick: String(n.nick).trim(),
+        })).filter(n => n.nick.length > 0 && n.network.length > 0);
+      }
+    } catch (e) {
+      log.error("Falha ao fazer parse dos Nicks", e instanceof Error ? e : undefined, { nicksData: parsed.data.nicksData });
+    }
+  }
 
   try {
     await prisma.player.update({
@@ -216,8 +258,33 @@ export async function updatePlayer(formData: FormData) {
         email: email ?? null,
         coachId,
         status: parsed.data.status,
+        playerGroup,
       },
     });
+
+    if (parsedNicks !== null) {
+      const currentNicks = await prisma.playerNick.findMany({
+        where: { playerId: parsed.data.id },
+      });
+      const toKeep = parsedNicks.map(n => n.network + ':' + n.nick);
+      const nicksToDelete = currentNicks.filter(c => !toKeep.includes(c.network + ':' + c.nick));
+      const newNicks = parsedNicks.filter(n => !currentNicks.some(c => c.network === n.network && c.nick === n.nick));
+
+      if (nicksToDelete.length > 0) {
+        await prisma.playerNick.deleteMany({
+          where: { id: { in: nicksToDelete.map(n => n.id) } },
+        });
+      }
+      if (newNicks.length > 0) {
+        await prisma.playerNick.createMany({
+          data: newNicks.map(n => ({
+            playerId: parsed.data.id,
+            network: n.network,
+            nick: n.nick,
+          })),
+        });
+      }
+    }
 
     const mainGradeRaw = parsed.data.mainGradeId;
     const mainGradeId =

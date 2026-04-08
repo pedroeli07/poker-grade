@@ -14,7 +14,7 @@ import {
 } from "./actions";
 import { cn } from "@/lib/utils";
 import { notificationKeys } from "@/lib/queries/notification-query-keys";
-import { useInvalidateNotifications } from "@/hooks/use-invalidate-notifications";
+import { useInvalidate } from "@/hooks/use-invalidate";
 import { toast } from "@/lib/toast";
 import {
   Bell,
@@ -75,7 +75,7 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [, startTransition] = useTransition();
-  const invalidateNotifications = useInvalidateNotifications();
+  const invalidateNotifications = useInvalidate("notifications");
 
   const { data, isFetching, error } = useQuery({
     queryKey: notificationKeys.list(page, filter),

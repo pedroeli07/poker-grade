@@ -25,7 +25,7 @@ import { Separator } from "@/components/ui/separator";
 import { Plus, Target, Loader2, ChevronRight } from "lucide-react";
 import { createTarget } from "@/app/dashboard/targets/actions";
 import { toast } from "@/lib/toast";
-import { useInvalidateTargets } from "@/hooks/use-invalidate-targets";
+import { useInvalidate } from "@/hooks/use-invalidate";
 import { isNextRedirectError } from "@/lib/utils";
 
 type Player = { id: string; name: string; nickname: string | null };
@@ -58,7 +58,7 @@ export function NewTargetModal({ players }: NewTargetModalProps) {
   const [limitAction, setLimitAction] = useState("none");
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
-  const invalidateTargets = useInvalidateTargets();
+  const invalidateTargets = useInvalidate("targets");
 
   function handleOpenChange(value: boolean) {
     if (isPending) return;

@@ -5,9 +5,27 @@ import { STAFF_WRITE_ROLES } from "@/lib/auth/rbac";
 import { getTargetsListRowsForSession } from "@/lib/data/targets-list";
 import { prisma } from "@/lib/prisma";
 import { NewTargetModal } from "@/components/new-target-modal";
-import { TargetsPageClient } from "./targets-page-client";
+import { Metadata } from "next";
+import dynamicImport from "next/dynamic";
+
+const TargetsPageClient = dynamicImport(
+  () => import("./targets-page-client").then((m) => ({ default: m.TargetsPageClient })),
+  {
+    loading: () => (
+      <div className="animate-pulse space-y-4">
+        <div className="h-10 w-full rounded-md bg-muted" />
+        <div className="h-64 rounded-lg bg-muted" />
+      </div>
+    ),
+  }
+);
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Targets e Metas",
+  description: "Acompanhe ABI, ROI, Volume e gatilhos de subida/descida de limite.",
+};
+
 
 export default async function TargetsPage() {
   const session = await requireSession();

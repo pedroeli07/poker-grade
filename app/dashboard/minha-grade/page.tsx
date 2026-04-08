@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { createLogger } from "@/lib/logger";
+import { Metadata } from "next";
 
 const log = createLogger("minha-grade.page");
 
@@ -100,6 +101,11 @@ const TARGET_STATUS_CONFIG = {
   OFF_TRACK: { icon: TrendingDown, color: "text-red-500", label: "Abaixo" },
 };
 
+export const metadata: Metadata = {
+  title: "Minha Grade",
+  description: "Visualize sua grade atual e histórico de subidas, manutenções e descidas.",
+};
+
 async function getPlayerTournamentStats(playerId: string) {
   const rows = await prisma.$queryRaw<
     Array<{
@@ -129,7 +135,6 @@ async function getPlayerTournamentStats(playerId: string) {
   };
 }
 
-export const metadata = { title: "Minha Grade | CL Team" };
 export const dynamic = "force-dynamic";
 
 export default async function MinhaGradePage() {

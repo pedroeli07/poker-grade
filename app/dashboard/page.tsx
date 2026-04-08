@@ -21,6 +21,12 @@ import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cardClassName } from "@/lib/constants";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Visão geral do time de jogadores.",
+};
 
 export default async function DashboardPage() {
   const session = await requireSession();
@@ -31,6 +37,7 @@ export default async function DashboardPage() {
     recentImports,
     targetsStats,
     recentLimitChanges,
+    alertCounts,
   ] = await Promise.all([
     prisma.player.count({ where: { status: "ACTIVE" } }),
 
@@ -56,6 +63,15 @@ export default async function DashboardPage() {
           take: 5,
           include: { player: { select: { name: true, nickname: true } } },
         }),
+
+    session.role === "PLAYER"
+      ? { red: 0, yellow: 0 }
+      : prisma.alertLog
+          .groupBy({ by: ["severity"], _count: true, where: { acknowledged: false } })
+          .then((rows) => ({
+            red: rows.find((r) => r.severity === "red")?._count ?? 0,
+            yellow: rows.find((r) => r.severity === "yellow")?._count ?? 0,
+          })),
   ]);
 
   const totalPlayed = recentImports.reduce((s, i) => s + (i.matchedInGrade + i.outOfGrade), 0);
@@ -123,6 +139,25 @@ export default async function DashboardPage() {
                 ? `${inGrade} de ${totalPlayed} jogados foram na grade`
                 : "Nenhuma importação ainda"}
             </p>
+            {(alertCounts.red > 0 || alertCounts.yellow > 0) && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs border-t border-border/40 pt-2">
+                {alertCounts.red > 0 && (
+                  <span className="flex items-center gap-1 text-red-500 font-medium">
+                    <AlertTriangle className="h-3 w-3" />
+                    {alertCounts.red} alerta{alertCounts.red !== 1 ? "s" : ""} vermelho{alertCounts.red !== 1 ? "s" : ""}
+                  </span>
+                )}
+                {alertCounts.yellow > 0 && (
+                  <span className="flex items-center gap-1 text-amber-500 font-medium">
+                    <AlertTriangle className="h-3 w-3" />
+                    {alertCounts.yellow} amarelo{alertCounts.yellow !== 1 ? "s" : ""}
+                  </span>
+                )}
+                <Link href="/dashboard/sharkscope/alerts" className="text-primary hover:underline ml-auto">
+                  Ver alertas →
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
 

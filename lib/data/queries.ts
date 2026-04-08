@@ -15,6 +15,7 @@ export async function getPlayersForSession(session: AppSession) {
         where: { isActive: true as const, gradeType: "MAIN" as const },
         include: { gradeProfile: true },
       },
+      nicks: true,
     },
     orderBy: { name: "asc" as const },
   };
@@ -328,4 +329,20 @@ export async function assertReviewAccessible(
   }
 
   throw new Error("FORBIDDEN");
+}
+
+export async function getAlertLogsForSharkscopeDashboard(session: AppSession) {
+  const where =
+    session.role === "COACH" && session.coachId
+      ? { player: coachPlayerFilter(session.coachId) }
+      : {};
+
+  return prisma.alertLog.findMany({
+    where,
+    orderBy: { triggeredAt: "desc" },
+    take: 300,
+    include: {
+      player: { select: { id: true, name: true, nickname: true } },
+    },
+  });
 }

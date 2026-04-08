@@ -41,12 +41,9 @@ import {
 } from "@/app/dashboard/grades/actions";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import type { LobbyzeFilterItem } from "@/lib/types";
-import type { GradeRuleCardRule } from "@/lib/types/grade-rule-card";
+import type { GradeRuleCardRule, LobbyzeFilterItem } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
-
-export type { GradeRuleCardRule } from "@/lib/types/grade-rule-card";
 
 const SPEED_PRESETS: LobbyzeFilterItem[] = [
   { item_id: 1001, item_text: "Regular" },
