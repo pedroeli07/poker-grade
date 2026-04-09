@@ -23,7 +23,6 @@ import { NextResponse } from "next/server";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import crypto from "node:crypto";
-import DOMPurify from "isomorphic-dompurify";
 import type { AppSession } from "@/lib/auth/session";
 import { StrengthLevel } from "@/lib/auth/password-policy";
 import { parseJson } from "./parse";
@@ -44,9 +43,6 @@ export function sanitizeOptional(input: string | null | undefined, maxLen: numbe
   const s = sanitizeText(input, maxLen);
   return s === "" ? null : s;
 }
-
-export const sanitizeUserHtml = (dirty: string) =>
-  DOMPurify.sanitize(dirty, { USE_PROFILES: { html: true } });
 
 // ─── Auth / Permissions ───────────────────────────────────────────────────────
 
