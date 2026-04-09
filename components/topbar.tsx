@@ -5,21 +5,16 @@ import { usePathname } from "next/navigation";
 import { Bell, User } from "lucide-react";
 import Link from "next/link";
 import { useNotificationStore } from "@/lib/stores/use-notification-store";
-import { getUnreadCount } from "@/app/dashboard/notifications/actions";
+import { getUnreadCount } from "@/lib/queries/db/notification-queries";
 import { cn } from "@/lib/utils";
 
 function CurrentTimeDisplay() {
-  const [time, setTime] = useState<Date | null>(null);
+  const [time, setTime] = useState(() => new Date());
 
   useEffect(() => {
-    setTime(new Date());
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
-
-  if (!time) {
-    return <div className="h-10 w-48 animate-pulse bg-muted rounded-md" />;
-  }
 
   const timeStr = new Intl.DateTimeFormat("pt-BR", {
     hour: "2-digit",

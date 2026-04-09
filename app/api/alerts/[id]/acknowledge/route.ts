@@ -4,6 +4,8 @@ import { isSharkscopeStaffRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation } from "@/lib/rate-limit";
+import { ErrorTypes } from "@/lib/types";
+import { UserRole } from "@prisma/client";
 
 export async function POST(
   req: Request,
@@ -11,7 +13,7 @@ export async function POST(
 ) {
   const session = await getSession();
   if (!session || !isSharkscopeStaffRole(session.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
   const limited = await enforceUserRate(
@@ -30,10 +32,10 @@ export async function POST(
   });
 
   if (!alert) {
-    return NextResponse.json({ error: "Alerta não encontrado." }, { status: 404 });
+    return NextResponse.json({ error: ErrorTypes.NOT_FOUND }, { status: 404 });
   }
 
-  if (session.role === "COACH" && session.coachId) {
+  if (session.role === UserRole.COACH && session.coachId) {
     const player = await prisma.player.findFirst({
       where: {
         id: alert.playerId,
@@ -42,7 +44,7 @@ export async function POST(
       select: { id: true },
     });
     if (!player) {
-      return NextResponse.json({ error: "Sem permissão." }, { status: 403 });
+      return NextResponse.json({ error: ErrorTypes.FORBIDDEN }, { status: 403 });
     }
   }
 

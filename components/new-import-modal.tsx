@@ -23,15 +23,15 @@ import {
   AlertCircle,
   UploadCloud,
 } from "lucide-react";
-import { uploadTournaments } from "@/app/dashboard/imports/actions";
+import { uploadTournaments } from "@/lib/queries/db/import-queries";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { cn, isNextRedirectError } from "@/lib/utils";
 import { useInvalidate } from "@/hooks/use-invalidate";
+import { UploadResult } from "@/lib/types";
 
 const log = createLogger("imports.modal");
 
-type UploadResult = { processed: number; summary: string[] };
 
 export function NewImportModal() {
   const [open, setOpen] = useState(false);

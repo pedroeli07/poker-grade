@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { clientIp } from "@/lib/api/origin";
 import { logRateLimited } from "@/lib/security-log";
-import { UserLimiter } from "../types";
+import { UserLimiter } from "@/lib/types";
 
 export async function enforceUserRate(
   req: Request,

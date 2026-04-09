@@ -8,25 +8,19 @@
  */
 
 import * as XLSX from "xlsx";
-import type { ExcelTournamentRow } from "./types";
+import type { ExcelTournamentRow, ExcelParseResult } from "@/lib/types";
 import { createLogger } from "./logger";
 
 const log = createLogger("excel-parser");
 
-interface ParseResult {
-  playerName: string;
-  tournaments: ExcelTournamentRow[];
-  errors: string[];
-  totalRows: number;
-}
 
 /**
  * Parse an Excel buffer into tournament data
  */
-export function parseExcelBuffer(buffer: ArrayBuffer): ParseResult[] {
+export function parseExcelBuffer(buffer: ArrayBuffer): ExcelParseResult[] {
   log.info("Iniciando parse do Excel", { byteLength: buffer.byteLength });
   const workbook = XLSX.read(buffer, { type: "array", cellDates: true });
-  const results: ParseResult[] = [];
+  const results: ExcelParseResult[] = [];
 
   log.debug("Abas encontradas", { sheets: workbook.SheetNames });
 

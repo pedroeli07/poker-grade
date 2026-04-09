@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sharkScopeGet } from "@/lib/sharkscope";
+import { sharkScopeGet } from "@/lib/utils";
 import { getOrFetchSharkScope } from "@/lib/sharkscope-cache";
 import { extractStat, extractRemainingSearches, roiSeverity, reentrySeverity, earlyFinishSeverity, lateFinishSeverity } from "@/lib/sharkscope-parse";
 import { createLogger } from "@/lib/logger";
+import { sharkScopeAppName, sharkScopeAppKey } from "@/lib/constants";
 
 const log = createLogger("cron.daily-sync");
 
@@ -17,8 +18,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const appName = process.env.SHARKSCOPE_APP_NAME;
-  if (!appName || !process.env.SHARKSCOPE_APP_KEY) {
+  const appName = sharkScopeAppName;
+  if (!appName || !sharkScopeAppKey) {
     return NextResponse.json(
       { error: "SharkScope credentials not configured." },
       { status: 503 }

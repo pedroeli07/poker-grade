@@ -1,45 +1,19 @@
 "use client";
 
-import { useMemo, useState, useTransition, useCallback } from "react";
-import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  FileSpreadsheet,
-  AlertTriangle,
-  ShieldCheck,
-  ChevronRight,
-  Trash2,
-  Check,
-} from "lucide-react";
-import { deleteImports, getImportsListRowsAction } from "./actions";
-import { toast } from "@/lib/toast";
-import { importKeys } from "@/lib/queries/import-query-keys";
-import { useInvalidate } from "@/hooks/use-invalidate";
-import type { ImportListRow, ImportsColumnKey } from "@/lib/types";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { FileSpreadsheet, Trash2, Check } from "lucide-react";
 import { ColumnFilter } from "@/components/column-filter";
-import { cn, distinctOptions, importRowDateLabel } from "@/lib/utils";
-import { EMPTY_PLAYER, STALE_TIME } from "@/lib/constants";
-import { useImportsStore } from "@/lib/stores/use-imports-store";
+import { cn } from "@/lib/utils";
+import type { ImportListRow } from "@/lib/types";
+import { ImportsTableRow } from "@/components/imports/imports-table-row";
+import { ImportsDeleteDialog } from "@/components/imports/imports-delete-dialog";
+import {
+  IMPORTS_COLUMN_IDS,
+  IMPORTS_COLUMN_LABELS,
+  IMPORTS_TABLE_COLUMN_ORDER,
+} from "@/lib/constants";
+import { useImportsListPage } from "@/hooks/imports/use-imports-list-page";
 
 export function ImportsClient({
   imports: initialImports,
@@ -48,144 +22,23 @@ export function ImportsClient({
   imports: ImportListRow[];
   canDelete: boolean;
 }) {
-  const invalidateImports = useInvalidate("imports");
-  const { data: imports = initialImports } = useQuery({
-    queryKey: importKeys.list(),
-    queryFn: async () => {
-      const r = await getImportsListRowsAction();
-      if (!r.ok) throw new Error(r.error);
-      return r.rows;
-    },
-    initialData: initialImports,
-    staleTime: STALE_TIME,
-  });
-
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
-    useImportsStore();
-  const [isPending, startTransition] = useTransition();
-  const [idsToDelete, setIdsToDelete] = useState<string[] | null>(null);
-
-  const options = useMemo(
-    () => ({
-      fileName: distinctOptions(imports, (r) => ({
-        value: r.fileName,
-        label: r.fileName,
-      })),
-      player: distinctOptions(imports, (r) => {
-        const v = r.playerName ?? EMPTY_PLAYER;
-        return {
-          value: v,
-          label: r.playerName ?? "(não identificado)",
-        };
-      }),
-      totalRows: distinctOptions(imports, (r) => ({
-        value: String(r.totalRows),
-        label: String(r.totalRows),
-      })),
-      played: distinctOptions(imports, (r) => ({
-        value: String(r.matchedInGrade),
-        label: String(r.matchedInGrade),
-      })),
-      extraPlay: distinctOptions(imports, (r) => ({
-        value: String(r.outOfGrade),
-        label: String(r.outOfGrade),
-      })),
-      didntPlay: distinctOptions(imports, (r) => ({
-        value: String(r.suspect),
-        label: String(r.suspect),
-      })),
-      date: distinctOptions(imports, (r) => {
-        const label = importRowDateLabel(r);
-        return { value: label, label };
-      }),
-    }),
-    [imports]
-  );
-
-  const filtered = useMemo(() => {
-    return imports.filter((r) => {
-      if (filters.fileName && !filters.fileName.has(r.fileName))
-        return false;
-      const pk = r.playerName ?? EMPTY_PLAYER;
-      if (filters.player && !filters.player.has(pk)) return false;
-      if (filters.totalRows && !filters.totalRows.has(String(r.totalRows)))
-        return false;
-      if (filters.played && !filters.played.has(String(r.matchedInGrade)))
-        return false;
-      if (filters.extraPlay && !filters.extraPlay.has(String(r.outOfGrade)))
-        return false;
-      if (filters.didntPlay && !filters.didntPlay.has(String(r.suspect)))
-        return false;
-      const dl = importRowDateLabel(r);
-      if (filters.date && !filters.date.has(dl)) return false;
-      return true;
-    });
-  }, [imports, filters]);
-
-  const allSelected =
-    filtered.length > 0 && filtered.every((i) => selected.has(i.id));
-
-  function toggleAll() {
-    if (allSelected) {
-      setSelected((prev) => {
-        const next = new Set(prev);
-        filtered.forEach((i) => next.delete(i.id));
-        return next;
-      });
-    } else {
-      setSelected((prev) => {
-        const next = new Set(prev);
-        filtered.forEach((i) => next.add(i.id));
-        return next;
-      });
-    }
-  }
-
-  function toggleRow(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }
-
-  const setCol = useCallback(
-    (col: ImportsColumnKey) => (next: Set<string> | null) => {
-      setColumnFilter(col, next);
-    },
-    [setColumnFilter]
-  );
-
-  function requestDelete(ids: string[]) {
-    if (!ids.length) return;
-    setIdsToDelete(ids);
-  }
-
-  function confirmDelete() {
-    if (!idsToDelete) return;
-    const ids = idsToDelete;
-    const count = ids.length;
-
-    startTransition(async () => {
-      const res = await deleteImports(ids);
-      if (res.success) {
-        toast.success(
-          count === 1 ? "Importação excluída" : `${count} importações excluídas`
-        );
-        setSelected(new Set());
-        setIdsToDelete(null);
-        invalidateImports();
-      } else {
-        toast.error("Erro ao excluir", res.error ?? "Tente novamente.");
-        setIdsToDelete(null);
-      }
-    });
-  }
+  const {
+    imports,
+    filtered,
+    options,
+    filters,
+    anyFilter,
+    clearFilters,
+    setCol,
+    allSelected,
+    selected,
+    setSelected,
+    idsToDelete,
+    setIdsToDelete,
+    isPending,
+    toggle,
+    confirmDelete,
+  } = useImportsListPage(initialImports);
 
   const colCount = canDelete ? 9 : 7;
 
@@ -193,7 +46,7 @@ export function ImportsClient({
     <div className="space-y-3">
       {selected.size > 0 && (
         <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/15">
-          <span className="text-sm font-semibold text-foreground">
+          <span className="text-sm font-semibold">
             {selected.size} selecionada{selected.size > 1 ? "s" : ""}
           </span>
           <div className="flex items-center gap-2">
@@ -206,7 +59,7 @@ export function ImportsClient({
             </button>
             <button
               type="button"
-              onClick={() => requestDelete(Array.from(selected))}
+              onClick={() => setIdsToDelete(Array.from(selected))}
               disabled={isPending}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/30 text-destructive border border-destructive/20 text-sm font-semibold hover:bg-destructive/20 transition-colors cursor-pointer disabled:opacity-50"
             >
@@ -221,10 +74,9 @@ export function ImportsClient({
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
           <span>
             Mostrando{" "}
-            <span className="font-medium text-foreground">{filtered.length}</span>{" "}
-            de{" "}
-            <span className="font-medium text-foreground">{imports.length}</span>{" "}
-            importaç{imports.length === 1 ? "ão" : "ões"}
+            <span className="font-medium text-foreground">{filtered.length}</span> de{" "}
+            <span className="font-medium text-foreground">{imports.length}</span> importaç
+            {imports.length === 1 ? "ão" : "ões"}
           </span>
           {anyFilter && (
             <Button
@@ -248,7 +100,7 @@ export function ImportsClient({
                 <TableHead className="w-12 pl-4">
                   <button
                     type="button"
-                    onClick={toggleAll}
+                    onClick={() => toggle(filtered.map((i) => i.id), !allSelected)}
                     disabled={filtered.length === 0}
                     className={cn(
                       "flex h-5 w-5 items-center justify-center rounded border transition-colors cursor-pointer",
@@ -262,69 +114,23 @@ export function ImportsClient({
                   </button>
                 </TableHead>
               )}
-              <TableHead className="text-blue-900 font-semibold">
-                <ColumnFilter
-                  columnId="imp-file"
-                  label="Arquivo"
-                  options={options.fileName}
-                  applied={filters.fileName}
-                  onApply={setCol("fileName")}
-                />
-              </TableHead>
-              <TableHead className="text-blue-900 font-semibold">
-                <ColumnFilter
-                  columnId="imp-player"
-                  label="Jogador"
-                  options={options.player}
-                  applied={filters.player}
-                  onApply={setCol("player")}
-                />
-              </TableHead>
-              <TableHead className="text-center text-blue-900 font-semibold">
-                <ColumnFilter
-                  columnId="imp-total"
-                  label="Total"
-                  options={options.totalRows}
-                  applied={filters.totalRows}
-                  onApply={setCol("totalRows")}
-                />
-              </TableHead>
-              <TableHead className="text-center text-blue-900 font-semibold">
-                <ColumnFilter
-                  columnId="imp-played"
-                  label="Jogados"
-                  options={options.played}
-                  applied={filters.played}
-                  onApply={setCol("played")}
-                />
-              </TableHead>
-              <TableHead className="text-center text-blue-900 font-semibold">
-                <ColumnFilter
-                  columnId="imp-extra"
-                  label="Extra Play"
-                  options={options.extraPlay}
-                  applied={filters.extraPlay}
-                  onApply={setCol("extraPlay")}
-                />
-              </TableHead>
-              <TableHead className="text-center text-blue-900 font-semibold">
-                <ColumnFilter
-                  columnId="imp-didnt"
-                  label="Não Jogados"
-                  options={options.didntPlay}
-                  applied={filters.didntPlay}
-                  onApply={setCol("didntPlay")}
-                />
-              </TableHead>
-              <TableHead className="text-right text-blue-900 font-semibold">
-                <ColumnFilter
-                  columnId="imp-date"
-                  label="Data"
-                  options={options.date}
-                  applied={filters.date}
-                  onApply={setCol("date")}
-                />
-              </TableHead>
+              {IMPORTS_TABLE_COLUMN_ORDER.map((col, i) => (
+                <TableHead
+                  key={col}
+                  className={cn(
+                    "text-blue-900 font-semibold",
+                    i >= 2 && i <= 5 ? "text-center" : i === 6 ? "text-right" : ""
+                  )}
+                >
+                  <ColumnFilter
+                    columnId={IMPORTS_COLUMN_IDS[col]}
+                    label={IMPORTS_COLUMN_LABELS[col]}
+                    options={options[col]}
+                    applied={filters[col]}
+                    onApply={setCol(col)}
+                  />
+                </TableHead>
+              ))}
               {canDelete && <TableHead className="w-12" />}
             </TableRow>
           </TableHeader>
@@ -349,125 +155,17 @@ export function ImportsClient({
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((item) => {
-                const isSelected = selected.has(item.id);
-                return (
-                  <TableRow
-                    key={item.id}
-                    className={cn(
-                      "group transition-colors bg-white",
-                      isSelected ? "bg-blue-100/50" : "hover:bg-blue-50"
-                    )}
-                  >
-                    {canDelete && (
-                      <TableCell
-                        className="pl-4 w-12"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleRow(item.id);
-                        }}
-                      >
-                        <button
-                          type="button"
-                          className={cn(
-                            "flex h-5 w-5 items-center justify-center rounded border transition-colors cursor-pointer",
-                            isSelected
-                              ? "bg-primary border-primary"
-                              : "border-border hover:border-primary/60"
-                          )}
-                        >
-                          {isSelected && (
-                            <Check className="h-3 w-3 text-white" />
-                          )}
-                        </button>
-                      </TableCell>
-                    )}
-
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/dashboard/imports/${item.id}`}
-                        className="flex items-center gap-2 hover:text-primary transition-colors"
-                      >
-                        <FileSpreadsheet className="h-4 w-4 text-emerald-500 shrink-0" />
-                        <span
-                          className="truncate max-w-[280px]"
-                          title={item.fileName}
-                        >
-                          {item.fileName}
-                        </span>
-                        <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-60 transition-opacity shrink-0" />
-                      </Link>
-                    </TableCell>
-
-                    <TableCell>
-                      {item.playerName || (
-                        <span className="text-muted-foreground italic text-sm">
-                          Não Identificado
-                        </span>
-                      )}
-                    </TableCell>
-
-                    <TableCell className="text-center font-bold tabular-nums">
-                      {item.totalRows}
-                    </TableCell>
-
-                    <TableCell className="text-center">
-                      <Badge
-                        variant="outline"
-                        className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
-                      >
-                        <ShieldCheck className="h-3 w-3 mr-1" />
-                        {item.matchedInGrade}
-                      </Badge>
-                    </TableCell>
-
-                    <TableCell className="text-center">
-                      {item.outOfGrade > 0 ? (
-                        <Badge
-                          variant="outline"
-                          className="border-red-500/30 text-red-600 bg-red-500/10"
-                        >
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          {item.outOfGrade}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">0</span>
-                      )}
-                    </TableCell>
-
-                    <TableCell className="text-center">
-                      {item.suspect > 0 ? (
-                        <Badge
-                          variant="outline"
-                          className="border-zinc-400/50 text-zinc-500 bg-zinc-100"
-                        >
-                          {item.suspect}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">0</span>
-                      )}
-                    </TableCell>
-
-                    <TableCell className="text-right text-sm text-muted-foreground whitespace-nowrap">
-                      {importRowDateLabel(item)}
-                    </TableCell>
-
-                    {canDelete && (
-                      <TableCell className="w-12 pr-3">
-                        <button
-                          type="button"
-                          title="Excluir"
-                          onClick={() => requestDelete([item.id])}
-                          disabled={isPending}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-40 group-hover:opacity-100 cursor-pointer disabled:opacity-30"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                );
-              })
+              filtered.map((item) => (
+                <ImportsTableRow
+                  key={item.id}
+                  item={item}
+                  canDelete={canDelete}
+                  isSelected={selected.has(item.id)}
+                  isPending={isPending}
+                  onToggle={() => toggle([item.id])}
+                  onDeleteRequest={() => setIdsToDelete([item.id])}
+                />
+              ))
             )}
           </TableBody>
         </Table>
@@ -482,39 +180,13 @@ export function ImportsClient({
         </p>
       )}
 
-      <AlertDialog
-        open={!!idsToDelete}
+      <ImportsDeleteDialog
+        isOpen={!!idsToDelete}
+        idsToDelete={idsToDelete}
+        isPending={isPending}
         onOpenChange={(open) => !open && setIdsToDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Excluir {idsToDelete?.length === 1 ? "importação" : "importações"}?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Isso removerá{" "}
-              {idsToDelete?.length === 1
-                ? "esta importação"
-                : "as importações selecionadas"}
-              , todos os torneios contidos nelas e as revisões associadas. Esta
-              ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                confirmDelete();
-              }}
-              disabled={isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isPending ? "Excluindo..." : "Excluir"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

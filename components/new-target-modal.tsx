@@ -23,31 +23,12 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Plus, Target, Loader2, ChevronRight } from "lucide-react";
-import { createTarget } from "@/app/dashboard/targets/actions";
+import { createTarget } from "@/lib/queries/db/target-queries";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import { isNextRedirectError } from "@/lib/utils";
-
-type Player = { id: string; name: string; nickname: string | null };
-
-interface NewTargetModalProps {
-  players: Player[];
-}
-
-const CATEGORIES = [
-  { value: "performance", label: "Performance (ROI, ABI, ITM)" },
-  { value: "volume", label: "Volume (sessões, torneios)" },
-  { value: "discipline", label: "Disciplina (grade, estudo)" },
-  { value: "financial", label: "Financeiro (lucro, bankroll)" },
-  { value: "qualitative", label: "Qualitativo (comportamento)" },
-];
-
-const LIMIT_ACTIONS = [
-  { value: "none", label: "Sem ação associada" },
-  { value: "UPGRADE", label: "Subida de limite" },
-  { value: "MAINTAIN", label: "Manutenção" },
-  { value: "DOWNGRADE", label: "Descida de limite" },
-];
+import type { NewTargetModalProps } from "@/lib/types";
+import { CATEGORIES, LIMIT_ACTIONS } from "@/lib/constants";
 
 export function NewTargetModal({ players }: NewTargetModalProps) {
   const [open, setOpen] = useState(false);

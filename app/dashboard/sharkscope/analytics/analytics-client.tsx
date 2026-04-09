@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -17,45 +16,31 @@ import {
 } from "@/components/ui/table";
 import { BarChart3, Trophy, Zap } from "lucide-react";
 import Link from "next/link";
-import type { NetworkStat, RankingEntry, SharkscopeAnalyticsPeriod, SharkscopeAnalyticsTab, TierStat, TypeStat } from "@/lib/types";
-import {
-  SHARKSCOPE_ANALYTICS_PERIODS,
-  SHARKSCOPE_ANALYTICS_TAB_LABELS,
-} from "@/lib/sharkscope/ui-constants";
-import { pickSharkscopeStatsByPeriod } from "@/lib/sharkscope/ui-helpers";
 import {
   AnalyticsProfitCell,
   AnalyticsRoiBadge,
 } from "@/components/sharkscope/analytics-cells";
-import { cardClassName, TAB_ICONS, TAB_IDS } from "@/lib/constants";
+import {
+  cardClassName,
+  SHARKSCOPE_ANALYTICS_PERIODS,
+  SHARKSCOPE_ANALYTICS_TAB_LABELS,
+  TAB_ICONS,
+  TAB_IDS,
+} from "@/lib/constants";
+import type { AnalyticsClientProps } from "@/lib/types";
+import { useAnalyticsDashboard } from "@/hooks/sharkscope/analytics/use-analytics-dashboard";
 
-
-export function AnalyticsClient({
-  stats30d,
-  stats90d,
-  ranking,
-  tierStats30d,
-  typeStats30d,
-  hasData30d,
-  hasData90d,
-}: {
-  stats30d: NetworkStat[];
-  stats90d: NetworkStat[];
-  ranking: RankingEntry[];
-  tierStats30d: TierStat[];
-  typeStats30d: TypeStat[];
-  hasData30d: boolean;
-  hasData90d: boolean;
-}) {
-  const [period, setPeriod] = useState<SharkscopeAnalyticsPeriod>("30d");
-  const [activeTab, setActiveTab] = useState<SharkscopeAnalyticsTab>("site");
-
-  const stats = useMemo(
-    () => pickSharkscopeStatsByPeriod(period, stats30d, stats90d),
-    [period, stats30d, stats90d]
-  );
-
-  const hasData = period === "30d" ? hasData30d : hasData90d;
+export function AnalyticsClient(props: AnalyticsClientProps) {
+  const {
+    period,
+    setPeriod,
+    activeTab,
+    setActiveTab,
+    stats,
+    hasData,
+    ranking,
+    tierStats30d,
+  } = useAnalyticsDashboard(props);
 
   return (
     <div className="space-y-6">
@@ -75,11 +60,10 @@ export function AnalyticsClient({
               key={p}
               type="button"
               onClick={() => setPeriod(p)}
-              className={`cursor-pointer px-3 py-1.5 text-sm rounded-md font-medium transition-all ${
-                period === p
+              className={`cursor-pointer px-3 py-1.5 text-sm rounded-md font-medium transition-all ${period === p
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               {p}
             </button>
@@ -95,11 +79,10 @@ export function AnalyticsClient({
               key={id}
               type="button"
               onClick={() => setActiveTab(id)}
-              className={`cursor-pointer flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === id
+              className={`cursor-pointer flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === id
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               <Icon className="h-4 w-4" />
               {SHARKSCOPE_ANALYTICS_TAB_LABELS[id]}
@@ -254,7 +237,7 @@ export function AnalyticsClient({
               Separação Bounty x Regular Requer Sincronização Expandida
             </h3>
             <p className="text-xs max-w-md mx-auto">
-              A API do SharkScope não detalha proporção PKO/Vanilla via resumos globais (Profile Stats) sem custar "Searches" extras para cada tipo.
+              {`A API do SharkScope não detalha proporção PKO/Vanilla via resumos globais (Profile Stats) sem custar "Searches" extras para cada tipo. `}
               Atualmente, para economizar cota, esta aba serve como visualização dos dados importados do Lobbyze ou via Scout manual.
             </p>
           </div>

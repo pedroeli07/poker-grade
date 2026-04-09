@@ -8,9 +8,9 @@ import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { POKER_NETWORKS } from "@/lib/constants";
-import type { PokerNetworkKey, ScoutingAnalysisRow, SharkscopeScoutingSavedCardProps } from "@/lib/types";
-import { parseScoutingSavedRaw } from "@/lib/sharkscope/scouting-helpers";
+import type { PokerNetworkKey, SharkscopeScoutingSavedCardProps } from "@/lib/types";
 import { ScoutingRoiDisplay, ScoutingStatCard } from "./scouting-cells";
+import { parseScoutingSavedRaw } from "@/lib/utils";
 
 
 

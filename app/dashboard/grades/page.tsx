@@ -1,27 +1,23 @@
 import { Archive } from "lucide-react";
-import { canManageGrades } from "@/lib/utils";
 import { requireSession } from "@/lib/auth/session";
-import { getGradesListRowsForSession } from "@/lib/data/grades-list";
 import { NewGradeModal, ImportGradeModal } from "@/components/grade-modals";
 import { cardClassName } from "@/lib/constants";
 import { Metadata } from "next";
 import dynamicImport from "next/dynamic";
+import { loadGradesListPageProps } from "../../../hooks/grades/grades-page-load";
 
-const GradesPageClient = dynamicImport(
-  () => import("./grades-page-client"),
-  {
-    loading: () => (
-      <div className="animate-pulse space-y-4">
-        <div className="h-12 w-full rounded-md bg-muted" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-48 rounded-xl bg-muted" />
-          ))}
-        </div>
+const GradesPageClient = dynamicImport(() => import("./grades-page-client"), {
+  loading: () => (
+    <div className="animate-pulse space-y-4">
+      <div className="h-12 w-full rounded-md bg-muted" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-48 rounded-xl bg-muted" />
+        ))}
       </div>
-    ),
-  })
-
+    </div>
+  ),
+});
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -31,8 +27,7 @@ export const metadata: Metadata = {
 
 export default async function GradesPage() {
   const session = await requireSession();
-  const manage = canManageGrades(session);
-  const rows = await getGradesListRowsForSession(session);
+  const { rows, manage } = await loadGradesListPageProps(session);
 
   return (
     <div className="space-y-6">

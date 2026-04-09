@@ -1,13 +1,6 @@
 import { create } from "zustand";
+import { NotificationStore } from "@/lib/types";
 
-interface NotificationStore {
-  open: boolean;
-  unreadCount: number;
-  setOpen: (v: boolean) => void;
-  toggle: () => void;
-  setUnreadCount: (n: number) => void;
-  decrementUnread: (by?: number) => void;
-}
 
 export const useNotificationStore = create<NotificationStore>((set) => ({
   open: false,

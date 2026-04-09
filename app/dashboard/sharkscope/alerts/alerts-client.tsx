@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,14 +20,10 @@ import {
 import { AlertTriangle, CheckCircle2, Loader2, Bell } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { toast } from "@/lib/toast";
 import Link from "next/link";
-import { ALERT_TYPE_LABEL, SEVERITY_UI } from "@/lib/sharkscope/alert-copy";
+import { ALERT_TYPE_LABEL, SEVERITY_UI } from "@/lib/constants";
 import type { SharkscopeAlertRow } from "@/lib/types";
-import {
-  countUnacknowledgedAlerts,
-  filterSharkscopeAlerts,
-} from "@/lib/sharkscope/alerts-helpers";
+import { useAlertsDashboard } from "@/hooks/sharkscope/alerts/use-alerts-dashboard";
 
 export function AlertsClient({
   initialAlerts,
@@ -37,79 +32,19 @@ export function AlertsClient({
   initialAlerts: SharkscopeAlertRow[];
   canAcknowledge: boolean;
 }) {
-  const [alerts, setAlerts] = useState<SharkscopeAlertRow[]>(initialAlerts);
-  const [filterSeverity, setFilterSeverity] = useState("all");
-  const [filterType, setFilterType] = useState("all");
-  const [filterAck, setFilterAck] = useState("unacknowledged");
-  const [isPending, startTransition] = useTransition();
-
-  const filtered = useMemo(
-    () =>
-      filterSharkscopeAlerts(alerts, {
-        severity: filterSeverity,
-        alertType: filterType,
-        ack: filterAck,
-      }),
-    [alerts, filterSeverity, filterType, filterAck]
-  );
-
-  const unackedCount = useMemo(
-    () => countUnacknowledgedAlerts(filtered),
-    [filtered]
-  );
-
-  const acknowledge = useCallback(
-    (id: string) => {
-      startTransition(async () => {
-        const res = await fetch(`/api/alerts/${id}/acknowledge`, {
-          method: "POST",
-        });
-        if (!res.ok) {
-          toast.error("Erro", "Não foi possível reconhecer o alerta.");
-          return;
-        }
-        setAlerts((prev) =>
-          prev.map((a) =>
-            a.id === id
-              ? {
-                  ...a,
-                  acknowledged: true,
-                  acknowledgedAt: new Date().toISOString(),
-                }
-              : a
-          )
-        );
-      });
-    },
-    [startTransition]
-  );
-
-  const acknowledgeAll = useCallback(() => {
-    const unacked = filtered.filter((a) => !a.acknowledged);
-    startTransition(async () => {
-      await Promise.all(
-        unacked.map((a) =>
-          fetch(`/api/alerts/${a.id}/acknowledge`, { method: "POST" })
-        )
-      );
-      const ids = new Set(unacked.map((a) => a.id));
-      setAlerts((prev) =>
-        prev.map((a) =>
-          ids.has(a.id)
-            ? {
-                ...a,
-                acknowledged: true,
-                acknowledgedAt: new Date().toISOString(),
-              }
-            : a
-        )
-      );
-      toast.success(
-        "Alertas reconhecidos",
-        `${unacked.length} alertas foram reconhecidos.`
-      );
-    });
-  }, [filtered, startTransition]);
+  const {
+    filterSeverity,
+    setFilterSeverity,
+    filterType,
+    setFilterType,
+    filterAck,
+    setFilterAck,
+    filtered,
+    unackedCount,
+    isPending,
+    acknowledge,
+    acknowledgeAll,
+  } = useAlertsDashboard(initialAlerts);
 
   return (
     <div className="space-y-6">

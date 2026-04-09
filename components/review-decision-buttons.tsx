@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { processReview } from "@/app/dashboard/review/actions";
+import { processReview } from "@/lib/queries/db/review-queries";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { useInvalidate } from "@/hooks/use-invalidate";

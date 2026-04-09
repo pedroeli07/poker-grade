@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { AppSession } from "@/lib/auth/session";
 import { getCoachesWithActiveLogin } from "@/lib/data/coaches";
-import { getGradesForSession, getPlayersForSession } from "@/lib/data/queries";
+import { getGradesForSession, getPlayersForSession } from "@/lib/queries/db";
 import { buildAbiByPlayer, toTableRows } from "@/lib/utils";
 import { extractStat } from "@/lib/sharkscope-parse";
 import type { PlayersTablePayload } from "@/lib/types";

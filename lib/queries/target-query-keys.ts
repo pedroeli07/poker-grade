@@ -1,4 +1,7 @@
-export const targetKeys = {
-  all: ["targets"] as const,
-  list: () => [...targetKeys.all, "list"] as const,
-};
+import { BaseQueryKeys } from "./query-keys";
+
+class TargetKeys extends BaseQueryKeys {
+  constructor() { super("targets"); }
+  list() { return this.key("list"); }
+}
+export const targetKeys = new TargetKeys();

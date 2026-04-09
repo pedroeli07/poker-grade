@@ -1,14 +1,7 @@
-import { create } from "zustand";
-import type { PlayersTableColumnFilters, PlayersTableColumnKey } from "@/lib/types";
+import type { PlayersTableColumnFilters } from "@/lib/types";
+import { createFilterStore } from "./create-filter-store";
 
-interface PlayersStore {
-  filters: PlayersTableColumnFilters;
-  setColumnFilter: (key: PlayersTableColumnKey, next: Set<string> | null) => void;
-  clearFilters: () => void;
-  hasAnyFilter: boolean;
-}
-
-const defaultFilters: PlayersTableColumnFilters = {
+export const usePlayersStore = createFilterStore<PlayersTableColumnFilters>({
   name: null,
   nickname: null,
   playerGroup: null,
@@ -16,16 +9,4 @@ const defaultFilters: PlayersTableColumnFilters = {
   grade: null,
   abi: null,
   status: null,
-};
-
-export const usePlayersStore = create<PlayersStore>((set) => ({
-  filters: defaultFilters,
-  hasAnyFilter: false,
-  setColumnFilter: (key, next) =>
-    set((state) => {
-      const newFilters = { ...state.filters, [key]: next };
-      const hasAny = Object.values(newFilters).some((v) => v !== null);
-      return { filters: newFilters, hasAnyFilter: hasAny };
-    }),
-  clearFilters: () => set({ filters: defaultFilters, hasAnyFilter: false }),
-}));
+});

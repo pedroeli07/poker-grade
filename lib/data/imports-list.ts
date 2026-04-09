@@ -1,6 +1,6 @@
 import type { ImportListRow } from "@/lib/types";
 import type { AppSession } from "@/lib/auth/session";
-import { getImportsForSession } from "./queries";
+import { getImportsForSession } from "@/lib/queries/db/import-queries";
 
 export async function getImportsListRowsForSession(
   session: AppSession

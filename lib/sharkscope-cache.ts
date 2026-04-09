@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 export async function getOrFetchSharkScope(
   playerNickId: string,
   dataType: string,
   filterKey: string,
   fetchFn: () => Promise<unknown>,
-  ttlHours: number = 24
+  ttlHours = 24
 ): Promise<unknown> {
   const cached = await prisma.sharkScopeCache.findUnique({
     where: {
@@ -26,12 +27,16 @@ export async function getOrFetchSharkScope(
     where: {
       playerNickId_dataType_filterKey: { playerNickId, dataType, filterKey },
     },
-    update: { rawData: data as never, fetchedAt: new Date(), expiresAt },
+    update: {
+      rawData: data as Prisma.InputJsonValue,
+      fetchedAt: new Date(),
+      expiresAt,
+    },
     create: {
       playerNickId,
       dataType,
       filterKey,
-      rawData: data as never,
+      rawData: data as Prisma.InputJsonValue,
       expiresAt,
     },
   });

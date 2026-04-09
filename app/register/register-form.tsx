@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Upload } from "lucide-react";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { PasswordStrength } from "@/components/password-strength";
 import {
@@ -11,11 +10,9 @@ import {
   passwordMeetsPolicy,
 } from "@/lib/auth/password-policy";
 import { toast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-
-const inputClass =
-  "h-11 w-full rounded-xl border border-border bg-card/50 px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20";
+import { AUTH_INPUT_CLASS } from "@/lib/constants";
+import { PasswordInput } from "@/components/auth/password-input";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -25,8 +22,6 @@ export function RegisterForm() {
   const [confirm, setConfirm] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [step, setStep] = useState<"CREDENTIALS" | "OTP">("CREDENTIALS");
   const [code, setCode] = useState("");
@@ -56,36 +51,12 @@ export function RegisterForm() {
 
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const policyOk = passwordMeetsPolicy(password);
-  const passwordsMatch =
-    confirm.length > 0 && password.length > 0 && password === confirm;
-  const canSubmit =
-    emailOk && policyOk && passwordsMatch && !loading;
+  const passwordsMatch = confimValMatch(password, confirm);
+  const canSubmit = emailOk && policyOk && passwordsMatch && !loading;
 
   const policyGaps = getPasswordPolicyGaps(password);
 
-  const submitBlockerHint = (() => {
-    if (loading) return "";
-    const parts: string[] = [];
-    if (!emailOk) parts.push("Informe um e-mail válido.");
-    if (emailOk && password.length === 0) {
-      parts.push("Defina uma senha.");
-    }
-    if (emailOk && password.length > 0 && !policyOk) {
-      parts.push("Complete todos os requisitos da senha (lista acima).");
-    }
-    if (
-      emailOk &&
-      policyOk &&
-      password.length > 0 &&
-      confirm.length === 0
-    ) {
-      parts.push("Repita a senha no campo «Confirmar».");
-    }
-    if (confirm.length > 0 && !passwordsMatch) {
-      parts.push("As duas senhas têm de ser iguais.");
-    }
-    return parts.join(" ");
-  })();
+  const submitBlockerHint = getSubmitHint(loading, emailOk, password, policyOk, confirm, passwordsMatch);
 
   useEffect(() => {
     if (inviteWarned.current) return;
@@ -145,14 +116,14 @@ export function RegisterForm() {
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
-        message?: string;
+        redirect?: string;
       };
       if (!res.ok) {
         toast.error(data.error || "Não foi possível criar a conta.");
         return;
       }
       toast.success("Conta criada. Bem-vindo!");
-      router.push((data as { redirect?: string }).redirect ?? "/dashboard");
+      router.push(data.redirect ?? "/dashboard");
       router.refresh();
     } catch {
       toast.error("Erro de rede. Tente novamente.");
@@ -163,19 +134,6 @@ export function RegisterForm() {
 
   return (
     <div className="space-y-6">
-{/*
-      <div
-        className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-dashed border-white/20 bg-white/[0.02] text-zinc-600"
-        aria-hidden
-      >
-        <Upload className="h-7 w-7" />
-      </div>
-
-      <p className="text-center font-mono text-[10px] text-zinc-600">
-        Foto de perfil em breve
-      </p>
-      */}
-
       {step === "CREDENTIALS" ? (
         <form onSubmit={onSendCode} noValidate className="space-y-5">
           <div className="space-y-2">
@@ -187,15 +145,13 @@ export function RegisterForm() {
             </label>
             <input
               id="reg-name"
-              name="displayName"
               type="text"
               autoComplete="name"
               maxLength={200}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              onInput={(e) => setDisplayName(e.currentTarget.value)}
               placeholder="Seu nome"
-              className={inputClass}
+              className={AUTH_INPUT_CLASS}
             />
           </div>
           <div className="space-y-2">
@@ -207,16 +163,14 @@ export function RegisterForm() {
             </label>
             <input
               id="reg-email"
-              name="email"
               type="email"
               autoComplete="email"
               required
               maxLength={320}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onInput={(e) => setEmail(e.currentTarget.value)}
               placeholder="seu@email.com"
-              className={inputClass}
+              className={AUTH_INPUT_CLASS}
             />
           </div>
           <div className="space-y-2">
@@ -226,44 +180,22 @@ export function RegisterForm() {
             >
               Senha
             </label>
-            <div className="relative isolate h-11">
-              <input
-                id="reg-password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                required
-                maxLength={128}
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onInput={(e) => setPassword(e.currentTarget.value)}
-                placeholder="••••••••••••"
-                className={cn(inputClass, "pr-11")}
-              />
-              <button
-                type="button"
-                tabIndex={-1}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setShowPassword((s) => !s)}
-                className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
-            </div>
+            <PasswordInput
+              id="reg-password"
+              required
+              maxLength={128}
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••••••"
+              className="text-black placeholder:text-muted-foreground"
+            />
             <PasswordStrength password={password} compact />
-            {password.length > 0 && policyGaps.length > 0 ? (
-              <p
-                className="font-mono text-[10px] leading-relaxed text-muted-foreground"
-                data-testid="password-policy-gaps"
-              >
+            {password.length > 0 && policyGaps.length > 0 && (
+              <p className="font-mono text-[10px] leading-relaxed text-muted-foreground" data-testid="password-policy-gaps">
                 Falta: {policyGaps.join(" · ")}
               </p>
-            ) : null}
+            )}
           </div>
           <div className="space-y-2">
             <label
@@ -272,54 +204,30 @@ export function RegisterForm() {
             >
               Confirmar senha
             </label>
-            <div className="relative isolate h-11">
-              <input
-                id="reg-confirm"
-                name="confirm"
-                type={showConfirm ? "text" : "password"}
-                required
-                maxLength={128}
-                autoComplete="new-password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                onInput={(e) => setConfirm(e.currentTarget.value)}
-                placeholder="••••••••••••"
-                className={cn(inputClass, "pr-11")}
-              />
-              <button
-                type="button"
-                tabIndex={-1}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setShowConfirm((s) => !s)}
-                className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                aria-label={showConfirm ? "Ocultar senha" : "Mostrar senha"}
-              >
-                {showConfirm ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-            {confirm.length > 0 && password !== confirm ? (
+            <PasswordInput
+              id="reg-confirm"
+              required
+              maxLength={128}
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="••••••••••••"
+              className="text-black placeholder:text-muted-foreground"
+            />
+            {confirm.length > 0 && password !== confirm && (
               <p className="text-xs text-destructive">As senhas não coincidem.</p>
-            ) : null}
+            )}
           </div>
-          {submitted && !canSubmit && submitBlockerHint ? (
-            <p
-              className="rounded-lg border border-border bg-red-500/90 px-3 py-2 font-mono text-[12px] shadow-lg shadow-red-500 leading-relaxed text-white animate-bounce"
-              data-testid="register-blockers-hint"
-            >
+          {submitted && !canSubmit && submitBlockerHint && (
+            <p className="rounded-lg border border-border bg-red-500/90 px-3 py-2 font-mono text-[12px] shadow-lg shadow-red-500 leading-relaxed text-white animate-bounce" data-testid="register-blockers-hint">
               {submitBlockerHint}
             </p>
-          ) : null}
+          )}
           <button
             type="submit"
             data-testid="register-submit"
             disabled={loading}
-            className={cn(
-              "cursor-pointer h-12 w-full rounded-xl bg-primary font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
-            )}
+            className="cursor-pointer h-12 w-full rounded-xl bg-primary font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {loading ? "Aguarde…" : "Avançar"}
           </button>
@@ -335,19 +243,11 @@ export function RegisterForm() {
           </div>
           
           <div className="flex justify-center py-4">
-            <InputOTP
-              maxLength={6}
-              value={code}
-              onChange={setCode}
-              pattern="^[0-9]+$"
-            >
+            <InputOTP maxLength={6} value={code} onChange={setCode} pattern="^[0-9]+$">
               <InputOTPGroup>
-                <InputOTPSlot index={0} className="w-12 h-14 text-xl bg-card border-border/80" />
-                <InputOTPSlot index={1} className="w-12 h-14 text-xl bg-card border-border/80" />
-                <InputOTPSlot index={2} className="w-12 h-14 text-xl bg-card border-border/80" />
-                <InputOTPSlot index={3} className="w-12 h-14 text-xl bg-card border-border/80" />
-                <InputOTPSlot index={4} className="w-12 h-14 text-xl bg-card border-border/80" />
-                <InputOTPSlot index={5} className="w-12 h-14 text-xl bg-card border-border/80" />
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <InputOTPSlot key={i} index={i} className="w-12 h-14 text-xl bg-card border-border/80" />
+                ))}
               </InputOTPGroup>
             </InputOTP>
           </div>
@@ -356,9 +256,7 @@ export function RegisterForm() {
             <button
               type="submit"
               disabled={loading || code.length !== 6}
-              className={cn(
-                "cursor-pointer h-12 w-full rounded-xl bg-primary font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
-              )}
+              className="cursor-pointer h-12 w-full rounded-xl bg-primary font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {loading ? "Registrando…" : "Concluir Cadastro"}
             </button>
@@ -366,7 +264,7 @@ export function RegisterForm() {
               type="button"
               disabled={loading}
               onClick={() => setStep("CREDENTIALS")}
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="text-sm text-muted-foreground hover:text-foreground cursor-pointer"
             >
               Voltar e corrigir dados
             </button>
@@ -376,9 +274,7 @@ export function RegisterForm() {
 
       <div className="flex items-center gap-3">
         <div className="h-px flex-1 bg-border" />
-        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-          ou
-        </span>
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">ou</span>
         <div className="h-px flex-1 bg-border" />
       </div>
 
@@ -386,13 +282,25 @@ export function RegisterForm() {
 
       <p className="text-center font-mono text-xs text-muted-foreground">
         Já tem uma conta?{" "}
-        <Link
-          href="/login"
-          className="cursor-pointer text-primary underline-offset-4 hover:text-primary/80 hover:underline font-semibold"
-        >
+        <Link href="/login" className="cursor-pointer text-primary underline-offset-4 hover:text-primary/80 hover:underline font-semibold">
           Entrar
         </Link>
       </p>
     </div>
   );
+}
+
+function confimValMatch(password: string, confirm: string) {
+  return confirm.length > 0 && password.length > 0 && password === confirm;
+}
+
+function getSubmitHint(loading: boolean, emailOk: boolean, password: string, policyOk: boolean, confirm: string, passwordsMatch: boolean) {
+  if (loading) return "";
+  const parts: string[] = [];
+  if (!emailOk) parts.push("Informe um e-mail válido.");
+  if (emailOk && password.length === 0) parts.push("Defina uma senha.");
+  if (emailOk && password.length > 0 && !policyOk) parts.push("Complete todos os requisitos da senha (lista acima).");
+  if (emailOk && policyOk && password.length > 0 && confirm.length === 0) parts.push("Repita a senha no campo «Confirmar».");
+  if (confirm.length > 0 && !passwordsMatch) parts.push("As duas senhas têm de ser iguais.");
+  return parts.join(" ");
 }

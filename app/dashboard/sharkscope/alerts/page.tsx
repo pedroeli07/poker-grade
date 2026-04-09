@@ -2,8 +2,8 @@ import dynamicImport from "next/dynamic";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { canWriteOperations } from "@/lib/utils";
-import { getAlertLogsForSharkscopeDashboard } from "@/lib/data/queries";
 import { Metadata } from "next";
+import { loadAlertsClientProps } from "../../../../hooks/sharkscope/alerts/alerts-page-load";
 
 export const dynamic = "force-dynamic";
 
@@ -28,16 +28,7 @@ export default async function AlertsPage() {
   const session = await requireSession();
   if (!canWriteOperations(session)) redirect("/dashboard");
 
-  const alerts = await getAlertLogsForSharkscopeDashboard(session);
+  const props = await loadAlertsClientProps(session);
 
-  return (
-    <AlertsClient
-      initialAlerts={alerts.map((a) => ({
-        ...a,
-        triggeredAt: a.triggeredAt.toISOString(),
-        acknowledgedAt: a.acknowledgedAt?.toISOString() ?? null,
-      }))}
-      canAcknowledge={canWriteOperations(session)}
-    />
-  );
+  return <AlertsClient {...props} />;
 }

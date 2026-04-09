@@ -1,9 +1,7 @@
 import { requireSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
-import { ProfileClient } from "./profile-client";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Metadata } from "next";
+import { ProfileClient } from "./profile-client";
+import { loadProfilePageData } from "../../../hooks/profile/profile-page-load";
 
 export const metadata: Metadata = {
   title: "Meu Perfil",
@@ -14,18 +12,9 @@ export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
   const session = await requireSession();
+  const profile = await loadProfilePageData(session);
 
-  const user = await prisma.authUser.findUnique({
-    where: { id: session.userId },
-    select: {
-      email: true,
-      displayName: true,
-      role: true,
-      createdAt: true,
-    },
-  });
-
-  if (!user) {
+  if (!profile) {
     return (
       <div className="text-center py-16 text-muted-foreground">
         Usuário não encontrado.
@@ -33,14 +22,5 @@ export default async function ProfilePage() {
     );
   }
 
-  return (
-    <ProfileClient
-      profile={{
-        email: user.email,
-        displayName: user.displayName,
-        role: user.role,
-        createdAt: format(user.createdAt, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }),
-      }}
-    />
-  );
+  return <ProfileClient profile={profile} />;
 }

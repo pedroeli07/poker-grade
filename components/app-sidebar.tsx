@@ -10,9 +10,8 @@ import { memo, useEffect, useState } from "react";
 import {
   SIDEBAR_NAV_ITEMS,
   SIDEBAR_SECONDARY_ITEMS,
-  type SidebarNavEntry,
-  type SidebarNavGroup,
 } from "@/lib/constants";
+import type { SidebarNavEntry, SidebarNavGroup } from "@/lib/types";
 import type { UserRole } from "@prisma/client";
 import {
   Collapsible,
@@ -137,9 +136,11 @@ function SharkScopeNavGroup({
   const anyChildActive = group.items.some((i) => isItemActive(pathname, i.href));
   const [expanded, setExpanded] = useState(anyChildActive);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- expandir grupo quando uma rota filha fica ativa */
   useEffect(() => {
     if (anyChildActive) setExpanded(true);
   }, [anyChildActive]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const GroupIcon = group.icon;
 

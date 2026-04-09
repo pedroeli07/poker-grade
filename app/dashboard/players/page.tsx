@@ -1,14 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
-import { syncOrphanCoachProfiles } from "@/lib/auth/ensure-coach-profile";
-import { getPlayersTablePayloadForSession } from "@/lib/data/players-table";
 import { NewPlayerModal } from "@/components/new-player-modal";
-import { canCreate, canEditPlayers } from "@/lib/constants";
 import { Metadata } from "next";
 import dynamicImport from "next/dynamic";
+import { loadPlayersListPageProps } from "../../../hooks/players/players-page-load";
 
 const PlayersTableClient = dynamicImport(
-  () => import("./players-table-client").then((m) => ({ default: m.PlayersTableClient })),
+  () =>
+    import("./players-table-client").then((m) => ({
+      default: m.PlayersTableClient,
+    })),
   {
     loading: () => (
       <div className="animate-pulse space-y-4">
@@ -27,8 +28,8 @@ export const metadata: Metadata = {
 
 export default async function PlayersPage() {
   const session = await requireSession();
-  await syncOrphanCoachProfiles();
-  const tablePayload = await getPlayersTablePayloadForSession(session);
+  const { tablePayload, canEditPlayers, canCreatePlayer } =
+    await loadPlayersListPageProps(session);
 
   return (
     <div className="space-y-6">
@@ -41,7 +42,7 @@ export default async function PlayersPage() {
             Gerencie o time de jogadores e aloque coaches responsáveis.
           </p>
         </div>
-        {canCreate(session) ? (
+        {canCreatePlayer ? (
           <NewPlayerModal
             coaches={tablePayload.coaches}
             grades={tablePayload.grades}
@@ -58,7 +59,7 @@ export default async function PlayersPage() {
           ) : (
             <PlayersTableClient
               initialPayload={tablePayload}
-              canEditPlayers={canEditPlayers(session)}
+              canEditPlayers={canEditPlayers}
             />
           )}
         </CardContent>

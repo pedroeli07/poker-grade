@@ -1,17 +1,15 @@
 import nodemailer from 'nodemailer';
-import { env } from 'process';
+import { gmailUser, gmailAppPassword } from './constants';
 
-const user = env.GMAIL_USER;
-const pass = env.GMAIL_APP_PASSWORD;
 
 // Helper to check if mailer is configured
-export const isMailerConfigured = () => !!(user && pass);
+export const isMailerConfigured = () => !!(gmailUser && gmailAppPassword);
 
 export const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user,
-    pass,
+    user: gmailUser,
+    pass: gmailAppPassword,
   },
 });
 
@@ -22,7 +20,7 @@ export async function sendRegisterVerificationEmail(email: string, code: string,
   if (!isMailerConfigured()) throw new Error("Mailer não configurado: GMAIL_USER/GMAIL_APP_PASSWORD ausentes.");
 
   const mailOptions = {
-    from: `"Gestão Poker Team" <${user}>`,
+    from: `"Gestão Poker Team" <${gmailUser}>`,
     to: email,
     subject: `Cód. ${code} - Verificação de E-mail`,
     html: `
@@ -53,7 +51,7 @@ export async function sendPasswordResetEmail(email: string, code: string, ip?: s
   if (!isMailerConfigured()) throw new Error("Mailer não configurado: GMAIL_USER/GMAIL_APP_PASSWORD ausentes.");
 
   const mailOptions = {
-    from: `"Gestão Poker Team" <${user}>`,
+    from: `"Gestão Poker Team" <${gmailUser}>`,
     to: email,
     subject: `Cód. ${code} - Redefinição de Senha`,
     html: `

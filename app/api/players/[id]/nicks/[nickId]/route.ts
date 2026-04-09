@@ -6,7 +6,8 @@ import { getSession } from "@/lib/auth/session";
 import { isSharkscopeStaffRole } from "@/lib/auth/rbac";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation } from "@/lib/rate-limit";
-import { updateNickSchema } from "@/lib/validation/schemas";
+import { updateNickSchema } from "@/lib/schemas";
+import { ErrorTypes } from "@/lib/types";
 
 async function resolveNick(
   playerId: string,
@@ -31,7 +32,7 @@ export async function PUT(
 ) {
   const session = await getSession();
   if (!session || !isSharkscopeStaffRole(session.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
   const limited = await enforceUserRate(
@@ -45,20 +46,20 @@ export async function PUT(
   const { id, nickId } = await params;
   const nick = await resolveNick(id, nickId, session.userId, session.role);
   if (!nick) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: ErrorTypes.NOT_FOUND }, { status: 404 });
   }
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: ErrorTypes.INVALID_JSON }, { status: 400 });
   }
 
   const parsed = updateNickSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Dados inválidos", details: z.flattenError(parsed.error) },
+      { error: ErrorTypes.INVALID_DATA, details: z.flattenError(parsed.error) },
       { status: 422 }
     );
   }
@@ -71,7 +72,7 @@ export async function PUT(
     });
     return NextResponse.json({ ok: true, nick: updated });
   } catch {
-    return NextResponse.json({ error: "Erro interno." }, { status: 500 });
+    return NextResponse.json({ error: ErrorTypes.INTERNAL_ERROR }, { status: 500 });
   }
 }
 
@@ -81,7 +82,7 @@ export async function DELETE(
 ) {
   const session = await getSession();
   if (!session || !isSharkscopeStaffRole(session.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
   const limited = await enforceUserRate(
@@ -95,7 +96,7 @@ export async function DELETE(
   const { id, nickId } = await params;
   const nick = await resolveNick(id, nickId, session.userId, session.role);
   if (!nick) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: ErrorTypes.NOT_FOUND }, { status: 404 });
   }
 
   await prisma.playerNick.delete({ where: { id: nickId } });

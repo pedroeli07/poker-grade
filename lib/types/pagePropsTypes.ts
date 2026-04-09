@@ -1,0 +1,75 @@
+import type { UserRole } from "@prisma/client";
+import type { CoachOpt, GradeOpt, PokerNetworkOption } from "./primitives";
+import type { GradeDetailQueryData, GradeListRow } from "./gradeTypes";
+import type { ImportListRow } from "./importTypes";
+import type { PlayerTableRow } from "./playerTypes";
+import type { ScoutingAnalysisRow, SharkscopeAlertRow, NetworkStat, RankingEntry, TierStat, TypeStat } from "./sharkScopeTypes";
+import type { TargetListRow, TargetsPagePlayerOption } from "./targetTypes";
+import type { UsuarioDirectoryRow } from "./userTypes";
+
+export type PlayersTablePayload = {
+  rows: PlayerTableRow[];
+  coaches: CoachOpt[];
+  grades: GradeOpt[];
+  allowCoachSelect: boolean;
+};
+
+export type PlayersListPageProps = {
+  tablePayload: PlayersTablePayload;
+  canEditPlayers: boolean;
+  canCreatePlayer: boolean;
+};
+
+export type TargetsPageProps = {
+  rows: TargetListRow[];
+  players: TargetsPagePlayerOption[];
+  canCreate: boolean;
+  summary: { onTrack: number; attention: number; offTrack: number };
+};
+
+export type GradesListPageProps = {
+  rows: GradeListRow[];
+  manage: boolean;
+};
+
+export type GradeDetailClientProps = {
+  gradeId: string;
+  initialData: GradeDetailQueryData;
+};
+
+export type DashboardShellProps = {
+  userRole: UserRole;
+  displayName: string | null;
+  email: string;
+};
+
+export type UsuariosClientProps = {
+  initialRows: UsuarioDirectoryRow[];
+  canManageUsers: boolean;
+};
+
+export type ScoutingClientProps = {
+  networkOptions: PokerNetworkOption[];
+  savedAnalyses: ScoutingAnalysisRow[];
+};
+
+export type AnalyticsClientProps = {
+  stats30d: NetworkStat[];
+  stats90d: NetworkStat[];
+  ranking: RankingEntry[];
+  tierStats30d: TierStat[];
+  typeStats30d: TypeStat[];
+  hasData30d: boolean;
+  hasData90d: boolean;
+};
+
+export type AlertsClientProps = {
+  initialAlerts: SharkscopeAlertRow[];
+  canAcknowledge: boolean;
+};
+
+export type ImportsListPageProps = {
+  imports: ImportListRow[];
+  canDelete: boolean;
+  canImport: boolean;
+};

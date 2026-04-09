@@ -3,25 +3,24 @@ import { z } from "zod";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
-import { registerBodySchema } from "@/lib/validation/schemas";
+import { registerBodySchema } from "@/lib/schemas";
 import { limitRegister } from "@/lib/rate-limit";
 import { clientIp, assertSameOrigin } from "@/lib/api/origin";
 import { logRateLimited, logValidationFailure } from "@/lib/security-log";
 import { createLogger } from "@/lib/logger";
-import { isSuperAdminEmail } from "@/lib/auth/bootstrap";
 import { createAuthSession, applySessionCookie } from "@/lib/auth/issue-session";
+import { isSuperAdminEmail } from "@/lib/utils";
+import { INVITE_ONLY_MSG } from "@/lib/constants";
+import { ErrorTypes } from "@/lib/types";
 
 const log = createLogger("auth.register");
-
-const INVITE_ONLY_MSG =
-  "Este e-mail não está autorizado a criar conta. Solicite um convite ao administrador.";
 
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
   } catch (e) {
     if (e instanceof Response) return e;
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: ErrorTypes.FORBIDDEN }, { status: 403 });
   }
 
   const ip = clientIp(request);
@@ -42,7 +41,7 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     logValidationFailure("register.json");
-    return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
+    return NextResponse.json({ error: ErrorTypes.INVALID_DATA }, { status: 400 });
   }
 
   const parsed = registerBodySchema.safeParse(body);
@@ -53,7 +52,7 @@ export async function POST(request: Request) {
       first.password?.[0] ||
       first.confirmPassword?.[0] ||
       first.email?.[0] ||
-      "Dados inválidos.";
+      ErrorTypes.INVALID_DATA;
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
@@ -68,7 +67,7 @@ export async function POST(request: Request) {
   if (exists) {
     log.info("Registro recusado: e-mail já existe", { email });
     return NextResponse.json(
-      { error: "Este e-mail já está cadastrado." },
+      { error: ErrorTypes.EMAIL_ALREADY_EXISTS },
       { status: 409 }
     );
   }
@@ -109,7 +108,7 @@ export async function POST(request: Request) {
   try {
     const result = await prisma.$transaction(async (tx) => {
       let coachId: string | null = null;
-      if (role === "COACH") {
+      if (role === UserRole.COACH) {
         const coachName =
           displayName?.trim() || email.split("@")[0] || "Coach";
         const coach = await tx.coach.create({

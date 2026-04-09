@@ -18,7 +18,6 @@ const GGNETWORK = site(5, "GG Network");
 
 const SPEED_REGULAR = item(1, "Regular");
 const SPEED_TURBO = item(2, "Turbo");
-const SPEED_SLOW = item(4, "Slow");
 
 const VARIANT_KO = item(2, "Knockout");
 const VARIANT_PKO = item(3, "Mystery Knockout");
@@ -127,7 +126,7 @@ function buildSchedule(
   const rows: TournamentRow[] = [];
   const pool = [...inGrade];
 
-  let hour = 13;
+  const hour = 13;
   for (let i = 0; i < pool.length; i++) {
     const t = pool[i % pool.length];
     const dayOffset = Math.floor(i / 4);

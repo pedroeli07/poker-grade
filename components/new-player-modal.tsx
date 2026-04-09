@@ -33,18 +33,11 @@ import {
   DollarSign,
   Users,
 } from "lucide-react";
-import { createPlayer } from "@/app/dashboard/players/actions";
+import { createPlayer } from "@/lib/queries/db/player-queries";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import { POKER_NETWORKS_UI } from "@/lib/constants";
-
-type Coach = { id: string; name: string; role: string };
-type GradeOpt = { id: string; name: string };
-
-interface NewPlayerModalProps {
-  coaches: Coach[];
-  grades: GradeOpt[];
-}
+import type { NewPlayerModalProps } from "@/lib/types";
 
 export function NewPlayerModal({ coaches, grades }: NewPlayerModalProps) {
   const [open, setOpen] = useState(false);
@@ -324,6 +317,7 @@ export function NewPlayerModal({ coaches, grades }: NewPlayerModalProps) {
                                 <SelectItem key={net.value} value={net.value}>
                                   <div className="flex items-center gap-2">
                                     {net.icon && (
+                                      // eslint-disable-next-line @next/next/no-img-element -- small static network icons
                                       <img src={net.icon} alt={net.label} className="w-5 h-5 rounded object-contain" />
                                     )}
                                     <span>{net.label}</span>

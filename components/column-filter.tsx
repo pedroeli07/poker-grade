@@ -15,30 +15,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { ListFilter } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-const HOVER_PREVIEW_MIN_CHARS = 44;
-
-function filterOptionPreviewText(opt: { value: string; label: string }) {
-  if (opt.label.endsWith("…") || opt.label.endsWith("...")) return opt.value;
-  if (opt.value.length > opt.label.length) return opt.value;
-  return opt.label;
-}
-
-function filterOptionNeedsHoverPreview(opt: {
-  value: string;
-  label: string;
-}) {
-  return filterOptionPreviewText(opt).length > HOVER_PREVIEW_MIN_CHARS;
-}
-
-const filterListScrollClass =
-  "max-h-[min(280px,50vh)] overflow-y-auto overflow-x-hidden p-2 space-y-1 pr-1.5 " +
-  "[scrollbar-width:thin] [scrollbar-color:color-mix(in_oklab,var(--muted-foreground)_45%,transparent)_color-mix(in_oklab,var(--muted)_80%,transparent)] " +
-  "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:min-h-8 " +
-  "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/35 " +
-  "[&::-webkit-scrollbar-thumb]:hover:bg-muted-foreground/50 " +
-  "[&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-muted/70";
+import { cn, filterOptionPreviewText, filterOptionNeedsHoverPreview } from "@/lib/utils";
+import { filterListScrollClass } from "@/lib/constants";
 
 function FilterOptionRow({
   opt,

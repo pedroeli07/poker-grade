@@ -1,15 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, AlertTriangle, XCircle } from "lucide-react";
 import { requireSession } from "@/lib/auth/session";
-import { STAFF_WRITE_ROLES } from "@/lib/auth/rbac";
-import { getTargetsListRowsForSession } from "@/lib/data/targets-list";
-import { prisma } from "@/lib/prisma";
 import { NewTargetModal } from "@/components/new-target-modal";
 import { Metadata } from "next";
 import dynamicImport from "next/dynamic";
+import { loadTargetsPageProps } from "../../../hooks/targets/targets-page-load";
 
 const TargetsPageClient = dynamicImport(
-  () => import("./targets-page-client").then((m) => ({ default: m.TargetsPageClient })),
+  () => import("./targets-page-client"),
   {
     loading: () => (
       <div className="animate-pulse space-y-4">
@@ -26,32 +24,9 @@ export const metadata: Metadata = {
   description: "Acompanhe ABI, ROI, Volume e gatilhos de subida/descida de limite.",
 };
 
-
 export default async function TargetsPage() {
   const session = await requireSession();
-  const canCreate = STAFF_WRITE_ROLES.includes(session.role);
-
-  const [rows, players] = await Promise.all([
-    getTargetsListRowsForSession(session),
-    canCreate
-      ? session.role === "COACH" && session.coachId
-        ? prisma.player.findMany({
-            where: {
-              OR: [{ coachId: session.coachId }, { driId: session.coachId }],
-            },
-            orderBy: { name: "asc" },
-            select: { id: true, name: true, nickname: true },
-          })
-        : prisma.player.findMany({
-            orderBy: { name: "asc" },
-            select: { id: true, name: true, nickname: true },
-          })
-      : [],
-  ]);
-
-  const onTrack = rows.filter((t) => t.status === "ON_TRACK");
-  const attention = rows.filter((t) => t.status === "ATTENTION");
-  const offTrack = rows.filter((t) => t.status === "OFF_TRACK");
+  const { rows, players, canCreate, summary } = await loadTargetsPageProps(session);
 
   return (
     <div className="space-y-6">
@@ -77,7 +52,7 @@ export default async function TargetsPage() {
             </div>
             <div>
               <div className="text-2xl font-bold text-emerald-500">
-                {onTrack.length}
+                {summary.onTrack}
               </div>
               <p className="text-xs text-muted-foreground">No Caminho Certo</p>
             </div>
@@ -91,7 +66,7 @@ export default async function TargetsPage() {
             </div>
             <div>
               <div className="text-2xl font-bold text-amber-500">
-                {attention.length}
+                {summary.attention}
               </div>
               <p className="text-xs text-muted-foreground">Atenção Necessária</p>
             </div>
@@ -105,7 +80,7 @@ export default async function TargetsPage() {
             </div>
             <div>
               <div className="text-2xl font-bold text-red-500">
-                {offTrack.length}
+                {summary.offTrack}
               </div>
               <p className="text-xs text-muted-foreground">Fora da Meta</p>
             </div>
@@ -113,7 +88,7 @@ export default async function TargetsPage() {
         </Card>
       </div>
 
-      <TargetsPageClient initialRows={rows} />
+      <TargetsPageClient rows={rows} />
     </div>
   );
 }

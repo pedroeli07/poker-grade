@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/auth/session";
 import { DashboardShell } from "./dashboard-shell";
+import { loadDashboardShellProps } from "../../hooks/dashboard/dashboard-layout-load";
 
 export default async function DashboardLayout({
   children,
@@ -7,12 +8,10 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await requireSession();
+  const shellProps = loadDashboardShellProps(session);
+
   return (
-    <DashboardShell 
-      userRole={session.role} 
-      displayName={session.displayName}
-      email={session.email}
-    >
+    <DashboardShell {...shellProps}>
       {children}
     </DashboardShell>
   );

@@ -7,52 +7,11 @@
  * - OUT_OF_GRADE: tournament doesn't match any rule
  */
 
-import type { LobbyzeFilterItem, TournamentData, GradeRuleData, MatchDetail } from "./types";
+import type { LobbyzeFilterItem, TournamentData, GradeRuleData, MatchDetail } from "@/lib/types";
 import { createLogger } from "./logger";
+import { normalizeSiteName, matchesExcludePattern, matchesSpeed } from "@/lib/utils";
 
 const log = createLogger("grade-matcher");
-
-/**
- * Normalizes site names for comparison.
- * Lobbyze uses names like "PokerStars", "GG Network", "888poker"
- * Excel might have slightly different casing/format
- */
-function normalizeSiteName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
-    .replace("network", "")
-    .replace("poker", "");
-}
-
-/**
- * Checks if a tournament name matches exclude patterns.
- * Patterns are pipe-separated: "red lotus|encore|ultra"
- */
-function matchesExcludePattern(
-  tournamentName: string,
-  excludePattern: string
-): boolean {
-  if (!excludePattern) return false;
-  const patterns = excludePattern.split("|").map((p) => p.trim().toLowerCase());
-  const normalizedName = tournamentName.toLowerCase();
-  return patterns.some((pattern) => normalizedName.includes(pattern));
-}
-
-/**
- * Checks if a speed matches the rule's allowed speeds.
- */
-function matchesSpeed(
-  tournamentSpeed: string | undefined,
-  ruleSpeed: LobbyzeFilterItem[] | null
-): boolean {
-  if (!ruleSpeed || ruleSpeed.length === 0) return true;
-  if (!tournamentSpeed) return false;
-  const normalizedSpeed = tournamentSpeed.toLowerCase();
-  return ruleSpeed.some(
-    (s) => s.item_text.toLowerCase() === normalizedSpeed
-  );
-}
 
 /**
  * Main matching function: checks a tournament against a single rule

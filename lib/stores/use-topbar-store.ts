@@ -1,9 +1,5 @@
 import { create } from "zustand";
-
-interface TopbarState {
-  titleOverride: string | null;
-  setTitle: (title: string | null) => void;
-}
+import { TopbarState } from "@/lib/types";
 
 export const useTopbarStore = create<TopbarState>((set) => ({
   titleOverride: null,

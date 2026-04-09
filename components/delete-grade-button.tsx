@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteGrade } from "@/app/dashboard/grades/actions";
+import { deleteGrade } from "@/lib/queries/db/grade-queries";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { cn } from "@/lib/utils";

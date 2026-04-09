@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { getSession } from "@/lib/auth/session";
 import { isSharkscopeStaffRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeRead } from "@/lib/rate-limit";
-import { querySchema } from "@/lib/validation/schemas";
-
+import { querySchema } from "@/lib/schemas";
+import { ErrorTypes } from "@/lib/types";
+import { UserRole } from "@prisma/client";
 
 export async function GET(req: Request) {
   const session = await getSession();
   if (!session || !isSharkscopeStaffRole(session.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
   const tooMany = await enforceUserRate(
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     Object.fromEntries(new URL(req.url).searchParams.entries())
   );
   if (!parsed.success) {
-    return NextResponse.json({ error: "Parâmetros inválidos" }, { status: 422 });
+    return NextResponse.json({ error: ErrorTypes.INVALID_DATA }, { status: 422 });
   }
 
   const { severity, alertType, playerId, acknowledged } = parsed.data;
@@ -35,7 +35,7 @@ export async function GET(req: Request) {
   if (alertType) where.alertType = alertType;
   if (acknowledged !== undefined) where.acknowledged = acknowledged;
 
-  if (session.role === "COACH" && session.coachId) {
+  if (session.role === UserRole.COACH && session.coachId) {
     const coachPlayers = await prisma.player.findMany({
       where: {
         OR: [{ coachId: session.coachId }, { driId: session.coachId }],

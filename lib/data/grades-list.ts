@@ -1,5 +1,5 @@
 import type { AppSession } from "@/lib/auth/session";
-import { getGradesForSession } from "@/lib/data/queries";
+import { getGradesForSession } from "@/lib/queries/db";
 import { prisma } from "@/lib/prisma";
 import type { GradeListRow } from "@/lib/types";
 import { buildAssignedPlayersByGrade } from "@/lib/utils";
@@ -25,6 +25,7 @@ export async function getGradesListRowsForSession(
     const assignedPlayers = byGrade.get(g.id) ?? [];
     return {
       id: g.id,
+      createdAt: g.createdAt,
       name: g.name,
       description: g.description,
       rulesCount: g._count.rules,

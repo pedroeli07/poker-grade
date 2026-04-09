@@ -2,9 +2,8 @@ import dynamicImport from "next/dynamic";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { canWriteOperations } from "@/lib/utils";
-import { getCachedSharkscopeAnalytics } from "@/lib/data/sharkscope-analytics";
-import { sharkscopeStatsHasData } from "@/lib/sharkscope/ui-helpers";
 import { Metadata } from "next";
+import { loadAnalyticsClientProps } from "../../../../hooks/sharkscope/analytics/analytics-page-load";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -29,17 +28,7 @@ export default async function AnalyticsPage() {
   const session = await requireSession();
   if (!canWriteOperations(session)) redirect("/dashboard");
 
-  const { stats30d, stats90d, ranking, tierStats30d, typeStats30d } = await getCachedSharkscopeAnalytics();
+  const props = await loadAnalyticsClientProps();
 
-  return (
-    <AnalyticsClient
-      stats30d={stats30d}
-      stats90d={stats90d}
-      ranking={ranking}
-      tierStats30d={tierStats30d}
-      typeStats30d={typeStats30d}
-      hasData30d={sharkscopeStatsHasData(stats30d)}
-      hasData90d={sharkscopeStatsHasData(stats90d)}
-    />
-  );
+  return <AnalyticsClient {...props} />;
 }

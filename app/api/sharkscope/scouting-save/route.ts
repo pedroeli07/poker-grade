@@ -4,13 +4,13 @@ import { isScoutingStaffRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation } from "@/lib/rate-limit";
-import { scoutBodySchema } from "@/lib/validation/schemas";
-
+import { scoutBodySchema } from "@/lib/schemas";
+import { ErrorTypes } from "@/lib/types";
 
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session || !isScoutingStaffRole(session.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
   const limited = await enforceUserRate(
@@ -25,12 +25,12 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: ErrorTypes.INVALID_JSON }, { status: 400 });
   }
 
   const parsed = scoutBodySchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Dados inválidos" }, { status: 422 });
+    return NextResponse.json({ error: ErrorTypes.INVALID_DATA }, { status: 422 });
   }
 
   const { nick, network, rawData, nlqAnswer, notes } = parsed.data;

@@ -7,6 +7,7 @@ import { PasswordInput } from "@/components/auth/password-input";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { AUTH_INPUT_CLASS } from "@/lib/constants";
 
 const EMAIL_STORAGE = "gg_auth_email";
 
@@ -19,9 +20,6 @@ const OAUTH_ERRORS: Record<string, string> = {
   email_not_verified: "Confirme o e-mail na conta Google antes de continuar.",
 };
 
-const inputClass =
-  "h-11 w-full rounded-xl border border-border bg-card/50 px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20";
-
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
@@ -29,7 +27,6 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [remember, setRemember] = useState(false);
   const warned = useRef(false);
-  const oauthWarned = useRef(false);
 
   useEffect(() => {
     try {
@@ -45,18 +42,15 @@ export function LoginForm() {
 
   useEffect(() => {
     if (warned.current) return;
-    if (params.get("error") === "forbidden") {
-      warned.current = true;
-      toast.error("Sem permissão para acessar este recurso.");
-    }
-  }, [params]);
-
-  useEffect(() => {
-    if (oauthWarned.current) return;
     const err = params.get("error");
-    if (!err || err === "forbidden") return;
-    oauthWarned.current = true;
-    toast.error(OAUTH_ERRORS[err] ?? "Erro ao entrar com Google.");
+    if (!err) return;
+    warned.current = true;
+    
+    if (err === "forbidden") {
+      toast.error("Sem permissão para acessar este recurso.");
+    } else {
+      toast.error(OAUTH_ERRORS[err] ?? "Erro ao entrar com Google.");
+    }
   }, [params]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -113,7 +107,7 @@ export function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="seu@email.com"
-            className={inputClass}
+            className={AUTH_INPUT_CLASS}
           />
         </div>
         <div className="space-y-2">

@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { GOOGLE_OAUTH_STATE_COOKIE } from "@/lib/constants";
+import { GOOGLE_OAUTH_STATE_COOKIE, nextPublicAppUrl } from "@/lib/constants";
 import {
   exchangeGoogleAuthorizationCode,
   fetchGoogleUserInfo,
@@ -16,7 +16,7 @@ import { redirectTo } from "@/lib/utils";
 const log = createLogger("auth.google.callback");
 
 export async function GET(request: Request) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+  const baseUrl = nextPublicAppUrl?.replace(/\/$/, "");
   if (!baseUrl) {
     return NextResponse.redirect(new URL("/login?error=oauth_config", request.url));
   }
@@ -86,7 +86,7 @@ export async function GET(request: Request) {
 
       await prisma.$transaction(async (tx) => {
         let coachId: string | null = null;
-        if (role === "COACH") {
+        if (role === UserRole.COACH) {
           const coachName =
             nameFromGoogle?.trim() || email.split("@")[0] || "Coach";
           let coach = await tx.coach.findUnique({ where: { email } });

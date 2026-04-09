@@ -24,7 +24,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { createGradeProfile, importGradeFromJson } from "@/app/dashboard/grades/actions";
+import { createGradeProfile, importGradeFromJson } from "@/lib/queries/db/grade-queries";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { cn, isNextRedirectError } from "@/lib/utils";
@@ -54,6 +54,7 @@ export function NewGradeModal() {
     startTransition(async () => {
       try {
         const result = await createGradeProfile(formData);
+        if (!result.ok) throw new Error(result.error);
         toast.success("Grade criada!", "Importe um JSON Lobbyze para adicionar regras.");
         handleOpenChange(false);
         invalidateGrades();

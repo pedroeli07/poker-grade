@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
-import { resetPasswordSchema } from "@/lib/validation/schemas";
+import { resetPasswordSchema } from "@/lib/schemas";
 import { clientIp, assertSameOrigin } from "@/lib/api/origin";
 import { limitRegister } from "@/lib/rate-limit";
 import { createLogger } from "@/lib/logger";
+import { ErrorTypes } from "@/lib/types";
 
 const log = createLogger("auth.reset");
 
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
   } catch (e) {
     if (e instanceof Response) return e;
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: ErrorTypes.FORBIDDEN }, { status: 403 });
   }
 
   const ip = clientIp(request);
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
+    return NextResponse.json({ error: ErrorTypes.INVALID_DATA }, { status: 400 });
   }
 
   const parsed = resetPasswordSchema.safeParse(body);
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
       first.newPassword?.[0] ||
       first.code?.[0] ||
       first.email?.[0] ||
-      "Dados inválidos.";
+      ErrorTypes.INVALID_DATA;
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 

@@ -1,5 +1,8 @@
-export const gradeKeys = {
-  all: ["grades"] as const,
-  list: () => [...gradeKeys.all, "list"] as const,
-  detail: (id: string) => [...gradeKeys.all, "detail", id] as const,
-};
+import { BaseQueryKeys } from "./query-keys";
+
+class GradeKeys extends BaseQueryKeys {
+  constructor() { super("grades"); }
+  list() { return this.key("list"); }
+  detail(id: string) { return this.key("detail", id); }
+}
+export const gradeKeys = new GradeKeys();

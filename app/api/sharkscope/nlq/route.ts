@@ -3,20 +3,20 @@ import { z } from "zod";
 import { getSession } from "@/lib/auth/session";
 import { isSharkscopeStaffRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
-import { sharkScopeGet } from "@/lib/sharkscope";
 import { createLogger } from "@/lib/logger";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeSearch } from "@/lib/rate-limit";
-import { bodySchema } from "@/lib/validation/schemas";
+import { bodySchema } from "@/lib/schemas";
+import { sharkScopeGet } from "@/lib/utils";
+import { sharkScopeAppKey, sharkScopeAppName } from "@/lib/constants";
+import { ErrorTypes } from "@/lib/types";
 
 const log = createLogger("sharkscope.nlq");
-
-
 
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session || !isSharkscopeStaffRole(session.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
   const limited = await enforceUserRate(
@@ -31,21 +31,21 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: ErrorTypes.INVALID_JSON }, { status: 400 });
   }
 
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Dados inválidos", details: z.flattenError(parsed.error) },
+      { error: ErrorTypes.INVALID_DATA, details: z.flattenError(parsed.error) },
       { status: 422 }
     );
   }
 
   const { playerNickId, question, timezone } = parsed.data;
 
-  const appName = process.env.SHARKSCOPE_APP_NAME;
-  if (!appName || !process.env.SHARKSCOPE_APP_KEY) {
+  
+  if (!sharkScopeAppName || !sharkScopeAppKey) {
     return NextResponse.json(
       { error: "SharkScope não configurado. Aguardando credenciais." },
       { status: 503 }

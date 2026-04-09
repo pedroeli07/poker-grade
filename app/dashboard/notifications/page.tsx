@@ -1,7 +1,15 @@
 import dynamicImport from "next/dynamic";
 import { requireSession } from "@/lib/auth/session";
-import { getNotificationsPage } from "./actions";
+import { getNotificationsPage } from "@/lib/queries/db/notification-queries";
 import { Metadata } from "next";
+import { NotificationFilterType } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Notificações",
+  description: "Visualize suas notificações e marque como lidas.",
+};
+
+export const dynamic = "force-dynamic";
 
 const NotificationsClient = dynamicImport(
   () =>
@@ -18,16 +26,9 @@ const NotificationsClient = dynamicImport(
   }
 );
 
-export const metadata: Metadata = {
-  title: "Notificações",
-  description: "Visualize suas notificações e marque como lidas.",
-};
-
-export const dynamic = "force-dynamic";
-
 export default async function NotificationsPage() {
   await requireSession();
-  const initial = await getNotificationsPage(1, "all");
+  const initial = await getNotificationsPage(1, NotificationFilterType.ALL);
   if (!initial.ok) {
     return (
       <div className="text-center py-16 text-muted-foreground">{initial.error}</div>

@@ -1,8 +1,9 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { extractStat } from "@/lib/sharkscope-parse";
-import { POKER_NETWORKS } from "@/lib/sharkscope";
+import { POKER_NETWORKS } from "@/lib/constants";
 import type { NetworkStat, TierStat, TypeStat, RankingEntry } from "@/lib/types";
+import { classifyTier } from "@/lib/utils";
 
 async function buildNetworkStats(dataType: string): Promise<NetworkStat[]> {
   const caches = await prisma.sharkScopeCache.findMany({
@@ -47,12 +48,6 @@ async function buildNetworkStats(dataType: string): Promise<NetworkStat[]> {
   });
 }
 
-function classifyTier(stake: number | null): "Low" | "Mid" | "High" | null {
-  if (stake === null) return null;
-  if (stake < 15) return "Low";
-  if (stake < 50) return "Mid";
-  return "High";
-}
 
 async function buildTierStats(dataType: string): Promise<TierStat[]> {
   const caches = await prisma.sharkScopeCache.findMany({

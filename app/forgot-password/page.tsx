@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { ResetForm } from "./reset-form";
 import { ShieldCheck } from "lucide-react";
 

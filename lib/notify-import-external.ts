@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createLogger } from "@/lib/logger";
 import { getAppBaseUrl } from "@/lib/utils";
-import type { ImportBatchNotifyPayload } from "./types";
+import type { ImportBatchNotifyPayload } from "@/lib/types";
 
 const log = createLogger("notify-import-external");
 

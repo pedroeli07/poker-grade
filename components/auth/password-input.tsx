@@ -3,10 +3,8 @@
 import { useId, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { PasswordInputProps } from "@/lib/types";
 
-type Props = Omit<React.ComponentProps<"input">, "type"> & {
-  containerClassName?: string;
-};
 
 export function PasswordInput({
   className,
@@ -15,7 +13,7 @@ export function PasswordInput({
   value,
   onChange,
   ...rest
-}: Props) {
+}: PasswordInputProps) {
   const genId = useId();
   const id = idProp ?? genId;
   const [show, setShow] = useState(false);

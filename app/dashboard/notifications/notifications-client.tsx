@@ -1,180 +1,39 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useQuery } from "@tanstack/react-query";
-import {
-  getNotificationsPage,
-  markNotificationRead,
-  markAllNotificationsRead,
-  deleteNotification,
-  deleteSelectedNotifications,
-} from "./actions";
 import { cn } from "@/lib/utils";
-import { notificationKeys } from "@/lib/queries/notification-query-keys";
-import { useInvalidate } from "@/hooks/use-invalidate";
-import { toast } from "@/lib/toast";
 import {
   Bell,
   Check,
   CheckCheck,
   Trash2,
-  Upload,
-  AlertTriangle,
-  Target,
-  Grid3X3,
-  Users,
-  TrendingUp,
-  Info,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
-import type { NotificationType } from "@prisma/client";
+import { NotificationsPageData } from "@/lib/types";
+import { TYPE_CONFIG } from "@/lib/constants";
+import { useNotificationsPage } from "../../../hooks/notification/use-notifications-page";
 
-// ── Types ──────────────────────────────────────────────────────────────────
-
-type NotifItem = {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  link: string | null;
-  read: boolean;
-  createdAt: Date;
-};
-
-type PageData = {
-  items: NotifItem[];
-  total: number;
-  unreadCount: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-};
-
-// ── Config ──────────────────────────────────────────────────────────────────
-
-const TYPE_CONFIG: Record<NotificationType, { icon: typeof Bell; color: string; bg: string; label: string }> = {
-  GRADE_ASSIGNED: { icon: Grid3X3, color: "text-primary", bg: "bg-primary/10", label: "Grade" },
-  GRADE_CREATED: { icon: Grid3X3, color: "text-blue-500", bg: "bg-blue-500/10", label: "Grade" },
-  IMPORT_DONE: { icon: Upload, color: "text-emerald-500", bg: "bg-emerald-500/10", label: "Importação" },
-  EXTRA_PLAY: { icon: AlertTriangle, color: "text-amber-500", bg: "bg-amber-500/10", label: "Extra Play" },
-  REVIEW_DECISION: { icon: Check, color: "text-violet-500", bg: "bg-violet-500/10", label: "Revisão" },
-  PLAYER_CREATED: { icon: Users, color: "text-blue-500", bg: "bg-blue-500/10", label: "Jogador" },
-  LIMIT_CHANGED: { icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10", label: "Limite" },
-  SYSTEM: { icon: Info, color: "text-muted-foreground", bg: "bg-muted", label: "Sistema" },
-};
-
-// ── Component ────────────────────────────────────────────────────────────────
-
-export function NotificationsClient({ initialData }: { initialData: PageData }) {
-  const [page, setPage] = useState(initialData.page);
-  const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [, startTransition] = useTransition();
-  const invalidateNotifications = useInvalidate("notifications");
-
-  const { data, isFetching, error } = useQuery({
-    queryKey: notificationKeys.list(page, filter),
-    queryFn: async () => {
-      const r = await getNotificationsPage(page, filter);
-      if (!r.ok) throw new Error(r.error);
-      const d: PageData = {
-        items: r.items as NotifItem[],
-        total: r.total,
-        unreadCount: r.unreadCount,
-        page: r.page,
-        pageSize: r.pageSize,
-        totalPages: r.totalPages,
-      };
-      return d;
-    },
-    initialData:
-      page === initialData.page && filter === "all" ? initialData : undefined,
-    staleTime: 30_000,
-  });
-
-  const dataResolved = data ?? initialData;
-  const loading = isFetching;
-
-  function changePage(next: number) {
-    if (next < 1 || next > dataResolved.totalPages) return;
-    setPage(next);
-    setSelected(new Set());
-  }
-
-  function changeFilter(f: typeof filter) {
-    setFilter(f);
-    setPage(1);
-    setSelected(new Set());
-  }
-
-  function toggleSelect(id: string) {
-    setSelected((prev) => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
-  }
-
-  function toggleAll() {
-    if (selected.size === dataResolved.items.length) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(dataResolved.items.map((i) => i.id)));
-    }
-  }
-
-  function handleMarkRead(id: string) {
-    startTransition(async () => {
-      const r = await markNotificationRead(id);
-      if (!r.ok) {
-        toast.error("Erro", r.error);
-        return;
-      }
-      invalidateNotifications();
-    });
-  }
-
-  function handleMarkAllRead() {
-    startTransition(async () => {
-      const r = await markAllNotificationsRead();
-      if (!r.ok) {
-        toast.error("Erro", r.error);
-        return;
-      }
-      invalidateNotifications();
-    });
-  }
-
-  function handleDelete(id: string) {
-    startTransition(async () => {
-      const r = await deleteNotification(id);
-      if (!r.ok) {
-        toast.error("Erro", r.error);
-        return;
-      }
-      invalidateNotifications();
-    });
-  }
-
-  function handleDeleteSelected() {
-    const ids = Array.from(selected);
-    startTransition(async () => {
-      const r = await deleteSelectedNotifications(ids);
-      if (!r.ok) {
-        toast.error("Erro", r.error);
-        return;
-      }
-      invalidateNotifications();
-    });
-  }
-
-  const allSelected =
-    selected.size === dataResolved.items.length && dataResolved.items.length > 0;
+export function NotificationsClient({ initialData }: { initialData: NotificationsPageData }) {
+  const {
+    filter,
+    selected,
+    dataResolved,
+    loading,
+    error,
+    changePage,
+    changeFilter,
+    toggleSelect,
+    toggleAll,
+    handleMarkRead,
+    handleMarkAllRead,
+    handleDelete,
+    handleDeleteSelected,
+    allSelected,
+  } = useNotificationsPage(initialData);
 
   if (error) {
     return (
@@ -183,6 +42,8 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
       </div>
     );
   }
+
+  const unreadCount = dataResolved.unreadCount ?? 0;
 
   return (
     <div className="space-y-6">
@@ -195,7 +56,7 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {dataResolved.unreadCount > 0 && (
+          {unreadCount > 0 && (
             <button
               type="button"
               onClick={handleMarkAllRead}
@@ -245,9 +106,9 @@ export function NotificationsClient({ initialData }: { initialData: PageData }) 
               )}
             >
               {f === "all" ? "Todas" : f === "unread" ? "Não lidas" : "Lidas"}
-              {f === "unread" && dataResolved.unreadCount > 0 && (
+              {f === "unread" && unreadCount > 0 && (
                 <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold">
-                  {dataResolved.unreadCount}
+                  {unreadCount}
                 </span>
               )}
             </button>

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
 import { PasswordStrength } from "@/components/password-strength";
+import { PasswordInput } from "@/components/auth/password-input";
 import {
   getPasswordPolicyGaps,
   passwordMeetsPolicy,
@@ -12,17 +12,13 @@ import {
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-
-const inputClass =
-  "h-11 w-full rounded-xl border border-border bg-card/50 px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20";
+import { AUTH_INPUT_CLASS } from "@/lib/constants";
 
 export function ResetForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  
   const [step, setStep] = useState<"EMAIL" | "OTP_NEW_PASSWORD">("EMAIL");
   const [code, setCode] = useState("");
 
@@ -116,14 +112,13 @@ export function ResetForm() {
             </label>
             <input
               id="reset-email"
-              name="email"
               type="email"
               autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu@email.com"
-              className={inputClass}
+              className={AUTH_INPUT_CLASS}
             />
           </div>
 
@@ -147,19 +142,11 @@ export function ResetForm() {
           </div>
           
           <div className="flex justify-center py-2">
-            <InputOTP
-              maxLength={6}
-              value={code}
-              onChange={setCode}
-              pattern="^[0-9]+$"
-            >
+            <InputOTP maxLength={6} value={code} onChange={setCode} pattern="^[0-9]+$">
               <InputOTPGroup>
-                <InputOTPSlot index={0} className="w-11 h-12 text-lg bg-card border-border/80" />
-                <InputOTPSlot index={1} className="w-11 h-12 text-lg bg-card border-border/80" />
-                <InputOTPSlot index={2} className="w-11 h-12 text-lg bg-card border-border/80" />
-                <InputOTPSlot index={3} className="w-11 h-12 text-lg bg-card border-border/80" />
-                <InputOTPSlot index={4} className="w-11 h-12 text-lg bg-card border-border/80" />
-                <InputOTPSlot index={5} className="w-11 h-12 text-lg bg-card border-border/80" />
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <InputOTPSlot key={i} index={i} className="w-11 h-12 text-lg bg-card border-border/80" />
+                ))}
               </InputOTPGroup>
             </InputOTP>
           </div>
@@ -171,27 +158,14 @@ export function ResetForm() {
             >
               Nova Senha
             </label>
-            <div className="relative isolate h-11">
-              <input
-                id="new-pwd"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
-                className={cn(inputClass, "pr-11")}
-              />
-              <button
-                type="button"
-                tabIndex={-1}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setShowPassword((s) => !s)}
-                className="pointer-events-auto absolute right-0 top-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
+            <PasswordInput
+              id="new-pwd"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••••••"
+              className="text-black placeholder:text-muted-foreground"
+            />
             <PasswordStrength password={password} compact />
             {password.length > 0 && policyGaps.length > 0 && (
               <p className="font-mono text-[10px] leading-relaxed text-muted-foreground">

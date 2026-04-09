@@ -43,7 +43,7 @@ import {
   DollarSign,
   Users,
 } from "lucide-react";
-import { deletePlayer, updatePlayer } from "@/app/dashboard/players/actions";
+import { deletePlayer, updatePlayer } from "@/lib/queries/db/player-queries";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import type { CoachOpt, GradeOpt, PlayerTableRow, EditPlayerModalProps } from "@/lib/types";
@@ -456,6 +456,7 @@ function EditPlayerModalInner({
                             <SelectItem key={net.value} value={net.value}>
                                   <div className="flex items-center gap-2">
                                     {net.icon && (
+                                      // eslint-disable-next-line @next/next/no-img-element -- small static network icons
                                       <img src={net.icon} alt={net.label} className="w-5 h-5 rounded object-contain" />
                                     )}
                                     <span>{net.label}</span>

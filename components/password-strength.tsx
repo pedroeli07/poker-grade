@@ -1,64 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  getPasswordStrength,
-  type StrengthLevel,
-  PASSWORD_MIN_LENGTH,
-} from "@/lib/auth/password-policy";
-import { cn } from "@/lib/utils";
+import { getPasswordStrength, PASSWORD_MIN_LENGTH } from "@/lib/auth/password-policy";
+import { barColor, cn, labelColor } from "@/lib/utils";
+import { PasswordStrengthProps } from "@/lib/types";
+import { LEVEL_LABEL } from "@/lib/constants";
 
-const LEVEL_LABEL: Record<StrengthLevel, string> = {
-  empty: "Digite uma senha",
-  weak: "Fraca",
-  fair: "Média",
-  good: "Boa",
-  strong: "Forte",
-};
 
-type Props = {
-  password: string;
-  className?: string;
-  /**
-   * Só barra + rótulo + dica curta (sem checklist de requisitos).
-   * Cores pensadas para fundo escuro (#121212).
-   */
-  compact?: boolean;
-};
-
-function barColor(level: StrengthLevel): string {
-  switch (level) {
-    case "empty":
-      return "bg-zinc-600";
-    case "weak":
-      return "bg-red-500";
-    case "fair":
-      return "bg-amber-400";
-    case "good":
-      return "bg-lime-500";
-    case "strong":
-      return "bg-emerald-500";
-    default:
-      return "bg-zinc-600";
-  }
-}
-
-function labelColor(level: StrengthLevel): string {
-  switch (level) {
-    case "weak":
-      return "text-red-400";
-    case "fair":
-      return "text-amber-400";
-    case "good":
-      return "text-lime-400";
-    case "strong":
-      return "text-emerald-400";
-    default:
-      return "text-zinc-500";
-  }
-}
-
-export function PasswordStrength({ password, className, compact }: Props) {
+export function PasswordStrength({ password, className, compact }: PasswordStrengthProps) {
   const { level, percent, checks, trivialRejected } = useMemo(
     () => getPasswordStrength(password),
     [password]

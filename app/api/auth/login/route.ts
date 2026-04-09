@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
-import { loginBodySchema } from "@/lib/validation/schemas";
+import { loginBodySchema } from "@/lib/schemas";
 import { limitLogin } from "@/lib/rate-limit";
 import { clientIp, assertSameOrigin } from "@/lib/api/origin";
 import {
@@ -14,6 +14,7 @@ import { createLogger } from "@/lib/logger";
 import { createAuthSession, applySessionCookie } from "@/lib/auth/issue-session";
 import { ensureCoachProfileLinked } from "@/lib/auth/ensure-coach-profile";
 import { LOCKOUT_MINUTES, MAX_LOGIN_ATTEMPTS } from "@/lib/constants";
+import { ErrorTypes } from "@/lib/types";
 
 const log = createLogger("auth.login");
 
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
   } catch (e) {
     if (e instanceof Response) return e;
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: ErrorTypes.FORBIDDEN }, { status: 403 });
   }
 
   const ip = clientIp(request);

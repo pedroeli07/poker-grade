@@ -6,7 +6,8 @@ import { getSession } from "@/lib/auth/session";
 import { isSharkscopeStaffRole } from "@/lib/auth/rbac";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation, limitSharkscopeRead } from "@/lib/rate-limit";
-import { addNickSchema } from "@/lib/validation/schemas";
+import { addNickSchema } from "@/lib/schemas";
+import { ErrorTypes } from "@/lib/types";
 
 
 async function resolvePlayer(
@@ -32,7 +33,7 @@ export async function GET(
 ) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
   const limited = await enforceUserRate(
@@ -45,7 +46,7 @@ export async function GET(
 
   const player = await resolvePlayer(params, session.userId, session.role);
   if (!player) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: ErrorTypes.NOT_FOUND }, { status: 404 });
   }
 
   const { id } = await params;
@@ -64,7 +65,7 @@ export async function POST(
 ) {
   const session = await getSession();
   if (!session || !isSharkscopeStaffRole(session.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
   const limited = await enforceUserRate(
@@ -77,20 +78,20 @@ export async function POST(
 
   const player = await resolvePlayer(params, session.userId, session.role);
   if (!player) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: ErrorTypes.NOT_FOUND }, { status: 404 });
   }
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: ErrorTypes.INVALID_JSON }, { status: 400 });
   }
 
   const parsed = addNickSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Dados inválidos", details: z.flattenError(parsed.error) },
+      { error: ErrorTypes.INVALID_DATA, details: z.flattenError(parsed.error) },
       { status: 422 }
     );
   }

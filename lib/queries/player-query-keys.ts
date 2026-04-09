@@ -1,4 +1,7 @@
-export const playerKeys = {
-  all: ["players"] as const,
-  list: () => [...playerKeys.all, "table"] as const,
-};
+import { BaseQueryKeys } from "./query-keys";
+
+class PlayerKeys extends BaseQueryKeys {
+  constructor() { super("players"); }
+  list() { return this.key("table"); }
+}
+export const playerKeys = new PlayerKeys();

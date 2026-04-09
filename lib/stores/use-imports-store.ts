@@ -1,14 +1,7 @@
-import { create } from "zustand";
-import type { ImportsColumnKey, ImportsFilters } from "@/lib/types";
+import type { ImportsFilters } from "@/lib/types";
+import { createFilterStore } from "./create-filter-store";
 
-interface ImportsStore {
-  filters: ImportsFilters;
-  setColumnFilter: (key: ImportsColumnKey, next: Set<string> | null) => void;
-  clearFilters: () => void;
-  hasAnyFilter: boolean;
-}
-
-const defaultFilters: ImportsFilters = {
+export const useImportsStore = createFilterStore<ImportsFilters>({
   fileName: null,
   player: null,
   totalRows: null,
@@ -16,16 +9,4 @@ const defaultFilters: ImportsFilters = {
   extraPlay: null,
   didntPlay: null,
   date: null,
-};
-
-export const useImportsStore = create<ImportsStore>((set) => ({
-  filters: defaultFilters,
-  hasAnyFilter: false,
-  setColumnFilter: (key, next) =>
-    set((state) => {
-      const filters = { ...state.filters, [key]: next };
-      const hasAnyFilter = Object.values(filters).some((v) => v !== null);
-      return { filters, hasAnyFilter };
-    }),
-  clearFilters: () => set({ filters: defaultFilters, hasAnyFilter: false }),
-}));
+});

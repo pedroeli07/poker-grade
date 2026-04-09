@@ -5,6 +5,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProfileData, UserRole } from "@/lib/types";
 import { ROLE_LABELS } from "@/lib/constants";
+import { useProfilePage } from "../../../hooks/profile/use-profile-page";
 
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -75,21 +76,13 @@ function PasswordInput({
 }
 
 export function ProfileClient({ profile }: { profile: ProfileData }) {
-  const [displayName, setDisplayName] = useState(profile.displayName ?? "");
-  const [isSaving, setIsSaving] = useState(false);
-
-  const initials = (profile.displayName || profile.email)
-    .split(/[\s@]/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setIsSaving(false);
-  };
+  const {
+    displayName,
+    setDisplayName,
+    isSaving,
+    handleSave,
+    initials,
+  } = useProfilePage(profile);
 
   return (
     <div className="min-h-full flex flex-col items-center justify-start pt-2 pb-12">

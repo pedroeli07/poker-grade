@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Info, Pencil, Loader2 } from "lucide-react";
-import { updateGradeCoachNote } from "@/app/dashboard/grades/actions";
+import { updateGradeCoachNote } from "@/lib/queries/db/grade-queries";
 import { toast } from "@/lib/toast";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
 

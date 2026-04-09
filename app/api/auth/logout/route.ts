@@ -5,13 +5,14 @@ import { SESSION_COOKIE_NAME } from "@/lib/constants";
 import { verifySessionJwt } from "@/lib/auth/jwt";
 import { assertSameOrigin } from "@/lib/api/origin";
 import { logLogout } from "@/lib/security-log";
+import { ErrorTypes } from "@/lib/types";
 
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
   } catch (e) {
     if (e instanceof Response) return e;
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: ErrorTypes.FORBIDDEN }, { status: 403 });
   }
 
   const jar = await cookies();

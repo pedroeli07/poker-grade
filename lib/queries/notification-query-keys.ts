@@ -1,5 +1,8 @@
-export const notificationKeys = {
-  all: ["notifications"] as const,
-  list: (page: number, filter: "all" | "unread" | "read") =>
-    [...notificationKeys.all, "list", page, filter] as const,
-};
+import { NotificationFilterType } from "@/lib/types";
+import { BaseQueryKeys } from "./query-keys";
+
+class NotificationKeys extends BaseQueryKeys {
+  constructor() { super("notifications"); }
+  list(page: number, filter: NotificationFilterType) { return this.key("list", page, filter); }
+}
+export const notificationKeys = new NotificationKeys();

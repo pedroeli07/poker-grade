@@ -2,9 +2,8 @@ import dynamicImport from "next/dynamic";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { canManageGrades } from "@/lib/utils";
-import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
-import { buildNetworkOptions } from "@/lib/utils";
+import { loadScoutingClientProps } from "../../../../hooks/sharkscope/scouting/scouting-page-load";
 
 export const dynamic = "force-dynamic";
 
@@ -25,34 +24,11 @@ const ScoutingClient = dynamicImport(
   }
 );
 
-
-
 export default async function ScoutingPage() {
   const session = await requireSession();
   if (!canManageGrades(session)) redirect("/dashboard");
 
-  const saved = await prisma.scoutingAnalysis.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    select: {
-      id: true,
-      nick: true,
-      network: true,
-      rawData: true,
-      nlqAnswer: true,
-      notes: true,
-      createdAt: true,
-      savedBy: true,
-    },
-  });
+  const props = await loadScoutingClientProps();
 
-  return (
-    <ScoutingClient
-      networkOptions={buildNetworkOptions()}
-      savedAnalyses={saved.map((s) => ({
-        ...s,
-        createdAt: s.createdAt.toISOString(),
-      }))}
-    />
-  );
+  return <ScoutingClient {...props} />;
 }

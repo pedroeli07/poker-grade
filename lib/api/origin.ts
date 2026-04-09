@@ -1,4 +1,5 @@
 import { createLogger } from "@/lib/logger";
+import { nodeEnv } from "../constants";
 
 const log = createLogger("api.origin");
 
@@ -45,7 +46,7 @@ export function assertSameOrigin(request: Request): void {
   if (norm === allowed) return;
 
   if (
-    process.env.NODE_ENV === "development" &&
+    nodeEnv === "development" &&
     devLocalhostEquivalent(norm, allowed)
   ) {
     log.debug("Origin dev localhost equivalente aceito", { origin: norm, allowed });

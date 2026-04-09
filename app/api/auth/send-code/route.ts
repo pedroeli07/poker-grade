@@ -1,30 +1,21 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
-import { format } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { clientIp, assertSameOrigin } from "@/lib/api/origin";
 import { limitRegister } from "@/lib/rate-limit"; // Usar o mesmo ou criar limitSendCode
 import { createLogger } from "@/lib/logger";
-import { isSuperAdminEmail } from "@/lib/auth/bootstrap";
 import { sendRegisterVerificationEmail, sendPasswordResetEmail } from "@/lib/mailer";
+import { isSuperAdminEmail, generateOTP } from "@/lib/utils";
+import { sendCodeSchema } from "@/lib/schemas";
+import { ErrorTypes } from "@/lib/types";
 
 const log = createLogger("auth.send-code");
-
-const schema = z.object({
-  email: z.string().email(),
-  type: z.enum(["REGISTER", "RESET"]),
-});
-
-function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
 
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
   } catch (e) {
     if (e instanceof Response) return e;
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: ErrorTypes.FORBIDDEN }, { status: 403 });
   }
 
   const ip = clientIp(request);
@@ -40,10 +31,10 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
+    return NextResponse.json({ error: ErrorTypes.INVALID_DATA }, { status: 400 });
   }
 
-  const parsed = schema.safeParse(body);
+  const parsed = sendCodeSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "E-mail ou tipo inválido." }, { status: 400 });
   }

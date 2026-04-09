@@ -4,11 +4,12 @@ import { isScoutingStaffRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation } from "@/lib/rate-limit";
+import { ErrorTypes } from "@/lib/types";
 
 export async function DELETE(req: Request) {
   const session = await getSession();
   if (!session || !isScoutingStaffRole(session.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
   const limited = await enforceUserRate(
@@ -30,11 +31,11 @@ export async function DELETE(req: Request) {
   });
 
   if (!analysis) {
-    return NextResponse.json({ error: "Não encontrado." }, { status: 404 });
+    return NextResponse.json({ error: ErrorTypes.NOT_FOUND }, { status: 404 });
   }
 
   if (session.role !== "ADMIN" && analysis.savedBy !== session.userId) {
-    return NextResponse.json({ error: "Sem permissão." }, { status: 403 });
+    return NextResponse.json({ error: ErrorTypes.FORBIDDEN }, { status: 403 });
   }
 
   await prisma.scoutingAnalysis.delete({ where: { id } });
