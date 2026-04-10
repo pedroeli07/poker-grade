@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type { UserRole } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";

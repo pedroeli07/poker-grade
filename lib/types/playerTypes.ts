@@ -1,4 +1,4 @@
-import type { GradeType, PlayerStatus, Prisma } from "@prisma/client";
+import type { GradeType, PlayerStatus, Prisma, UserRole } from "@prisma/client";
 import { playerProfileInclude } from "@/lib/constants";
 import type { EntityRef, WithIdAndStatus, BaseEntity } from "./primitives";
 

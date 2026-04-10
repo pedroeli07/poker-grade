@@ -13,10 +13,15 @@ function CurrentTimeDisplay() {
   const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
-    setMounted(true);
-    setTime(new Date());
+    const raf = requestAnimationFrame(() => {
+      setMounted(true);
+      setTime(new Date());
+    });
     const interval = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(interval);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearInterval(interval);
+    };
   }, []);
 
   const timeStr = time
