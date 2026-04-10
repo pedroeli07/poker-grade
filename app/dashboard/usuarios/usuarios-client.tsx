@@ -236,6 +236,8 @@ export function UsuariosClient({
                       onApply={setCol("status")}
                     />
                   </TableHead>
+                  <TableHead className="text-[12px] font-semibold text-muted-foreground">WhatsApp</TableHead>
+                  <TableHead className="text-[12px] font-semibold text-muted-foreground">Discord</TableHead>
                   {canManageUsers && <TableHead className="text-right w-[140px]">Ações</TableHead>}
                 </TableRow>
               </TableHeader>

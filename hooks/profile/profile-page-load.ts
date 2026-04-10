@@ -14,6 +14,8 @@ export async function loadProfilePageData(
       displayName: true,
       role: true,
       createdAt: true,
+      whatsapp: true,
+      discord: true,
     },
   });
 
@@ -22,6 +24,8 @@ export async function loadProfilePageData(
   return {
     email: user.email,
     displayName: user.displayName,
+    whatsapp: user.whatsapp,
+    discord: user.discord,
     role: user.role,
     createdAt: format(user.createdAt, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }),
   };

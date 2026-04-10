@@ -261,7 +261,7 @@ function AppSidebar({ userRole }: { userRole: UserRole }) {
               type="button"
               onClick={() => toggle()}
               aria-label="Recolher menu"
-              className="text-muted-foreground/50 hover:text-foreground transition-colors p-1.5 rounded-md hover:bg-muted/50 shrink-0 cursor-pointer"
+              className="bg-blue-500/20 hover:bg-blue-500/30 text-muted-foreground/80 hover:text-foreground transition-colors p-1.5 rounded-md  shrink-0 cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>

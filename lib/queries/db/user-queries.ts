@@ -176,8 +176,36 @@ export async function deleteAuthAccount(formData: FormData) {
     revalidatePath("/dashboard/usuarios");
     revalidatePath("/dashboard/players");
     return { success: true as const };
+    return { success: true as const };
   } catch (e) {
     userQueriesLog.error("deleteAuthAccount", e instanceof Error ? e : undefined);
     return { error: "Erro ao excluir a conta." };
+  }
+}
+
+export async function updateProfile(data: {
+  displayName?: string;
+  whatsapp?: string;
+  discord?: string;
+}) {
+  const { getSession } = await import("@/lib/auth/session");
+  const session = await getSession();
+  if (!session) return { error: ErrorTypes.FORBIDDEN };
+
+  try {
+    await prisma.authUser.update({
+      where: { id: session.userId },
+      data: {
+        displayName: data.displayName,
+        whatsapp: data.whatsapp,
+        discord: data.discord,
+      },
+    });
+    revalidatePath("/dashboard/profile");
+    revalidatePath("/dashboard/usuarios");
+    return { success: true as const };
+  } catch (e) {
+    userQueriesLog.error("updateProfile", e instanceof Error ? e : undefined);
+    return { error: "Falha ao atualizar o perfil." };
   }
 }

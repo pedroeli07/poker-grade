@@ -15,62 +15,21 @@ import { ReviewDecisionButtons } from "@/components/review-decision-buttons";
 import { DeleteImportButton } from "@/components/delete-import-button";
 import {
   ArrowLeft,
-  AlertTriangle,
-  RefreshCw,
-  CheckCircle2,
-  MinusCircle,
-  DollarSign,
-  Calendar,
   Building2,
+  Calendar,
+  CheckCircle2,
+  DollarSign,
+  RefreshCw,
 } from "lucide-react";
-import { schedulingCategory } from "@/lib/utils";
-import type { ImportDetailPageData, Tab } from "@/lib/types";
-
-function SchedulingBadge({ scheduling }: { scheduling: string | null }) {
-  const cat = schedulingCategory(scheduling);
-  if (cat === "extra")
-    return (
-      <Badge className="bg-red-500/15 text-red-500 border-red-500/30 border text-xs">
-        Extra Play
-      </Badge>
-    );
-  if (cat === "played")
-    return (
-      <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 border text-xs">
-        Played
-      </Badge>
-    );
-  return (
-    <Badge className="bg-zinc-500/15 text-zinc-500 border-zinc-500/30 border text-xs">
-      Didn&apos;t play
-    </Badge>
-  );
-}
-
-function ReviewStatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; cls: string }> = {
-    PENDING: {
-      label: "Pendente",
-      cls: "bg-amber-500/15 text-amber-500 border-amber-500/30",
-    },
-    APPROVED: {
-      label: "Aprovado",
-      cls: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30",
-    },
-    EXCEPTION: {
-      label: "Exceção",
-      cls: "bg-blue-500/15 text-blue-500 border-blue-500/30",
-    },
-    REJECTED: {
-      label: "Infração",
-      cls: "bg-red-500/15 text-red-500 border-red-500/30",
-    },
-  };
-  const cfg = map[status] ?? map.PENDING;
-  return (
-    <Badge className={`${cfg.cls} border text-xs`}>{cfg.label}</Badge>
-  );
-}
+import {
+  SchedulingBadge,
+  ReviewStatusBadge,
+} from "@/components/imports/import-detail-badges";
+import {
+  buildImportDetailTabs,
+  IMPORT_DETAIL_CARD_INACTIVE_CLS,
+} from "@/lib/imports/import-detail-tabs";
+import type { ImportDetailPageData } from "@/lib/types";
 
 export function ImportDetailView({
   importId,
@@ -85,49 +44,12 @@ export function ImportDetailView({
   activeTournaments,
 }: ImportDetailPageData) {
   const all = importRecord.tournaments;
-
-  const tabs = [
-    {
-      id: "extra" as Tab,
-      label: "Extra Play",
-      count: extraPlay.length,
-      icon: AlertTriangle,
-      accent: "red",
-      activeCls: "border-red-500 text-red-500 bg-red-500/10",
-      inactiveCls: "border-transparent text-muted-foreground",
-      countCls: "bg-red-500/20 text-red-500",
-    },
-    {
-      id: "rebuy" as Tab,
-      label: "Com Rebuy",
-      count: withRebuy.length,
-      icon: RefreshCw,
-      accent: "orange",
-      activeCls: "border-orange-500 text-orange-500 bg-orange-500/10",
-      inactiveCls: "border-transparent text-muted-foreground",
-      countCls: "bg-orange-500/20 text-orange-500",
-    },
-    {
-      id: "played" as Tab,
-      label: "Jogados",
-      count: played.length,
-      icon: CheckCircle2,
-      accent: "emerald",
-      activeCls: "border-emerald-500 text-emerald-500 bg-emerald-500/10",
-      inactiveCls: "border-transparent text-muted-foreground",
-      countCls: "bg-emerald-500/20 text-emerald-500",
-    },
-    {
-      id: "missed" as Tab,
-      label: "Não Jogados",
-      count: missed.length,
-      icon: MinusCircle,
-      accent: "zinc",
-      activeCls: "border-zinc-400 text-zinc-500 bg-zinc-500/10",
-      inactiveCls: "border-transparent text-muted-foreground",
-      countCls: "bg-zinc-500/20 text-zinc-500",
-    },
-  ];
+  const tabs = buildImportDetailTabs({
+    extra: extraPlay.length,
+    rebuy: withRebuy.length,
+    played: played.length,
+    missed: missed.length,
+  });
 
   return (
     <div className="space-y-6">
@@ -169,28 +91,12 @@ export function ImportDetailView({
             <Link
               key={tab.id}
               href={`/dashboard/imports/${importId}?tab=${tab.id}`}
-              className={`group rounded-xl border p-5 transition-all hover:scale-[1.02] ${isActive
-                  ? tab.id === "extra"
-                    ? "border-red-500/30 bg-red-500/20 shadow-md shadow-red-500 hover:shadow-lg hover:shadow-red-400"
-                    : tab.id === "rebuy"
-                      ? "border-orange-500/30 bg-orange-500/20 shadow-md shadow-orange-500 hover:shadow-lg hover:shadow-orange-400"
-                      : tab.id === "played"
-                        ? "border-emerald-500/30 bg-emerald-500/20 shadow-md shadow-emerald-500 hover:shadow-lg hover:shadow-emerald-400"
-                        : "border-zinc-500/30 bg-zinc-500/20 shadow-md shadow-zinc-500 hover:shadow-lg hover:shadow-zinc-400"
-                  : "border-border bg-white hover:border-blue-300"
-                }`}
+              className={`group rounded-xl border p-5 transition-all hover:scale-[1.02] ${
+                isActive ? tab.cardActiveClass : IMPORT_DETAIL_CARD_INACTIVE_CLS
+              }`}
             >
               <div className="flex items-center justify-between mb-3">
-                <Icon
-                  className={`h-5 w-5 ${tab.id === "extra"
-                      ? "text-red-500"
-                      : tab.id === "rebuy"
-                        ? "text-orange-500"
-                        : tab.id === "played"
-                          ? "text-emerald-500"
-                          : "text-zinc-500"
-                    }`}
-                />
+                <Icon className={`h-5 w-5 ${tab.iconClass}`} />
                 {tab.count > 0 && (
                   <span
                     className={`text-xs font-bold rounded-full px-2 py-0.5 ${tab.countCls}`}
@@ -200,14 +106,7 @@ export function ImportDetailView({
                 )}
               </div>
               <div
-                className={`text-4xl font-bold tabular-nums ${tab.id === "extra"
-                    ? "text-red-500"
-                    : tab.id === "rebuy"
-                      ? "text-orange-500"
-                      : tab.id === "played"
-                        ? "text-emerald-500"
-                        : "text-zinc-600"
-                  }`}
+                className={`text-4xl font-bold tabular-nums ${tab.countNumberClass}`}
               >
                 {tab.count}
               </div>
@@ -227,8 +126,11 @@ export function ImportDetailView({
             <Link
               key={tab.id}
               href={`/dashboard/imports/${importId}?tab=${tab.id}`}
-              className={`flex items-center gap-2 px-5 py-3 text-[15px] font-medium border-b-2 transition-colors whitespace-nowrap ${isActive ? tab.activeCls : tab.inactiveCls + " hover:text-foreground/80"
-                }`}
+              className={`flex items-center gap-2 px-5 py-3 text-[15px] font-medium border-b-2 transition-colors whitespace-nowrap ${
+                isActive
+                  ? tab.activeCls
+                  : tab.inactiveCls + " hover:text-foreground/80"
+              }`}
             >
               <Icon className="h-4 w-4" />
               {tab.label}
@@ -298,10 +200,11 @@ export function ImportDetailView({
                         {t.speed}
                         {t.priority && t.priority !== "None" && (
                           <span
-                            className={`ml-2 font-medium ${t.priority === "HIGH"
+                            className={`ml-2 font-medium ${
+                              t.priority === "HIGH"
                                 ? "text-amber-500"
                                 : "text-muted-foreground"
-                              }`}
+                            }`}
                           >
                             · {t.priority}
                           </span>
@@ -313,10 +216,11 @@ export function ImportDetailView({
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className={`text-xs border ${t.site.toLowerCase().includes("pokerstars")
+                      className={`text-xs border ${
+                        t.site.toLowerCase().includes("pokerstars")
                           ? "border-red-500/30 text-red-500 bg-red-500/5"
                           : "border-blue-500/30 text-blue-500 bg-blue-500/5"
-                        }`}
+                      }`}
                     >
                       {t.site}
                     </Badge>

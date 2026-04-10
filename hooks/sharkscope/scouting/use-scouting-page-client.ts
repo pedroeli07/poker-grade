@@ -1,27 +1,142 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "@/lib/toast";
+import {
+  SHARKSCOPE_SCOUTING_LS_EXPANDED,
+  SHARKSCOPE_SCOUTING_LS_NETWORK,
+  SHARKSCOPE_SCOUTING_LS_NICK,
+  SHARKSCOPE_SCOUTING_LS_NLQ,
+  SHARKSCOPE_SCOUTING_LS_NOTES,
+} from "@/lib/constants/sharkscope-scouting-page";
 import { SHARKSCOPE_NLQ_TIMEZONE } from "@/lib/constants";
 import type { PokerNetworkKey, PokerNetworkOption, ScoutingAnalysisRow } from "@/lib/types";
 import { parseScoutingSearchPayload } from "@/lib/utils";
 
-export function useScoutingDashboard(
+const MAX_NICK_LS = 120;
+const MAX_NOTES_LS = 8000;
+const MAX_NLQ_LS = 500;
+
+function clampStr(s: string, max: number): string {
+  return s.length <= max ? s : s.slice(0, max);
+}
+
+export function useScoutingPageClient(
   networkOptions: PokerNetworkOption[],
   initialSaved: ScoutingAnalysisRow[]
 ) {
-  const [nick, setNick] = useState("");
-  const [network, setNetwork] = useState<PokerNetworkKey>(
-    () => (networkOptions[0]?.value as PokerNetworkKey) ?? "gg"
+  const allowedNetworks = useMemo(
+    () => new Set(networkOptions.map((o) => o.value as PokerNetworkKey)),
+    [networkOptions]
   );
+
+  const defaultNetwork = (networkOptions[0]?.value as PokerNetworkKey) ?? "gg";
+
+  const [nick, setNickState] = useState("");
+  const [network, setNetworkState] = useState<PokerNetworkKey>(defaultNetwork);
   const [searchResult, setSearchResult] = useState<Record<string, unknown> | null>(null);
   const [nickId, setNickId] = useState<string | null>(null);
-  const [nlqQuestion, setNlqQuestion] = useState("");
+  const [nlqQuestion, setNlqQuestionState] = useState("");
   const [nlqAnswer, setNlqAnswer] = useState<Record<string, unknown> | null>(null);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotesState] = useState("");
   const [saved, setSaved] = useState<ScoutingAnalysisRow[]>(initialSaved);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedId, setExpandedIdState] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [storageHydrated, setStorageHydrated] = useState(false);
+
+  useLayoutEffect(() => {
+    const allowed = new Set(networkOptions.map((o) => o.value as PokerNetworkKey));
+    const savedIds = new Set(initialSaved.map((a) => a.id));
+    try {
+      const n = localStorage.getItem(SHARKSCOPE_SCOUTING_LS_NICK);
+      if (n) setNickState(clampStr(n, MAX_NICK_LS));
+      const net = localStorage.getItem(SHARKSCOPE_SCOUTING_LS_NETWORK);
+      if (net && allowed.has(net as PokerNetworkKey)) {
+        setNetworkState(net as PokerNetworkKey);
+      }
+      const no = localStorage.getItem(SHARKSCOPE_SCOUTING_LS_NOTES);
+      if (no) setNotesState(clampStr(no, MAX_NOTES_LS));
+      const nlq = localStorage.getItem(SHARKSCOPE_SCOUTING_LS_NLQ);
+      if (nlq) setNlqQuestionState(clampStr(nlq, MAX_NLQ_LS));
+      const ex = localStorage.getItem(SHARKSCOPE_SCOUTING_LS_EXPANDED);
+      if (ex && savedIds.has(ex)) setExpandedIdState(ex);
+    } catch {
+      /* ignore */
+    } finally {
+      setStorageHydrated(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once from LS; use first server payload
+  }, []);
+
+  useEffect(() => {
+    if (!storageHydrated) return;
+    try {
+      localStorage.setItem(SHARKSCOPE_SCOUTING_LS_NICK, nick);
+    } catch {
+      /* ignore */
+    }
+  }, [nick, storageHydrated]);
+
+  useEffect(() => {
+    if (!storageHydrated) return;
+    try {
+      localStorage.setItem(SHARKSCOPE_SCOUTING_LS_NETWORK, network);
+    } catch {
+      /* ignore */
+    }
+  }, [network, storageHydrated]);
+
+  useEffect(() => {
+    if (!storageHydrated) return;
+    try {
+      localStorage.setItem(SHARKSCOPE_SCOUTING_LS_NOTES, notes);
+    } catch {
+      /* ignore */
+    }
+  }, [notes, storageHydrated]);
+
+  useEffect(() => {
+    if (!storageHydrated) return;
+    try {
+      localStorage.setItem(SHARKSCOPE_SCOUTING_LS_NLQ, nlqQuestion);
+    } catch {
+      /* ignore */
+    }
+  }, [nlqQuestion, storageHydrated]);
+
+  useEffect(() => {
+    if (!storageHydrated) return;
+    try {
+      if (expandedId) localStorage.setItem(SHARKSCOPE_SCOUTING_LS_EXPANDED, expandedId);
+      else localStorage.removeItem(SHARKSCOPE_SCOUTING_LS_EXPANDED);
+    } catch {
+      /* ignore */
+    }
+  }, [expandedId, storageHydrated]);
+
+  useEffect(() => {
+    const ids = new Set(saved.map((a) => a.id));
+    setExpandedIdState((cur) => (cur && ids.has(cur) ? cur : null));
+  }, [saved]);
+
+  const setNick = useCallback((v: string) => {
+    setNickState(v);
+  }, []);
+
+  const setNetwork = useCallback(
+    (v: PokerNetworkKey) => {
+      if (allowedNetworks.has(v)) setNetworkState(v);
+    },
+    [allowedNetworks]
+  );
+
+  const setNlqQuestion = useCallback((v: string) => {
+    setNlqQuestionState(v);
+  }, []);
+
+  const setNotes = useCallback((v: string) => {
+    setNotesState(v);
+  }, []);
 
   const searchStats = useMemo(
     () => parseScoutingSearchPayload(searchResult),
@@ -108,7 +223,7 @@ export function useScoutingDashboard(
   }, [nick, network, nlqAnswer, notes, searchResult, startTransition]);
 
   const toggleExpanded = useCallback((id: string) => {
-    setExpandedId((cur) => (cur === id ? null : id));
+    setExpandedIdState((cur) => (cur === id ? null : id));
   }, []);
 
   const removeSaved = useCallback(

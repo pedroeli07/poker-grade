@@ -7,14 +7,12 @@ import { isSharkscopeStaffRole } from "@/lib/auth/rbac";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation } from "@/lib/rate-limit";
 import { updateNickSchema } from "@/lib/schemas";
-import { ErrorTypes } from "@/lib/types";
+import { ErrorTypes, ResolveNickProps } from "@/lib/types";
 
 async function resolveNick(
-  playerId: string,
-  nickId: string,
-  userId: string,
-  role: UserRole
+  props: ResolveNickProps
 ) {
+  const { playerId, nickId, userId, role } = props;
   const nick = await prisma.playerNick.findFirst({
     where: { id: nickId, playerId },
     include: { player: { select: { authAccount: { select: { id: true } } } } },
@@ -44,7 +42,7 @@ export async function PUT(
   if (limited) return limited;
 
   const { id, nickId } = await params;
-  const nick = await resolveNick(id, nickId, session.userId, session.role);
+  const nick = await resolveNick({ playerId: id, nickId, userId: session.userId, role: session.role });
   if (!nick) {
     return NextResponse.json({ error: ErrorTypes.NOT_FOUND }, { status: 404 });
   }
@@ -94,7 +92,7 @@ export async function DELETE(
   if (limited) return limited;
 
   const { id, nickId } = await params;
-  const nick = await resolveNick(id, nickId, session.userId, session.role);
+  const nick = await resolveNick({ playerId: id, nickId, userId: session.userId, role: session.role });
   if (!nick) {
     return NextResponse.json({ error: ErrorTypes.NOT_FOUND }, { status: 404 });
   }

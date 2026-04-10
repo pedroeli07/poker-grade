@@ -23,6 +23,7 @@ import { NextResponse } from "next/server";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import crypto from "node:crypto";
+import { lookupSharkscopeStat, parseSharkscopeStatisticNode } from "@/lib/sharkscope-stat-scan";
 import type { AppSession } from "@/lib/auth/session";
 import { StrengthLevel } from "@/lib/auth/password-policy";
 import { parseJson } from "./parse";
@@ -384,6 +385,10 @@ function getStatArray(raw: unknown): StatisticJson[] {
 }
 
 const STAT_CONTAINER_PATHS = [
+  // PlayerGroup (Summary / Statistics endpoints)
+  ["Response", "PlayerResponse", "PlayerView", "PlayerGroup", "Statistics"],
+  ["Response", "PlayerResponse", "PlayerView", "Statistics"],
+  // Regular player paths
   ["Response", "PlayerResponse", "PlayerResults", "PlayerResult", "Statistics"],
   ["Response", "PlayerResponse", "PlayerResults", "PlayerResult", "Player", "Statistics"],
   ["Response", "PlayerResponse", "PlayerResults", "PlayerResult", "Statistic"],
@@ -397,6 +402,22 @@ export function extractStat(rawData: unknown, statName: string): number | null {
   if (!rawData || typeof rawData !== "object") return null;
   const root = rawData as Record<string, unknown>;
   const want = statName.toLowerCase();
+
+  const aliases = new Set<string>();
+  aliases.add(want);
+  if (want === "earlyfinish") aliases.add("finshesearly");
+  if (want === "latefinish") aliases.add("finsheslate");
+  if (want === "totalprofit") {
+    aliases.add("profit");
+    aliases.add("netprofit");
+    aliases.add("totalprofit");
+  }
+  if (want === "avstake") {
+    aliases.add("stake");
+    aliases.add("averagestake");
+    aliases.add("avstake");
+  }
+
   const stats = STAT_CONTAINER_PATHS.reduce<unknown>(
     (acc, path) => acc ?? dig(root, ...(path as unknown as string[])),
     undefined,
@@ -404,13 +425,14 @@ export function extractStat(rawData: unknown, statName: string): number | null {
 
   const found = getStatArray(stats).find(s => {
     const raw = s["@name"] ?? s["@id"] ?? s.id;
-    return (typeof raw === "string" ? raw : undefined)?.toLowerCase() === want;
+    const lowerRaw = (typeof raw === "string" ? raw : undefined)?.toLowerCase();
+    return lowerRaw && aliases.has(lowerRaw);
   });
-  if (!found) return null;
-  const v = found.$;
-  if (v === undefined || v === null) return null;
-  const n = parseFloat(typeof v === "number" ? String(v) : v as string);
-  return isNaN(n) ? null : n;
+  if (found) {
+    const n = parseSharkscopeStatisticNode(found as unknown as Record<string, unknown>);
+    if (n !== null) return n;
+  }
+  return lookupSharkscopeStat(rawData, statName);
 }
 
 export function extractRemainingSearches(rawData: unknown): number | null {

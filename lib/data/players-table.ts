@@ -49,31 +49,67 @@ export async function getPlayersTablePayloadForSession(
     session.role === "ADMIN" || session.role === "MANAGER";
   const rows = toTableRows(players, abiByPlayer);
 
-  // Enriquecer com ROI 10d do cache SharkScope (sem chamada à API)
   if (rows.length > 0) {
-    const nickCaches = await prisma.sharkScopeCache.findMany({
+    // Buscar caches de stats_10d (ROI, e dados de EarlyFinish/LateFinish se disponíveis no summary)
+    const nickCaches10d = await prisma.sharkScopeCache.findMany({
       where: {
         dataType: "stats_10d",
         expiresAt: { gt: new Date() },
         playerNick: {
-          playerId: { in: rows.map((r) => r.id) },
+          playerId: { in: playerIds },
           isActive: true,
         },
       },
       select: { rawData: true, playerNick: { select: { playerId: true } } },
     });
 
-    const statsMap = new Map<string, { roi: number; fp: number | null; ft: number | null }>();
-    for (const cache of nickCaches) {
+    // Buscar caches de stats_30d para EarlyFinish e LateFinish (mais completos)
+    const nickCaches30d = await prisma.sharkScopeCache.findMany({
+      where: {
+        dataType: "stats_30d",
+        expiresAt: { gt: new Date() },
+        playerNick: {
+          playerId: { in: playerIds },
+          isActive: true,
+        },
+      },
+      select: { rawData: true, playerNick: { select: { playerId: true } } },
+    });
+
+    // Buscar jogadores com alerta group_not_found ativo (não reconhecido pelo SharkScope)
+    const groupNotFoundAlerts = await prisma.alertLog.findMany({
+      where: {
+        playerId: { in: playerIds },
+        alertType: "group_not_found",
+        acknowledged: false,
+      },
+      select: { playerId: true },
+      distinct: ["playerId"],
+    });
+    const groupNotFoundSet = new Set(groupNotFoundAlerts.map((a) => a.playerId));
+
+    // Mapa de ROI do stats_10d
+    const statsMap = new Map<string, { roi: number | null; fp: number | null; ft: number | null }>();
+    for (const cache of nickCaches10d) {
       const playerId = cache.playerNick.playerId;
-      if (statsMap.has(playerId)) continue; // simplificação
-      
+      if (statsMap.has(playerId)) continue;
       const roi = extractStat(cache.rawData, "AvROI");
+      // EarlyFinish e LateFinish podem estar presentes no summary de grupos
       const fp = extractStat(cache.rawData, "EarlyFinish");
       const ft = extractStat(cache.rawData, "LateFinish");
-      
-      if (roi !== null) {
-        statsMap.set(playerId, { roi, fp, ft });
+      statsMap.set(playerId, { roi, fp, ft });
+    }
+
+    // Sobrescrever FP/FT com os dados de 30d (mais completos / específicos)
+    for (const cache of nickCaches30d) {
+      const playerId = cache.playerNick.playerId;
+      const fp = extractStat(cache.rawData, "EarlyFinish");
+      const ft = extractStat(cache.rawData, "LateFinish");
+      const existing = statsMap.get(playerId);
+      if (existing) {
+        // Só sobrescreve se tiver valor real
+        if (fp !== null) existing.fp = fp;
+        if (ft !== null) existing.ft = ft;
       }
     }
 
@@ -83,6 +119,10 @@ export async function getPlayersTablePayloadForSession(
         row.roiTenDay = stats.roi;
         row.fpTenDay = stats.fp;
         row.ftTenDay = stats.ft;
+      }
+      // Flag de grupo não encontrado no SharkScope
+      if (groupNotFoundSet.has(row.id)) {
+        row.sharkGroupNotFound = true;
       }
     }
   }

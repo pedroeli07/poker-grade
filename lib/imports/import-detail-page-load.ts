@@ -3,6 +3,13 @@ import { getImportDetailForSession } from "@/lib/queries/db";
 import { canDeleteImports, canReview, schedulingCategory } from "@/lib/utils";
 import type { ImportDetailPageData, Tab } from "@/lib/types";
 
+const VALID_TABS = new Set<Tab>(["extra", "rebuy", "played", "missed"]);
+
+function parseTab(tabParam?: string): Tab {
+  if (tabParam && VALID_TABS.has(tabParam as Tab)) return tabParam as Tab;
+  return "extra";
+}
+
 export async function loadImportDetailPageData(
   session: AppSession,
   id: string,
@@ -11,7 +18,7 @@ export async function loadImportDetailPageData(
   const importRecord = await getImportDetailForSession(session, id);
   if (!importRecord) return null;
 
-  const activeTab = (tabParam as Tab) || "extra";
+  const activeTab = parseTab(tabParam);
   const showActions = canReview(session);
   const canDelete = canDeleteImports(session);
 

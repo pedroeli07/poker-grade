@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { TargetPageStatus, type TargetsPageProps } from "@/lib/types";
 import { UserRole } from "@prisma/client";
 
-
 export async function loadTargetsPageProps(
   session: AppSession
 ): Promise<TargetsPageProps> {
@@ -35,8 +34,10 @@ export async function loadTargetsPageProps(
     canCreate,
     summary: {
       onTrack: rows.filter((t) => t.status === TargetPageStatus.ON_TRACK).length,
-      attention: rows.filter((t) => t.status === TargetPageStatus.ATTENTION).length,
-      offTrack: rows.filter((t) => t.status === TargetPageStatus.OFF_TRACK).length,
+      attention: rows.filter((t) => t.status === TargetPageStatus.ATTENTION)
+        .length,
+      offTrack: rows.filter((t) => t.status === TargetPageStatus.OFF_TRACK)
+        .length,
     },
   };
 }

@@ -1,15 +1,11 @@
-import { requireSession } from "@/lib/auth/session";
 import { notFound } from "next/navigation";
-import { Metadata } from "next";
-import { loadImportDetailPageData } from "@/hooks/imports/import-detail-page-load";
+import { importDetailPageMetadata } from "@/lib/constants/import-detail-page";
+import { getImportDetailPageProps } from "@/lib/imports/import-detail-page-server";
 import { ImportDetailView } from "./import-id-client";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Detalhes de uma Importação",
-  description: "Visualize os detalhes de uma importação da Lobbyze.",
-};
+export const metadata = importDetailPageMetadata;
 
 export default async function ImportDetailPage({
   params,
@@ -18,11 +14,10 @@ export default async function ImportDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ tab?: string }>;
 }) {
-  const session = await requireSession();
   const { id } = await params;
   const sp = await searchParams;
 
-  const data = await loadImportDetailPageData(session, id, sp.tab);
+  const data = await getImportDetailPageProps(id, sp.tab);
   if (!data) notFound();
 
   return <ImportDetailView {...data} />;

@@ -99,6 +99,16 @@ export const UserTableRow = memo(function UserTableRow({
         <StatusBadge registered={row.isRegistered} />
       </TableCell>
 
+      {/* Coluna WhatsApp */}
+      <TableCell className="text-xs font-mono text-muted-foreground">
+        {row.whatsapp || <span className="opacity-30">—</span>}
+      </TableCell>
+
+      {/* Coluna Discord */}
+      <TableCell className="text-xs font-mono text-muted-foreground">
+        {row.discord || <span className="opacity-30">—</span>}
+      </TableCell>
+
       {/* Coluna Ações */}
       {canManage && (
         <TableCell className="text-right">

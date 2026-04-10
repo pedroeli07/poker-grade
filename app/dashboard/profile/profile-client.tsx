@@ -79,6 +79,10 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
   const {
     displayName,
     setDisplayName,
+    whatsapp,
+    setWhatsapp,
+    discord,
+    setDiscord,
     isSaving,
     handleSave,
     initials,
@@ -140,6 +144,28 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
               onChange={setDisplayName}
               placeholder="Seu nome completo"
             />
+          </div>
+
+          {/* WhatsApp & Discord */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <FieldLabel>WhatsApp</FieldLabel>
+              <TextInput
+                id="profile-whatsapp"
+                value={whatsapp}
+                onChange={setWhatsapp}
+                placeholder="(00) 00000-0000"
+              />
+            </div>
+            <div>
+              <FieldLabel>Discord</FieldLabel>
+              <TextInput
+                id="profile-discord"
+                value={discord}
+                onChange={setDiscord}
+                placeholder="usuario#0000"
+              />
+            </div>
           </div>
 
           {/* Role */}

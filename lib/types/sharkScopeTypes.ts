@@ -8,15 +8,19 @@ type BaseStat = { roi: number | null; profit: number | null; count: number | nul
 export type NetworkStat = BaseStat & {
   network: string;
   label: string;
+  /** ROI ponderado por volume: Σ(ROI×Count)/Σ(Count) entre nicks da rede. */
+  roiWeighted: number | null;
 };
 
 export type TierStat = BaseStat & {
   tier: "Low" | "Mid" | "High";
   players: number;
+  roiWeighted: number | null;
 };
 
 export type TypeStat = BaseStat & {
-  type: "Bounty" | "Vanilla";
+  type: "Bounty" | "Vanilla" | "Satellite";
+  roiWeighted: number | null;
 };
 
 export type RankingEntry = {

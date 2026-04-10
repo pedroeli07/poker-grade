@@ -204,7 +204,10 @@ export async function updatePlayer(formData: FormData) {
       });
 
       if (parsedNicks !== null) {
-        const currentNicks = await prisma.playerNick.findMany({ where: { playerId: parsed.data.id } });
+        // Ignora nicks sintéticos (como PlayerGroup) para que não sejam apagados acidentalmente pelo form
+        const currentNicks = await prisma.playerNick.findMany({ 
+          where: { playerId: parsed.data.id, network: { not: "PlayerGroup" } } 
+        });
         const toKeep = parsedNicks.map(n => n.network + ':' + n.nick);
         const nicksToDelete = currentNicks.filter(c => !toKeep.includes(c.network + ':' + c.nick));
         const newNicks = parsedNicks.filter(n => !currentNicks.some(c => c.network === n.network && c.nick === n.nick));

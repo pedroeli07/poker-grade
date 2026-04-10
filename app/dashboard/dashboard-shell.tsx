@@ -7,6 +7,7 @@ import { NotificationSheet } from "@/components/notification-sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { DashboardShellProps } from "@/lib/types";
 import { useDashboardShellLayout } from "@/hooks/dashboard/use-dashboard-shell";
+import { cn } from "@/lib/utils";
 
 export function DashboardShell({
   children,
@@ -21,10 +22,10 @@ export function DashboardShell({
       <div className="flex min-h-screen bg-background text-foreground">
         <AppSidebar userRole={userRole} />
 
-        <main className={mainClassName}>
+        <main className={cn(mainClassName, "min-w-0")}>
           <Topbar displayName={displayName} email={email} />
-          <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-pattern animate-fade-in overflow-x-hidden">
-            <div className="w-full">
+          <div className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 bg-pattern animate-fade-in">
+            <div className="w-full min-w-0 max-w-full">
               {children}
             </div>
           </div>

@@ -64,6 +64,9 @@ export enum ErrorTypes {
   COACH_NOT_FOUND = "Coach não encontrado",
   UNAUTHORIZED = "Não autorizado",
   EMAIL_ALREADY_EXISTS = "E-mail já cadastrado",
+  CRON_SECRET_NOT_CONFIGURED = "CRON_SECRET não configurado",
+  NOT_CONFIGURED = "Não configurado",
+  SHARK_SYNC_UNKNOWN_ERROR = "Erro desconhecido ao sincronizar",
 }
 
 export enum NotificationFilterType {

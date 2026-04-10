@@ -35,3 +35,7 @@ export const scoutBodySchema = nickNetworkSchema.extend({
 });
 
 export const scoutSearchQuerySchema = nickNetworkSchema;
+
+export const bulkDeleteAlertsBodySchema = z.object({
+  ids: z.array(z.string().min(1).max(40)).min(1).max(300),
+});

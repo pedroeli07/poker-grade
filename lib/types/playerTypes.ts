@@ -2,6 +2,14 @@ import type { GradeType, PlayerStatus, Prisma } from "@prisma/client";
 import { playerProfileInclude } from "@/lib/constants";
 import type { EntityRef, WithIdAndStatus, BaseEntity } from "./primitives";
 
+export interface ResolveNickProps {
+  playerId: string;
+  nickId: string;
+  userId: string;
+  role: UserRole;
+}
+
+
 export type PlayerNameFields = {
   name: string;
   nickname: string | null;
@@ -24,6 +32,7 @@ export type PlayerTableRow = PlayerNameStatus & {
   roiTenDay: number | null;
   fpTenDay: number | null;
   ftTenDay: number | null;
+  sharkGroupNotFound?: boolean;
   nicks: PlayerNickRow[];
 };
 

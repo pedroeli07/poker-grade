@@ -1,8 +1,8 @@
 const NETWORK_ROWS = [
   ["gg", "GGPoker", "/gg-poker-logo.png", "gg"],
-  ["pokerstars", "PokerStars", "/poker-stars-logo.jpeg", "pokerstars"],
+  ["pokerstars", "PokerStars", "/poker-stars-logo.png", "pokerstars"],
   ["888", "888 Poker", "/888-poker-logo.png", "888"],
-  ["partypoker", "Party Poker", "/party-poker-logo.png", "partypoker"],
+  ["partypoker", "Party Poker", "/party-poker-logoo.png", "partypoker"],
   ["ipoker", "iPoker", "/i-poker-logo.png", "ipoker"],
   ["wpt", "WPT Global", "/wpt-poker-logo.png", "wpt"],
   ["coinpoker", "CoinPoker", "/coin-poker-logo.jpeg", "coinpoker"],

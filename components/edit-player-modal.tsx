@@ -5,16 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { PlayerStatus } from "@prisma/client";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -43,7 +33,7 @@ import {
   DollarSign,
   Users,
 } from "lucide-react";
-import { deletePlayer, updatePlayer } from "@/lib/queries/db/player-queries";
+import { updatePlayer } from "@/lib/queries/db/player-queries";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import type { CoachOpt, GradeOpt, PlayerTableRow, EditPlayerModalProps } from "@/lib/types";
@@ -90,10 +80,9 @@ function EditPlayerModalInner({
     return "none";
   });
   const [status, setStatus] = useState<PlayerStatus>(player.status);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const router = useRouter();
   const invalidatePlayers = useInvalidate("players");
-  const formDisabled = isPending || deleteOpen;
+  const formDisabled = isPending;
 
   const gradeOptions = useMemo(() => {
     const list = [...grades];
@@ -105,34 +94,6 @@ function EditPlayerModalInner({
     }
     return list;
   }, [grades, player.gradeKey, player.gradeLabel]);
-
-  function handleDeleteConfirm() {
-    const fd = new FormData();
-    fd.set("id", player.id);
-    startTransition(() => {
-      void (async () => {
-        try {
-          await deletePlayer(fd);
-          toast.success(
-            "Jogador excluído",
-            `${player.name} e dados vinculados foram removidos.`
-          );
-          setDeleteOpen(false);
-          onClose();
-          invalidatePlayers();
-          router.refresh();
-        } catch (err) {
-          const msg =
-            err instanceof Error && err.message === "FORBIDDEN"
-              ? "Sem permissão para excluir este jogador."
-              : err instanceof Error && err.message === "NOT_FOUND"
-                ? "Jogador não encontrado."
-                : "Não foi possível excluir. Tente novamente.";
-          toast.error("Erro ao excluir", msg);
-        }
-      })();
-    });
-  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -171,39 +132,6 @@ function EditPlayerModalInner({
 
   return (
     <>
-      <AlertDialog
-        open={deleteOpen}
-        onOpenChange={(o) => {
-          if (!o && isPending) return;
-          setDeleteOpen(o);
-        }}
-      >
-        <AlertDialogContent className="sm:max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir jogador?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Isso remove {player.name} do sistema, incluindo grades, targets,
-              importações de torneios e revisões. Se existir conta de login
-              vinculada, ela será desvinculada. Não dá para desfazer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                handleDeleteConfirm();
-              }}
-              disabled={isPending}
-              className="bg-red-600 text-white hover:bg-red-600/90"
-            >
-              {isPending ? "Excluindo..." : "Excluir"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <div className="px-7 pt-7 pb-5 bg-gradient-to-b from-primary/5 to-transparent">
         <div className="flex items-center gap-4">
           <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 shrink-0">
@@ -515,16 +443,7 @@ function EditPlayerModalInner({
 
         <Separator />
 
-        <DialogFooter className="px-7 py-5 border-t-0 bg-muted/20 rounded-none flex flex-col-reverse gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <Button
-            type="button"
-            variant="ghost"
-            className="h-10 text-destructive hover:bg-destructive/10 hover:text-destructive sm:mr-auto"
-            disabled={formDisabled}
-            onClick={() => setDeleteOpen(true)}
-          >
-            Excluir jogador
-          </Button>
+        <DialogFooter className="px-7 py-5 border-t-0 bg-muted/20 rounded-none flex flex-col-reverse gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
           <div className="flex flex-wrap gap-2 justify-end w-full sm:w-auto">
             <Button
               type="button"
@@ -543,7 +462,7 @@ function EditPlayerModalInner({
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {deleteOpen ? "Aguarde…" : "Salvando..."}
+                  Salvando...
                 </>
               ) : (
                 "Salvar"

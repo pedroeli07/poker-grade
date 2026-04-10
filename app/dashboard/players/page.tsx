@@ -4,6 +4,7 @@ import { NewPlayerModal } from "@/components/new-player-modal";
 import { Metadata } from "next";
 import dynamicImport from "next/dynamic";
 import { loadPlayersListPageProps } from "../../../hooks/players/players-page-load";
+import { SyncSharkScopeButton } from "@/components/sharkscope/sync-button";
 
 const PlayersTableClient = dynamicImport(
   () =>
@@ -33,8 +34,8 @@ export default async function PlayersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1 pr-2">
           <h2 className="text-3xl font-bold tracking-tight text-primary">
             Jogadores
           </h2>
@@ -43,15 +44,18 @@ export default async function PlayersPage() {
           </p>
         </div>
         {canCreatePlayer ? (
-          <NewPlayerModal
-            coaches={tablePayload.coaches}
-            grades={tablePayload.grades}
-          />
+          <div className="shrink-0 self-start sm:self-center flex items-center gap-2">
+            <SyncSharkScopeButton />
+            <NewPlayerModal
+              coaches={tablePayload.coaches}
+              grades={tablePayload.grades}
+            />
+          </div>
         ) : null}
       </div>
 
-      <Card className="bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
-        <CardContent>
+      <Card className="min-w-0 max-w-full overflow-visible bg-[oklch(1_0_0/80%)] backdrop-blur-md border border-[oklch(0.9_0.01_240)] shadow-[0_4px_20px_-4px_oklch(0_0_0/4%)] transition-all duration-200 hover:border-[oklch(0.85_0.01_240)] hover:shadow-[0_8px_24px_-6px_oklch(0_0_0/6%)]">
+        <CardContent className="min-w-0 max-w-full">
           {tablePayload.rows.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground border border-dashed border-border rounded-lg">
               Nenhum jogador cadastrado ainda.

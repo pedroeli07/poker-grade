@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useLayoutEffect, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   getNotificationsPage,
@@ -14,13 +14,34 @@ import { useInvalidate } from "@/hooks/use-invalidate";
 import { toast } from "@/lib/toast";
 import type { NotificationFilterType } from "@/lib/types";
 import { NotificationsPageData } from "@/lib/types/index";
+import {
+  NOTIFICATIONS_LS_FILTER,
+  NOTIFICATIONS_LS_PAGE,
+} from "@/lib/constants/notifications-page";
 
 export function useNotificationsPage(initialData: NotificationsPageData) {
   const [page, setPage] = useState(initialData.page);
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [storageHydrated, setStorageHydrated] = useState(false);
   const [, startTransition] = useTransition();
   const invalidateNotifications = useInvalidate("notifications");
+
+  useLayoutEffect(() => {
+    try {
+      const f = localStorage.getItem(NOTIFICATIONS_LS_FILTER);
+      if (f === "all" || f === "unread" || f === "read") setFilter(f);
+      const pg = localStorage.getItem(NOTIFICATIONS_LS_PAGE);
+      if (pg) {
+        const p = parseInt(pg, 10);
+        if (!Number.isNaN(p) && p >= 1) setPage(p);
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      setStorageHydrated(true);
+    }
+  }, []);
 
   const { data, isFetching, error } = useQuery({
     queryKey: notificationKeys.list(page, filter as NotificationFilterType),
@@ -42,6 +63,30 @@ export function useNotificationsPage(initialData: NotificationsPageData) {
   });
 
   const dataResolved = data ?? initialData;
+
+  useEffect(() => {
+    if (!storageHydrated) return;
+    const max = Math.max(1, dataResolved.totalPages);
+    if (page > max) setPage(max);
+  }, [dataResolved.totalPages, page, storageHydrated]);
+
+  useEffect(() => {
+    if (!storageHydrated) return;
+    try {
+      localStorage.setItem(NOTIFICATIONS_LS_FILTER, filter);
+    } catch {
+      /* ignore */
+    }
+  }, [filter, storageHydrated]);
+
+  useEffect(() => {
+    if (!storageHydrated) return;
+    try {
+      localStorage.setItem(NOTIFICATIONS_LS_PAGE, String(page));
+    } catch {
+      /* ignore */
+    }
+  }, [page, storageHydrated]);
   const loading = isFetching;
 
   function changePage(next: number) {

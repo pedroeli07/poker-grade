@@ -4,6 +4,8 @@ import type { BaseEntity } from "./primitives";
 type BaseUsuarioRow = BaseEntity & { 
   email: string; 
   role: UserRole; 
+  whatsapp: string | null;
+  discord: string | null;
 };
 
 export type UsuarioDirectoryRow =
@@ -13,6 +15,8 @@ export type UsuarioDirectoryRow =
 export interface ProfileData {
   email: string;
   displayName: string | null;
+  whatsapp: string | null;
+  discord: string | null;
   role: string;
   createdAt: string;
 }

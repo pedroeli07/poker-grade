@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { NotificationsPageData } from "@/lib/types";
 import { TYPE_CONFIG } from "@/lib/constants";
-import { useNotificationsPage } from "../../../hooks/notification/use-notifications-page";
+import { useNotificationsPage } from "@/hooks/notification/use-notifications-page";
 
 export function NotificationsClient({ initialData }: { initialData: NotificationsPageData }) {
   const {

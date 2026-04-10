@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect, useLayoutEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { TargetListRow } from "@/lib/types";
 import { getTargetsListDataAction } from "@/lib/queries/db/target-queries";
 import { targetKeys } from "@/lib/queries/target-query-keys";
 import { LIMIT_ACTION_LABEL, NONE_LIMIT } from "@/lib/constants";
+import { TARGETS_LS_VIEW } from "@/lib/constants/targets-page";
 import { distinctOptions, statusLabel } from "@/lib/utils";
 import type { ColKey } from "@/lib/types";
 import { useTargetsListStore } from "@/lib/stores/use-targets-list-store";
@@ -23,6 +24,27 @@ export function useTargetsListPage(initialRows: TargetListRow[]) {
   });
 
   const [view, setView] = useState<"cards" | "table">("cards");
+  const [storageHydrated, setStorageHydrated] = useState(false);
+
+  useLayoutEffect(() => {
+    try {
+      const raw = localStorage.getItem(TARGETS_LS_VIEW);
+      if (raw === "cards" || raw === "table") setView(raw);
+    } catch {
+      /* ignore */
+    } finally {
+      setStorageHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!storageHydrated) return;
+    try {
+      localStorage.setItem(TARGETS_LS_VIEW, view);
+    } catch {
+      /* ignore */
+    }
+  }, [view, storageHydrated]);
   const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
     useTargetsListStore();
 

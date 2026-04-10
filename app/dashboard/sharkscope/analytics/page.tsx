@@ -1,34 +1,18 @@
 import dynamicImport from "next/dynamic";
-import { redirect } from "next/navigation";
-import { requireSession } from "@/lib/auth/session";
-import { canWriteOperations } from "@/lib/utils";
-import { Metadata } from "next";
-import { loadAnalyticsClientProps } from "../../../../hooks/sharkscope/analytics/analytics-page-load";
+import { sharkscopeAnalyticsPageMetadata } from "@/lib/constants/sharkscope-analytics-page";
+import { getAnalyticsPageProps } from "@/lib/sharkscope/analytics-page-server";
+import { AnalyticsPageSkeleton } from "@/components/sharkscope/analytics-page-skeleton";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
-  title: "Analytics SharkScope",
-  description: "Análise de performance do time por rede e período. Dados do cache.",
-};
+
+export const metadata = sharkscopeAnalyticsPageMetadata;
 
 const AnalyticsClient = dynamicImport(
-  () =>
-    import("./analytics-client").then((m) => ({ default: m.AnalyticsClient })),
-  {
-    loading: () => (
-      <div className="animate-pulse space-y-4">
-        <div className="h-9 w-64 rounded-md bg-muted" />
-        <div className="h-64 rounded-lg bg-muted" />
-      </div>
-    ),
-  }
+  () => import("./analytics-client").then((m) => ({ default: m.AnalyticsClient })),
+  { loading: () => <AnalyticsPageSkeleton /> }
 );
 
 export default async function AnalyticsPage() {
-  const session = await requireSession();
-  if (!canWriteOperations(session)) redirect("/dashboard");
-
-  const props = await loadAnalyticsClientProps();
-
+  const props = await getAnalyticsPageProps();
   return <AnalyticsClient {...props} />;
 }

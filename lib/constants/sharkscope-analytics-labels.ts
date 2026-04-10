@@ -6,9 +6,9 @@ export const SHARKSCOPE_ANALYTICS_PERIODS: readonly SharkscopeAnalyticsPeriod[] 
 
 const TAB_ROWS = [
   ["site", Globe, "Por Site"],
-  ["ranking", Trophy, "Ranking (30d)"],
+  ["ranking", Trophy, "Ranking"],
   ["tier", Layers, "Por TIER"],
-  ["bounty", Zap, "Bounty vs Vanilla"],
+  ["bounty", Zap, "Bounty / Vanilla / Sat"],
 ] as const satisfies readonly (readonly [SharkscopeAnalyticsTab, LucideIcon, string])[];
 
 export const TAB_ICONS = Object.fromEntries(TAB_ROWS.map(([id, Icon]) => [id, Icon])) as Record<

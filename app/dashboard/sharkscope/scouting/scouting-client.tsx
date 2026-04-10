@@ -22,7 +22,7 @@ import {
 } from "@/components/sharkscope/scouting-cells";
 import { ScoutingSavedCard } from "@/components/sharkscope/scouting-saved-card";
 import type { ScoutingClientProps } from "@/lib/types";
-import { useScoutingDashboard } from "@/hooks/sharkscope/scouting/use-scouting-dashboard";
+import { useScoutingPageClient } from "@/hooks/sharkscope/scouting/use-scouting-page-client";
 
 export function ScoutingClient({
   networkOptions,
@@ -49,7 +49,7 @@ export function ScoutingClient({
     handleSave,
     toggleExpanded,
     removeSaved,
-  } = useScoutingDashboard(networkOptions, initialSaved);
+  } = useScoutingPageClient(networkOptions, initialSaved);
 
   const {
     roi: resultRoi,

@@ -1,6 +1,10 @@
 import type { AppSession } from "@/lib/auth/session";
 import { getGradeByIdForSession } from "@/lib/queries/db";
-import { canEditGradeCoachNote, canManageGrades, mapPrismaRuleToCard } from "@/lib/utils";
+import {
+  canEditGradeCoachNote,
+  canManageGrades,
+  mapPrismaRuleToCard,
+} from "@/lib/utils";
 import type { GradeDetailClientProps, GradeDetailQueryData } from "@/lib/types";
 
 export async function loadGradeDetailClientProps(

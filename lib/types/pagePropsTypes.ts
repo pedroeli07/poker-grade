@@ -56,8 +56,10 @@ export type ScoutingClientProps = {
 export type AnalyticsClientProps = {
   stats30d: NetworkStat[];
   stats90d: NetworkStat[];
-  ranking: RankingEntry[];
+  ranking30d: RankingEntry[];
+  ranking90d: RankingEntry[];
   tierStats30d: TierStat[];
+  tierStats90d: TierStat[];
   typeStats30d: TypeStat[];
   hasData30d: boolean;
   hasData90d: boolean;

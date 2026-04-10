@@ -40,7 +40,7 @@ export const PlayersTableClient = memo(function PlayersTableClient({
   } = usePlayersTablePage(initialPayload);
 
   return (
-    <div className="space-y-3">
+    <div className="min-w-0 max-w-full space-y-3">
       <EditPlayerModal
         player={editRow}
         open={editRow !== null}
@@ -71,11 +71,11 @@ export const PlayersTableClient = memo(function PlayersTableClient({
           </Button>
         )}
       </div>
-      <div className="rounded-md border border-border overflow-x-auto">
-        <Table className="table-fixed w-full min-w-[1280px]">
+      <div className="min-w-0 max-w-full rounded-md border border-border">
+        <Table className="table-fixed w-full max-w-full">
           <TableHeader>
             <TableRow className="bg-blue-500/10 hover:bg-transparent">
-              <TableHead className="w-[140px]">
+              <TableHead className="w-[11%] min-w-0">
                 <ColumnFilter
                   columnId="name"
                   label="Nome"
@@ -84,9 +84,9 @@ export const PlayersTableClient = memo(function PlayersTableClient({
                   onApply={setCol("name")}
                 />
               </TableHead>
-              <TableHead className="w-[160px]">E-mail</TableHead>
-              <TableHead className="w-[320px]">Nicks</TableHead>
-              <TableHead className="w-[150px]">
+              <TableHead className="w-[10%] min-w-0">E-mail</TableHead>
+              <TableHead className="w-[18%] min-w-0">Nicks</TableHead>
+              <TableHead className="w-[12%] min-w-0">
                 <ColumnFilter
                   columnId="playerGroup"
                   label="Grupo Shark"
@@ -95,7 +95,7 @@ export const PlayersTableClient = memo(function PlayersTableClient({
                   onApply={setCol("playerGroup")}
                 />
               </TableHead>
-              <TableHead className="w-[140px]">
+              <TableHead className="w-[9%] min-w-0">
                 <ColumnFilter
                   columnId="coach"
                   label="Coach"
@@ -104,7 +104,7 @@ export const PlayersTableClient = memo(function PlayersTableClient({
                   onApply={setCol("coach")}
                 />
               </TableHead>
-              <TableHead className="w-[140px] pr-4">
+              <TableHead className="w-[9%] min-w-0 pr-2">
                 <ColumnFilter
                   columnId="grade"
                   label="Grade"
@@ -113,7 +113,7 @@ export const PlayersTableClient = memo(function PlayersTableClient({
                   onApply={setCol("grade")}
                 />
               </TableHead>
-              <TableHead className="w-[6rem] pr-1.5 align-middle text-center">
+              <TableHead className="w-[6%] min-w-0 pr-1 align-middle text-center">
                 <ColumnFilter
                   columnId="abi"
                   label="ABI"
@@ -122,16 +122,16 @@ export const PlayersTableClient = memo(function PlayersTableClient({
                   onApply={setCol("abi")}
                 />
               </TableHead>
-              <TableHead className="w-[5.25rem] px-1 align-middle text-center">
+              <TableHead className="w-[5%] min-w-0 px-0.5 align-middle text-center text-[14px] leading-tight">
                 ROI (10d)
               </TableHead>
-              <TableHead className="w-[4.25rem] px-1 align-middle text-center">
+              <TableHead className="w-[5%] min-w-0 px-0.5 align-middle text-center text-[14px] leading-tight">
                 FP (10d)
               </TableHead>
-              <TableHead className="w-[4.25rem] px-1 align-middle text-center">
+              <TableHead className="w-[5%] min-w-0 px-0.5 align-middle text-center text-[14px] leading-tight">
                 FT (10d)
               </TableHead>
-              <TableHead className="w-[120px]">
+              <TableHead className="w-[5%] min-w-0 px-1.5 text-right">
                 <ColumnFilter
                   columnId="status"
                   label="Status"
@@ -140,7 +140,7 @@ export const PlayersTableClient = memo(function PlayersTableClient({
                   onApply={setCol("status")}
                 />
               </TableHead>
-              <TableHead className="w-[80px] text-right">Ações</TableHead>
+              <TableHead className="w-[5%] min-w-0 px-1.5 text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

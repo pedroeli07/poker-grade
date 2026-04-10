@@ -1,13 +1,9 @@
 import dynamicImport from "next/dynamic";
-import { requireSession } from "@/lib/auth/session";
-import { getNotificationsPage } from "@/lib/queries/db/notification-queries";
-import { Metadata } from "next";
-import { NotificationFilterType } from "@/lib/types";
+import { notificationsPageMetadata } from "@/lib/constants/notifications-page";
+import { NotificationsPageSkeleton } from "@/components/notifications/notifications-page-skeleton";
+import { getNotificationsPageInitial } from "@/lib/notifications/notifications-page-server";
 
-export const metadata: Metadata = {
-  title: "Notificações",
-  description: "Visualize suas notificações e marque como lidas.",
-};
+export const metadata = notificationsPageMetadata;
 
 export const dynamic = "force-dynamic";
 
@@ -16,19 +12,11 @@ const NotificationsClient = dynamicImport(
     import("./notifications-client").then((m) => ({
       default: m.NotificationsClient,
     })),
-  {
-    loading: () => (
-      <div className="animate-pulse space-y-4">
-        <div className="h-9 w-48 rounded-md bg-muted" />
-        <div className="h-64 rounded-lg bg-muted" />
-      </div>
-    ),
-  }
+  { loading: () => <NotificationsPageSkeleton /> }
 );
 
 export default async function NotificationsPage() {
-  await requireSession();
-  const initial = await getNotificationsPage(1, NotificationFilterType.ALL);
+  const initial = await getNotificationsPageInitial();
   if (!initial.ok) {
     return (
       <div className="text-center py-16 text-muted-foreground">{initial.error}</div>

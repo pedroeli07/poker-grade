@@ -10,7 +10,14 @@ export async function getUsuarioDirectoryRows(): Promise<UsuarioDirectoryRow[]> 
     }),
     prisma.authUser.findMany({
       orderBy: { createdAt: "desc" },
-      select: { id: true, email: true, role: true, createdAt: true },
+      select: { 
+        id: true, 
+        email: true, 
+        role: true, 
+        createdAt: true,
+        whatsapp: true,
+        discord: true
+      },
     }),
   ]);
 
@@ -19,6 +26,8 @@ export async function getUsuarioDirectoryRows(): Promise<UsuarioDirectoryRow[]> 
     id: r.id,
     email: r.email,
     role: r.role,
+    whatsapp: null,
+    discord: null,
     createdAt: r.createdAt.toISOString(),
     isRegistered: false,
   }));
@@ -28,6 +37,8 @@ export async function getUsuarioDirectoryRows(): Promise<UsuarioDirectoryRow[]> 
     id: r.id,
     email: r.email,
     role: r.role,
+    whatsapp: r.whatsapp,
+    discord: r.discord,
     createdAt: r.createdAt.toISOString(),
     isRegistered: true,
   }));

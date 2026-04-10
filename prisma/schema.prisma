@@ -92,6 +92,8 @@ model AuthUser {
   lockedUntil    DateTime?
   failedAttempts Int       @default(0)
   lastFailedAt   DateTime?
+  whatsapp       String?
+  discord        String?
   sessions       AuthSession[]
   invitesCreated AllowedEmail[] @relation("AllowedEmailAddedBy")
   notifications  Notification[]

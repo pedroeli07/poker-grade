@@ -9,6 +9,7 @@ const ALERT_TYPE_ROWS = [
   ["low_volume", "Baixo Volume"],
   ["early_finish", "Finalização Precoce Alta"],
   ["late_finish", "Finalização Tardia Baixa"],
+  ["group_not_found", "Grupo Shark não encontrado"],
 ] as const;
 
 export const ALERT_TYPE_LABEL: Record<string, string> = Object.fromEntries(ALERT_TYPE_ROWS);

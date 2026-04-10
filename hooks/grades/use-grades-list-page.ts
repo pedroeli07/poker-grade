@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect, useLayoutEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { descriptionPick, distinctOptions } from "@/lib/utils";
 import { EMPTY_DESC, STALE_TIME } from "@/lib/constants";
+import { GRADES_LS_VIEW } from "@/lib/constants/grades-page";
 import type { GradeListRow, ColumnKey } from "@/lib/types";
 import { getGradesListRowsAction } from "@/lib/queries/db/grade-queries";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
@@ -22,6 +23,27 @@ export function useGradesListPage(initialRows: GradeListRow[]) {
   });
 
   const [view, setView] = useState<"cards" | "table">("cards");
+  const [storageHydrated, setStorageHydrated] = useState(false);
+
+  useLayoutEffect(() => {
+    try {
+      const raw = localStorage.getItem(GRADES_LS_VIEW);
+      if (raw === "cards" || raw === "table") setView(raw);
+    } catch {
+      /* ignore */
+    } finally {
+      setStorageHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!storageHydrated) return;
+    try {
+      localStorage.setItem(GRADES_LS_VIEW, view);
+    } catch {
+      /* ignore */
+    }
+  }, [view, storageHydrated]);
   const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
     useGradesListStore();
   const setCol = useCallback(

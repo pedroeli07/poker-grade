@@ -4,3 +4,4 @@ export * from "./rule-fields";
 export * from "./player-utils";
 export * from "./notification";
 export * from "./app";
+export * from "./sharkscope-alerts-ui";

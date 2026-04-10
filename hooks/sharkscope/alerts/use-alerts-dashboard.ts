@@ -80,7 +80,49 @@ export function useAlertsDashboard(initialAlerts: SharkscopeAlertRow[]) {
     });
   }, [filtered, startTransition]);
 
+  const deleteAlerts = useCallback(
+    (ids: string[], opts?: { onSuccess?: () => void }) => {
+      const unique = [...new Set(ids)].filter(Boolean);
+      if (unique.length === 0) return;
+      startTransition(() => {
+        void (async () => {
+          const res = await fetch("/api/alerts/bulk-delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: unique }),
+          });
+          const body = (await res.json().catch(() => ({}))) as {
+            deleted?: number;
+            ids?: string[];
+            error?: string;
+          };
+          if (!res.ok) {
+            toast.error(
+              "Erro ao excluir",
+              typeof body.error === "string" ? body.error : "Não foi possível excluir os alertas."
+            );
+            return;
+          }
+          const removed = Array.isArray(body.ids) ? body.ids : unique;
+          const n = typeof body.deleted === "number" ? body.deleted : removed.length;
+          setAlerts((prev) => prev.filter((a) => !removed.includes(a.id)));
+          if (n === 0) {
+            toast.error("Nenhum alerta excluído", "Nada foi removido. Atualize a página se o problema persistir.");
+            return;
+          }
+          toast.success(
+            "Alertas excluídos",
+            `${n} registro${n !== 1 ? "s" : ""} removido${n !== 1 ? "s" : ""}.`
+          );
+          opts?.onSuccess?.();
+        })();
+      });
+    },
+    [startTransition]
+  );
+
   return {
+    alerts,
     filterSeverity,
     setFilterSeverity,
     filterType,
@@ -92,5 +134,6 @@ export function useAlertsDashboard(initialAlerts: SharkscopeAlertRow[]) {
     isPending,
     acknowledge,
     acknowledgeAll,
+    deleteAlerts,
   };
 }

@@ -9,33 +9,41 @@ import { getUnreadCount } from "@/lib/queries/db/notification-queries";
 import { cn } from "@/lib/utils";
 
 function CurrentTimeDisplay() {
-  const [time, setTime] = useState(() => new Date());
+  const [mounted, setMounted] = useState(false);
+  const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    setMounted(true);
+    setTime(new Date());
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  const timeStr = new Intl.DateTimeFormat("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).format(time);
+  const timeStr = time
+    ? new Intl.DateTimeFormat("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }).format(time)
+    : "--:--:--";
 
-  const weekdayStr = new Intl.DateTimeFormat("pt-BR", {
-    weekday: "long",
-  }).format(time);
-
-  const dateStr = new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(time);
-
+  const weekdayStr = time
+    ? new Intl.DateTimeFormat("pt-BR", {
+        weekday: "long",
+      }).format(time)
+    : "Carregando";
   const weekdayFormatted = weekdayStr.charAt(0).toUpperCase() + weekdayStr.slice(1);
 
+  const dateStr = time
+    ? new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }).format(time)
+    : "Carregando data...";
+
   return (
-    <div className="flex items-center gap-4 animate-fade-in">
+    <div className={cn("flex items-center gap-4 transition-opacity duration-300", mounted ? "opacity-100" : "opacity-0")}>
       <div className="text-2xl font-black tracking-tight text-primary">
         {timeStr}
       </div>
