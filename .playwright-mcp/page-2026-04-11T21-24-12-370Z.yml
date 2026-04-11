@@ -1,0 +1,41 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "CLTEAM" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Acesse sua conta
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e10]:
+            - generic [ref=e11]: E-mail
+            - textbox "E-mail" [ref=e12]:
+              - /placeholder: seu@email.com
+          - generic [ref=e13]:
+            - generic [ref=e14]: Senha
+            - generic [ref=e15]:
+              - textbox "Senha" [ref=e16]:
+                - /placeholder: ••••••••
+              - button "Mostrar senha" [ref=e17] [cursor=pointer]:
+                - img [ref=e18]
+          - generic [ref=e21]:
+            - generic [ref=e22] [cursor=pointer]:
+              - checkbox "Lembrar e-mail" [ref=e23]
+              - text: Lembrar e-mail
+            - link "Esqueceu a senha?" [ref=e24] [cursor=pointer]:
+              - /url: /forgot-password
+          - button "Entrar" [ref=e25] [cursor=pointer]
+        - generic [ref=e28]: ou
+        - link "Entrar com Google" [ref=e30] [cursor=pointer]:
+          - /url: /api/auth/google
+          - img [ref=e31]
+          - text: Entrar com Google
+        - paragraph [ref=e36]:
+          - text: Não tem uma conta?
+          - link "Registre-se" [ref=e37] [cursor=pointer]:
+            - /url: /register
+    - link "Voltar para o site" [ref=e38] [cursor=pointer]:
+      - /url: /
+      - img [ref=e39]
+      - text: Voltar para o site
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e46] [cursor=pointer]:
+    - img [ref=e47]

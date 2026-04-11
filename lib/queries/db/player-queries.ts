@@ -187,10 +187,19 @@ export async function updatePlayer(formData: FormData) {
       try {
         const parsedArr = JSON.parse(parsed.data.nicksData);
         if (Array.isArray(parsedArr)) {
-          parsedNicks = parsedArr.map((n) => ({
-            network: String(n.network).trim(),
-            nick: String(n.nick).trim(),
-          })).filter(n => n.nick.length > 0 && n.network.length > 0);
+          const raw = parsedArr
+            .map((n) => ({
+              network: String(n.network).trim(),
+              nick: String(n.nick).trim(),
+            }))
+            .filter((n) => n.nick.length > 0 && n.network.length > 0);
+          const seenKeys = new Set<string>();
+          parsedNicks = raw.filter((n) => {
+            const k = `${n.network}\0${n.nick}`;
+            if (seenKeys.has(k)) return false;
+            seenKeys.add(k);
+            return true;
+          });
         }
       } catch (e) {
         playerQueriesLog.error("Falha ao fazer parse dos Nicks", e instanceof Error ? e : undefined, { nicksData: parsed.data.nicksData });
@@ -204,20 +213,25 @@ export async function updatePlayer(formData: FormData) {
       });
 
       if (parsedNicks !== null) {
-        // Ignora nicks sintéticos (como PlayerGroup) para que não sejam apagados acidentalmente pelo form
-        const currentNicks = await prisma.playerNick.findMany({ 
-          where: { playerId: parsed.data.id, network: { not: "PlayerGroup" } } 
+        // Todos os nicks no DB (incl. PlayerGroup): necessário para saber o que já existe e evitar createMany duplicado.
+        const allExistingNicks = await prisma.playerNick.findMany({
+          where: { playerId: parsed.data.id },
         });
-        const toKeep = parsedNicks.map(n => n.network + ':' + n.nick);
-        const nicksToDelete = currentNicks.filter(c => !toKeep.includes(c.network + ':' + c.nick));
-        const newNicks = parsedNicks.filter(n => !currentNicks.some(c => c.network === n.network && c.nick === n.nick));
+        // Só remove nicks “do form” (não sintéticos); PlayerGroup não entra aqui para não apagar por engano.
+        const formManagedExisting = allExistingNicks.filter((c) => c.network !== "PlayerGroup");
+        const toKeep = parsedNicks.map((n) => n.network + ":" + n.nick);
+        const nicksToDelete = formManagedExisting.filter((c) => !toKeep.includes(c.network + ":" + c.nick));
+        const newNicks = parsedNicks.filter(
+          (n) => !allExistingNicks.some((c) => c.network === n.network && c.nick === n.nick)
+        );
 
         if (nicksToDelete.length > 0) {
-          await prisma.playerNick.deleteMany({ where: { id: { in: nicksToDelete.map(n => n.id) } } });
+          await prisma.playerNick.deleteMany({ where: { id: { in: nicksToDelete.map((n) => n.id) } } });
         }
         if (newNicks.length > 0) {
           await prisma.playerNick.createMany({
-            data: newNicks.map(n => ({ playerId: parsed.data.id, network: n.network, nick: n.nick })),
+            data: newNicks.map((n) => ({ playerId: parsed.data.id, network: n.network, nick: n.nick })),
+            skipDuplicates: true,
           });
         }
       }

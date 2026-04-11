@@ -16,6 +16,8 @@ import type { PlayersTablePayload } from "@/lib/types";
 import { usePlayersTablePage } from "../../../hooks/players/use-players-table-page";
 import PlayerTableRow from "@/components/players/player-table-row";
 
+const STATS_TABLE_HEAD="w-[5%] min-w-0 px-0.5 align-middle text-center text-[14px] leading-tight"
+
 const PlayersTableClient = memo(function PlayersTableClient({
   initialPayload,
   canEditPlayers,
@@ -74,7 +76,7 @@ const PlayersTableClient = memo(function PlayersTableClient({
       <div className="min-w-0 max-w-full rounded-md border border-border">
         <Table className="table-fixed w-full max-w-full">
           <TableHeader>
-            <TableRow className="bg-blue-500/10 hover:bg-transparent">
+            <TableRow className="bg-blue-500/20 hover:bg-blue-500/20">
               <TableHead className="w-[11%] min-w-0">
                 <ColumnFilter
                   columnId="name"
@@ -93,6 +95,15 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   options={options.playerGroup}
                   applied={filters.playerGroup}
                   onApply={setCol("playerGroup")}
+                />
+              </TableHead>
+              <TableHead className="w-[5%] min-w-0 px-1.5 text-right">
+                <ColumnFilter
+                  columnId="status"
+                  label="Status"
+                  options={options.status}
+                  applied={filters.status}
+                  onApply={setCol("status")}
                 />
               </TableHead>
               <TableHead className="w-[9%] min-w-0">
@@ -122,23 +133,14 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   onApply={setCol("abi")}
                 />
               </TableHead>
-              <TableHead className="w-[5%] min-w-0 px-0.5 align-middle text-center text-[14px] leading-tight">
+              <TableHead className={STATS_TABLE_HEAD}>
                 ROI (10d)
               </TableHead>
-              <TableHead className="w-[5%] min-w-0 px-0.5 align-middle text-center text-[14px] leading-tight">
+              <TableHead className={STATS_TABLE_HEAD}>
                 FP (10d)
               </TableHead>
-              <TableHead className="w-[5%] min-w-0 px-0.5 align-middle text-center text-[14px] leading-tight">
+              <TableHead className={STATS_TABLE_HEAD}>
                 FT (10d)
-              </TableHead>
-              <TableHead className="w-[5%] min-w-0 px-1.5 text-right">
-                <ColumnFilter
-                  columnId="status"
-                  label="Status"
-                  options={options.status}
-                  applied={filters.status}
-                  onApply={setCol("status")}
-                />
               </TableHead>
               <TableHead className="w-[5%] min-w-0 px-1.5 text-right">Ações</TableHead>
             </TableRow>

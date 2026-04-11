@@ -31,6 +31,15 @@ export type PlayersTableColumnFilters = FilterMap<PlayersTableColumnKey>;
 export type UsuariosColumnKey = "email" | "role" | "status";
 export type UsuariosColumnFilters = FilterMap<UsuariosColumnKey>;
 
+export type AnalyticsSiteFilters = Record<"network", Set<string> | null>;
+export type AnalyticsSiteColumnKey = "network";
+export type AnalyticsRankingFilters = Record<"player", Set<string> | null>;
+export type AnalyticsRankingColumnKey = "player";
+export type AnalyticsTierFilters = Record<"tier", Set<string> | null>;
+export type AnalyticsTierColumnKey = "tier";
+export type AnalyticsBountyFilters = Record<"type", Set<string> | null>;
+export type AnalyticsBountyColumnKey = "type";
+
 /** @deprecated Use GradesColumnKey */
 export type ColumnKey = GradesColumnKey;
 /** @deprecated Use GradesColumnFilters */

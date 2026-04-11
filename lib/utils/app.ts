@@ -401,10 +401,27 @@ const STAT_CONTAINER_PATHS = [
   ["PlayerResults", "PlayerResult", "Statistics"],
 ] as const;
 
+/** Junta nós `Statistic` de todos os caminhos — antes só o primeiro caminho não-undefined era usado e podia omitir Ability (ex.: `PlayerView.Statistics` sem todas as métricas). */
+function collectAllStatisticNodes(root: Record<string, unknown>): StatisticJson[] {
+  const out: StatisticJson[] = [];
+  for (const path of STAT_CONTAINER_PATHS) {
+    const stats = dig(root, ...(path as unknown as string[]));
+    if (stats == null) continue;
+    out.push(...getStatArray(stats));
+  }
+  return out;
+}
+
+function statisticIdLower(s: StatisticJson): string | undefined {
+  const raw = s["@name"] ?? s["@id"] ?? s.id ?? s.name;
+  if (typeof raw !== "string") return undefined;
+  return raw.trim().toLowerCase().replace(/\s/g, "");
+}
+
 export function extractStat(rawData: unknown, statName: string): number | null {
   if (!rawData || typeof rawData !== "object") return null;
   const root = rawData as Record<string, unknown>;
-  const want = statName.toLowerCase();
+  const want = statName.toLowerCase().replace(/\s/g, "");
 
   const aliases = new Set<string>();
   aliases.add(want);
@@ -420,15 +437,13 @@ export function extractStat(rawData: unknown, statName: string): number | null {
     aliases.add("averagestake");
     aliases.add("avstake");
   }
+  if (want === "ability" || want === "avability") {
+    aliases.add("ability");
+    aliases.add("avability");
+  }
 
-  const stats = STAT_CONTAINER_PATHS.reduce<unknown>(
-    (acc, path) => acc ?? dig(root, ...(path as unknown as string[])),
-    undefined,
-  );
-
-  const found = getStatArray(stats).find(s => {
-    const raw = s["@name"] ?? s["@id"] ?? s.id;
-    const lowerRaw = (typeof raw === "string" ? raw : undefined)?.toLowerCase();
+  const found = collectAllStatisticNodes(root).find((s) => {
+    const lowerRaw = statisticIdLower(s);
     return lowerRaw && aliases.has(lowerRaw);
   });
   if (found) {

@@ -16,7 +16,7 @@ export async function syncSharkScopeManualAction() {
   }
 
   try {
-    const response = await fetch(`${appUrl}/api/cron/daily-sync`, {
+    const response = await fetch(`${appUrl}/api/cron/daily-sync?force=1`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${cronSecret}`,

@@ -3,7 +3,7 @@ import type { AppSession } from "@/lib/auth/session";
 import { getCoachesWithActiveLogin } from "@/lib/data/coaches";
 import { getGradesForSession, getPlayersForSession } from "@/lib/queries/db";
 import { buildAbiByPlayer, toTableRows } from "@/lib/utils";
-import { extractStat } from "@/lib/sharkscope-parse";
+import { extractStat, extractRoiTenDayForPlayerTable } from "@/lib/sharkscope-parse";
 import type { PlayersTablePayload } from "@/lib/types";
 
 export async function getPlayersTablePayloadForSession(
@@ -50,23 +50,10 @@ export async function getPlayersTablePayloadForSession(
   const rows = toTableRows(players, abiByPlayer);
 
   if (rows.length > 0) {
-    // Buscar caches de stats_10d (ROI, e dados de EarlyFinish/LateFinish se disponíveis no summary)
+    // Cache stats_10d: TotalROI, EarlyFinish e LateFinish (janela Date:10D — alinhado aos rótulos da tabela)
     const nickCaches10d = await prisma.sharkScopeCache.findMany({
       where: {
         dataType: "stats_10d",
-        expiresAt: { gt: new Date() },
-        playerNick: {
-          playerId: { in: playerIds },
-          isActive: true,
-        },
-      },
-      select: { rawData: true, playerNick: { select: { playerId: true } } },
-    });
-
-    // Buscar caches de stats_30d para EarlyFinish e LateFinish (mais completos)
-    const nickCaches30d = await prisma.sharkScopeCache.findMany({
-      where: {
-        dataType: "stats_30d",
         expiresAt: { gt: new Date() },
         playerNick: {
           playerId: { in: playerIds },
@@ -88,29 +75,14 @@ export async function getPlayersTablePayloadForSession(
     });
     const groupNotFoundSet = new Set(groupNotFoundAlerts.map((a) => a.playerId));
 
-    // Mapa de ROI do stats_10d
     const statsMap = new Map<string, { roi: number | null; fp: number | null; ft: number | null }>();
     for (const cache of nickCaches10d) {
       const playerId = cache.playerNick.playerId;
       if (statsMap.has(playerId)) continue;
-      const roi = extractStat(cache.rawData, "AvROI");
-      // EarlyFinish e LateFinish podem estar presentes no summary de grupos
+      const roi = extractRoiTenDayForPlayerTable(cache.rawData);
       const fp = extractStat(cache.rawData, "EarlyFinish");
       const ft = extractStat(cache.rawData, "LateFinish");
       statsMap.set(playerId, { roi, fp, ft });
-    }
-
-    // Sobrescrever FP/FT com os dados de 30d (mais completos / específicos)
-    for (const cache of nickCaches30d) {
-      const playerId = cache.playerNick.playerId;
-      const fp = extractStat(cache.rawData, "EarlyFinish");
-      const ft = extractStat(cache.rawData, "LateFinish");
-      const existing = statsMap.get(playerId);
-      if (existing) {
-        // Só sobrescreve se tiver valor real
-        if (fp !== null) existing.fp = fp;
-        if (ft !== null) existing.ft = ft;
-      }
     }
 
     for (const row of rows) {

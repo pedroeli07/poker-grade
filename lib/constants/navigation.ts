@@ -6,6 +6,7 @@ import {
   Bell,
   BellRing,
   Binoculars,
+  FlaskConical,
   Grid3X3,
   History,
   Home,
@@ -38,6 +39,7 @@ const SHARKSCOPE_ITEMS = [
   { title: "Alertas", href: "/dashboard/sharkscope/alerts", icon: BellRing },
   { title: "Analytics", href: "/dashboard/sharkscope/analytics", icon: LineChart },
   { title: "Scouting", href: "/dashboard/sharkscope/scouting", icon: Binoculars },
+  { title: "Debug grupo", href: "/dashboard/sharkscope/group-compare", icon: FlaskConical },
 ] as const;
 
 export const SIDEBAR_NAV_ITEMS: SidebarNavEntry[] = [

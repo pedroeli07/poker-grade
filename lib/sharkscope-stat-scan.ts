@@ -1,3 +1,21 @@
+/**
+ * SharkScope expõe métricas agregadas na API com ids em inglês em nós `Statistic` (`@id` / `@name`),
+ * ex.: Entries, TotalROI, TotalProfit, ITM, AvStake, Ability, EarlyFinish, LateFinish.
+ *
+ * O CSV de histórico de torneios é outro produto: colunas em PT (Rede, Jogador, Stake, Resultado…)
+ * e uma linha por participação/torneio — não é o mesmo formato JSON que o cache grava. Para bater
+ * com a busca “Pesquisa avançada” / resumo por período, use sempre esses ids da API (via
+ * `extractStat`), não os cabeçalhos do CSV.
+ *
+ * Referência rápida UI PT ↔ API (agregados):
+ * - Inscrições → Entries
+ * - Lucro (período) → TotalProfit
+ * - ROI total → TotalROI
+ * - ITM % → ITM
+ * - Stake méd. → AvStake
+ * - Capacidade → **Ability** (`@id` em metadata; não usar AvAbility — não existe na lista)
+ * - Finalizações precoce/tardia → EarlyFinish / LateFinish (API às vezes com typo Finshes*)
+ */
 const sharkscopeStatMapCache = new WeakMap<object, Map<string, number>>();
 
 function walkUnknown(obj: unknown, visit: (r: Record<string, unknown>) => void): void {
@@ -36,10 +54,14 @@ function canonStatisticId(rawId: string): string | null {
     return "totalprofit";
   }
   if (x === "count") return "count";
+  if (x === "entries") return "entries";
+  if (x === "totalroi") return "totalroi";
+  if (x === "itm") return "itm";
   if (x === "avstake" || x === "stake" || x === "averagestake") return "avstake";
   if (x === "entrants") return "entrants";
   if (x === "earlyfinish" || x === "finshesearly") return "earlyfinish";
   if (x === "latefinish" || x === "finsheslate") return "latefinish";
+  if (x === "ability" || x === "avability") return "ability";
   return null;
 }
 
@@ -75,15 +97,23 @@ export function lookupSharkscopeStat(rawData: unknown, statName: string): number
         ? "totalprofit"
         : want === "count"
           ? "count"
-          : want === "avstake"
-            ? "avstake"
-            : want === "entrants"
-              ? "entrants"
-              : want === "earlyfinish"
-                ? "earlyfinish"
-                : want === "latefinish"
-                  ? "latefinish"
-                  : null;
+          : want === "entries"
+            ? "entries"
+            : want === "totalroi"
+              ? "totalroi"
+              : want === "itm"
+                ? "itm"
+                : want === "avstake"
+                  ? "avstake"
+                  : want === "entrants"
+                    ? "entrants"
+                    : want === "earlyfinish"
+                      ? "earlyfinish"
+                      : want === "latefinish"
+                      ? "latefinish"
+                      : want === "ability" || want === "avability"
+                        ? "ability"
+                        : null;
 
   if (!key) return null;
   return map.get(key) ?? null;

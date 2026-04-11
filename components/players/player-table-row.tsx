@@ -39,6 +39,7 @@ const PlayerTableRow = memo(function PlayerTableRow({
       >
         <PlayerGroupTableCell playerGroup={player.playerGroup} sharkGroupNotFound={player.sharkGroupNotFound} />
       </TableCell>
+      <PlayerStatusTableCell status={player.status} />
       <PlayerCoachTableCell coachKey={player.coachKey} coachLabel={player.coachLabel} />
       <PlayerGradeTableCell gradeKey={player.gradeKey} gradeLabel={player.gradeLabel} />
       <PlayerAbiTableCell abiKey={player.abiKey} abiLabel={player.abiLabel} />
@@ -51,7 +52,6 @@ const PlayerTableRow = memo(function PlayerTableRow({
       <TableCell className="w-[5%] min-w-0 px-0.5 pt-2 text-center align-top">
         <PlayerFtTenDayCell value={player.ftTenDay} />
       </TableCell>
-      <PlayerStatusTableCell status={player.status} />
       <PlayerTableRowActions player={player} canEditPlayers={canEditPlayers} onEdit={onEdit} />
     </TableRow>
   );

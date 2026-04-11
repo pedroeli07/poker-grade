@@ -2,7 +2,11 @@ import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { extractStat } from "@/lib/sharkscope-parse";
 import { POKER_NETWORKS } from "@/lib/constants";
-import { SHARKSCOPE_TYPE_BREAKDOWN_KEYS } from "@/lib/constants/sharkscope-type-filters";
+import {
+  SHARKSCOPE_STATS_FILTER_30D,
+  SHARKSCOPE_STATS_FILTER_90D,
+  SHARKSCOPE_TYPE_BREAKDOWN_KEYS,
+} from "@/lib/constants/sharkscope-type-filters";
 import type { NetworkStat, TierStat, TypeStat, RankingEntry } from "@/lib/types";
 import { classifyTier } from "@/lib/utils";
 
@@ -47,14 +51,17 @@ function bucketToNetworkStat(network: string, bucket: AggBucket): NetworkStat {
 }
 
 function pushCacheIntoBucket(bucket: AggBucket, rawData: unknown) {
-  const roi = extractStat(rawData, "AvROI");
+  const totalRoi = extractStat(rawData, "TotalROI");
   const profit = extractStat(rawData, "TotalProfit");
   const count = extractStat(rawData, "Count");
-  if (roi !== null) bucket.rois.push(roi);
+  const entries = extractStat(rawData, "Entries");
+  const weightForRoi =
+    entries !== null && entries > 0 ? entries : count !== null && count > 0 ? count : null;
+  if (totalRoi !== null) bucket.rois.push(totalRoi);
   if (profit !== null) bucket.profits.push(profit);
   if (count !== null) bucket.counts.push(count);
-  if (roi !== null && count !== null && count > 0) {
-    bucket.roiCountPairs.push({ roi, count });
+  if (totalRoi !== null && weightForRoi !== null) {
+    bucket.roiCountPairs.push({ roi: totalRoi, count: weightForRoi });
   }
 }
 
@@ -127,10 +134,13 @@ async function buildTierStats(dataType: string): Promise<TierStat[]> {
   });
 }
 
-async function buildRanking(dataType: string): Promise<RankingEntry[]> {
+async function buildRanking(dataType: "stats_30d" | "stats_90d"): Promise<RankingEntry[]> {
+  const filterKey = dataType === "stats_30d" ? SHARKSCOPE_STATS_FILTER_30D : SHARKSCOPE_STATS_FILTER_90D;
+
   const playerCaches = await prisma.sharkScopeCache.findMany({
     where: {
       dataType,
+      filterKey,
       expiresAt: { gt: new Date() },
       playerNick: { network: "PlayerGroup" },
     },
@@ -146,19 +156,26 @@ async function buildRanking(dataType: string): Promise<RankingEntry[]> {
     },
   });
 
-  const rankingMap = new Map<
-    string,
-    { player: { id: string; name: string; nickname: string | null }; roi: number; count: number }
-  >();
+  const rankingMap = new Map<string, RankingEntry>();
 
   for (const cache of playerCaches) {
-    const roi = extractStat(cache.rawData, "AvROI");
-    const count = extractStat(cache.rawData, "Count");
+    const raw = cache.rawData;
+    const roi = extractStat(raw, "TotalROI");
     if (roi === null) continue;
     const p = cache.playerNick.player;
-    if (!rankingMap.has(p.id)) {
-      rankingMap.set(p.id, { player: p, roi, count: count ?? 0 });
-    }
+    if (rankingMap.has(p.id)) continue;
+
+    rankingMap.set(p.id, {
+      player: p,
+      roi,
+      entries: extractStat(raw, "Entries"),
+      profit: extractStat(raw, "TotalProfit"),
+      itm: extractStat(raw, "ITM"),
+      ability: extractStat(raw, "Ability"),
+      avStake: extractStat(raw, "AvStake"),
+      earlyFinish: extractStat(raw, "EarlyFinish"),
+      lateFinish: extractStat(raw, "LateFinish"),
+    });
   }
 
   return [...rankingMap.values()].sort((a, b) => b.roi - a.roi);
@@ -226,7 +243,7 @@ async function loadAnalyticsPayload() {
 
 const cachedSharkscopeAnalytics = unstable_cache(
   loadAnalyticsPayload,
-  ["sharkscope-analytics-v5"],
+  ["sharkscope-analytics-v10"],
   { revalidate: 60, tags: ["sharkscope-analytics"] }
 );
 

@@ -17,9 +17,11 @@ const GradePlayersHover = memo(function GradePlayersHover({
   gradeName: string;
   variant?: "card" | "table";
 }) {
+
+  const baseClass = "border-primary/20 bg-primary/6 text-primary text-xs"
   const badgeClass = variant === "card"
-    ? "border-primary/20 bg-primary/[0.06] text-primary text-xs font-medium px-2 py-0.5"
-    : "border-primary/20 bg-primary/[0.06] text-primary text-xs tabular-nums font-medium";
+    ? `${baseClass} font-medium px-2 py-0.5`
+    : `${baseClass} tabular-nums font-medium`;
 
   return (
     <HoverCard openDelay={220} closeDelay={120}>

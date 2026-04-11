@@ -49,4 +49,11 @@ export interface TournamentData {
   date?: Date;
 }
 
-export type StatisticJson = { "@name"?: string; "@id"?: string; id?: string; $?: string | number };
+export type StatisticJson = {
+  "@name"?: string;
+  "@id"?: string;
+  id?: string;
+  /** Algumas respostas JSON usam `name` em vez de `@id`. */
+  name?: string;
+  $?: string | number;
+};

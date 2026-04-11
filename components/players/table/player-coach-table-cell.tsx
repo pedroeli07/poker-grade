@@ -10,11 +10,11 @@ const PlayerCoachTableCell = memo(function PlayerCoachTableCell({
     coachLabel: string;
   }) {
     return (
-      <TableCell className="w-[9%] min-w-0 whitespace-normal align-top">
+      <TableCell className="w-[9%] min-w-0 whitespace-normal align-middle">
         <Badge
           variant="outline"
           title={coachLabel}
-          className="inline-flex max-w-full border-primary/20 bg-primary/5 px-1.5 py-0 text-[11px] text-primary"
+          className="inline-flex h-6 max-w-full items-center border-primary/20 bg-primary/5 px-1.5 py-0 text-[11px] leading-none text-primary"
         >
           <span className="truncate">{coachKey !== "__none__" ? coachLabel : "Sem Coach"}</span>
         </Badge>

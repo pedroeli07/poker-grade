@@ -17,12 +17,19 @@ const AnalyticsAboutCard = memo(function AnalyticsAboutCard() {
         <p>• Todos os dados são lidos do cache local — sem chamadas à API SharkScope.</p>
         <p>• O cache é atualizado automaticamente pelo cron job às 06h00 BRT.</p>
         <p>
-          • ROI médio: média simples dos AvROI; ROI total: Σ(ROI×torneios)/Σ(torneios) (mesmo jogador
-          em vários nicks na mesma rede entra uma vez por nick).
+          • ROI usa apenas <strong className="text-foreground">TotalROI</strong> (ROI total do
+          SharkScope), sem AvROI: média simples entre entradas de cache; e “ponderado” =
+          Σ(TotalROI×peso)/Σ(peso) com peso = Entries ou Count. Onde não houver TotalROI no JSON, a
+          entrada não entra em médias de ROI.
         </p>
         <p>
           • Lucro total soma TotalProfit do SharkScope por entrada de cache (varredura completa do JSON
           para achar Profit/TotalProfit).
+        </p>
+        <p>
+          • <strong className="text-foreground">Ranking:</strong> usa só o cache do resumo{" "}
+          <code className="text-[11px]">Date:30D</code> ou <code className="text-[11px]">Date:90D</code>
+          — não mistura com filtros por tipo (Bounty/Vanilla etc.).
         </p>
       </CardContent>
     </Card>

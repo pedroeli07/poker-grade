@@ -6,16 +6,20 @@ export async function getOrFetchSharkScope(
   dataType: string,
   filterKey: string,
   fetchFn: () => Promise<unknown>,
-  ttlHours = 24
+  ttlHours = 24,
+  /** Ignora cache ainda válido e refaz GET na API (ex.: botão “Sincronizar SharkScope”). */
+  forceRefresh = false
 ): Promise<unknown> {
-  const cached = await prisma.sharkScopeCache.findUnique({
-    where: {
-      playerNickId_dataType_filterKey: { playerNickId, dataType, filterKey },
-    },
-  });
+  if (!forceRefresh) {
+    const cached = await prisma.sharkScopeCache.findUnique({
+      where: {
+        playerNickId_dataType_filterKey: { playerNickId, dataType, filterKey },
+      },
+    });
 
-  if (cached && cached.expiresAt > new Date()) {
-    return cached.rawData;
+    if (cached && cached.expiresAt > new Date()) {
+      return cached.rawData;
+    }
   }
 
   const data = await fetchFn();

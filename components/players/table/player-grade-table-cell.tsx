@@ -10,11 +10,11 @@ const PlayerGradeTableCell = memo(function PlayerGradeTableCell({
     gradeLabel: string;
   }) {
     return (
-      <TableCell className="w-[9%] min-w-0 whitespace-normal align-top pr-2">
+      <TableCell className="w-[9%] min-w-0 whitespace-normal align-middle pr-2">
         <Badge
           variant="outline"
           title={gradeLabel}
-          className="inline-flex max-w-full border-primary/20 bg-primary/5 px-1.5 py-0 text-[11px] text-primary"
+          className="inline-flex h-6 max-w-full items-center border-primary/20 bg-primary/5 px-1.5 py-0 text-[11px] leading-none text-primary"
         >
           <span className="truncate">{gradeKey !== "__none__" ? gradeLabel : "Não atribuída"}</span>
         </Badge>

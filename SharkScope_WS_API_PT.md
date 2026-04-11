@@ -4,6 +4,8 @@
 
 ## Histórico de Revisões
 
+**Notas internas CL Team (11 Abr 2026)** — Apêndice “Integração e ids de estatísticas”: lista oficial via `GET /metadata`, **Ability** (Capacidade), diferença Count vs Entries, ranking só `Date:30D`/`90D`. Ver final do documento.
+
 **Versão 1.0.100 (10 Dez 2025)** — Pequenas clarificações.
 
 **Versão 1.0.99 (7 Mar 2025)** — Serviço SharkScope Push removido como opção.
@@ -54,7 +56,7 @@
 
 **Versão 1.0.76 (24 Dez 2020)** — Adicionados recursos Próximo/Torneio Anterior.
 
-**Versão 1.0.75 (10 Dez 2020)** — Relatórios Diários Agendados agora disponíveis para todos os assinantes Commercial Gold e incluem AvAbility por padrão.
+**Versão 1.0.75 (10 Dez 2020)** — Relatórios Diários Agendados agora disponíveis para todos os assinantes Commercial Gold e incluem métrica de capacidade por padrão (na API REST o id é **`Ability`**, não `AvAbility`; confira `PlayerStatisticsDefinitions` em `GET /metadata`).
 
 **Versão 1.0.74 (12 Mai 2020)** — Adicionada opção noPlayers ao recurso de Torneio.
 
@@ -2354,3 +2356,47 @@ Se o código de erro for 0, o erro é interno e um atributo adicional é forneci
 | 400003     | Resets não são permitidos nesta rede.                                                                  |
 | 400004     | Acesso a esta rede não está autorizado.                                                                |
 | 400005     | Acesso a este aplicativo não está autorizado.                                                          |
+
+---
+
+## Apêndice — Integração CL Team (estatísticas, cache e UI)
+
+Esta secção documenta descobertas práticas ao alinhar o dashboard à **Pesquisa avançada** do site e ao export CSV, sem substituir a especificação oficial acima.
+
+### A.1 Lista oficial de ids de estatísticas de jogador
+
+- **Endpoint:** `GET https://www.sharkscope.com/api/{app}/metadata` — custo **0**, autenticação opcional conforme política atual.
+- A resposta inclui `MetadataResponse` → `PlayerStatisticsDefinitions` → vários `PlayerStatisticDefinition` com atributos **`@id`** (identificador usado no path `.../statistics/{ids}`) e **`@name`** (rótulo em inglês).
+- Para listar programaticamente no repositório: `npx tsx scratch/sharkscope-probe-metadata.ts` (requer variáveis SharkScope no `.env`).
+
+**Importante — Capacidade (coluna “Ability” / UI PT “Capacidade”):** o id oficial é **`Ability`**. Não existe `AvAbility` na lista de `PlayerStatisticsDefinitions`. Pedidos do tipo `.../statistics/...,AvAbility,...` **não devolvem** essa métrica; use **`Ability`**. O changelog histórico (v1.0.75) menciona “AvAbility” no contexto de relatórios; na API REST o id canónico é **`Ability`**.
+
+Outros ids usados no app (amostra): `Entries`, `Count`, `TotalROI`, `AvROI`, `ITM`, `TotalProfit`, `Profit`, `AvStake`, `AvEntrants`, `Entrants`, `FinshesEarly`, `FinshesLate` (grafia oficial da API, com typo em “Finshes”).
+
+### A.2 Count vs Entries (Contagem vs Inscrições)
+
+- **Entries** — corresponde à coluna **Inscrições** na pesquisa avançada: cada linha de entrada/reentrada conta (alinhado ao raciocínio do export CSV de torneios).
+- **Count** — torneios únicos agregados (multi-entry combinado por torneio); por isso **Count ≤ Entries** quando há reentradas.
+
+Pequenas diferenças (ex.: 459 vs 460 entradas) entre o site e o cache podem vir de **até quando** os dados foram atualizados, arredondamento ou torneios concluídos após a última sync.
+
+### A.3 ROI total vs ROI médio
+
+- **TotalROI** — coluna **“ROI tot.”** na UI PT (ROI agregado sobre o período filtrado).
+- **AvROI** — **“ROI méd.”** (média por jogos/torneios conforme definição SharkScope).
+
+O ranking de analytics do app ordena por **TotalROI** para alinhar ao “ROI total” do site.
+
+### A.4 Filtros e cache (PlayerGroup / `networks/PlayerGroup/players/{grupo}/statistics/...`)
+
+- O resumo **últimos 30 dias** do site corresponde a **`?filter=Date:30D`** (e 90 dias a `Date:90D`).
+- Agregações por **tipo** (ex. só Bounty) usam `filter` adicionais (`Type:...`). O **ranking** do app deve usar **apenas** linhas de cache com `filterKey` **`?filter=Date:30D`** ou **`?filter=Date:90D`**, sem misturar com cortes por tipo — caso contrário aparecem volumes e ROIs de um **subconjunto** (ex. poucas dezenas de torneios) em vez do resumo global.
+
+### A.5 CSV de torneios vs API de estatísticas
+
+- O CSV exportado (colunas em português: Rede, Jogador, Stake, Resultado, …) é **histórico por torneio**.
+- As estatísticas agregadas vêm do path **`statistics/{lista de ids}`** com ids em **inglês** (secção A.1). Não confundir cabeçalhos do CSV com os `@id` do JSON.
+
+### A.6 Validação manual vs app (ordem de grandeza)
+
+Comparações entre pesquisa manual e dashboard devem tolerar pequenas diferenças em lucro/ROI/entradas se o cache foi gerado em momento ligeiramente diferente; se a ordem de grandeza divergir muito, verificar **filtro** (`Date:30D` apenas), **id** correto (`Ability` não `AvAbility`) e **sync** recente.

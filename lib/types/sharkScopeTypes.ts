@@ -25,8 +25,17 @@ export type TypeStat = BaseStat & {
 
 export type RankingEntry = {
   player: PlayerRef;
+  /** TotalROI (SharkScope) */
   roi: number;
-  count: number;
+  /** Inscrições (Entries); não usar Count de outro slice de filtro */
+  entries: number | null;
+  profit: number | null;
+  itm: number | null;
+  /** Capacidade — stat API `Ability` (UI “Capacidade”), típico 0–100 */
+  ability: number | null;
+  avStake: number | null;
+  earlyFinish: number | null;
+  lateFinish: number | null;
 };
 
 export type SharkscopeAlertRow = WithId & {

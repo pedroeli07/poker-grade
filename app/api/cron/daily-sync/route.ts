@@ -3,7 +3,15 @@ import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { sharkScopeGet } from "@/lib/utils";
 import { getOrFetchSharkScope } from "@/lib/sharkscope-cache";
-import { extractStat, extractRemainingSearches, roiSeverity, reentrySeverity, earlyFinishSeverity, lateFinishSeverity } from "@/lib/sharkscope-parse";
+import {
+  extractStat,
+  extractRoiTenDayForPlayerTable,
+  extractRemainingSearches,
+  roiSeverity,
+  reentrySeverity,
+  earlyFinishSeverity,
+  lateFinishSeverity,
+} from "@/lib/sharkscope-parse";
 import { createLogger } from "@/lib/logger";
 import { POKER_NETWORKS, sharkScopeAppName, sharkScopeAppKey, cronSecret } from "@/lib/constants";
 import {
@@ -30,7 +38,11 @@ export async function GET(request: Request) {
     );
   }
 
-  log.info("Iniciando daily-sync SharkScope");
+  const url = new URL(request.url);
+  const forceRefresh =
+    url.searchParams.get("force") === "1" || url.searchParams.get("force") === "true";
+
+  log.info("Iniciando daily-sync SharkScope", { forceRefresh });
 
   const players = await prisma.player.findMany({
     where: { status: "ACTIVE", playerGroup: { not: null } },
@@ -45,7 +57,6 @@ export async function GET(request: Request) {
 
   for (const player of players) {
     const groupName = player.playerGroup!;
-    log.debug(`Syncing grupo ${groupName} do jogador ${player.name}`);
 
     try {
       // Ensure pseudo-nick exists for caching
@@ -67,14 +78,14 @@ export async function GET(request: Request) {
       });
 
       // Fetch stats_10d via PlayerGroup /statistics com campos específicos (ROI, FP, FT)
-      const path10d = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/statistics/AvROI,Count,TotalProfit,AvStake,FinshesEarly,FinshesLate?filter=Date:10D`;
-      log.debug(`[10d] URL: ${path10d}`);
+      const path10d = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/statistics/Entries,Count,TotalROI,AvROI,ITM,TotalProfit,Profit,AvStake,Ability,FinshesEarly,FinshesLate?filter=Date:10D`;
       const raw10d = await getOrFetchSharkScope(
         groupNick.id,
         "stats_10d",
         "?filter=Date:10D",
         () => sharkScopeGet(path10d),
-        24
+        24,
+        forceRefresh
       );
 
 
@@ -82,28 +93,29 @@ export async function GET(request: Request) {
       if (rem !== null) remainingSearches = rem;
 
       // Fetch stats_30d via PlayerGroup network specifier
-      const path30d = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/statistics/AvROI,Count,TotalProfit,AvStake,AvEntrants,FinshesEarly,FinshesLate,Entrants?filter=Date:30D`;
-      log.debug(`[30d] URL: ${path30d}`);
+      const path30d = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/statistics/Entries,Count,TotalROI,AvROI,ITM,TotalProfit,Profit,AvStake,Ability,AvEntrants,FinshesEarly,FinshesLate,Entrants?filter=Date:30D`;
 
       const raw30d = await getOrFetchSharkScope(
         groupNick.id,
         "stats_30d",
         "?filter=Date:30D",
         () => sharkScopeGet(path30d),
-        24
+        24,
+        forceRefresh
       );
 
       const rem30 = extractRemainingSearches(raw30d);
       if (rem30 !== null) remainingSearches = rem30;
 
       try {
-        const path90d = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/statistics/AvROI,Count,TotalProfit,AvStake,AvEntrants,FinshesEarly,FinshesLate,Entrants${SHARKSCOPE_STATS_FILTER_90D}`;
+        const path90d = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/statistics/Entries,Count,TotalROI,AvROI,ITM,TotalProfit,Profit,AvStake,Ability,AvEntrants,FinshesEarly,FinshesLate,Entrants${SHARKSCOPE_STATS_FILTER_90D}`;
         const raw90d = await getOrFetchSharkScope(
           groupNick.id,
           "stats_90d",
           SHARKSCOPE_STATS_FILTER_90D,
           () => sharkScopeGet(path90d),
-          24
+          24,
+          forceRefresh
         );
         const rem90 = extractRemainingSearches(raw90d);
         if (rem90 !== null) remainingSearches = rem90;
@@ -114,7 +126,7 @@ export async function GET(request: Request) {
         );
       }
 
-      const shortStatsBase = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/statistics/AvROI,Count,TotalProfit,AvStake`;
+      const shortStatsBase = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/statistics/Entries,Count,TotalROI,AvROI,ITM,TotalProfit,Profit,AvStake`;
       for (const [label, filterKey] of Object.entries(SHARKSCOPE_TYPE_FILTER_KEY)) {
         try {
           await getOrFetchSharkScope(
@@ -122,7 +134,8 @@ export async function GET(request: Request) {
             "stats_30d",
             filterKey,
             () => sharkScopeGet(`${shortStatsBase}${filterKey}`),
-            24
+            24,
+            forceRefresh
           );
         } catch (err) {
           log.warn(
@@ -132,8 +145,10 @@ export async function GET(request: Request) {
         }
       }
 
-      // Calcular alertas (10D)
-      const roi10d = extractStat(raw10d, "AvROI");
+      // Calcular alertas (10D) — mesmo ROI e FP/FT que a tabela (TotalROI; Early/Late do 10d)
+      const roi10d = extractRoiTenDayForPlayerTable(raw10d);
+      const earlyFinish10d = extractStat(raw10d, "EarlyFinish");
+      const lateFinish10d = extractStat(raw10d, "LateFinish");
       if (roi10d !== null) {
         const sev = roiSeverity(roi10d);
         if (sev === "red" || sev === "yellow") {
@@ -151,12 +166,10 @@ export async function GET(request: Request) {
         }
       }
 
-      // Calcular alertas (30D)
+      // Métricas 30d (variance / reentry) — ainda vindas do cache 30d
       const avgEntrants30d = extractStat(raw30d, "AvEntrants");
       const count30d = extractStat(raw30d, "Count");
       const entrants30d = extractStat(raw30d, "Entrants");
-      const earlyFinish30d = extractStat(raw30d, "EarlyFinish");
-      const lateFinish30d = extractStat(raw30d, "LateFinish");
 
       if (avgEntrants30d !== null && avgEntrants30d > 1200) {
         await prisma.alertLog.create({
@@ -188,41 +201,41 @@ export async function GET(request: Request) {
         }
       }
 
-      if (earlyFinish30d !== null) {
-        const sev = earlyFinishSeverity(earlyFinish30d);
+      if (earlyFinish10d !== null) {
+        const sev = earlyFinishSeverity(earlyFinish10d);
         if (sev === "red" || sev === "yellow") {
            await prisma.alertLog.create({
              data: {
                playerId: player.id,
                alertType: "early_finish",
                severity: sev,
-               metricValue: earlyFinish30d,
+               metricValue: earlyFinish10d,
                threshold: 8,
-               context: { groupName, period: "30d" },
+               context: { groupName, period: "10d" },
              },
            });
-           log.warn(`⚠️ [${groupName}] Alerta FP (30d): ${earlyFinish30d}% (${sev})`);
+           log.warn(`⚠️ [${groupName}] Alerta FP (10d): ${earlyFinish10d}% (${sev})`);
         }
       }
 
-      if (lateFinish30d !== null) {
-        const sev = lateFinishSeverity(lateFinish30d);
+      if (lateFinish10d !== null) {
+        const sev = lateFinishSeverity(lateFinish10d);
         if (sev === "red" || sev === "yellow") {
            await prisma.alertLog.create({
              data: {
                playerId: player.id,
                alertType: "late_finish",
                severity: sev,
-               metricValue: lateFinish30d,
+               metricValue: lateFinish10d,
                threshold: 8,
-               context: { groupName, period: "30d" },
+               context: { groupName, period: "10d" },
              },
            });
-           log.warn(`⚠️ [${groupName}] Alerta FT (30d): ${lateFinish30d}% (${sev})`);
+           log.warn(`⚠️ [${groupName}] Alerta FT (10d): ${lateFinish10d}% (${sev})`);
         }
       }
 
-      log.info(`✅ [${groupName}] Sincronizado | ROI(10d): ${roi10d ?? '-'} | FP(30d): ${earlyFinish30d ?? '-'} | FT(30d): ${lateFinish30d ?? '-'}`);
+      log.info(`✅ [${groupName}] Sincronizado | ROI(10d): ${roi10d ?? '-'} | FP(10d): ${earlyFinish10d ?? '-'} | FT(10d): ${lateFinish10d ?? '-'}`);
 
       // Sincronização bem sucedida: limpa alertas group_not_found anteriores
       await prisma.alertLog.deleteMany({
@@ -231,16 +244,13 @@ export async function GET(request: Request) {
 
       processed++;
     } catch (err) {
-      log.error(
-        `Erro ao processar grupo ${groupName} (Jogador: ${player.name})`,
-        err instanceof Error ? err : undefined,
-        { playerId: player.id, groupName }
-      );
       errors++;
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const lower = errMsg.toLowerCase();
+      const isGroupUnavailable =
+        lower.includes("not found") || lower.includes("opted out");
 
-      const errorMessage = err instanceof Error ? err.message.toLowerCase() : "";
-      if (errorMessage.includes("not found") || errorMessage.includes("opted out")) {
-        // Remove alertas antigos antes de criar novo (evita acúmulo)
+      if (isGroupUnavailable) {
         await prisma.alertLog.deleteMany({
           where: { playerId: player.id, alertType: "group_not_found" },
         });
@@ -254,7 +264,17 @@ export async function GET(request: Request) {
             context: { groupName, message: ErrorTypes.SHARK_GROUP_NOT_FOUND },
           },
         });
-        log.warn(`Alerta de group_not_found criado para: ${groupName}`);
+        // Um único aviso (sem stack): erro esperado quando o grupo não existe no SharkScope
+        log.warn(`SharkScope: grupo não encontrado ou indisponível — "${groupName}" · jogador "${player.name}"`, {
+          playerId: player.id,
+          sharkscope: errMsg,
+        });
+      } else {
+        log.error(
+          `Erro ao processar grupo ${groupName} (Jogador: ${player.name})`,
+          err instanceof Error ? err : undefined,
+          { playerId: player.id, groupName }
+        );
       }
     }
   }
@@ -276,7 +296,8 @@ export async function GET(request: Request) {
         "stats_30d",
         "?filter=Date:30D",
         () => sharkScopeGet(pathSite30),
-        24
+        24,
+        forceRefresh
       );
       const remS30 = extractRemainingSearches(rawSite30);
       if (remS30 !== null) remainingSearches = remS30;
@@ -287,7 +308,8 @@ export async function GET(request: Request) {
         "stats_90d",
         SHARKSCOPE_STATS_FILTER_90D,
         () => sharkScopeGet(pathSite90),
-        24
+        24,
+        forceRefresh
       );
       const remS90 = extractRemainingSearches(rawSite90);
       if (remS90 !== null) remainingSearches = remS90;

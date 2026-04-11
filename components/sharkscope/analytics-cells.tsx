@@ -1,41 +1,53 @@
 "use client";
 
 import { memo } from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import PlayerRoiCell from "@/components/players/table/player-roi-cell";
+import { earlyFinishSeverity, lateFinishSeverity } from "@/lib/sharkscope-parse";
 
+const pillClass =
+  "inline-flex flex-row items-center gap-1.5 tabular-nums px-2.5 py-1 rounded-md border text-xs font-bold";
+
+function severityStyle(sev: "red" | "yellow" | "green") {
+  if (sev === "red") return `${pillClass} bg-red-500/10 text-red-600 border-red-500/20`;
+  if (sev === "yellow") return `${pillClass} bg-amber-500/10 text-amber-600 border-amber-500/20`;
+  return `${pillClass} bg-muted text-muted-foreground border-border/50`;
+}
+
+/** Mesmas faixas visuais da tabela de jogadores (`PlayerRoiCell`). */
 export const AnalyticsRoiBadge = memo(function AnalyticsRoiBadge({
   roi,
 }: {
   roi: number | null;
 }) {
-  if (roi === null)
-    return <span className="text-muted-foreground text-xs">—</span>;
-  if (roi < -40)
-    return (
-      <span className="flex items-center gap-1 text-red-500 font-semibold text-sm">
-        <TrendingDown className="h-3.5 w-3.5" />
-        {roi.toFixed(1)}%
-      </span>
-    );
-  if (roi < -20)
-    return (
-      <span className="flex items-center gap-1 text-amber-500 font-semibold text-sm">
-        <TrendingDown className="h-3.5 w-3.5" />
-        {roi.toFixed(1)}%
-      </span>
-    );
-  if (roi >= 0)
-    return (
-      <span className="flex items-center gap-1 text-emerald-500 font-semibold text-sm">
-        <TrendingUp className="h-3.5 w-3.5" />
-        +{roi.toFixed(1)}%
-      </span>
-    );
-  return (
-    <span className="text-muted-foreground font-semibold text-sm">
-      {roi.toFixed(1)}%
-    </span>
-  );
+  return <PlayerRoiCell roi={roi} />;
+});
+
+/** Finalização precoce / tardia — mesmos limiares dos alertas (`earlyFinishSeverity` / `lateFinishSeverity`). */
+export const RankingFinishPctBadge = memo(function RankingFinishPctBadge({
+  kind,
+  pct,
+}: {
+  kind: "early" | "late";
+  pct: number | null;
+}) {
+  if (pct === null) return <span className="text-muted-foreground text-xs">—</span>;
+  const sev = kind === "early" ? earlyFinishSeverity(pct) : lateFinishSeverity(pct);
+  const label = `${pct.toFixed(1)}%`;
+  return <span className={severityStyle(sev)}>{label}</span>;
+});
+
+/** Capacidade (0–100): maior é melhor. */
+export const RankingAbilityBadge = memo(function RankingAbilityBadge({
+  ability,
+}: {
+  ability: number | null;
+}) {
+  if (ability === null) return <span className="text-muted-foreground text-xs">—</span>;
+  const n = Math.round(ability);
+  if (n < 40) return <span className={`${pillClass} bg-red-500/10 text-red-600 border-red-500/20`}>{n}</span>;
+  if (n < 60) return <span className={`${pillClass} bg-amber-500/10 text-amber-600 border-amber-500/20`}>{n}</span>;
+  if (n < 80) return <span className={`${pillClass} bg-emerald-500/10 text-emerald-700 border-emerald-500/25`}>{n}</span>;
+  return <span className={`${pillClass} bg-emerald-500/15 text-emerald-700 border-emerald-500/30`}>{n}</span>;
 });
 
 export const AnalyticsProfitCell = memo(function AnalyticsProfitCell({
