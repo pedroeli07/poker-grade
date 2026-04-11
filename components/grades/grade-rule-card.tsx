@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +28,7 @@ import {
 } from "@/lib/constants";
 import { mergeOptions } from "@/lib/utils";
 
-export function GradeRuleCard({
+const GradeRuleCard = memo(function GradeRuleCard({
   rule,
   idx,
   manage,
@@ -157,4 +157,8 @@ export function GradeRuleCard({
       </div>
     </div>
   );
-}
+});
+
+GradeRuleCard.displayName = "GradeRuleCard";
+
+export default GradeRuleCard;

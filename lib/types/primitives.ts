@@ -67,6 +67,12 @@ export enum ErrorTypes {
   CRON_SECRET_NOT_CONFIGURED = "CRON_SECRET não configurado",
   NOT_CONFIGURED = "Não configurado",
   SHARK_SYNC_UNKNOWN_ERROR = "Erro desconhecido ao sincronizar",
+  SHARK_SYNC_CREDENTIALS_NOT_CONFIGURED = "Credenciais do SharkScope não configuradas",
+  SHARK_GROUP_NOT_FOUND = "Grupo não encontrado no SharkScope",
+  NICK_ALREADY_EXISTS = "Este nick já está cadastrado nessa rede.",
+  NICK_NOT_FOUND = "Nick não encontrado ou inativo.",
+  SHARK_SEARCH_ERROR = "Erro ao consultar SharkScope.",
+  ID_REQUIRED = "ID obrigatório.",
 }
 
 export enum NotificationFilterType {
@@ -108,3 +114,5 @@ export type ScopedLogger = {
   table: (rows: Record<string, unknown>[]) => void;
   sep: (label?: string) => void;
 };
+
+export type GenerateMetadataProps = { params: Promise<{ id: string }> };

@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import dynamicImport from "next/dynamic";
-import { gradeDetailFallbackMetadata } from "@/lib/constants/grade-detail-page";
-import { GradeDetailPageSkeleton } from "@/components/grades/grade-detail-page-skeleton";
+import { gradeDetailFallbackMetadata } from "@/lib/constants/metadata";
+import GradeDetailPageSkeleton from "@/components/grades/grade-detail-page-skeleton";
 import { getGradeDetailPageProps } from "@/lib/grades/grade-detail-page-server";
+import { GenerateMetadataProps } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ id: string }> };
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: GenerateMetadataProps): Promise<Metadata> {
   const { id } = await params;
   const props = await getGradeDetailPageProps(id);
   if (!props) return gradeDetailFallbackMetadata;
@@ -20,15 +19,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const GradeDetailClient = dynamicImport(
-  () =>
-    import("./grade-detail-client").then((m) => ({
-      default: m.GradeDetailClient,
-    })),
-  { loading: () => <GradeDetailPageSkeleton /> }
-);
+const GradeDetailClient = dynamicImport(() => import("./grade-detail-client"), {
+  loading: () => <GradeDetailPageSkeleton />,
+});
 
-export default async function GradeDetailPage({ params }: Props) {
+export default async function GradeDetailPage({ params }: GenerateMetadataProps) {
   const { id } = await params;
   const props = await getGradeDetailPageProps(id);
   if (!props) notFound();

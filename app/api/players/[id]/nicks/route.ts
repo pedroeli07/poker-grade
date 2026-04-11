@@ -9,7 +9,6 @@ import { limitSharkscopeMutation, limitSharkscopeRead } from "@/lib/rate-limit";
 import { addNickSchema } from "@/lib/schemas";
 import { ErrorTypes } from "@/lib/types";
 
-
 async function resolvePlayer(
   params: Promise<{ id: string }>,
   userId: string,
@@ -113,10 +112,10 @@ export async function POST(
 
     if (isUnique) {
       return NextResponse.json(
-        { error: "Este nick já está cadastrado nessa rede." },
+        { error: ErrorTypes.NICK_ALREADY_EXISTS },
         { status: 409 }
       );
     }
-    return NextResponse.json({ error: "Erro interno." }, { status: 500 });
+    return NextResponse.json({ error: ErrorTypes.INTERNAL_ERROR }, { status: 500 });
   }
 }

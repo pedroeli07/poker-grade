@@ -45,7 +45,6 @@ export type DashboardShellProps = {
 
 export type UsuariosClientProps = {
   initialRows: UsuarioDirectoryRow[];
-  canManageUsers: boolean;
 };
 
 export type ScoutingClientProps = {

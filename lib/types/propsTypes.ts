@@ -78,7 +78,6 @@ export interface GradeViewProps {
 export interface UserViewProps {
   row: UsuarioDirectoryRow;
   disabled: boolean;
-  canManage: boolean;
   onAction: (
     fn: () => Promise<{ error?: string; success?: boolean }>,
     onSuccess?: () => void

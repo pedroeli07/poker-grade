@@ -2,13 +2,12 @@ import Link from "next/link";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { GradeTableRowProps } from "@/lib/types";
-import { GradePlayersHover } from "./grade-players-hover";
+import GradePlayersHover from "./grade-players-hover";
 import { DeleteGradeButton } from "@/components/delete-grade-button";
 import { EditGradeDialog } from "@/components/edit-grade-dialog";
 import { memo } from "react";
 
-
-export const GradeTableRow = memo(function GradeTableRow({
+const GradeTableRow = memo(function GradeTableRow({
   grade,
   manage,
 }: GradeTableRowProps) {
@@ -64,3 +63,7 @@ export const GradeTableRow = memo(function GradeTableRow({
     </TableRow>
   );
 });
+
+GradeTableRow.displayName = "GradeTableRow";
+
+export default GradeTableRow;

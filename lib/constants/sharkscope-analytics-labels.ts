@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Globe, Layers, Trophy, Zap } from "lucide-react";
-import type { SharkscopeAnalyticsPeriod, SharkscopeAnalyticsTab } from "@/lib/types";
+import type { SharkscopeAnalyticsPeriod, SharkscopeAnalyticsTab, TypeStat } from "@/lib/types";
 
 export const SHARKSCOPE_ANALYTICS_PERIODS: readonly SharkscopeAnalyticsPeriod[] = ["30d", "90d"];
 
@@ -21,3 +21,9 @@ export const TAB_IDS = TAB_ROWS.map(([id]) => id);
 export const SHARKSCOPE_ANALYTICS_TAB_LABELS: Record<string, string> = Object.fromEntries(
   TAB_ROWS.map(([id, , label]) => [id, label]),
 );
+
+export const SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT: Record<TypeStat["type"], string> = {
+  Bounty: "Bounty / PKO",
+  Vanilla: "Vanilla / Regular",
+  Satellite: "Satélite",
+};

@@ -1,6 +1,6 @@
 import dynamicImport from "next/dynamic";
-import { gradesPageMetadata } from "@/lib/constants/grades-page";
-import { GradesPageSkeleton } from "@/components/grades/grades-page-skeleton";
+import { gradesPageMetadata } from "@/lib/constants/metadata";
+import GradesPageSkeleton from "@/components/grades/grades-page-skeleton";
 import { getGradesPageProps } from "@/lib/grades/grades-page-server";
 
 export const dynamic = "force-dynamic";

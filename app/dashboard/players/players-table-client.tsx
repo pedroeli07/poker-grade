@@ -10,13 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ColumnFilter } from "@/components/column-filter";
+import ColumnFilter from "@/components/column-filter";
 import { EditPlayerModal } from "@/components/edit-player-modal";
 import type { PlayersTablePayload } from "@/lib/types";
 import { usePlayersTablePage } from "../../../hooks/players/use-players-table-page";
-import { PlayerTableRow } from "@/components/players/player-table-row";
+import PlayerTableRow from "@/components/players/player-table-row";
 
-export const PlayersTableClient = memo(function PlayersTableClient({
+const PlayersTableClient = memo(function PlayersTableClient({
   initialPayload,
   canEditPlayers,
 }: {
@@ -166,3 +166,7 @@ export const PlayersTableClient = memo(function PlayersTableClient({
     </div>
   );
 });
+
+PlayersTableClient.displayName = "PlayersTableClient";
+
+export default PlayersTableClient;

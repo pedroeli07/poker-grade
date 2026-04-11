@@ -3,6 +3,7 @@
 import { memo } from "react";
 import { getInitials } from "@/lib/utils";
 import { useEditableUser } from "@/hooks/user/use-editable-user";
+import { useUserPermissions } from "@/hooks/user/use-user-permissions";
 import { UsuarioDeleteDialog } from "./user-delete-dialog";
 import { UserRowContent } from "./user-row-content";
 import { UserActions } from "./user-actions";
@@ -12,9 +13,9 @@ import { UserCardProps } from "@/lib/types/index";
 export const UserCard = memo(function UserCard({
   row,
   disabled,
-  canManage,
   onAction,
 }: UserCardProps) {
+  const { canManage } = useUserPermissions();
   const {
     editing,
     setEditing,

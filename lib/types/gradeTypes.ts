@@ -2,6 +2,7 @@ import { z } from "zod";
 import { updateGradeRuleSchema } from "@/lib/schemas";
 import type { BaseEntity, EntityRef, WithId } from "./primitives";
 import type { LobbyzeFilterItem } from "./lobbyzeTypes";
+import { GradesColumnKey } from "./columnKeys";
 
 type BaseGradeRule = {
   filterName: string;
@@ -55,3 +56,7 @@ export type GradeListRow = GradeListCore & {
 };
 
 export type UpdateGradeRuleInput = Omit<z.infer<typeof updateGradeRuleSchema>, "ruleId">;
+
+export type GradesSetCol = (
+  col: GradesColumnKey,
+) => (next: Set<string> | null) => void;

@@ -1,6 +1,9 @@
 import { Suspense } from "react";
 import { AuthMarketingShell } from "@/components/auth/auth-marketing-shell";
 import { LoginForm } from "./login-form";
+import { loginPageMetadata } from "@/lib/constants/metadata";
+
+export const metadata = loginPageMetadata;
 
 export default function LoginPage() {
   return (

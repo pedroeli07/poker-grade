@@ -1,19 +1,15 @@
 import dynamicImport from "next/dynamic";
-import { notificationsPageMetadata } from "@/lib/constants/notifications-page";
-import { NotificationsPageSkeleton } from "@/components/notifications/notifications-page-skeleton";
+import { notificationsPageMetadata } from "@/lib/constants/metadata";
+import NotificationsPageSkeleton from "@/components/notifications/notifications-page-skeleton";
 import { getNotificationsPageInitial } from "@/lib/notifications/notifications-page-server";
 
 export const metadata = notificationsPageMetadata;
 
 export const dynamic = "force-dynamic";
 
-const NotificationsClient = dynamicImport(
-  () =>
-    import("./notifications-client").then((m) => ({
-      default: m.NotificationsClient,
-    })),
-  { loading: () => <NotificationsPageSkeleton /> }
-);
+const NotificationsClient = dynamicImport(() => import("./notifications-client"), {
+  loading: () => <NotificationsPageSkeleton />,
+});
 
 export default async function NotificationsPage() {
   const initial = await getNotificationsPageInitial();

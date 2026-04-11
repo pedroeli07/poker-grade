@@ -13,6 +13,7 @@ import {
 import { getInitials } from "@/lib/utils";
 import { cardClassName, ROLE_OPTIONS } from "@/lib/constants";
 import { useEditableUser } from "@/hooks/user/use-editable-user";
+import { useUserPermissions } from "@/hooks/user/use-user-permissions";
 import { RoleBadge, StatusBadge } from "./user-badges";
 import { UsuarioDeleteDialog } from "./user-delete-dialog";
 import { UserActions } from "./user-actions";
@@ -22,9 +23,9 @@ import type { UserTableRowProps } from "@/lib/types";
 export const UserTableRow = memo(function UserTableRow({
   row,
   disabled,
-  canManage,
   onAction,
 }: UserTableRowProps) {
+  const { canManage } = useUserPermissions();
   const {
     editing,
     setEditing,

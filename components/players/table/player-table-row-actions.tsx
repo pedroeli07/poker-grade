@@ -1,0 +1,139 @@
+"use client";
+
+import { memo, startTransition, useState, useTransition } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { TableCell } from "@/components/ui/table";
+import { MoreVertical, Pencil, Settings2, Trash } from "lucide-react";
+import { deletePlayer } from "@/lib/queries/db/player-queries";
+import { toast } from "@/lib/toast";
+import { useInvalidate } from "@/hooks/use-invalidate";
+import type { PlayerTableRow } from "@/lib/types";
+
+type PlayerTableRowActionsProps = {
+  player: PlayerTableRow;
+  canEditPlayers: boolean;
+  onEdit: (p: PlayerTableRow) => void;
+};
+
+const PlayerTableRowActions = memo(function PlayerTableRowActions({ player, canEditPlayers, onEdit }: PlayerTableRowActionsProps) {
+  const router = useRouter();
+  const invalidatePlayers = useInvalidate("players");
+  const [isPending, startTransition] = useTransition();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  function handleDeleteConfirm() {
+    const fd = new FormData();
+    fd.set("id", player.id);
+    startTransition(() => {
+      void (async () => {
+        try {
+          await deletePlayer(fd);
+          toast.success(
+            "Jogador excluído",
+            `${player.name} e dados vinculados foram removidos.`
+          );
+          setDeleteOpen(false);
+          invalidatePlayers();
+          router.refresh();
+        } catch (err) {
+          const msg =
+            err instanceof Error && err.message === "FORBIDDEN"
+              ? "Sem permissão para excluir este jogador."
+              : err instanceof Error && err.message === "NOT_FOUND"
+                ? "Jogador não encontrado."
+                : "Não foi possível excluir. Tente novamente.";
+          toast.error("Erro ao excluir", msg);
+        }
+      })();
+    });
+  }
+
+  return (
+    <TableCell className="w-[5%] min-w-0 px-1.5 py-2 text-right align-top">
+      <AlertDialog
+        open={deleteOpen}
+        onOpenChange={(o) => {
+          if (!o && isPending) return;
+          setDeleteOpen(o);
+        }}
+      >
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir jogador?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Isso remove {player.name} do sistema, incluindo grades, targets, importações de torneios e revisões. Se
+              existir conta de login vinculada, ela será desvinculada. Não dá para desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteConfirm();
+              }}
+              disabled={isPending}
+              className="bg-red-600 text-white hover:bg-red-600/90"
+            >
+              {isPending ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <div className="flex justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button type="button" variant="ghost" size="icon" title="Ações">
+              <MoreVertical className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            {canEditPlayers ? (
+              <>
+                <DropdownMenuItem onClick={() => onEdit(player)} className="cursor-pointer">
+                  <Pencil className="h-4 w-4" />
+                  Editar jogador
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" className="cursor-pointer" onClick={() => setDeleteOpen(true)}>
+                  <Trash className="h-4 w-4" />
+                  Excluir jogador
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            ) : null}
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href={`/dashboard/players/${player.id}`}>
+                <Settings2 className="h-4 w-4" />
+                Gerenciar perfil
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </TableCell>
+  );
+});
+
+PlayerTableRowActions.displayName = "PlayerTableRowActions";
+
+export default PlayerTableRowActions;

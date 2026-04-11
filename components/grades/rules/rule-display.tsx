@@ -1,62 +1,11 @@
-import { GradeRuleCardRule, LobbyzeFilterItem } from "@/lib/types";
+import { GradeRuleCardRule } from "@/lib/types";
 import { DollarSign, Timer, Zap, Users, Tag, CalendarDays, TrendingUp, Clock } from "lucide-react";
+import { memo } from "react";
+import BuyInRange from "./buy-in-range";
+import Pills from "./pills";
 
-function Pills({ items }: { items: LobbyzeFilterItem[] }) {
-  if (!items.length)
-    return <span className="text-muted-foreground/50 text-sm">Todos</span>;
 
-  const pillClass = "bg-blue-500/12 text-blue-600 border-blue-500/25";
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item, i) => (
-        <span
-          key={i}
-          className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${pillClass}`}
-        >
-          {item.item_text}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function BuyInRange({
-  min,
-  max,
-}: {
-  min: number | null;
-  max: number | null;
-}) {
-  if (!min && !max)
-    return <span className="text-muted-foreground/50 text-sm">Sem restrição</span>;
-
-  const pct = min && max ? ((min / max) * 100).toFixed(0) : null;
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="font-mono text-lg font-bold text-blue-400">
-          ${min ?? "—"}
-        </span>
-        <span className="text-muted-foreground/60">—</span>
-        <span className="font-mono text-lg font-bold text-blue-400">
-          ${max ?? "—"}
-        </span>
-      </div>
-      {min && max && (
-        <div className="h-2 rounded-full bg-muted/50 overflow-hidden w-full max-w-[140px]">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400"
-            style={{ width: `${100 - Number(pct)}%` }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
-export function RuleDisplay({ rule }: { rule: GradeRuleCardRule }) {
+const RuleDisplay = memo(function RuleDisplay({ rule }: { rule: GradeRuleCardRule }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
       <div className="space-y-3">
@@ -203,4 +152,9 @@ export function RuleDisplay({ rule }: { rule: GradeRuleCardRule }) {
       )}
     </div>
   );
-}
+});
+
+RuleDisplay.displayName = "RuleDisplay";
+
+export { RuleDisplay };
+export default RuleDisplay;

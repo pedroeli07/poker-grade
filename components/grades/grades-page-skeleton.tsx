@@ -1,4 +1,6 @@
-export function GradesPageSkeleton() {
+import { memo } from "react";
+
+const GradesPageSkeleton = memo(function GradesPageSkeleton() {
   return (
     <div className="animate-pulse space-y-4">
       <div className="h-12 w-full rounded-md bg-muted" />
@@ -9,4 +11,8 @@ export function GradesPageSkeleton() {
       </div>
     </div>
   );
-}
+});
+
+GradesPageSkeleton.displayName = "GradesPageSkeleton";
+
+export default GradesPageSkeleton;

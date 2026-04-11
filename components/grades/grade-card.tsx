@@ -10,13 +10,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { GradeCardProps } from "@/lib/types";
 import { cardClassName } from "@/lib/constants";
-import { GradePlayersHover } from "./grade-players-hover";
+import GradePlayersHover from "./grade-players-hover";
 import { DeleteGradeButton } from "@/components/delete-grade-button";
 import { EditGradeDialog } from "@/components/edit-grade-dialog";
 import { memo } from "react";
 
-
-export const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardProps) {
+const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardProps) {
   return (
     <Card className={cardClassName}>
       <CardHeader className="space-y-2 pb-3">
@@ -78,3 +77,7 @@ export const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardPro
     </Card>
   );
 });
+
+GradeCard.displayName = "GradeCard";
+
+export default GradeCard;

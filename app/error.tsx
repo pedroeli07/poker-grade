@@ -2,6 +2,10 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { errorPageMetadata } from "@/lib/constants/metadata";
+import { nodeEnv } from "@/lib/constants";
+
+export const metadata = errorPageMetadata;
 
 export default function ErrorBoundary({
   error,
@@ -11,13 +15,13 @@ export default function ErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production") {
+    if (nodeEnv !== "production") {
       console.error(error);
     }
   }, [error]);
 
   const message =
-    process.env.NODE_ENV === "production"
+    nodeEnv === "production"
       ? "Algo deu errado. Tente novamente."
       : error.message;
 

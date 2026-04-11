@@ -1,15 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
-import { Metadata } from "next";
 import { loadPlayerProfilePageData } from "@/hooks/players/player-profile-page-load";
-import { PlayersIdClient } from "./players-id-client";
+import PlayersIdClient from "./players-id-client";
+import { playerProfilePageMetadata } from "@/lib/constants/metadata";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Detalhes de um Jogador",
-  description: "Visualize os detalhes de um jogador e suas grades, targets e histórico de limites.",
-};
+export const metadata = playerProfilePageMetadata;
 
 export default async function PlayerProfilePage({
   params,

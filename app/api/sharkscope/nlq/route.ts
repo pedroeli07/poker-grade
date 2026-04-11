@@ -47,7 +47,7 @@ export async function POST(req: Request) {
   
   if (!sharkScopeAppName || !sharkScopeAppKey) {
     return NextResponse.json(
-      { error: "SharkScope não configurado. Aguardando credenciais." },
+      { error: ErrorTypes.SHARK_SYNC_CREDENTIALS_NOT_CONFIGURED },
       { status: 503 }
     );
   }
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
   });
 
   if (!playerNick || !playerNick.isActive) {
-    return NextResponse.json({ error: "Nick não encontrado ou inativo." }, { status: 404 });
+    return NextResponse.json({ error: ErrorTypes.NICK_NOT_FOUND }, { status: 404 });
   }
 
   const path = `/networks/${playerNick.network}/players/${encodeURIComponent(playerNick.nick)}?nlq=${encodeURIComponent(question)}&timezone=${encodeURIComponent(timezone)}`;
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
   } catch (err) {
     log.error("NLQ SharkScope falhou", err instanceof Error ? err : undefined);
     return NextResponse.json(
-      { error: "Erro ao consultar SharkScope." },
+      { error: ErrorTypes.SHARK_SEARCH_ERROR },
       { status: 502 }
     );
   }

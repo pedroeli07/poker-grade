@@ -94,6 +94,40 @@ export function useAnalyticsPageClient({
     [period, tierStats30d, tierStats90d]
   );
 
+  const hasTypeData = useMemo(
+    () =>
+      typeStats30d.some(
+        (s) =>
+          s.roi !== null ||
+          s.roiWeighted !== null ||
+          s.profit !== null ||
+          (s.count !== null && s.count > 0)
+      ),
+    [typeStats30d]
+  );
+
+  const siteBarRows = useMemo(
+    () =>
+      stats.map((s) => ({
+        key: s.network,
+        shortLabel: s.label.length > 16 ? `${s.label.slice(0, 14)}…` : s.label,
+        fullLabel: s.label,
+        roi: s.roiWeighted,
+      })),
+    [stats]
+  );
+
+  const tierBarRows = useMemo(
+    () =>
+      tierStats.map((s) => ({
+        key: s.tier,
+        shortLabel: s.tier,
+        fullLabel: `Tier ${s.tier} (Low / Mid / High)`,
+        roi: s.roiWeighted,
+      })),
+    [tierStats]
+  );
+
   return {
     period,
     setPeriod,
@@ -104,5 +138,8 @@ export function useAnalyticsPageClient({
     ranking,
     tierStats,
     typeStats30d,
+    hasTypeData,
+    siteBarRows,
+    tierBarRows,
   };
 }

@@ -16,16 +16,16 @@ const log = createLogger("cron.daily-sync");
 
 export async function GET(request: Request) {
   if (!cronSecret) {
-    return NextResponse.json({ error: "Not configured" }, { status: 503 });
+    return NextResponse.json({ error: ErrorTypes.CRON_SECRET_NOT_CONFIGURED }, { status: 503 });
   }
   const auth = request.headers.get("authorization");
   if (auth !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
   if (!sharkScopeAppName || !sharkScopeAppKey) {
     return NextResponse.json(
-      { error: "SharkScope credentials not configured." },
+      { error: ErrorTypes.SHARK_SYNC_CREDENTIALS_NOT_CONFIGURED },
       { status: 503 }
     );
   }
@@ -251,7 +251,7 @@ export async function GET(request: Request) {
             severity: "red",
             metricValue: 0,
             threshold: 0,
-            context: { groupName, message: "Grupo não encontrado no SharkScope" },
+            context: { groupName, message: ErrorTypes.SHARK_GROUP_NOT_FOUND },
           },
         });
         log.warn(`Alerta de group_not_found criado para: ${groupName}`);

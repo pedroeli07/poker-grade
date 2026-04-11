@@ -1,7 +1,20 @@
 import { Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cardClassName } from "@/lib/constants";
+import { memo } from "react";
 
-export function GradesEmptyState({
+/** Nenhuma grade no sistema (antes de importar). */
+export function GradesListInitialEmpty() {
+  return (
+    <div className={`${cardClassName} py-12 text-center`}>
+      <Archive className="h-10 w-10 mx-auto mb-4 opacity-50" />
+      <p>Nenhuma grade cadastrada.</p>
+      <p className="text-sm">Importe um JSON da Lobbyze para começar.</p>
+    </div>
+  );
+}
+
+const GradesEmptyState = memo(function GradesEmptyState({
   anyFilter,
   clearFilters,
 }: {
@@ -27,4 +40,8 @@ export function GradesEmptyState({
       )}
     </div>
   );
-}
+});
+
+GradesEmptyState.displayName = "GradesEmptyState";
+
+export default GradesEmptyState;

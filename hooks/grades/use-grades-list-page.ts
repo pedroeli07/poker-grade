@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback, useEffect, useLayoutEffect } from "reac
 import { useQuery } from "@tanstack/react-query";
 import { descriptionPick, distinctOptions } from "@/lib/utils";
 import { EMPTY_DESC, STALE_TIME } from "@/lib/constants";
-import { GRADES_LS_VIEW } from "@/lib/constants/grades-page";
+import { GRADES_LS_VIEW } from "@/lib/constants/metadata";
 import type { GradeListRow, ColumnKey } from "@/lib/types";
 import { getGradesListRowsAction } from "@/lib/queries/db/grade-queries";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";

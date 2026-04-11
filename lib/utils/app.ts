@@ -144,6 +144,9 @@ export const normText = (t: string) => t.toLowerCase().trim();
 export const isTextSelected = (list: LobbyzeFilterItem[], opt: LobbyzeFilterItem) =>
   list.some(x => normText(x.item_text) === normText(opt.item_text));
 
+export const toggleByText = (list: LobbyzeFilterItem[], opt: LobbyzeFilterItem, on: boolean) =>
+  on ? [...list, opt] : list.filter(x => normText(x.item_text) !== normText(opt.item_text));
+
 export function mergeOptions(presets: LobbyzeFilterItem[], current: LobbyzeFilterItem[]): LobbyzeFilterItem[] {
   const m = new Map<string, LobbyzeFilterItem>();
   [...presets, ...current].forEach(item => m.set(normText(item.item_text), item));

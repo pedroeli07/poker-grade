@@ -39,3 +39,5 @@ export const TARGET_STATUS_CONFIG = {
   ATTENTION: { icon: Minus, color: "text-amber-500", label: "Atenção" },
   OFF_TRACK: { icon: TrendingDown, color: "text-red-500", label: "Fora da Meta" },
 };
+
+export const gradeOrder = ["ABOVE", "MAIN", "BELOW"] as const;

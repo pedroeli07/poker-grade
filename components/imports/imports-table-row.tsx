@@ -4,9 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { FileSpreadsheet, ShieldCheck, AlertTriangle, ChevronRight, Check, Trash2 } from "lucide-react";
 import { cn, importRowDateLabel } from "@/lib/utils";
 import type { ImportsTableRowProps } from "@/lib/types";
+import { memo } from "react";
 
-
-export function ImportsTableRow({
+const ImportsTableRow = memo(function ImportsTableRow({
   item,
   canDelete,
   isSelected,
@@ -113,4 +113,8 @@ export function ImportsTableRow({
       )}
     </TableRow>
   );
-}
+});
+
+ImportsTableRow.displayName = "ImportsTableRow";
+
+export default ImportsTableRow;

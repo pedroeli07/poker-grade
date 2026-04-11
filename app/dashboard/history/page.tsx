@@ -1,15 +1,14 @@
 import { requireSession } from "@/lib/auth/session";
-import { Metadata } from "next";
-import { loadHistoryPageData } from "../../../hooks/history/history-page-load";
-import { HistoryPageView } from "./history-page-view";
+import { loadHistoryPageData } from "@/lib/history/history-page-load";
+import { historyPageMetadata } from "@/lib/constants/metadata";
+import HistoryPageClient from "./history-page-client";
 
-export const metadata: Metadata = {
-  title: "Histórico de Limites",
-  description: "Visualize o histórico de subidas, manutenções e descidas de grade dos jogadores.",
-};
+export const dynamic = "force-dynamic";
+
+export const metadata = historyPageMetadata;
 
 export default async function HistoryPage() {
   const session = await requireSession();
   const data = await loadHistoryPageData(session);
-  return <HistoryPageView {...data} />;
+  return <HistoryPageClient {...data} />;
 }

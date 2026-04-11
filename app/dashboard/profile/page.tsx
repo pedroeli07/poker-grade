@@ -1,25 +1,19 @@
 import { requireSession } from "@/lib/auth/session";
-import { Metadata } from "next";
-import { ProfileClient } from "./profile-client";
-import { loadProfilePageData } from "../../../hooks/profile/profile-page-load";
-
-export const metadata: Metadata = {
-  title: "Meu Perfil",
-  description: "Gerencie suas informações pessoais e credenciais",
-};
+import ProfileClient from "./profile-client";
+import { profilePageMetadata } from "@/lib/constants/metadata";
+import { loadProfilePageData } from "@/lib/profile/profile-page-load";
+import ProfileNotFound from "@/components/profile/profile-not-found";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = profilePageMetadata;
 
 export default async function ProfilePage() {
   const session = await requireSession();
   const profile = await loadProfilePageData(session);
 
   if (!profile) {
-    return (
-      <div className="text-center py-16 text-muted-foreground">
-        Usuário não encontrado.
-      </div>
-    );
+    return <ProfileNotFound />;
   }
 
   return <ProfileClient profile={profile} />;

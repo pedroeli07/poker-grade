@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation } from "@/lib/rate-limit";
 import { ErrorTypes } from "@/lib/types";
+import { UserRole } from "@prisma/client";
 
 export async function DELETE(req: Request) {
   const session = await getSession();
@@ -22,7 +23,7 @@ export async function DELETE(req: Request) {
 
   const id = new URL(req.url).searchParams.get("id");
   if (!id) {
-    return NextResponse.json({ error: "ID obrigatório." }, { status: 400 });
+    return NextResponse.json({ error: ErrorTypes.ID_REQUIRED }, { status: 400 });
   }
 
   const analysis = await prisma.scoutingAnalysis.findUnique({
@@ -34,7 +35,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: ErrorTypes.NOT_FOUND }, { status: 404 });
   }
 
-  if (session.role !== "ADMIN" && analysis.savedBy !== session.userId) {
+  if (session.role !== UserRole.ADMIN && analysis.savedBy !== session.userId) {
     return NextResponse.json({ error: ErrorTypes.FORBIDDEN }, { status: 403 });
   }
 

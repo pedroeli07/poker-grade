@@ -1,6 +1,9 @@
 import { Suspense } from "react";
 import { AuthMarketingShell } from "@/components/auth/auth-marketing-shell";
 import { RegisterForm } from "./register-form";
+import { registerPageMetadata } from "@/lib/constants/metadata";
+
+export const metadata = registerPageMetadata;
 
 export default function RegisterPage() {
   return (

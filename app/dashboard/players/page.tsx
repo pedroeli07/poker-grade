@@ -1,31 +1,23 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
 import { NewPlayerModal } from "@/components/new-player-modal";
-import { Metadata } from "next";
 import dynamicImport from "next/dynamic";
 import { loadPlayersListPageProps } from "../../../hooks/players/players-page-load";
 import { SyncSharkScopeButton } from "@/components/sharkscope/sync-button";
-
-const PlayersTableClient = dynamicImport(
-  () =>
-    import("./players-table-client").then((m) => ({
-      default: m.PlayersTableClient,
-    })),
-  {
-    loading: () => (
-      <div className="animate-pulse space-y-4">
-        <div className="h-10 w-full rounded-md bg-muted" />
-        <div className="h-64 rounded-lg bg-muted" />
-      </div>
-    ),
-  }
-);
+import { playersPageMetadata } from "@/lib/constants/metadata";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
-  title: "Jogadores",
-  description: "Gerencie o time de jogadores e aloque coaches responsáveis.",
-};
+
+export const metadata = playersPageMetadata;
+
+const PlayersTableClient = dynamicImport(() => import("./players-table-client"), {
+  loading: () => (
+    <div className="animate-pulse space-y-4">
+      <div className="h-10 w-full rounded-md bg-muted" />
+      <div className="h-64 rounded-lg bg-muted" />
+    </div>
+  ),
+});
 
 export default async function PlayersPage() {
   const session = await requireSession();
@@ -37,10 +29,10 @@ export default async function PlayersPage() {
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1 pr-2">
           <h2 className="text-3xl font-bold tracking-tight text-primary">
-            Jogadores
+            {playersPageMetadata.title}
           </h2>
           <p className="text-muted-foreground mt-1">
-            Gerencie o time de jogadores e aloque coaches responsáveis.
+            {playersPageMetadata.description}
           </p>
         </div>
         {canCreatePlayer ? (

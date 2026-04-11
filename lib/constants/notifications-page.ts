@@ -1,9 +1,2 @@
-import type { Metadata } from "next";
-
-export const NOTIFICATIONS_LS_FILTER = "gestao-grades:notifications:filter";
-export const NOTIFICATIONS_LS_PAGE = "gestao-grades:notifications:page";
-
-export const notificationsPageMetadata = {
-  title: "Notificações",
-  description: "Visualize suas notificações e marque como lidas.",
-} satisfies Metadata;
+/** Barrel: chaves localStorage da página de notificações. */
+export { NOTIFICATIONS_LS_FILTER, NOTIFICATIONS_LS_PAGE } from "@/lib/constants/metadata";

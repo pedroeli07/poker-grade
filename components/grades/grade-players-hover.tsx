@@ -4,8 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { cn } from "@/lib/utils";
 import { playersHoverScrollClass } from "@/lib/constants";
+import { memo } from "react";
 
-export function GradePlayersHover({
+const GradePlayersHover = memo(function GradePlayersHover({
   count,
   players,
   gradeName,
@@ -77,4 +78,8 @@ export function GradePlayersHover({
       </HoverCardContent>
     </HoverCard>
   );
-}
+});
+
+GradePlayersHover.displayName = "GradePlayersHover";
+
+export default GradePlayersHover;

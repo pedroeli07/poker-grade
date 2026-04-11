@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { memo, useMemo, useState, useCallback } from "react";
 import { Search, UserPlus, Users, UserCheck, Clock, LayoutGrid, Table2 } from "lucide-react";
 import {
   Table,
@@ -13,24 +13,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, distinctOptions } from "@/lib/utils";
 import { UsuariosInviteModal } from "@/components/user/user-invite-modal";
-import { ColumnFilter } from "@/components/column-filter";
+import ColumnFilter from "@/components/column-filter";
 import { useUsuariosStore } from "@/lib/stores/use-usuarios-store";
 import { useUserActions } from "@/hooks/user/use-user-actions";
 import { ROLE_VISUAL } from "@/components/user/user-badges";
-import { StatCard, EmptyState } from "@/components/user/user-view-components";
 import { UserCard } from "@/components/user/user-card";
 import { UserTableRow } from "@/components/user/user-table-row";
 import type { UsuarioDirectoryRow, UsuariosColumnKey } from "@/lib/types";
 import { cardClassName } from "@/lib/constants";
+import { useUserPermissions } from "@/hooks/user/use-user-permissions";
+import UserStatCard from "@/components/user/user-view-components";
+import UserEmptyState from "@/components/user/user-empty-state";
 
-export function UsuariosClient({
+
+const UsuariosClient = memo(function UsuariosClient({
   initialRows,
-  canManageUsers,
 }: {
   initialRows: UsuarioDirectoryRow[];
-  canManageUsers: boolean;
 }) {
+  const { canManage } = useUserPermissions();
   const [inviteOpen, setInviteOpen] = useState(false);
+  const canManageUsers = canManage ?? false;
   const [searchQuery, setSearchQuery] = useState("");
   const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
     useUsuariosStore();
@@ -120,9 +123,9 @@ export function UsuariosClient({
 
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Total na lista" value={stats.total} icon={Users} />
-        <StatCard label="Contas ativas" value={stats.reg} icon={UserCheck} />
-        <StatCard label="Convites pendentes" value={stats.pend} icon={Clock} />
+        <UserStatCard label="Total na lista" value={stats.total} icon={Users} />
+        <UserStatCard label="Contas ativas" value={stats.reg} icon={UserCheck} />
+        <UserStatCard label="Convites pendentes" value={stats.pend} icon={Clock} />
       </div>
 
       {/* Toolbar: Search & View Toggles */}
@@ -180,10 +183,7 @@ export function UsuariosClient({
 
       {/* Main List Rendering */}
       {filtered.length === 0 ? (
-        <EmptyState
-          hasFilters={Boolean(searchQuery || anyFilter)}
-          canManageUsers={canManageUsers}
-        />
+        <UserEmptyState hasFilters={Boolean(searchQuery || anyFilter)} />
       ) : viewMode === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((row) => (
@@ -191,28 +191,27 @@ export function UsuariosClient({
               key={row.id}
               row={row}
               disabled={pending}
-              canManage={canManageUsers}
               onAction={runAction}
             />
           ))}
         </div>
       ) : (
-        <div className="space-y-3">
-          {anyFilter && (
-            <div className="flex justify-end">
-              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearFilters}>
-                Limpar todos os filtros
-              </Button>
-            </div>
-          )}
-          <div className="rounded-xl border border-border overflow-x-auto bg-card/10">
-            <Table>
-              <TableHeader>
-                <TableRow className={`${cardClassName} bg-blue-500/20 hover:bg-blue-500/20`}>
-                  <TableHead>
-                    <ColumnFilter
-                      columnId="u-email"
-                      label="Membro"
+          <div className="space-y-3">
+            {anyFilter && (
+              <div className="flex justify-end">
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearFilters}>
+                  Limpar todos os filtros
+                </Button>
+              </div>
+            )}
+            <div className="rounded-xl border border-border overflow-x-auto bg-card/10">
+              <Table>
+                <TableHeader>
+                  <TableRow className={`${cardClassName} bg-blue-500/20 hover:bg-blue-500/20`}>
+                    <TableHead>
+                      <ColumnFilter
+                        columnId="u-email"
+                        label="Membro"
                       options={options.email}
                       applied={filters.email}
                       onApply={setCol("email")}
@@ -247,7 +246,6 @@ export function UsuariosClient({
                     key={row.id}
                     row={row}
                     disabled={pending}
-                    canManage={canManageUsers}
                     onAction={runAction}
                   />
                 ))}
@@ -258,4 +256,8 @@ export function UsuariosClient({
       )}
     </div>
   );
-}
+});
+
+UsuariosClient.displayName = "UsuariosClient";
+
+export default UsuariosClient;

@@ -26,10 +26,10 @@ export async function GET(req: Request) {
   const { nickId, dataType, filter } = parsed.data;
 
   const nick = await prisma.playerNick.findUnique({ where: { id: nickId }, select: { id: true, nick: true, network: true, isActive: true } });
-  if (!nick) return NextResponse.json({ error: "Nick não encontrado." }, { status: 404 });
-  if (!nick.isActive) return NextResponse.json({ error: "Nick inativo." }, { status: 400 });
+  if (!nick) return NextResponse.json({ error: ErrorTypes.NICK_NOT_FOUND }, { status: 404 });
+  if (!nick.isActive) return NextResponse.json({ error: ErrorTypes.NICK_NOT_FOUND }, { status: 400 });
   if (!process.env.SHARKSCOPE_APP_NAME || !process.env.SHARKSCOPE_APP_KEY)
-    return NextResponse.json({ error: "SharkScope não configurado. Aguardando credenciais." }, { status: 503 });
+    return NextResponse.json({ error: ErrorTypes.SHARK_SYNC_CREDENTIALS_NOT_CONFIGURED }, { status: 503 });
 
   const cfg = DATA_TYPE_CONFIG[dataType] ?? { pathSuffix: "", defaultQuery: "", ttlHours: 24 };
   const query = filter ? `?filter=${encodeURIComponent(filter)}` : cfg.defaultQuery;
@@ -40,6 +40,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: true, data });
   } catch (err) {
     console.error("[sharkscope/player] fetch error", err);
-    return NextResponse.json({ error: "Erro ao consultar SharkScope." }, { status: 502 });
+    return NextResponse.json({ error: ErrorTypes.SHARK_SEARCH_ERROR }, { status: 502 });
   }
 }

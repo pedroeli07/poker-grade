@@ -4,7 +4,7 @@ import { ErrorTypes } from "@/lib/types";
 
 export async function GET(request: Request) {
   if (!cronSecret) {
-    return NextResponse.json({ error: ErrorTypes.NOT_CONFIGURED }, { status: 503 });
+    return NextResponse.json({ error: ErrorTypes.CRON_SECRET_NOT_CONFIGURED }, { status: 503 });
   }
   const auth = request.headers.get("authorization");
   if (auth !== `Bearer ${cronSecret}`) {

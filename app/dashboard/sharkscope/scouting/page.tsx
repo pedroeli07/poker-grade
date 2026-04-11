@@ -1,16 +1,15 @@
 import dynamicImport from "next/dynamic";
-import { sharkscopeScoutingPageMetadata } from "@/lib/constants/sharkscope-scouting-page";
 import { getScoutingPageProps } from "@/lib/sharkscope/scouting-page-server";
 import { ScoutingPageSkeleton } from "@/components/sharkscope/scouting-page-skeleton";
+import { sharkscopeScoutingPageMetadata } from "@/lib/constants/sharkscope-scouting-page";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = sharkscopeScoutingPageMetadata;
 
-const ScoutingClient = dynamicImport(
-  () => import("./scouting-client").then((m) => ({ default: m.ScoutingClient })),
-  { loading: () => <ScoutingPageSkeleton /> }
-);
+const ScoutingClient = dynamicImport(() => import("./scouting-client"), {
+  loading: () => <ScoutingPageSkeleton />,
+});
 
 export default async function ScoutingPage() {
   const props = await getScoutingPageProps();

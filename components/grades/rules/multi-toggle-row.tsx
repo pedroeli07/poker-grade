@@ -1,20 +1,10 @@
-import { cn, normText, isTextSelected } from "@/lib/utils";
+import { cn, isTextSelected } from "@/lib/utils";
+import { toggleByText } from "./toggle-by-text";
 import { LobbyzeFilterItem } from "@/lib/types";
+import { memo } from "react";
 
-export function toggleByText(
-  list: LobbyzeFilterItem[],
-  opt: LobbyzeFilterItem,
-  on: boolean
-): LobbyzeFilterItem[] {
-  const t = normText(opt.item_text);
-  if (on) {
-    if (list.some((x) => normText(x.item_text) === t)) return list;
-    return [...list, opt];
-  }
-  return list.filter((x) => normText(x.item_text) !== t);
-}
 
-export function MultiToggleRow({
+const MultiToggleRow = memo(function MultiToggleRow({
   options,
   selected,
   onChange,
@@ -45,4 +35,9 @@ export function MultiToggleRow({
       })}
     </div>
   );
-}
+});
+
+MultiToggleRow.displayName = "MultiToggleRow";
+
+export { MultiToggleRow };
+export default MultiToggleRow;

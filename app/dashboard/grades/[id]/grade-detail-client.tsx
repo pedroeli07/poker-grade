@@ -5,16 +5,17 @@ import { ArrowLeft } from "lucide-react";
 import { useGradeDetailPage } from "@/hooks/grades/use-grade-detail-page";
 import type { GradeDetailQueryData } from "@/lib/types";
 import { cardClassName } from "@/lib/constants";
-import { GradeRuleCard } from "@/components/grades/grade-rule-card";
+import GradeRuleCard from "@/components/grades/grade-rule-card";
 import { Button } from "@/components/ui/button";
+import { memo } from "react";
 
-export function GradeDetailClient({
+const GradeDetailClient = memo(({
   gradeId,
   initialData,
 }: {
   gradeId: string;
   initialData: GradeDetailQueryData;
-}) {
+}) => {
   const { data } = useGradeDetailPage(gradeId, initialData);
 
   return (
@@ -57,4 +58,8 @@ export function GradeDetailClient({
       </div>
     </div>
   );
-}
+});
+
+GradeDetailClient.displayName = "GradeDetailClient";
+
+export default GradeDetailClient;

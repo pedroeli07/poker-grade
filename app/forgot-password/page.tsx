@@ -1,11 +1,8 @@
-import { Metadata } from "next";
 import { ResetForm } from "./reset-form";
 import { ShieldCheck } from "lucide-react";
+import { forgotPasswordPageMetadata } from "@/lib/constants/metadata";
 
-export const metadata: Metadata = {
-  title: "Recuperar Senha | Gestão de Grades",
-  description: "Redefina a sua senha.",
-};
+export const metadata = forgotPasswordPageMetadata;
 
 export default function ForgotPasswordPage() {
   return (

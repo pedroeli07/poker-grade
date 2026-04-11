@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { importDetailPageMetadata } from "@/lib/constants/import-detail-page";
+import { importDetailPageMetadata } from "@/lib/constants/metadata";
 import { getImportDetailPageProps } from "@/lib/imports/import-detail-page-server";
-import { ImportDetailView } from "./import-id-client";
+import ImportsIdClient from "./imports-id-client";
 
 export const dynamic = "force-dynamic";
 
@@ -20,5 +20,5 @@ export default async function ImportDetailPage({
   const data = await getImportDetailPageProps(id, sp.tab);
   if (!data) notFound();
 
-  return <ImportDetailView {...data} />;
+  return <ImportsIdClient {...data} />;
 }

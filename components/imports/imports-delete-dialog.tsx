@@ -9,8 +9,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { AlertTriangle, Loader2 } from "lucide-react";
+import { memo } from "react";
 
-export function ImportsDeleteDialog({
+const ImportsDeleteDialog = memo(function ImportsDeleteDialog({
   isOpen,
   idsToDelete,
   isPending,
@@ -67,4 +68,8 @@ export function ImportsDeleteDialog({
       </AlertDialogContent>
     </AlertDialog>
   );
-}
+});
+
+ImportsDeleteDialog.displayName = "ImportsDeleteDialog";
+
+export default ImportsDeleteDialog;

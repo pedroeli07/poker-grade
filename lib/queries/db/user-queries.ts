@@ -1,7 +1,27 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { SESSION_COOKIE_NAME } from "@/lib/constants";
+import { verifySessionJwt } from "@/lib/auth/jwt";
 import { UserRole } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+
+export async function getUserPermissions() {
+  const jar = await cookies();
+  const cookie = jar.get(SESSION_COOKIE_NAME)?.value;
+  if (!cookie) return { canManage: false };
+
+  try {
+    const session = await verifySessionJwt(cookie);
+    if (!session) return { canManage: false };
+    const role = session.role;
+    return {
+      canManage: role === UserRole.ADMIN || role === UserRole.MANAGER,
+    };
+  } catch {
+    return { canManage: false };
+  }
+}
 import { prisma } from "@/lib/prisma";
 import { requireRoles } from "@/lib/auth/session";
 import {

@@ -1,14 +1,16 @@
+import dynamicImport from "next/dynamic";
+import ReviewPageSkeleton from "@/components/review/review-page-skeleton";
 import { requireSession } from "@/lib/auth/session";
-import { Metadata } from "next";
-import { loadReviewPageData } from "../../../hooks/review/review-page-load";
-import { ReviewPageView } from "./review-page-view";
+import { loadReviewPageData } from "@/hooks/review/review-page-load";
+import { reviewPageMetadata } from "@/lib/constants/metadata";
+
+export const metadata = reviewPageMetadata;
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Conferência de Torneios",
-  description: "Torneios extra-play e suspeitos aguardando decisão do coach.",
-};
+const ReviewPageClient = dynamicImport(() => import("./review-page-client"), {
+  loading: () => <ReviewPageSkeleton />,
+});
 
 export default async function ReviewPage({
   searchParams,
@@ -19,5 +21,5 @@ export default async function ReviewPage({
   const session = await requireSession();
   const data = await loadReviewPageData(session, sp);
 
-  return <ReviewPageView {...data} />;
+  return <ReviewPageClient {...data} />;
 }
