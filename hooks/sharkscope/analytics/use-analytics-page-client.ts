@@ -26,6 +26,8 @@ function isTab(v: string): v is SharkscopeAnalyticsTab {
 export function useAnalyticsPageClient({
   stats30d,
   stats90d,
+  siteAnalytics30d,
+  siteAnalytics90d,
   ranking30d,
   ranking90d,
   tierStats30d,
@@ -82,6 +84,11 @@ export function useAnalyticsPageClient({
     [period, stats30d, stats90d]
   );
 
+  const siteAnalytics = useMemo(
+    () => (period === "30d" ? siteAnalytics30d : siteAnalytics90d),
+    [period, siteAnalytics30d, siteAnalytics90d]
+  );
+
   const hasData = period === "30d" ? hasData30d : hasData90d;
 
   const ranking = useMemo(
@@ -106,17 +113,6 @@ export function useAnalyticsPageClient({
     [typeStats30d]
   );
 
-  const siteBarRows = useMemo(
-    () =>
-      stats.map((s) => ({
-        key: s.network,
-        shortLabel: s.label.length > 16 ? `${s.label.slice(0, 14)}…` : s.label,
-        fullLabel: s.label,
-        roi: s.roiWeighted,
-      })),
-    [stats]
-  );
-
   const tierBarRows = useMemo(
     () =>
       tierStats.map((s) => ({
@@ -134,12 +130,12 @@ export function useAnalyticsPageClient({
     activeTab,
     setActiveTab,
     stats,
+    siteAnalytics,
     hasData,
     ranking,
     tierStats,
     typeStats30d,
     hasTypeData,
-    siteBarRows,
     tierBarRows,
   };
 }

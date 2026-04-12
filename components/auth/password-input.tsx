@@ -39,7 +39,7 @@ export function PasswordInput({
         onChange={onChange}
         data-slot="input"
         className={cn(
-          "h-11 w-full min-w-0 rounded-xl border border-white/10 bg-white/[0.04] pr-11 pl-3.5 text-sm text-zinc-100 outline-none transition-[border-color,box-shadow] placeholder:text-zinc-600 focus-visible:border-rose-500/40 focus-visible:ring-2 focus-visible:ring-rose-500/20",
+          "h-11 w-full min-w-0 rounded-xl border border-border bg-card/50 pr-11 pl-3.5 text-sm text-foreground outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground/50 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20",
           className
         )}
       />

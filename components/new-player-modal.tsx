@@ -36,7 +36,7 @@ import {
 import { createPlayer } from "@/lib/queries/db/player-queries";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import { POKER_NETWORKS_UI } from "@/lib/constants";
+import { getPokerstarsMainNickFromRows, POKER_NETWORKS_UI } from "@/lib/constants";
 import type { NewPlayerModalProps } from "@/lib/types";
 
 export function NewPlayerModal({ coaches, grades }: NewPlayerModalProps) {
@@ -299,49 +299,53 @@ export function NewPlayerModal({ coaches, grades }: NewPlayerModalProps) {
                     <Label className="text-[15px] font-medium">Contas de Poker (SharkScope)</Label>
                     <div className="space-y-3">
                       {nicks.map((nickObj, index) => (
-                        <div key={index} className="grid grid-cols-[auto_1fr_auto] gap-2 items-center">
-                          <Select
-                            value={nickObj.network}
-                            onValueChange={(val) => {
-                              const newNicks = [...nicks];
-                              newNicks[index].network = val;
-                              setNicks(newNicks);
-                            }}
-                            disabled={isPending}
-                          >
-                            <SelectTrigger className="h-10 w-[160px] bg-muted/40 border-border/60">
-                              <SelectValue placeholder="Rede" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {POKER_NETWORKS_UI.map((net) => (
-                                <SelectItem key={net.value} value={net.value}>
-                                  <div className="flex items-center gap-2">
-                                    {net.icon && (
-                                      // eslint-disable-next-line @next/next/no-img-element -- small static network icons
-                                      <img src={net.icon} alt={net.label} className="w-5 h-5 rounded object-contain" />
-                                    )}
-                                    <span>{net.label}</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          
-                          <div className="relative">
-                            <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                            <Input
-                              placeholder="Nickname na rede"
-                              value={nickObj.nick}
-                              onChange={(e) => {
+                        <div key={index} className="flex gap-2 items-start">
+                          <div className="min-w-0 flex-1 space-y-2">
+                            <Select
+                              value={nickObj.network}
+                              onValueChange={(val) => {
                                 const newNicks = [...nicks];
-                                newNicks[index].nick = e.target.value;
+                                newNicks[index].network = val;
+                                if (val === "pokerstars_fr" && !newNicks[index].nick.trim()) {
+                                  const main = getPokerstarsMainNickFromRows(newNicks);
+                                  if (main) newNicks[index].nick = main;
+                                }
                                 setNicks(newNicks);
                               }}
-                              className="pl-9 h-10 w-full text-[14px] bg-muted/40 border-border/60"
                               disabled={isPending}
-                            />
+                            >
+                              <SelectTrigger className="h-10 w-full bg-muted/40 border-border/60">
+                                <SelectValue placeholder="Rede" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {POKER_NETWORKS_UI.map((net) => (
+                                  <SelectItem key={net.value} value={net.value}>
+                                    <div className="flex items-center gap-2">
+                                      {net.icon && (
+                                        // eslint-disable-next-line @next/next/no-img-element -- small static network icons
+                                        <img src={net.icon} alt={net.label} className="w-5 h-5 rounded object-contain" />
+                                      )}
+                                      <span>{net.label}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <div className="relative">
+                              <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                              <Input
+                                placeholder="Nickname na rede"
+                                value={nickObj.nick}
+                                onChange={(e) => {
+                                  const newNicks = [...nicks];
+                                  newNicks[index].nick = e.target.value;
+                                  setNicks(newNicks);
+                                }}
+                                className="pl-9 h-10 w-full text-[14px] bg-muted/40 border-border/60"
+                                disabled={isPending}
+                              />
+                            </div>
                           </div>
-                          
                           <Button
                             type="button"
                             variant="ghost"

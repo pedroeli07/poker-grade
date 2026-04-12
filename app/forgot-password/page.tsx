@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
               Recuperar Acesso
             </h1>
             <p className="text-sm text-muted-foreground/80 font-mono">
-              Redefina sua senha usando GMAIL
+              Redefina sua senha usando seu email
             </p>
           </div>
         </div>

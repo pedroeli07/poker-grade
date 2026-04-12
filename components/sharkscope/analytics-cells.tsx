@@ -3,6 +3,7 @@
 import { memo } from "react";
 import PlayerRoiCell from "@/components/players/table/player-roi-cell";
 import { earlyFinishSeverity, lateFinishSeverity } from "@/lib/sharkscope-parse";
+import { fmtProfitUsd } from "@/lib/utils/sharkscope-analytics-format";
 
 const pillClass =
   "inline-flex flex-row items-center gap-1.5 tabular-nums px-2.5 py-1 rounded-md border text-xs font-bold";
@@ -63,6 +64,31 @@ export const AnalyticsProfitCell = memo(function AnalyticsProfitCell({
       className={`font-mono text-sm font-semibold ${profit >= 0 ? "text-emerald-600" : "text-red-500"}`}
     >
       {sign}${profit.toFixed(0)}
+    </span>
+  );
+});
+
+/** Lucro em badge verde / vermelho (ex.: ranking SharkScope). */
+export const RankingProfitBadge = memo(function RankingProfitBadge({
+  profit,
+}: {
+  profit: number | null;
+}) {
+  if (profit === null)
+    return <span className="text-muted-foreground text-xs">—</span>;
+  const label = fmtProfitUsd(profit);
+  if (profit >= 0) {
+    return (
+      <span
+        className={`${pillClass} bg-emerald-500/10 text-emerald-700 border-emerald-500/25 dark:text-emerald-400`}
+      >
+        {label}
+      </span>
+    );
+  }
+  return (
+    <span className={`${pillClass} bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400`}>
+      {label}
     </span>
   );
 });

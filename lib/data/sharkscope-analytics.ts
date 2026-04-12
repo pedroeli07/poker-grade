@@ -7,7 +7,21 @@ import {
   SHARKSCOPE_STATS_FILTER_90D,
   SHARKSCOPE_TYPE_BREAKDOWN_KEYS,
 } from "@/lib/constants/sharkscope-type-filters";
-import type { NetworkStat, TierStat, TypeStat, RankingEntry } from "@/lib/types";
+import {
+  SHARKSCOPE_GROUP_SITE_BREAKDOWN_30D,
+  SHARKSCOPE_GROUP_SITE_BREAKDOWN_90D,
+  sharkscopeAnalyticsSiteFallbackNicks,
+} from "@/lib/constants/sharkscope-group-site";
+import {
+  emptyNetworkAggBucket,
+  parseGroupSiteBreakdownPayload,
+  pctFromRatio,
+  roiFromAgg,
+  sharkscopeNetworkToAppKey,
+  type GroupSiteBreakdownPayload,
+  type NetworkAggBucket,
+} from "@/lib/sharkscope/completed-tournaments-aggregate";
+import type { NetworkStat, SiteAnalyticsPayload, TierStat, TypeStat, RankingEntry } from "@/lib/types";
 import { classifyTier } from "@/lib/utils";
 
 const SHARKSCOPE_SITE_NETWORKS = Object.keys(POKER_NETWORKS) as string[];
@@ -50,6 +64,22 @@ function bucketToNetworkStat(network: string, bucket: AggBucket): NetworkStat {
   };
 }
 
+function networkStatFromTournamentBucket(network: string, bucket: NetworkAggBucket): NetworkStat {
+  const roi = roiFromAgg(bucket);
+  return {
+    network,
+    label: networkLabel(network),
+    roi,
+    roiWeighted: roi,
+    profit: bucket.profit,
+    count: bucket.entries,
+    stake: bucket.stake,
+    itm: pctFromRatio(bucket.itmHits, bucket.entries),
+    earlyFinish: pctFromRatio(bucket.earlyHits, bucket.entries),
+    lateFinish: pctFromRatio(bucket.lateHits, bucket.entries),
+  };
+}
+
 function pushCacheIntoBucket(bucket: AggBucket, rawData: unknown) {
   const totalRoi = extractStat(rawData, "TotalROI");
   const profit = extractStat(rawData, "TotalProfit");
@@ -65,7 +95,52 @@ function pushCacheIntoBucket(bucket: AggBucket, rawData: unknown) {
   }
 }
 
-async function buildNetworkStats(dataType: string): Promise<NetworkStat[]> {
+async function buildNetworkStatsFromGroupBreakdown(
+  breakdownDataType: string,
+  filterKey: string
+): Promise<NetworkStat[]> {
+  const caches = await prisma.sharkScopeCache.findMany({
+    where: {
+      dataType: breakdownDataType,
+      filterKey,
+      expiresAt: { gt: new Date() },
+      playerNick: { network: "PlayerGroup" },
+    },
+    select: { rawData: true },
+  });
+
+  const merged = new Map<string, NetworkAggBucket>();
+  const seenGroups = new Set<string>();
+
+  for (const c of caches) {
+    const payload = parseGroupSiteBreakdownPayload(c.rawData);
+    if (!payload) continue;
+    const gk = payload.groupName.trim().toLowerCase();
+    if (seenGroups.has(gk)) continue;
+    seenGroups.add(gk);
+
+    for (const [net, b] of Object.entries(payload.byNetwork)) {
+      const netKey = sharkscopeNetworkToAppKey(net) ?? net;
+      const cur = merged.get(netKey) ?? emptyNetworkAggBucket();
+      merged.set(netKey, {
+        profit: cur.profit + b.profit,
+        stake: cur.stake + b.stake,
+        entries: cur.entries + b.entries,
+        itmHits: cur.itmHits + b.itmHits,
+        earlyHits: cur.earlyHits + b.earlyHits,
+        lateHits: cur.lateHits + b.lateHits,
+      });
+    }
+  }
+
+  return [...merged.entries()]
+    .map(([network, bucket]) => networkStatFromTournamentBucket(network, bucket))
+    .filter((s) => s.roi !== null || s.profit !== null || (s.count !== null && s.count > 0))
+    .sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
+}
+
+/** Fallback: caches por nick×rede (legado). */
+async function buildNetworkStatsFromNickCaches(dataType: string): Promise<NetworkStat[]> {
   const caches = await prisma.sharkScopeCache.findMany({
     where: {
       dataType,
@@ -87,9 +162,140 @@ async function buildNetworkStats(dataType: string): Promise<NetworkStat[]> {
   }
 
   return [...byNetwork.entries()]
-    .map(([network, bucket]) => bucketToNetworkStat(network, bucket))
+    .map(([network, bucket]) => {
+      const s = bucketToNetworkStat(network, bucket);
+      return {
+        ...s,
+        stake: 0,
+        itm: null,
+        earlyFinish: null,
+        lateFinish: null,
+      };
+    })
     .filter((s) => s.roi !== null || s.profit !== null || s.count !== null)
     .sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
+}
+
+async function buildNetworkStatsForPeriod(period: "30d" | "90d"): Promise<NetworkStat[]> {
+  const breakdownType =
+    period === "30d" ? SHARKSCOPE_GROUP_SITE_BREAKDOWN_30D : SHARKSCOPE_GROUP_SITE_BREAKDOWN_90D;
+  const filterKey = period === "30d" ? SHARKSCOPE_STATS_FILTER_30D : SHARKSCOPE_STATS_FILTER_90D;
+
+  const fromGroup = await buildNetworkStatsFromGroupBreakdown(breakdownType, filterKey);
+  if (fromGroup.length > 0) return fromGroup;
+  if (sharkscopeAnalyticsSiteFallbackNicks()) {
+    return buildNetworkStatsFromNickCaches(period === "30d" ? "stats_30d" : "stats_90d");
+  }
+  return [];
+}
+
+async function buildSiteAnalyticsExtras(period: "30d" | "90d"): Promise<SiteAnalyticsPayload> {
+  const breakdownType =
+    period === "30d" ? SHARKSCOPE_GROUP_SITE_BREAKDOWN_30D : SHARKSCOPE_GROUP_SITE_BREAKDOWN_90D;
+  const filterKey = period === "30d" ? SHARKSCOPE_STATS_FILTER_30D : SHARKSCOPE_STATS_FILTER_90D;
+
+  const caches = await prisma.sharkScopeCache.findMany({
+    where: {
+      dataType: breakdownType,
+      filterKey,
+      expiresAt: { gt: new Date() },
+      playerNick: { network: "PlayerGroup" },
+    },
+    select: { rawData: true },
+  });
+
+  const seenGroups = new Set<string>();
+  const groupPayloads: GroupSiteBreakdownPayload[] = [];
+
+  for (const c of caches) {
+    const payload = parseGroupSiteBreakdownPayload(c.rawData);
+    if (!payload) continue;
+    const gk = payload.groupName.trim().toLowerCase();
+    if (seenGroups.has(gk)) continue;
+    seenGroups.add(gk);
+    groupPayloads.push(payload);
+  }
+
+  const hasPerPlayerBreakdown = groupPayloads.some(
+    (p) => p.v === 2 && p.byPlayerNick && Object.keys(p.byPlayerNick).length > 0
+  );
+
+  const dbPlayers = await prisma.player.findMany({
+    where: { status: "ACTIVE", playerGroup: { not: null } },
+    select: {
+      id: true,
+      name: true,
+      playerGroup: true,
+      nicks: { where: { isActive: true }, select: { nick: true } },
+    },
+  });
+
+  const eligiblePlayerIds = dbPlayers.map((p) => p.id);
+  const groupNotFoundIds = new Set(
+    eligiblePlayerIds.length === 0
+      ? []
+      : (
+          await prisma.alertLog.findMany({
+            where: {
+              playerId: { in: eligiblePlayerIds },
+              alertType: "group_not_found",
+              acknowledged: false,
+            },
+            select: { playerId: true },
+            distinct: ["playerId"],
+          })
+        ).map((a) => a.playerId)
+  );
+
+  const byPlayerId: Record<string, NetworkStat[]> = {};
+
+  for (const pl of dbPlayers) {
+    const gName = pl.playerGroup!.trim().toLowerCase();
+    const payload = groupPayloads.find((p) => p.groupName.trim().toLowerCase() === gName);
+    if (!payload?.byPlayerNick) continue;
+
+    const nickKeys = new Set<string>([
+      pl.name.trim().toLowerCase(),
+      ...pl.nicks.map((n) => n.nick.trim().toLowerCase()),
+    ]);
+
+    const merged = new Map<string, NetworkAggBucket>();
+
+    for (const [sharkKey, netRec] of Object.entries(payload.byPlayerNick)) {
+      if (!nickKeys.has(sharkKey)) continue;
+      for (const [net, b] of Object.entries(netRec)) {
+        const netKey = sharkscopeNetworkToAppKey(net) ?? net;
+        const cur = merged.get(netKey) ?? emptyNetworkAggBucket();
+        merged.set(netKey, {
+          profit: cur.profit + b.profit,
+          stake: cur.stake + b.stake,
+          entries: cur.entries + b.entries,
+          itmHits: cur.itmHits + b.itmHits,
+          earlyHits: cur.earlyHits + b.earlyHits,
+          lateHits: cur.lateHits + b.lateHits,
+        });
+      }
+    }
+
+    if (merged.size > 0) {
+      byPlayerId[pl.id] = [...merged.entries()]
+        .map(([net, b]) => networkStatFromTournamentBucket(net, b))
+        .filter((s) => s.roi !== null || s.profit !== null || (s.count !== null && s.count > 0))
+        .sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
+    }
+  }
+
+  /** Todos com grupo Shark cadastrado, exceto alerta ativo `group_not_found` (igual à tabela de jogadores). */
+  const playersWithSiteData = dbPlayers
+    .filter((p) => !groupNotFoundIds.has(p.id))
+    .map((p) => ({ id: p.id, name: p.name }))
+    .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+
+  return {
+    playersWithSiteData,
+    byPlayerId,
+    hasPerPlayerBreakdown,
+  };
 }
 
 async function buildTierStats(dataType: string): Promise<TierStat[]> {
@@ -99,7 +305,7 @@ async function buildTierStats(dataType: string): Promise<TierStat[]> {
       expiresAt: { gt: new Date() },
       playerNick: { network: "PlayerGroup" },
     },
-    select: { rawData: true },
+    select: { rawData: true, playerNick: { select: { nick: true } } },
   });
 
   const byTier = new Map<
@@ -111,7 +317,13 @@ async function buildTierStats(dataType: string): Promise<TierStat[]> {
     ["High", { ...emptyBucket(), players: 0 }],
   ]);
 
+  const seenPlayerGroupNames = new Set<string>();
+
   for (const cache of caches) {
+    const gk = cache.playerNick.nick.trim().toLowerCase();
+    if (seenPlayerGroupNames.has(gk)) continue;
+    seenPlayerGroupNames.add(gk);
+
     const stake = extractStat(cache.rawData, "AvStake");
     const tier = classifyTier(stake);
     if (!tier) continue;
@@ -215,14 +427,18 @@ async function loadAnalyticsPayload() {
   const [
     stats30d,
     stats90d,
+    siteAnalytics30d,
+    siteAnalytics90d,
     ranking30d,
     ranking90d,
     tierStats30d,
     tierStats90d,
     typeStats30d,
   ] = await Promise.all([
-    buildNetworkStats("stats_30d"),
-    buildNetworkStats("stats_90d"),
+    buildNetworkStatsForPeriod("30d"),
+    buildNetworkStatsForPeriod("90d"),
+    buildSiteAnalyticsExtras("30d"),
+    buildSiteAnalyticsExtras("90d"),
     buildRanking("stats_30d"),
     buildRanking("stats_90d"),
     buildTierStats("stats_30d"),
@@ -233,6 +449,8 @@ async function loadAnalyticsPayload() {
   return {
     stats30d,
     stats90d,
+    siteAnalytics30d,
+    siteAnalytics90d,
     ranking30d,
     ranking90d,
     tierStats30d,
@@ -243,7 +461,7 @@ async function loadAnalyticsPayload() {
 
 const cachedSharkscopeAnalytics = unstable_cache(
   loadAnalyticsPayload,
-  ["sharkscope-analytics-v10"],
+  ["sharkscope-analytics-v15"],
   { revalidate: 60, tags: ["sharkscope-analytics"] }
 );
 

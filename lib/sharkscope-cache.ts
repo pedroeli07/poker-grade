@@ -47,3 +47,37 @@ export async function getOrFetchSharkScope(
 
   return data;
 }
+
+/** Copia todas as linhas de cache de um nick para outro (ex.: mesmo Player Group, vários jogadores). */
+export async function replicateSharkScopeCachesToPlayerNick(
+  fromPlayerNickId: string,
+  toPlayerNickId: string
+): Promise<void> {
+  const rows = await prisma.sharkScopeCache.findMany({
+    where: { playerNickId: fromPlayerNickId },
+  });
+  for (const row of rows) {
+    await prisma.sharkScopeCache.upsert({
+      where: {
+        playerNickId_dataType_filterKey: {
+          playerNickId: toPlayerNickId,
+          dataType: row.dataType,
+          filterKey: row.filterKey,
+        },
+      },
+      update: {
+        rawData: row.rawData as Prisma.InputJsonValue,
+        fetchedAt: row.fetchedAt,
+        expiresAt: row.expiresAt,
+      },
+      create: {
+        playerNickId: toPlayerNickId,
+        dataType: row.dataType,
+        filterKey: row.filterKey,
+        rawData: row.rawData as Prisma.InputJsonValue,
+        fetchedAt: row.fetchedAt,
+        expiresAt: row.expiresAt,
+      },
+    });
+  }
+}

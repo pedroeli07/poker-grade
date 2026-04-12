@@ -7,15 +7,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { ListFilter } from "lucide-react";
-import { cn, filterOptionPreviewText, filterOptionNeedsHoverPreview } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { filterListScrollClass } from "@/lib/constants";
 import FilterOptionRow from "./filter-row-option";
 
@@ -27,6 +21,8 @@ const ColumnFilter = memo(function ColumnFilter({
   onApply,
   compact = false,
   triggerClassName,
+  /** Texto para aria-label quando `label` não é string (ex.: badge). */
+  ariaLabel,
 }: {
   columnId: string;
   label: React.ReactNode;
@@ -37,6 +33,7 @@ const ColumnFilter = memo(function ColumnFilter({
   compact?: boolean;
   /** Classes extras no trigger (ex.: coluna estreita, centralizar). */
   triggerClassName?: string;
+  ariaLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -62,6 +59,10 @@ const ColumnFilter = memo(function ColumnFilter({
   }, [options, search]);
 
   const active = applied !== null;
+
+  const filterAria =
+    ariaLabel ??
+    (typeof label === "string" || typeof label === "number" ? String(label) : columnId);
 
   function applyFromPending(next: Set<string>) {
     if (next.size === 0) {
@@ -108,7 +109,7 @@ const ColumnFilter = memo(function ColumnFilter({
                 ),
             triggerClassName
           )}
-          aria-label={`Filtrar ${label}`}
+          aria-label={`Filtrar ${filterAria}`}
         >
           <span>{label}</span>
           <ListFilter

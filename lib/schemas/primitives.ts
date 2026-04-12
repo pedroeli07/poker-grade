@@ -1,7 +1,17 @@
 import { z } from "zod";
 
 /** Manter alinhado com `POKER_NETWORKS` em `@/lib/constants`. */
-const POKER_NETWORK_ENUM = ["gg", "pokerstars", "888", "partypoker", "ipoker", "wpt", "coinpoker"] as const;
+const POKER_NETWORK_ENUM = [
+  "gg",
+  "pokerstars",
+  "pokerstars_fr",
+  "888",
+  "partypoker",
+  "ipoker",
+  "wpt",
+  "coinpoker",
+  "chico",
+] as const;
 
 export const zodPokerNetwork = z.enum(POKER_NETWORK_ENUM);
 

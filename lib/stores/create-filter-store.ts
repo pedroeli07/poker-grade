@@ -10,7 +10,7 @@ export function createFilterStore<T extends Record<string, Set<string> | null>>(
     hasAnyFilter: false,
     setColumnFilter: (key, next) =>
       set((state) => {
-        const filters = { ...state.filters, [key]: next };
+        const filters = { ...state.filters, [key as keyof T]: next };
         const hasAnyFilter = Object.values(filters).some((v) => v !== null);
         return { filters, hasAnyFilter };
       }),

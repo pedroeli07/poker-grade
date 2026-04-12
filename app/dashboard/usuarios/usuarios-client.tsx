@@ -24,7 +24,10 @@ import { cardClassName } from "@/lib/constants";
 import { useUserPermissions } from "@/hooks/user/use-user-permissions";
 import UserStatCard from "@/components/user/user-view-components";
 import UserEmptyState from "@/components/user/user-empty-state";
+import { TableColumnSortButton } from "@/components/table-column-sort-button";
+import { compareString, nextSortState, type SortDir } from "@/lib/table-sort";
 
+type UsuarioSortKey = "email" | "role" | "status";
 
 const UsuariosClient = memo(function UsuariosClient({
   initialRows,
@@ -38,6 +41,7 @@ const UsuariosClient = memo(function UsuariosClient({
   const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
     useUsuariosStore();
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
+  const [tableSort, setTableSort] = useState<{ key: UsuarioSortKey; dir: SortDir } | null>(null);
   const { runAction, pending } = useUserActions();
 
   // Opções de filtros de coluna
@@ -74,6 +78,32 @@ const UsuariosClient = memo(function UsuariosClient({
       return true;
     });
   }, [initialRows, searchQuery, filters]);
+
+  const sortedTableRows = useMemo(() => {
+    if (!tableSort) return filtered;
+    const { key, dir } = tableSort;
+    const copy = [...filtered];
+    copy.sort((a, b) => {
+      switch (key) {
+        case "email":
+          return compareString(a.email, b.email, dir);
+        case "role":
+          return compareString(a.role, b.role, dir);
+        case "status": {
+          const sa = a.isRegistered ? "REGISTERED" : "PENDING";
+          const sb = b.isRegistered ? "REGISTERED" : "PENDING";
+          return compareString(sa, sb, dir);
+        }
+        default:
+          return 0;
+      }
+    });
+    return copy;
+  }, [filtered, tableSort]);
+
+  const toggleUsuarioSort = useCallback((key: UsuarioSortKey) => {
+    setTableSort((prev) => nextSortState(prev, key, "string"));
+  }, []);
 
   // Estatísticas do topo
   const stats = useMemo(() => {
@@ -186,7 +216,7 @@ const UsuariosClient = memo(function UsuariosClient({
         <UserEmptyState hasFilters={Boolean(searchQuery || anyFilter)} />
       ) : viewMode === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((row) => (
+          {sortedTableRows.map((row) => (
             <UserCard
               key={row.id}
               row={row}
@@ -209,31 +239,55 @@ const UsuariosClient = memo(function UsuariosClient({
                 <TableHeader>
                   <TableRow className={`${cardClassName} bg-blue-500/20 hover:bg-blue-500/20`}>
                     <TableHead>
-                      <ColumnFilter
-                        columnId="u-email"
-                        label="Membro"
-                      options={options.email}
-                      applied={filters.email}
-                      onApply={setCol("email")}
-                    />
+                      <div className="flex items-center gap-0.5">
+                        <TableColumnSortButton
+                          ariaLabel="Ordenar por e-mail"
+                          isActive={tableSort?.key === "email"}
+                          direction={tableSort?.key === "email" ? tableSort.dir : null}
+                          onClick={() => toggleUsuarioSort("email")}
+                        />
+                        <ColumnFilter
+                          columnId="u-email"
+                          label="Membro"
+                          options={options.email}
+                          applied={filters.email}
+                          onApply={setCol("email")}
+                        />
+                      </div>
                   </TableHead>
                   <TableHead>
-                    <ColumnFilter
-                      columnId="u-role"
-                      label="Cargo"
-                      options={options.role}
-                      applied={filters.role}
-                      onApply={setCol("role")}
-                    />
+                      <div className="flex items-center gap-0.5">
+                        <TableColumnSortButton
+                          ariaLabel="Ordenar por cargo"
+                          isActive={tableSort?.key === "role"}
+                          direction={tableSort?.key === "role" ? tableSort.dir : null}
+                          onClick={() => toggleUsuarioSort("role")}
+                        />
+                        <ColumnFilter
+                          columnId="u-role"
+                          label="Cargo"
+                          options={options.role}
+                          applied={filters.role}
+                          onApply={setCol("role")}
+                        />
+                      </div>
                   </TableHead>
                   <TableHead>
-                    <ColumnFilter
-                      columnId="u-status"
-                      label="Status"
-                      options={options.status}
-                      applied={filters.status}
-                      onApply={setCol("status")}
-                    />
+                      <div className="flex items-center gap-0.5">
+                        <TableColumnSortButton
+                          ariaLabel="Ordenar por status"
+                          isActive={tableSort?.key === "status"}
+                          direction={tableSort?.key === "status" ? tableSort.dir : null}
+                          onClick={() => toggleUsuarioSort("status")}
+                        />
+                        <ColumnFilter
+                          columnId="u-status"
+                          label="Status"
+                          options={options.status}
+                          applied={filters.status}
+                          onApply={setCol("status")}
+                        />
+                      </div>
                   </TableHead>
                   <TableHead className="text-[12px] font-semibold text-muted-foreground">WhatsApp</TableHead>
                   <TableHead className="text-[12px] font-semibold text-muted-foreground">Discord</TableHead>
@@ -241,7 +295,7 @@ const UsuariosClient = memo(function UsuariosClient({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((row) => (
+                {sortedTableRows.map((row) => (
                   <UserTableRow
                     key={row.id}
                     row={row}

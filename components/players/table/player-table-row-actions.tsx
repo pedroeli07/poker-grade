@@ -68,7 +68,7 @@ const PlayerTableRowActions = memo(function PlayerTableRowActions({ player, canE
   }
 
   return (
-    <TableCell className="w-[5%] min-w-0 px-1.5 py-2 text-right align-top">
+    <TableCell className="w-[5%] min-w-0 px-1.5 py-3 text-right align-middle">
       <AlertDialog
         open={deleteOpen}
         onOpenChange={(o) => {
@@ -100,7 +100,7 @@ const PlayerTableRowActions = memo(function PlayerTableRowActions({ player, canE
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <div className="flex justify-end">
+      <div className="flex min-h-[1.5rem] items-center justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button type="button" variant="ghost" size="icon" title="Ações">

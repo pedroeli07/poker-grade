@@ -4,6 +4,8 @@ import { createFilterStore } from "./create-filter-store";
 export const usePlayersStore = createFilterStore<PlayersTableColumnFilters>({
   name: null,
   nickname: null,
+  email: null,
+  nicks: null,
   playerGroup: null,
   coach: null,
   grade: null,

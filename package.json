@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "sync:nicks": "tsx scripts/sync-sharkscope-group-nicks.ts",
+    "import:tournaments-csv": "tsx scripts/import-player-group-tournaments-csv.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

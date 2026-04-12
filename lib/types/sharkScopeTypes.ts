@@ -10,6 +10,18 @@ export type NetworkStat = BaseStat & {
   label: string;
   /** ROI ponderado por volume: Σ(ROI×Count)/Σ(Count) entre nicks da rede. */
   roiWeighted: number | null;
+  /** Stake agregado (torneios Player Group); 0 se dados legados por nick. */
+  stake?: number;
+  itm?: number | null;
+  earlyFinish?: number | null;
+  lateFinish?: number | null;
+};
+
+/** Dados extra para aba Por site: breakdown por jogador (cache v2). */
+export type SiteAnalyticsPayload = {
+  playersWithSiteData: { id: string; name: string }[];
+  byPlayerId: Record<string, NetworkStat[]>;
+  hasPerPlayerBreakdown: boolean;
 };
 
 export type TierStat = BaseStat & {

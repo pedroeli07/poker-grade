@@ -21,6 +21,8 @@ export type ImportsFilters = FilterMap<ImportsColumnKey>;
 export type PlayersTableColumnKey =
   | "name"
   | "nickname"
+  | "email"
+  | "nicks"
   | "playerGroup"
   | "coach"
   | "grade"

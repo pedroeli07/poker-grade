@@ -1,6 +1,6 @@
 export interface FilterStore<T> {
   filters: T;
-  setColumnFilter: (key: keyof T, next: Set<string> | null) => void;
+  setColumnFilter: (key: string, next: Set<string> | null) => void;
   clearFilters: () => void;
   hasAnyFilter: boolean;
 }

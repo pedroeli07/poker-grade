@@ -3,7 +3,15 @@ import type { CoachOpt, GradeOpt, PokerNetworkOption } from "./primitives";
 import type { GradeDetailQueryData, GradeListRow } from "./gradeTypes";
 import type { ImportListRow } from "./importTypes";
 import type { PlayerTableRow } from "./playerTypes";
-import type { ScoutingAnalysisRow, SharkscopeAlertRow, NetworkStat, RankingEntry, TierStat, TypeStat } from "./sharkScopeTypes";
+import type {
+  ScoutingAnalysisRow,
+  SharkscopeAlertRow,
+  NetworkStat,
+  RankingEntry,
+  SiteAnalyticsPayload,
+  TierStat,
+  TypeStat,
+} from "./sharkScopeTypes";
 import type { TargetListRow, TargetsPagePlayerOption } from "./targetTypes";
 import type { UsuarioDirectoryRow } from "./userTypes";
 
@@ -55,6 +63,8 @@ export type ScoutingClientProps = {
 export type AnalyticsClientProps = {
   stats30d: NetworkStat[];
   stats90d: NetworkStat[];
+  siteAnalytics30d: SiteAnalyticsPayload;
+  siteAnalytics90d: SiteAnalyticsPayload;
   ranking30d: RankingEntry[];
   ranking90d: RankingEntry[];
   tierStats30d: TierStat[];

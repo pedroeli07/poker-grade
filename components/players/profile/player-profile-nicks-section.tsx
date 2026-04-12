@@ -9,18 +9,19 @@ const PlayerProfileNicksSection = memo(function PlayerProfileNicksSection({
   player: PlayerProfileRecord;
   canManage: boolean;
 }) {
+  const visibleNicks = player.nicks.filter((n) => n.network !== "PlayerGroup");
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Nicks SharkScope</h3>
         <span className="text-xs text-muted-foreground">
-          {player.nicks.length} nick{player.nicks.length !== 1 ? "s" : ""} cadastrado
-          {player.nicks.length !== 1 ? "s" : ""}
+          {visibleNicks.length} nick{visibleNicks.length !== 1 ? "s" : ""} cadastrado
+          {visibleNicks.length !== 1 ? "s" : ""}
         </span>
       </div>
       <PlayerNicksSection
         playerId={player.id}
-        initialNicks={player.nicks.map((n) => ({
+        initialNicks={visibleNicks.map((n) => ({
           ...n,
           createdAt: n.createdAt.toISOString(),
         }))}

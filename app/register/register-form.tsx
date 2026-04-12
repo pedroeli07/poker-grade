@@ -188,7 +188,7 @@ export function RegisterForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="text-black placeholder:text-muted-foreground"
+              className="placeholder:text-muted-foreground/50"
             />
             <PasswordStrength password={password} compact />
             {password.length > 0 && policyGaps.length > 0 && (
@@ -212,7 +212,7 @@ export function RegisterForm() {
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="••••••••••••"
-              className="text-black placeholder:text-muted-foreground"
+              className="placeholder:text-muted-foreground/50"
             />
             {confirm.length > 0 && password !== confirm && (
               <p className="text-xs text-destructive">As senhas não coincidem.</p>

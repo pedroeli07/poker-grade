@@ -16,27 +16,30 @@ export const metadata = {
 export default async function SharkscopeGroupComparePage({
   searchParams,
 }: {
-  searchParams: Promise<{ group?: string; live?: string }>;
+  searchParams: Promise<{ group?: string; live?: string; probe?: string }>;
 }) {
   const session = await requireSession();
   if (!canWriteOperations(session)) redirect("/dashboard");
 
   const sp = await searchParams;
-  const defaultGroup = "adriano silva cl 2025";
+  const defaultGroup = "Bruno Sampaio CL 2025";
   const group = (sp.group ?? defaultGroup).trim();
   const live = sp.live === "1" || sp.live === "on" || sp.live === "true";
+  const probeNetworks = sp.probe === "1" || sp.probe === "on" || sp.probe === "true";
 
-  const data = await loadSharkscopeGroupCompare(group, { live });
+  const data = await loadSharkscopeGroupCompare(group, { live, probeNetworks });
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Debug — Player group vs tabela</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Use o mesmo nome do campo <strong>Grupo Shark</strong> do jogador (ex.: Adriano →{" "}
-          <code className="text-xs">adriano silva cl 2025</code>). Por padrão só lê o{" "}
-          <strong>cache local</strong>; marque a opção abaixo para uma busca nova na API (consome
-          buscas SharkScope).
+          Use o mesmo nome do campo <strong>Grupo Shark</strong> (ex.:{" "}
+          <code className="text-xs">Bruno Sampaio CL 2025</code>). Por padrão só lê o{" "}
+          <strong>cache local</strong>. <strong>Probe por rede</strong> chama{" "}
+          <code className="text-xs">completedTournaments</code> + teste se{" "}
+          <code className="text-xs">statistics</code> aceita filtro <code className="text-xs">Network:</code> no
+          grupo (~2–3 buscas; a API costuma rejeitar Network em Player Group).
         </p>
       </div>
 
@@ -60,6 +63,20 @@ export default async function SharkscopeGroupComparePage({
           />
           <Label htmlFor="live" className="font-normal leading-snug">
             Buscar API agora (10d) — consome buscas SharkScope
+          </Label>
+        </div>
+        <div className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            id="probe"
+            name="probe"
+            value="1"
+            defaultChecked={probeNetworks}
+            className="mt-1 h-4 w-4 rounded border border-input"
+          />
+          <Label htmlFor="probe" className="font-normal leading-snug">
+            Probe por rede — últimos 100 torneios (30d) + teste TotalROI com{" "}
+            <code className="text-xs">Network:PokerStars</code> (esperado: não suportado)
           </Label>
         </div>
         <Button type="submit" variant="default">
@@ -163,6 +180,72 @@ export default async function SharkscopeGroupComparePage({
               ]}
             />
           </section>
+
+          {data.networkProbe && (
+            <section className="space-y-2">
+              <h2 className="text-lg font-medium">Por rede — torneios (completedTournaments)</h2>
+              <p className="text-sm text-muted-foreground">
+                Mesma ideia da coluna <strong>Rede</strong> no CSV: contamos quantos torneios aparecem
+                por rede na resposta (amostra até 100, últimos 30d). Custo típico: ~1 busca SharkScope
+                por lote de até 100 torneios.
+              </p>
+              <p className="text-xs text-muted-foreground break-all">
+                <code>{data.networkProbe.path}</code>
+              </p>
+              {!data.networkProbe.ok ? (
+                <p className="text-sm text-destructive">{data.networkProbe.error}</p>
+              ) : Object.keys(data.networkProbe.histogram).length === 0 ? (
+                <p className="text-sm text-amber-600">
+                  Nenhuma rede extraída do JSON — o parser pode precisar ajuste ao formato real da API.
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Torneios contados: <strong>{data.networkProbe.totalTournamentsCounted}</strong>
+                  </p>
+                  <div className="overflow-x-auto rounded-md border border-border">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border bg-muted/50 text-left">
+                          <th className="px-3 py-2 font-medium">Rede (API)</th>
+                          <th className="px-3 py-2 font-mono">Torneios na amostra</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(data.networkProbe.histogram).map(([net, n]) => (
+                          <tr key={net} className="border-b border-border/60 last:border-0">
+                            <td className="px-3 py-2">{net}</td>
+                            <td className="px-3 py-2 font-mono tabular-nums">{n}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </section>
+          )}
+
+          {data.networkFilterStatTest && (
+            <section className="space-y-2">
+              <h2 className="text-lg font-medium">Teste — statistics com filtro Network</h2>
+              <p className="text-sm text-muted-foreground">{data.networkFilterStatTest.note}</p>
+              <ul className="list-inside list-disc space-y-1 break-all text-xs text-muted-foreground">
+                <li>
+                  Baseline: <code>{data.networkFilterStatTest.baselinePath}</code> → TotalROI:{" "}
+                  {data.networkFilterStatTest.baselineTotalRoi === null
+                    ? "—"
+                    : `${data.networkFilterStatTest.baselineTotalRoi.toFixed(2)}%`}
+                </li>
+                <li>
+                  Com filtro: <code>{data.networkFilterStatTest.filteredPath}</code> → TotalROI:{" "}
+                  {data.networkFilterStatTest.filteredTotalRoi === null
+                    ? "—"
+                    : `${data.networkFilterStatTest.filteredTotalRoi.toFixed(2)}%`}
+                </li>
+              </ul>
+            </section>
+          )}
 
           <section className="space-y-2">
             <h2 className="text-lg font-medium">Busca ao vivo na API (10d)</h2>

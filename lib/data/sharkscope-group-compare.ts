@@ -3,6 +3,7 @@ import { sharkScopeAppName, sharkScopeAppKey } from "@/lib/constants";
 import { sharkScopeGet } from "@/lib/utils";
 import { extractStat, extractRoiTenDayForPlayerTable } from "@/lib/sharkscope-parse";
 import { buildSharkscopeStatMap } from "@/lib/sharkscope-stat-scan";
+import { collectTournamentNetworkHistogram } from "@/lib/sharkscope/playergroup-network-probe";
 
 /** Mesmo path de campos que o daily-sync usa para PlayerGroup 10d */
 export function sharkscopePlayerGroupStatsPath10d(groupName: string): string {
@@ -53,11 +54,27 @@ export type SharkscopeGroupCompareResult =
         allStatsFromMap: Record<string, number>;
       };
       liveError: string | null;
+      /** Uma chamada completedTournaments no Player Group — histograma de redes (como coluna Rede no CSV). */
+      networkProbe: null | {
+        path: string;
+        ok: boolean;
+        error?: string;
+        histogram: Record<string, number>;
+        totalTournamentsCounted: number;
+      };
+      /** Teste: TotalROI com filtro global vs filtro Network: (pokerstars). Se divergirem, filtro por rede no grupo pode funcionar. */
+      networkFilterStatTest: null | {
+        baselinePath: string;
+        baselineTotalRoi: number | null;
+        filteredPath: string;
+        filteredTotalRoi: number | null;
+        note: string;
+      };
     };
 
 export async function loadSharkscopeGroupCompare(
   groupNameRaw: string,
-  opts: { live: boolean }
+  opts: { live: boolean; probeNetworks?: boolean }
 ): Promise<SharkscopeGroupCompareResult> {
   const groupName = groupNameRaw.trim();
   if (!groupName) {
@@ -168,6 +185,94 @@ export async function loadSharkscopeGroupCompare(
     }
   }
 
+  let networkProbe: {
+    path: string;
+    ok: boolean;
+    error?: string;
+    histogram: Record<string, number>;
+    totalTournamentsCounted: number;
+  } | null = null;
+  let networkFilterStatTest: {
+    baselinePath: string;
+    baselineTotalRoi: number | null;
+    filteredPath: string;
+    filteredTotalRoi: number | null;
+    note: string;
+  } | null = null;
+
+  if (opts.probeNetworks) {
+    if (!sharkScopeAppName || !sharkScopeAppKey) {
+      networkProbe = {
+        path: "",
+        ok: false,
+        error: "Credenciais SharkScope não configuradas.",
+        histogram: {},
+        totalTournamentsCounted: 0,
+      };
+    } else {
+      const enc = encodeURIComponent(groupName);
+      const ctPath = `/networks/PlayerGroup/players/${enc}/completedTournaments?order=Last,1~100&filter=${encodeURIComponent("Date:30D")}`;
+      try {
+        const ctRaw = await sharkScopeGet(ctPath);
+        const hist = collectTournamentNetworkHistogram(ctRaw);
+        const sorted = [...hist.entries()].sort((a, b) => b[1] - a[1]);
+        const histogram = Object.fromEntries(sorted);
+        const totalTournamentsCounted = sorted.reduce((a, [, n]) => a + n, 0);
+        networkProbe = { path: ctPath, ok: true, histogram, totalTournamentsCounted };
+      } catch (e) {
+        networkProbe = {
+          path: ctPath,
+          ok: false,
+          error: e instanceof Error ? e.message : String(e),
+          histogram: {},
+          totalTournamentsCounted: 0,
+        };
+      }
+
+      try {
+        const basePath = `/networks/PlayerGroup/players/${enc}/statistics/TotalROI?filter=${encodeURIComponent("Date:30D")}`;
+        const baseRaw = await sharkScopeGet(basePath);
+        const baselineTotalRoi = extractStat(baseRaw, "TotalROI");
+        const filterBody = "Date:30D;Network:PokerStars";
+        const filPath = `/networks/PlayerGroup/players/${enc}/statistics/TotalROI?filter=${encodeURIComponent(filterBody)}`;
+        let filteredTotalRoi: number | null = null;
+        let filFailed = false;
+        let filterErrorMsg: string | null = null;
+        try {
+          const filRaw = await sharkScopeGet(filPath);
+          filteredTotalRoi = extractStat(filRaw, "TotalROI");
+        } catch (e) {
+          filFailed = true;
+          filterErrorMsg = e instanceof Error ? e.message : String(e);
+        }
+        const note = filFailed
+          ? filterErrorMsg?.includes("Unknown filter constraint") && filterErrorMsg.includes("Network")
+            ? "A API rejeita filtro Network em statistics de Player Group (confirmado: Unknown filter constraint 'Network'). Para ROI/lucro por rede use agregação a partir de completedTournaments ou estatísticas por jogador em networks/{rede}/players/{nick}."
+            : `Chamada com filtro Network falhou: ${filterErrorMsg ?? "erro desconhecido"}.`
+          : baselineTotalRoi !== null &&
+              filteredTotalRoi !== null &&
+              Math.abs(baselineTotalRoi - filteredTotalRoi) > 0.01
+            ? "TotalROI difere com filtro Network — há indício de estatística por rede no Player Group."
+            : "TotalROI igual ou só um lado disponível — para ROI/lucro por rede, costuma ser necessário agregar torneios ou usar statistics por rede+nick.";
+        networkFilterStatTest = {
+          baselinePath: basePath,
+          baselineTotalRoi,
+          filteredPath: filPath,
+          filteredTotalRoi: filFailed ? null : filteredTotalRoi,
+          note,
+        };
+      } catch (e) {
+        networkFilterStatTest = {
+          baselinePath: "",
+          baselineTotalRoi: null,
+          filteredPath: "",
+          filteredTotalRoi: null,
+          note: e instanceof Error ? e.message : String(e),
+        };
+      }
+    }
+  }
+
   return {
     ok: true,
     groupName,
@@ -189,5 +294,7 @@ export async function loadSharkscopeGroupCompare(
     },
     live,
     liveError,
+    networkProbe,
+    networkFilterStatTest,
   };
 }

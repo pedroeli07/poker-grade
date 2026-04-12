@@ -8,8 +8,10 @@ import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { AUTH_INPUT_CLASS } from "@/lib/constants";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const EMAIL_STORAGE = "gg_auth_email";
+const PWD_STORAGE = "gg_auth_pwd";
 
 const OAUTH_ERRORS: Record<string, string> = {
   oauth_failed: "Não foi possível entrar com o Google. Tente de novo.",
@@ -25,14 +27,20 @@ export function LoginForm() {
   const params = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const warned = useRef(false);
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(EMAIL_STORAGE);
-      if (saved) {
-        setEmail(saved);
+      const savedEmail = localStorage.getItem(EMAIL_STORAGE);
+      const savedPwd = localStorage.getItem(PWD_STORAGE);
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRemember(true);
+      }
+      if (savedPwd) {
+        setPassword(savedPwd);
         setRemember(true);
       }
     } catch {
@@ -56,21 +64,20 @@ export function LoginForm() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    const fd = new FormData(e.currentTarget);
-    const pwd = String(fd.get("password") || "");
-    const em = String(fd.get("email") || "").trim();
 
     try {
       if (remember) {
-        localStorage.setItem(EMAIL_STORAGE, em);
+        localStorage.setItem(EMAIL_STORAGE, email);
+        localStorage.setItem(PWD_STORAGE, password);
       } else {
         localStorage.removeItem(EMAIL_STORAGE);
+        localStorage.removeItem(PWD_STORAGE);
       }
 
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: em, password: pwd }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
@@ -123,19 +130,22 @@ export function LoginForm() {
             required
             maxLength={512}
             autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="border-border bg-card/50 pr-11 pl-3.5 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20 text-black"
+            className="text-foreground placeholder:text-muted-foreground/50"
           />
+    
         </div>
         <div className="flex items-center justify-between font-mono text-[11px] text-muted-foreground mt-2">
-          <label className="flex cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
+          <label className="cursor-pointer flex items-center gap-2">
+            <Checkbox
               checked={remember}
-              onChange={(e) => setRemember(e.target.checked)}
-              className="size-3.5 rounded border-border bg-card accent-primary"
+              onCheckedChange={(checked) => setRemember(checked === "indeterminate" ? false : checked)}
+              className="size-3.5 border-border bg-card data-[state=checked]:bg-primary"
             />
-            Lembrar e-mail
+      
+            Lembrar e-mail e senha
           </label>
           <Link 
             href="/forgot-password" 

@@ -2400,3 +2400,19 @@ O ranking de analytics do app ordena por **TotalROI** para alinhar ao “ROI tot
 ### A.6 Validação manual vs app (ordem de grandeza)
 
 Comparações entre pesquisa manual e dashboard devem tolerar pequenas diferenças em lucro/ROI/entradas se o cache foi gerado em momento ligeiramente diferente; se a ordem de grandeza divergir muito, verificar **filtro** (`Date:30D` apenas), **id** correto (`Ability` não `AvAbility`) e **sync** recente.
+
+### A.7 Rede (Network) em Player Group vs torneios
+
+- **`statistics` em `networks/PlayerGroup/players/{grupo}/...`** — a API **não** aceita restrição `Network:...` no `filter` (resposta típica: `Unknown filter constraint 'Network'.`). Ou seja, não dá para obter **TotalROI / lucro só de uma rede** com uma única chamada de estatísticas agregadas do grupo.
+- **`completedTournaments` no mesmo path** — cada item em `CompletedTournaments.Tournament` traz **`@network`** (ex.: `PokerStars`, `WPN`, `GGNetwork`) e **`TournamentEntry`** com o nick na rede. Com **uma busca** por até 100 torneios dá para histograma por rede e para cruzar nick ↔ rede na amostra, alinhado à coluna **Rede** do CSV de export.
+- **Estatísticas por rede** — quando necessário, o caminho clássico é `networks/{rede}/players/{nick}/statistics/...` (uma combinação rede+nick por consulta), ou agregar métricas a partir da lista de torneios do grupo.
+
+### A.8 Analytics “Por site” (gráfico) — agregado barato
+
+- **Fonte no app:** o cron chama `completedTournaments` por **nome de grupo** (`PlayerGroup`), com `order=Last,{start}~{end}` e `filter=Date:30D` / `Date:90D`, até `SHARKSCOPE_SITE_MAX_PAGES` páginas (100 torneios por página). O resultado é agregado por rede e gravado em `sharkscope_cache` com `dataType` `group_site_breakdown_30d` / `group_site_breakdown_90d` e o mesmo `filterKey` que `?filter=Date:30D` / `?filter=Date:90D`.
+- **Fórmula:** para cada torneio, lucro ≈ `TournamentEntry.@prize`, stake ≈ `@stake` no nó `Tournament`. Por rede (chaves `gg`, `pokerstars`, …): **ROI agregado = 100 × Σ lucro / Σ stake** no período (equivalente a um TotalROI sobre o conjunto agregado).
+- **Custo:** da ordem de **uma busca por 100 torneios** por página (confirmar na conta SharkScope). Grupos distintos são processados **uma vez** por execução do cron (vários jogadores com o mesmo `playerGroup` não repetem chamadas).
+- **Variáveis de ambiente:**
+  - `SHARKSCOPE_SITE_MAX_PAGES` — teto de páginas por grupo e período (predefinido: 30).
+  - `SHARKSCOPE_SYNC_SITE_NICKS` — se `1`/`true`, reativa a sincronização antiga por nick×rede (2 GET por nick; custo alto).
+  - `SHARKSCOPE_ANALYTICS_SITE_FALLBACK_NICKS` — se `1`/`true`, o gráfico usa caches legados `stats_30d`/`stats_90d` por nick quando **não** houver dados `group_site_breakdown_*`.

@@ -16,3 +16,4 @@ export * from "./roles-actions";
 export * from "./navigation";
 export * from "./grade-rule-editor";
 export * from "./presets";
+export * from "./metadata";

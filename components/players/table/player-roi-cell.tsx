@@ -4,7 +4,7 @@ import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { memo } from "react";
 
 const roiClass =
-  "inline-flex flex-row items-center gap-1.5 tabular-nums px-2.5 py-1 rounded-md border text-xs font-bold";
+  "inline-flex flex-row items-center justify-center gap-1 tabular-nums px-2 py-1 rounded-md border text-xs font-bold min-w-[68px]";
 const roiIconClass = "h-3.5 w-3.5 shrink-0";
 
 function roiValue(roi: number) {

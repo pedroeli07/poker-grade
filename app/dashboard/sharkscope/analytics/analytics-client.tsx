@@ -18,13 +18,12 @@ const AnalyticsClient = memo(function AnalyticsClient(props: AnalyticsClientProp
     activeTab,
     setActiveTab,
     stats,
+    siteAnalytics,
     hasData,
     ranking,
     tierStats,
     typeStats30d,
     hasTypeData,
-    siteBarRows,
-    tierBarRows,
   } = useAnalyticsPageClient(props);
 
   return (
@@ -33,13 +32,13 @@ const AnalyticsClient = memo(function AnalyticsClient(props: AnalyticsClientProp
       <AnalyticsTabBar activeTab={activeTab} setActiveTab={setActiveTab} period={period} />
 
       {activeTab === "site" && (
-        <AnalyticsSitePanel hasData={hasData} stats={stats} siteBarRows={siteBarRows} />
+        <AnalyticsSitePanel hasData={hasData} stats={stats} siteAnalytics={siteAnalytics} period={period} />
       )}
 
       {activeTab === "ranking" && <AnalyticsRankingPanel ranking={ranking} period={period} />}
 
       {activeTab === "tier" && (
-        <AnalyticsTierPanel period={period} tierStats={tierStats} tierBarRows={tierBarRows} />
+        <AnalyticsTierPanel period={period} tierStats={tierStats} />
       )}
 
       {activeTab === "bounty" && (

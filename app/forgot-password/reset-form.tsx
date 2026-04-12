@@ -164,7 +164,7 @@ export function ResetForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="text-black placeholder:text-muted-foreground"
+              className="placeholder:text-muted-foreground/50"
             />
             <PasswordStrength password={password} compact />
             {password.length > 0 && policyGaps.length > 0 && (

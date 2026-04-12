@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import type { PlayerDataRowProps } from "@/lib/types";
 import PlayerAbiTableCell from "@/components/players/table/player-coach-grade-abi-cells";
 import PlayerCoachTableCell from "@/components/players/table/player-coach-table-cell";
@@ -14,6 +15,8 @@ import PlayerRoiCell from "@/components/players/table/player-roi-cell";
 import PlayerStatusTableCell from "@/components/players/table/player-status-table-cell";
 import PlayerTableRowActions from "@/components/players/table/player-table-row-actions";
 
+export const badgeClassName = "inline-flex h-8 max-w-full items-center border-primary/20 bg-primary/5 px-1.5 py-0 text-[14px] shadow-blue-500/50 hover:bg-blue-500/20 hover:shadow-blue-500 shadow-lg hover:shadow-lg leading-none text-primary"
+
 const PlayerTableRow = memo(function PlayerTableRow({
   player,
   canEditPlayers,
@@ -21,36 +24,52 @@ const PlayerTableRow = memo(function PlayerTableRow({
 }: PlayerDataRowProps) {
   return (
     <TableRow className="hover:bg-sidebar-accent/50">
-      <TableCell className="w-[11%] min-w-0 truncate align-top font-medium" title={player.name}>
-        {player.name}
+      <TableCell className="w-[9%] min-w-0 py-3 align-middle font-medium text-[15px]" title={player.name}>
+        <div className="flex min-h-[1.5rem] w-full min-w-0 items-center justify-center">
+          <Badge variant="outline" className={badgeClassName}>
+            {player.name}
+          </Badge>
+        </div>
       </TableCell>
+      {/*
       <TableCell
         className="w-[10%] min-w-0 truncate align-top text-[12px] text-muted-foreground"
         title={player.email || "Sem email"}
       >
         {player.email ? player.email : <span className="italic opacity-50">—</span>}
       </TableCell>
-      <TableCell className="w-[18%] min-w-0 whitespace-normal align-top">
-        <PlayerNicksTableCell nicks={player.nicks} />
+      */}
+      <TableCell className="w-[19%] min-w-0 whitespace-normal py-3 align-middle text-center">
+        <div className="flex w-full min-w-0 items-center justify-center">
+          <PlayerNicksTableCell nicks={player.nicks} />
+        </div>
       </TableCell>
       <TableCell
-        className="w-[12%] min-w-0 whitespace-normal align-top"
+        className="w-[12%] min-w-0 whitespace-normal py-3 align-middle text-center"
         title={player.playerGroup || "Sem grupo"}
       >
-        <PlayerGroupTableCell playerGroup={player.playerGroup} sharkGroupNotFound={player.sharkGroupNotFound} />
+        <div className="flex min-h-[1.5rem] items-center justify-center">
+          <PlayerGroupTableCell playerGroup={player.playerGroup} sharkGroupNotFound={player.sharkGroupNotFound} />
+        </div>
       </TableCell>
       <PlayerStatusTableCell status={player.status} />
       <PlayerCoachTableCell coachKey={player.coachKey} coachLabel={player.coachLabel} />
       <PlayerGradeTableCell gradeKey={player.gradeKey} gradeLabel={player.gradeLabel} />
       <PlayerAbiTableCell abiKey={player.abiKey} abiLabel={player.abiLabel} />
-      <TableCell className="w-[5%] min-w-0 px-0.5 pt-2 text-center align-top">
-        <PlayerRoiCell roi={player.roiTenDay} />
+      <TableCell className="w-[8%] min-w-0 px-0.5 py-3 text-center align-middle">
+        <div className="flex min-h-[1.5rem] items-center justify-center">
+          <PlayerRoiCell roi={player.roiTenDay} />
+        </div>
       </TableCell>
-      <TableCell className="w-[5%] min-w-0 px-0.5 pt-2 text-center align-top">
-        <PlayerFpTenDayCell value={player.fpTenDay} />
+      <TableCell className="w-[8%] min-w-0 px-0.5 py-3 text-center align-middle">
+        <div className="flex min-h-[1.5rem] items-center justify-center">
+          <PlayerFpTenDayCell value={player.fpTenDay} />
+        </div>
       </TableCell>
-      <TableCell className="w-[5%] min-w-0 px-0.5 pt-2 text-center align-top">
-        <PlayerFtTenDayCell value={player.ftTenDay} />
+      <TableCell className="w-[8%] min-w-0 px-0.5 py-3 text-center align-middle">
+        <div className="flex min-h-[1.5rem] items-center justify-center">
+          <PlayerFtTenDayCell value={player.ftTenDay} />
+        </div>
       </TableCell>
       <PlayerTableRowActions player={player} canEditPlayers={canEditPlayers} onEdit={onEdit} />
     </TableRow>

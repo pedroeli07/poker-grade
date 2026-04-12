@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { POKER_NETWORKS, NETWORK_OPTS } from "@/lib/constants";
+import { getPokerstarsMainNickFromRows, POKER_NETWORKS, NETWORK_OPTS } from "@/lib/constants";
 import { PokerNetworkKey, Nick, PlayerNicksSectionProps } from "@/lib/types";
 
 
@@ -165,7 +165,14 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
                     <td className="px-3 py-2">
                       <Select
                         value={editNetwork}
-                        onValueChange={(v) => setEditNetwork(v as PokerNetworkKey)}
+                        onValueChange={(v) => {
+                          const next = v as PokerNetworkKey;
+                          setEditNetwork(next);
+                          if (next === "pokerstars_fr" && !editNick.trim()) {
+                            const main = getPokerstarsMainNickFromRows(nicks);
+                            if (main) setEditNick(main);
+                          }
+                        }}
                         disabled={isPending}
                       >
                         <SelectTrigger className="h-8 text-sm w-36">
@@ -280,7 +287,14 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
               <Label className="text-xs">Rede</Label>
               <Select
                 value={newNetwork}
-                onValueChange={(v) => setNewNetwork(v as PokerNetworkKey)}
+                onValueChange={(v) => {
+                  const next = v as PokerNetworkKey;
+                  setNewNetwork(next);
+                  if (next === "pokerstars_fr" && !newNick.trim()) {
+                    const main = getPokerstarsMainNickFromRows(nicks);
+                    if (main) setNewNick(main);
+                  }
+                }}
                 disabled={isPending}
               >
                 <SelectTrigger className="h-9 text-sm">

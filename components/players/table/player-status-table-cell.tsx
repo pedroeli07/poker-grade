@@ -7,8 +7,8 @@ import { memo } from "react";
 
 const PlayerStatusTableCell = memo(function PlayerStatusTableCell({ status }: { status: PlayerTableRow["status"] }) {
   return (
-    <TableCell className="w-[5%] min-w-0 whitespace-normal px-1.5 py-3 text-right align-middle">
-      <div className="flex h-full min-h-[1.5rem] items-center justify-end">
+    <TableCell className="w-[5%] min-w-0 whitespace-normal px-1.5 py-3 text-center align-middle">
+      <div className="flex h-full min-h-[1.5rem] items-center justify-center">
         {status === "ACTIVE" ? (
           <Badge className="glow-success h-6 shrink-0 border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0 text-[11px] leading-none text-emerald-500 hover:bg-emerald-500/20">
             Ativo

@@ -1,150 +1,156 @@
-import { useMemo, useState, useCallback } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import ColumnFilter from "@/components/column-filter";
-import NumberRangeFilter, { isActive, type NumberFilterValue } from "@/components/number-range-filter";
-import {
-  AnalyticsProfitCell,
-  AnalyticsRoiBadge,
-} from "@/components/sharkscope/analytics-cells";
-import { AnalyticsRoiBarChart, type AnalyticsRoiBarRow } from "@/components/sharkscope/analytics-roi-bar-chart";
-import { distinctOptions } from "@/lib/utils";
-import type { SharkscopeAnalyticsPeriod, TierStat } from "@/lib/types";
-import { memo } from "react";
-import { useAnalyticsTierStore } from "@/lib/stores/use-analytics-tier-store";
+"use client";
 
-function matchNumberFilter(v: number | null, f: NumberFilterValue | null): boolean {
-  if (!f) return true;
-  if (v === null) return false;
-  if (f.op === "in" && f.values && f.values.length > 0) {
-    return f.values.includes(v);
-  }
-  if (f.op === "eq" && v === f.min) return true;
-  if (f.op === "gt" && v > (f.min ?? 0)) return true;
-  if (f.op === "lt" && v < (f.min ?? 0)) return true;
-  if (f.op === "gte" && v >= (f.min ?? 0)) return true;
-  if (f.op === "lte" && v <= (f.min ?? 0)) return true;
-  if (f.op === "between" && f.min !== null && f.max !== null && v >= f.min && v <= f.max) return true;
-  if (f.op === "between" && f.min !== null && f.max === null && v >= f.min) return true;
-  if (f.op === "between" && f.min === null && f.max !== null && v <= f.max) return true;
-  return false;
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import ColumnFilter from "@/components/column-filter";
+import NumberRangeFilter from "@/components/number-range-filter";
+import { AnalyticsProfitCell, AnalyticsRoiBadge } from "@/components/sharkscope/analytics-cells";
+import { AnalyticsRoiBarChart } from "@/components/sharkscope/analytics-roi-bar-chart";
+import type { SharkscopeAnalyticsPeriod, TierStat } from "@/lib/types";
+import { memo, useCallback, useMemo, useState } from "react";
+import { useTierAnalytics } from "@/lib/use-sharkscope-analytics";
+import { fmtEntries } from "@/lib/utils/sharkscope-analytics-format";
+import { TableColumnSortButton } from "@/components/table-column-sort-button";
+import {
+  compareNumberNullsLast,
+  compareString,
+  nextSortState,
+  type SortDir,
+} from "@/lib/table-sort";
+
+const TIER_ORDER: Record<string, number> = { Low: 0, Mid: 1, High: 2 };
+
+type TierSortKey = "tier" | "roi" | "roiWeighted" | "profit" | "count" | "players";
+
+function compareTier(a: string, b: string, dir: SortDir): number {
+  const oa = TIER_ORDER[a] ?? 99;
+  const ob = TIER_ORDER[b] ?? 99;
+  const d = oa - ob;
+  if (d !== 0) return dir === "asc" ? d : -d;
+  return compareString(a, b, dir);
 }
 
 const AnalyticsTierPanel = memo(function AnalyticsTierPanel({
   period,
   tierStats,
-  tierBarRows,
 }: {
   period: SharkscopeAnalyticsPeriod;
   tierStats: TierStat[];
-  tierBarRows: AnalyticsRoiBarRow[];
 }) {
-  const { filters, setColumnFilter, clearFilters, hasAnyFilter } = useAnalyticsTierStore();
-  const [numFilters, setNumFilters] = useState<Record<string, NumberFilterValue | null>>({});
+  const {
+    filters,
+    numFilters,
+    setNumFilter,
+    setCol,
+    filtered,
+    tierOptions,
+    barRows,
+    uniqueRois,
+    uniqueRoiWeighted,
+    uniqueProfits,
+    uniqueCounts,
+    uniquePlayers,
+  } = useTierAnalytics(tierStats);
 
-  const tierOptions = useMemo(
-    () => distinctOptions(tierStats, (s) => ({ value: s.tier, label: s.tier })),
-    [tierStats]
-  );
+  const [sort, setSort] = useState<{ key: TierSortKey; dir: SortDir } | null>(null);
 
-  const filtered = useMemo(
-    () =>
-      tierStats.filter((s) => {
-        if (filters.tier && !filters.tier.has(s.tier)) return false;
-        if (numFilters.roi && !matchNumberFilter(s.roi, numFilters.roi)) return false;
-        if (numFilters.roiWeighted && !matchNumberFilter(s.roiWeighted, numFilters.roiWeighted)) return false;
-        if (numFilters.profit && !matchNumberFilter(s.profit, numFilters.profit)) return false;
-        if (numFilters.count && !matchNumberFilter(s.count, numFilters.count)) return false;
-        if (numFilters.players && !matchNumberFilter(s.players, numFilters.players)) return false;
-        return true;
-      }),
-    [tierStats, filters, numFilters]
-  );
+  const toggleSort = useCallback((key: TierSortKey, kind: "number" | "string") => {
+    setSort((prev) => nextSortState(prev, key, kind));
+  }, []);
 
-  const setCol = (col: "tier") => (next: Set<string> | null) => {
-    setColumnFilter(col, next);
+  const sorted = useMemo(() => {
+    if (!sort) return filtered;
+    const { key, dir } = sort;
+    const copy = [...filtered];
+    copy.sort((a, b) => {
+      switch (key) {
+        case "tier":
+          return compareTier(a.tier, b.tier, dir);
+        case "roi":
+          return compareNumberNullsLast(a.roi, b.roi, dir);
+        case "roiWeighted":
+          return compareNumberNullsLast(a.roiWeighted, b.roiWeighted, dir);
+        case "profit":
+          return compareNumberNullsLast(a.profit, b.profit, dir);
+        case "count":
+          return compareNumberNullsLast(a.count, b.count, dir);
+        case "players":
+          return compareNumberNullsLast(a.players, b.players, dir);
+        default:
+          return 0;
+      }
+    });
+    return copy;
+  }, [filtered, sort]);
+
+  const sortBtn = (key: TierSortKey, kind: "number" | "string", label: string) => {
+    const active = sort?.key === key;
+    return (
+      <TableColumnSortButton
+        ariaLabel={`Ordenar por ${label}`}
+        isActive={active}
+        direction={active ? sort!.dir : null}
+        onClick={() => toggleSort(key, kind)}
+      />
+    );
   };
-
-  const setNumFilter = (col: string) => (v: NumberFilterValue | null) => {
-    setNumFilters((prev) => ({ ...prev, [col]: v }));
-  };
-
-  const filteredBarRows = useMemo(
-    () =>
-      filtered.map((s) => ({
-        key: s.tier,
-        shortLabel: s.tier,
-        fullLabel: `Tier ${s.tier} (Low / Mid / High)`,
-        roi: s.roiWeighted,
-      })),
-    [filtered]
-  );
-
-  const hasAnyNumFilter = Object.values(numFilters).some(isActive);
-  const hasAnyFilterActive = hasAnyFilter || hasAnyNumFilter;
-
-  const handleClearAll = useCallback(() => {
-    clearFilters();
-    setNumFilters({});
-  }, [clearFilters]);
-
-  const uniqueRois = useMemo(() => [...new Set(tierStats.map((s) => s.roi).filter((v): v is number => v !== null))], [tierStats]);
-  const uniqueRoiWeighted = useMemo(() => [...new Set(tierStats.map((s) => s.roiWeighted).filter((v): v is number => v !== null))], [tierStats]);
-  const uniqueProfits = useMemo(() => [...new Set(tierStats.map((s) => s.profit).filter((v): v is number => v !== null))], [tierStats]);
-  const uniqueCounts = useMemo(() => [...new Set(tierStats.map((s) => s.count).filter((v): v is number => v !== null))], [tierStats]);
-  const uniquePlayers = useMemo(() => [...new Set(tierStats.map((s) => s.players).filter((v): v is number => v !== null))], [tierStats]);
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Consolidado por Tier (ABI médio SharkScope): Low (&lt;$15), Mid ($15–$50), High (&gt;$50).
-        Período: <span className="font-medium text-foreground">{period}</span>.
+        Consolidado por Tier (ABI médio SharkScope): Low (&lt;$15), Mid ($15–$50), High (&gt;$50). Período:{" "}
+        <span className="font-medium text-foreground">{period}</span>.
       </p>
       <div className="rounded-md border border-border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-blue-500/20 hover:bg-blue-500/20">
-              <TableHead className="min-w-[8rem]">
-                <ColumnFilter
-                  columnId="tier"
-                  label="Tier"
-                  options={tierOptions}
-                  applied={filters.tier}
-                  onApply={setCol("tier")}
-                />
+              <TableHead className="min-w-32">
+                <div className="flex items-center gap-0.5">
+                  {sortBtn("tier", "string", "tier")}
+                  <ColumnFilter columnId="tier" label="Tier" options={tierOptions} applied={filters.tier} onApply={setCol("tier")} />
+                </div>
               </TableHead>
               <TableHead>
-                <NumberRangeFilter columnId="roi" label="Média (ROI)" value={numFilters.roi ?? null} onChange={setNumFilter("roi")} suffix="%" uniqueValues={uniqueRois} />
+                <div className="flex items-center gap-0.5">
+                  {sortBtn("roi", "number", "ROI médio")}
+                  <NumberRangeFilter label="Média (ROI)" value={numFilters.roi ?? null} onChange={setNumFilter("roi")} suffix="%" uniqueValues={uniqueRois} />
+                </div>
               </TableHead>
               <TableHead>
-                <NumberRangeFilter columnId="roiWeighted" label="ROI ponds." value={numFilters.roiWeighted ?? null} onChange={setNumFilter("roiWeighted")} suffix="%" uniqueValues={uniqueRoiWeighted} />
+                <div className="flex items-center gap-0.5">
+                  {sortBtn("roiWeighted", "number", "ROI ponderado")}
+                  <NumberRangeFilter label="ROI ponds." value={numFilters.roiWeighted ?? null} onChange={setNumFilter("roiWeighted")} suffix="%" uniqueValues={uniqueRoiWeighted} />
+                </div>
               </TableHead>
               <TableHead>
-                <NumberRangeFilter columnId="profit" label="Lucro" value={numFilters.profit ?? null} onChange={setNumFilter("profit")} suffix="$" uniqueValues={uniqueProfits} />
+                <div className="flex items-center gap-0.5">
+                  {sortBtn("profit", "number", "lucro")}
+                  <NumberRangeFilter label="Lucro" value={numFilters.profit ?? null} onChange={setNumFilter("profit")} suffix="$" uniqueValues={uniqueProfits} />
+                </div>
               </TableHead>
               <TableHead>
-                <NumberRangeFilter columnId="count" label="Volume" value={numFilters.count ?? null} onChange={setNumFilter("count")} uniqueValues={uniqueCounts} />
+                <div className="flex items-center gap-0.5">
+                  {sortBtn("count", "number", "volume")}
+                  <NumberRangeFilter label="Volume" value={numFilters.count ?? null} onChange={setNumFilter("count")} uniqueValues={uniqueCounts} />
+                </div>
               </TableHead>
               <TableHead>
-                <NumberRangeFilter columnId="players" label="Jogadores" value={numFilters.players ?? null} onChange={setNumFilter("players")} uniqueValues={uniquePlayers} />
+                <div className="flex items-center gap-0.5">
+                  {sortBtn("players", "number", "jogadores")}
+                  <NumberRangeFilter label="Jogadores" value={numFilters.players ?? null} onChange={setNumFilter("players")} uniqueValues={uniquePlayers} />
+                </div>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {sorted.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                   Nenhum resultado com os filtros selecionados.
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((s) => (
+              sorted.map((s) => (
                 <TableRow key={s.tier} className="hover:bg-sidebar-accent/50 bg-white">
                   <TableCell className="font-semibold">{s.tier}</TableCell>
                   <TableCell>
@@ -156,9 +162,7 @@ const AnalyticsTierPanel = memo(function AnalyticsTierPanel({
                   <TableCell>
                     <AnalyticsProfitCell profit={s.profit} />
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {s.count !== null ? s.count.toFixed(0) : "—"}
-                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{fmtEntries(s.count)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{s.players}</TableCell>
                 </TableRow>
               ))
@@ -166,14 +170,10 @@ const AnalyticsTierPanel = memo(function AnalyticsTierPanel({
           </TableBody>
         </Table>
       </div>
-      <AnalyticsRoiBarChart
-        title="ROI total do time por tier (mesma fórmula ponderada)"
-        rows={filteredBarRows}
-      />
+      <AnalyticsRoiBarChart title="ROI total do time por tier (mesma fórmula ponderada)" rows={barRows} />
     </div>
   );
 });
 
 AnalyticsTierPanel.displayName = "AnalyticsTierPanel";
-
 export default AnalyticsTierPanel;

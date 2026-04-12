@@ -1,7 +1,7 @@
 import { memo } from "react";
 
 export const pillClass =
-  "inline-flex items-center tabular-nums px-2.5 py-1 rounded-md border text-xs font-bold";
+  "inline-flex items-center justify-center tabular-nums px-2 py-1 rounded-md border text-xs font-bold min-w-[68px]";
 
 const PlayerFpTenDayCell = memo(function PlayerFpTenDayCell({ value }: { value: number | null }) {
     if (value === null) return <span className="text-muted-foreground text-xs">—</span>;
