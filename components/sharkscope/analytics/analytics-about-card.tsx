@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
 import { cardClassName } from "@/lib/constants";
 import { memo } from "react";
 

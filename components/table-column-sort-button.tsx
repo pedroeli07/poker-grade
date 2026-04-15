@@ -4,8 +4,9 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { SortDir } from "@/lib/table-sort";
+import { memo } from "react";
 
-export function TableColumnSortButton({
+const TableColumnSortButton = memo(function TableColumnSortButton({
   ariaLabel,
   isActive,
   direction,
@@ -39,4 +40,8 @@ export function TableColumnSortButton({
       <Icon className="size-3.5" />
     </Button>
   );
-}
+});
+
+TableColumnSortButton.displayName = "TableColumnSortButton";
+
+export default TableColumnSortButton;

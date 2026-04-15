@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
+import { nodeEnv } from "./lib/constants/env";
 
-const isDev = process.env.NODE_ENV !== "production";
+const isDev = nodeEnv !== "production";
 
 const csp = [
   "default-src 'self'",
@@ -33,6 +34,20 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  /**
+   * Em desenvolvimento, Strict Mode desligado reduz render duplo de RSC e pedidos duplicados
+   * (menos CPU, menos carga na BD). Em produção mantém-se ativo.
+   */
+  reactStrictMode: process.env.NODE_ENV === "production",
+  /**
+   * Permite HMR / recursos de dev quando o browser usa outro host (ex.: 127.0.0.1 vs localhost).
+   * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+   */
+  ...(isDev
+    ? {
+        allowedDevOrigins: ["127.0.0.1", "192.168.56.1"],
+      }
+    : {}),
   async headers() {
     return [
       {
@@ -45,6 +60,10 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "12mb",
     },
+    /** Menos trabalho por import em libs com muitos exports nomeados (compilação mais rápida). */
+    optimizePackageImports: ["lucide-react", "date-fns", "recharts", "radix-ui"],
+    /** Reutiliza cache em disco entre arranques do `next dev` — menos recompilação. */
+    turbopackFileSystemCacheForDev: true,
   },
 };
 

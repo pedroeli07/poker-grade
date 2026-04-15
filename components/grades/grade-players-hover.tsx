@@ -5,6 +5,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { cn } from "@/lib/utils";
 import { playersHoverScrollClass } from "@/lib/constants";
 import { memo } from "react";
+import { gradePlayersBadgeClass } from "@/lib/constants/classes";
 
 const GradePlayersHover = memo(function GradePlayersHover({
   count,
@@ -18,11 +19,6 @@ const GradePlayersHover = memo(function GradePlayersHover({
   variant?: "card" | "table";
 }) {
 
-  const baseClass = "border-primary/20 bg-primary/6 text-primary text-xs"
-  const badgeClass = variant === "card"
-    ? `${baseClass} font-medium px-2 py-0.5`
-    : `${baseClass} tabular-nums font-medium`;
-
   return (
     <HoverCard openDelay={220} closeDelay={120}>
       <HoverCardTrigger asChild>
@@ -34,7 +30,7 @@ const GradePlayersHover = memo(function GradePlayersHover({
           )}
           aria-label={`${count} jogador${count !== 1 ? "es" : ""} — passar o mouse para ver a lista`}
         >
-          <Badge variant="outline" className={badgeClass}>
+          <Badge variant="outline" className={gradePlayersBadgeClass(variant)}>
             {variant === "card" ? `${count} jogadores` : count}
           </Badge>
         </button>

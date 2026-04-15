@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import ColumnFilter from "@/components/column-filter";
-import { TARGETS_CARD_FILTER_COLUMNS } from "@/lib/constants/targets-page";
+import { TARGETS_CARD_FILTER_COLUMNS } from "@/lib/constants/target/targets-page";
 import type { ColKey, Filters, TargetsColumnOptions } from "@/lib/types";
 
 const TargetsColFilters = memo(function TargetsColFilters({

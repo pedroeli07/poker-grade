@@ -13,6 +13,8 @@ import GradeCard from "@/components/grades/grade-card";
 import GradeTableRow from "@/components/grades/grade-table-row";
 import GradesEmptyState from "@/components/grades/grades-view-components";
 import GradesListTableHeadFilters from "@/components/grades/grades-list-table-head-filters";
+import DataTableShell from "@/components/data-table/data-table-shell";
+import DataTableToolbar from "@/components/data-table/data-table-toolbar";
 import type {
   GradesColumnFilters,
   GradesColumnKey,
@@ -20,18 +22,27 @@ import type {
   GradeListRow,
   GradesSetCol,
 } from "@/lib/types";
+import {
+  dataTableHeaderRowActiveRingClass,
+  dataTableHeaderRowClass,
+} from "@/lib/constants";
+import { buildGradesFilterSummaryLines } from "@/lib/utils/grades-filter-summary";
+import { formatGradesTableSortSummary } from "@/lib/utils/grades-table-display";
 import { memo, useCallback, useMemo, useState } from "react";
+import type { ColumnSortKind } from "@/lib/types/sortButton";
 import {
   compareNumber,
   compareString,
   nextSortState,
   type SortDir,
 } from "@/lib/table-sort";
+import { cn } from "@/lib/utils";
 
 const GradesListBody = memo(function GradesListBody({
   view,
   manage,
   filtered,
+  totalCount,
   options,
   filters,
   setCol,
@@ -41,6 +52,7 @@ const GradesListBody = memo(function GradesListBody({
   view: "cards" | "table";
   manage: boolean;
   filtered: GradeListRow[];
+  totalCount: number;
   options: GradesColumnOptions;
   filters: GradesColumnFilters;
   setCol: GradesSetCol;
@@ -49,9 +61,21 @@ const GradesListBody = memo(function GradesListBody({
 }) {
   const [sort, setSort] = useState<{ key: GradesColumnKey; dir: SortDir } | null>(null);
 
-  const onSort = useCallback((key: GradesColumnKey, kind: "number" | "string") => {
+  const onSort = useCallback((key: GradesColumnKey, kind: ColumnSortKind) => {
     setSort((prev) => nextSortState(prev, key, kind));
   }, []);
+
+  const clearTableView = useCallback(() => {
+    clearFilters();
+    setSort(null);
+  }, [clearFilters]);
+
+  const hasActiveView = anyFilter || sort !== null;
+  const filterSummaryLines = useMemo(
+    () => buildGradesFilterSummaryLines(filters, options),
+    [filters, options]
+  );
+  const sortSummary = useMemo(() => formatGradesTableSortSummary(sort), [sort]);
 
   const sortedTableRows = useMemo(() => {
     if (!sort) return filtered;
@@ -88,38 +112,56 @@ const GradesListBody = memo(function GradesListBody({
   }
 
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
-      <Table className="min-w-[720px] w-full table-fixed">
-        <TableHeader>
-          <TableRow
-            className={`border-b border-border bg-blue-500/20 hover:bg-blue-500/20 ${cardClassName}`}
-          >
-            <GradesListTableHeadFilters
-              options={options}
-              filters={filters}
-              setCol={setCol}
-              sort={sort}
-              onSort={onSort}
-            />
-            <TableHead className="text-right w-[140px] align-bottom text-foreground font-semibold">
-              Ações
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedTableRows.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                Nenhuma grade com os filtros atuais.
-              </TableCell>
-            </TableRow>
-          ) : (
-            sortedTableRows.map((grade) => (
-              <GradeTableRow key={grade.id} grade={grade} manage={manage} />
-            ))
-          )}
-        </TableBody>
-      </Table>
+    <div className="space-y-3">
+      <DataTableToolbar
+        filteredCount={filtered.length}
+        totalCount={totalCount}
+        entityLabels={["grade", "grades"]}
+        hasActiveView={hasActiveView}
+        anyFilter={anyFilter}
+        sortSummary={sortSummary}
+        filterSummaryLines={filterSummaryLines}
+        onClear={clearTableView}
+      />
+      <DataTableShell hasActiveView={hasActiveView}>
+        <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+          <Table className="min-w-[720px] w-full table-fixed">
+            <TableHeader>
+              <TableRow
+                className={cn(
+                  `border-b border-border ${cardClassName}`,
+                  dataTableHeaderRowClass,
+                  hasActiveView && dataTableHeaderRowActiveRingClass
+                )}
+              >
+                <GradesListTableHeadFilters
+                  options={options}
+                  filters={filters}
+                  setCol={setCol}
+                  sort={sort}
+                  onSort={onSort}
+                />
+                <TableHead className="text-center w-[140px] align-bottom text-foreground font-semibold">
+                  Ações
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedTableRows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                    Nenhuma grade com os filtros atuais.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sortedTableRows.map((grade) => (
+                  <GradeTableRow key={grade.id} grade={grade} manage={manage} />
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </DataTableShell>
     </div>
   );
 });

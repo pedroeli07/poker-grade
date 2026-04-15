@@ -14,6 +14,7 @@ export function DashboardShell({
   userRole,
   displayName,
   email,
+  initialUnreadCount,
 }: DashboardShellProps & { children: ReactNode }) {
   const { mainClassName } = useDashboardShellLayout();
 
@@ -23,7 +24,11 @@ export function DashboardShell({
         <AppSidebar userRole={userRole} />
 
         <main className={cn(mainClassName, "min-w-0")}>
-          <Topbar displayName={displayName} email={email} />
+          <Topbar
+            displayName={displayName}
+            email={email}
+            initialUnreadCount={initialUnreadCount}
+          />
           <div className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 bg-pattern animate-fade-in">
             <div className="w-full min-w-0 max-w-full">
               {children}

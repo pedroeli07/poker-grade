@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { NewTargetModal } from "@/components/new-target-modal";
+import NewTargetModal from "@/components/modals/new-target-modal";
 import type { TargetsPagePlayerOption } from "@/lib/types";
 
 const TargetsPageHeader = memo(function TargetsPageHeader({

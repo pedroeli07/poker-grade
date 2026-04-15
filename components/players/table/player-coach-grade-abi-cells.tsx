@@ -1,18 +1,19 @@
 "use client";
 
 import { TableCell } from "@/components/ui/table";
+import { playersTableCol } from "@/lib/constants/classes";
+import { cn } from "@/lib/utils";
 import { memo } from "react";
+
+import type { PlayerAbiTableCellProps } from "@/lib/types/playerComponents";
 
 const PlayerAbiTableCell = memo(function PlayerAbiTableCell({
   abiKey,
   abiLabel,
-}: {
-  abiKey: string;
-  abiLabel: string;
-}) {
+}: PlayerAbiTableCellProps) {
   return (
-    <TableCell className="w-[6%] min-w-0 px-0.5 py-3 text-center align-middle">
-      <div className="flex min-h-[1.5rem] items-center justify-center">
+    <TableCell className={cn(playersTableCol.abi, "py-3 text-center align-middle")}>
+      <div className="flex min-h-6 items-center justify-center">
         {abiKey !== "__none__" ? (
           <span className="font-mono text-sm font-bold tabular-nums">{abiLabel}</span>
         ) : (

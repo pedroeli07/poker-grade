@@ -1,7 +1,7 @@
 import dynamicImport from "next/dynamic";
 import { notificationsPageMetadata } from "@/lib/constants/metadata";
 import NotificationsPageSkeleton from "@/components/notifications/notifications-page-skeleton";
-import { getNotificationsPageInitial } from "@/lib/notifications/notifications-page-server";
+import { getNotificationsPageInitial } from "@/lib/utils/notification/notifications-page-server";
 
 export const metadata = notificationsPageMetadata;
 

@@ -18,3 +18,19 @@ export const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL;
 export const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 export const vercelUrl = process.env.VERCEL_URL;
 export const cronSecret = process.env.CRON_SECRET;
+
+/** Limite de ligações no pool `pg` (Prisma). Default 15. */
+export const pgPoolMax = (() => {
+  const raw = process.env.PG_POOL_MAX;
+  if (!raw) return undefined;
+  const n = Number.parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+})();
+
+/** Timeout para obter ligação do pool (ms). Default 15000. */
+export const pgConnectionTimeoutMs = (() => {
+  const raw = process.env.PG_CONNECTION_TIMEOUT_MS;
+  if (!raw) return 15_000;
+  const n = Number.parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : 15_000;
+})();

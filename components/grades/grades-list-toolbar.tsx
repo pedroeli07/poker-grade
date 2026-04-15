@@ -71,25 +71,27 @@ const GradesListToolbar = memo(function GradesListToolbar({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground shrink-0">
-        <span>
-          <span className="font-medium text-foreground">{filteredCount}</span>
-          {" / "}
-          <span className="font-medium text-foreground">{totalCount}</span>
-          {" grades"}
-        </span>
-        {anyFilter && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 text-xs text-primary"
-            onClick={clearFilters}
-          >
-            Limpar filtros
-          </Button>
-        )}
-      </div>
+      {view === "cards" && (
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground shrink-0">
+          <span>
+            <span className="font-medium text-foreground">{filteredCount}</span>
+            {" / "}
+            <span className="font-medium text-foreground">{totalCount}</span>
+            {" grades"}
+          </span>
+          {anyFilter && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs text-primary"
+              onClick={clearFilters}
+            >
+              Limpar filtros
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 });

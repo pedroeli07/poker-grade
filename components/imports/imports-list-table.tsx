@@ -3,7 +3,15 @@
 import { FileSpreadsheet, Check } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ColumnFilter from "@/components/column-filter";
+import DataTableShell from "@/components/data-table/data-table-shell";
+import DataTableToolbar from "@/components/data-table/data-table-toolbar";
+import FilteredColumnTitle from "@/components/data-table/filtered-column-title";
 import { cn } from "@/lib/utils";
+import {
+  dataTableHeaderRowActiveRingClass,
+  dataTableHeaderRowClass,
+} from "@/lib/constants";
+import { buildImportsFilterSummaryLines, formatImportsSortSummary } from "@/lib/utils/imports-table-display";
 import ImportsTableRow from "@/components/imports/imports-table-row";
 import {
   IMPORTS_COLUMN_IDS,
@@ -16,8 +24,9 @@ import type {
   ImportsColumnKey,
   ImportsFilters,
 } from "@/lib/types";
+import type { ColumnSortKind } from "@/lib/types/sortButton";
 import { memo, useCallback, useMemo, useState } from "react";
-import { TableColumnSortButton } from "@/components/table-column-sort-button";
+import SortButton from "@/components/sort-button";
 import {
   compareDate,
   compareNumber,
@@ -43,6 +52,8 @@ const ImportsListTable = memo(function ImportsListTable({
   options,
   filters,
   setCol,
+  clearFilters,
+  anyFilter,
   allSelected,
   selected,
   isPending,
@@ -56,6 +67,8 @@ const ImportsListTable = memo(function ImportsListTable({
   options: ColumnOptions<ImportsColumnKey>;
   filters: ImportsFilters;
   setCol: ImportsSetCol;
+  clearFilters: () => void;
+  anyFilter: boolean;
   allSelected: boolean;
   selected: Set<string>;
   isPending: boolean;
@@ -66,10 +79,21 @@ const ImportsListTable = memo(function ImportsListTable({
   const colCount = canDelete ? 9 : 7;
   const [sort, setSort] = useState<{ key: ImportsColumnKey; dir: SortDir } | null>(null);
 
-  const toggleSort = useCallback((key: ImportsColumnKey) => {
-    const kind = importColKind(key);
+  const toggleSort = useCallback((key: ImportsColumnKey, kind: ColumnSortKind) => {
     setSort((prev) => nextSortState(prev, key, kind === "date" ? "date" : kind));
   }, []);
+
+  const clearTableView = useCallback(() => {
+    clearFilters();
+    setSort(null);
+  }, [clearFilters]);
+
+  const hasActiveView = anyFilter || sort !== null;
+  const filterSummaryLines = useMemo(
+    () => buildImportsFilterSummaryLines(filters, options),
+    [filters, options]
+  );
+  const sortSummary = useMemo(() => formatImportsSortSummary(sort), [sort]);
 
   const sortedFiltered = useMemo(() => {
     if (!sort) return filtered;
@@ -86,9 +110,9 @@ const ImportsListTable = memo(function ImportsListTable({
         case "played":
           return compareNumber(a.matchedInGrade, b.matchedInGrade, dir);
         case "extraPlay":
-          return compareNumber(a.suspect, b.suspect, dir);
-        case "didntPlay":
           return compareNumber(a.outOfGrade, b.outOfGrade, dir);
+        case "didntPlay":
+          return compareNumber(a.suspect, b.suspect, dir);
         case "date":
           return compareDate(a.createdAt, b.createdAt, dir);
         default:
@@ -98,23 +122,28 @@ const ImportsListTable = memo(function ImportsListTable({
     return copy;
   }, [filtered, sort]);
 
-  const sortBtn = (col: ImportsColumnKey, label: string) => {
-    const active = sort?.key === col;
-    return (
-      <TableColumnSortButton
-        ariaLabel={`Ordenar por ${label}`}
-        isActive={active}
-        direction={active ? sort!.dir : null}
-        onClick={() => toggleSort(col)}
-      />
-    );
-  };
-
   return (
-    <div className="rounded-xl border border-border overflow-hidden">
+    <div className="space-y-3">
+      <DataTableToolbar
+        filteredCount={filtered.length}
+        totalCount={imports.length}
+        entityLabels={["importação", "importações"]}
+        hasActiveView={hasActiveView}
+        anyFilter={anyFilter}
+        sortSummary={sortSummary}
+        filterSummaryLines={filterSummaryLines}
+        onClear={clearTableView}
+      />
+      <DataTableShell hasActiveView={hasActiveView}>
+        <div className="rounded-xl border border-border overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent bg-blue-100">
+          <TableRow
+            className={cn(
+              dataTableHeaderRowClass,
+              hasActiveView && dataTableHeaderRowActiveRingClass
+            )}
+          >
             {canDelete && (
               <TableHead className="w-12 pl-4">
                 <button
@@ -142,15 +171,33 @@ const ImportsListTable = memo(function ImportsListTable({
               <TableHead
                 key={col}
                 className={cn(
-                  "text-blue-900 font-semibold",
-                  i >= 2 && i <= 5 ? "text-center" : i === 6 ? "text-right" : ""
+                  "text-foreground font-semibold",
+                  i >= 1 && i <= 5 ? "text-center" : i === 6 ? "text-right" : ""
                 )}
               >
-                <div className={cn("flex items-center gap-0.5", i >= 2 && i <= 5 && "justify-center", i === 6 && "justify-end")}>
-                  {sortBtn(col, IMPORTS_COLUMN_LABELS[col])}
+                <div
+                  className={cn(
+                    "flex items-center gap-0.5",
+                    i >= 1 && i <= 5 && "justify-center",
+                    i === 0 && "justify-center",
+                    i === 6 && "justify-end"
+                  )}
+                >
+                  <SortButton
+                    columnKey={col}
+                    sort={sort}
+                    toggleSort={toggleSort}
+                    kind={importColKind(col)}
+                    label={IMPORTS_COLUMN_LABELS[col]}
+                  />
                   <ColumnFilter
                     columnId={IMPORTS_COLUMN_IDS[col]}
-                    label={IMPORTS_COLUMN_LABELS[col]}
+                    ariaLabel={IMPORTS_COLUMN_LABELS[col]}
+                    label={
+                      <FilteredColumnTitle active={filters[col] !== null}>
+                        {IMPORTS_COLUMN_LABELS[col]}
+                      </FilteredColumnTitle>
+                    }
                     options={options[col]}
                     applied={filters[col]}
                     onApply={setCol(col)}
@@ -190,6 +237,8 @@ const ImportsListTable = memo(function ImportsListTable({
           )}
         </TableBody>
       </Table>
+        </div>
+      </DataTableShell>
     </div>
   );
 });

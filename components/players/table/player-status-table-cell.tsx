@@ -2,24 +2,30 @@
 
 import { Badge } from "@/components/ui/badge";
 import { TableCell } from "@/components/ui/table";
-import type { PlayerTableRow } from "@/lib/types";
+import {
+  PLAYER_TABLE_STATUS_ACTIVE_BADGE_CLASS,
+  PLAYER_TABLE_STATUS_INACTIVE_BADGE_CLASS,
+  PLAYER_TABLE_STATUS_LABEL,
+  PLAYER_TABLE_STATUS_SUSPENDED_BADGE_CLASS,
+} from "@/lib/constants/player/players-table-ui";
+import { playersTableCol } from "@/lib/constants/classes";
+import type { PlayerStatusTableCellProps } from "@/lib/types/playerComponents";
+import { cn } from "@/lib/utils";
 import { memo } from "react";
+import { PlayerStatus } from "@prisma/client";
 
-const PlayerStatusTableCell = memo(function PlayerStatusTableCell({ status }: { status: PlayerTableRow["status"] }) {
+const PlayerStatusTableCell = memo(function PlayerStatusTableCell({ status }: PlayerStatusTableCellProps) {
+  const label = PLAYER_TABLE_STATUS_LABEL[status];
   return (
-    <TableCell className="w-[5%] min-w-0 whitespace-normal px-1.5 py-3 text-center align-middle">
+    <TableCell className={cn(playersTableCol.status, "whitespace-normal py-3 text-center align-middle")}>
       <div className="flex h-full min-h-[1.5rem] items-center justify-center">
-        {status === "ACTIVE" ? (
-          <Badge className="glow-success h-6 shrink-0 border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0 text-[11px] leading-none text-emerald-500 hover:bg-emerald-500/20">
-            Ativo
-          </Badge>
-        ) : status === "SUSPENDED" ? (
-          <Badge className="h-6 shrink-0 border-amber-500/25 bg-amber-500/10 px-1.5 py-0 text-[11px] leading-none text-amber-700">
-            Suspenso
-          </Badge>
+        {status === PlayerStatus.ACTIVE ? (
+          <Badge className={PLAYER_TABLE_STATUS_ACTIVE_BADGE_CLASS}>{label}</Badge>
+        ) : status === PlayerStatus.SUSPENDED ? (
+          <Badge className={PLAYER_TABLE_STATUS_SUSPENDED_BADGE_CLASS}>{label}</Badge>
         ) : (
-          <Badge variant="secondary" className="h-6 shrink-0 px-1.5 py-0 text-[11px] leading-none">
-            Inativo
+          <Badge variant="secondary" className={PLAYER_TABLE_STATUS_INACTIVE_BADGE_CLASS}>
+            {label}
           </Badge>
         )}
       </div>

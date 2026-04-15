@@ -19,7 +19,7 @@ import {
   filterRowsByNickAllowlist,
   parsePlayerGroupTournamentsFile,
   type CsvNickRow,
-} from "@/lib/import/player-group-tournaments-csv";
+} from "@/lib/imports/player-group-tournaments-csv";
 
 function parseArgs() {
   const argv = process.argv.slice(2);

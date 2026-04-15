@@ -10,21 +10,62 @@ export type NetworkAggBucket = {
   lateHits: number;
 };
 
-export function emptyNetworkAggBucket(): NetworkAggBucket {
-  return { profit: 0, stake: 0, entries: 0, itmHits: 0, earlyHits: 0, lateHits: 0 };
+/** Torneio individual extraído de completedTournaments — suficiente para agregar qualquer janela localmente. */
+export type TournamentRow = {
+  /** Unix timestamp em segundos (vem de `@date`). */
+  date: number;
+  network: string;
+  /** Chave normalizada do app (gg, pokerstars, …) — null se rede desconhecida. */
+  networkKey: string | null;
+  stake: number;
+  rake: number;
+  prize: number;
+  position: number;
+  entrants: number;
+  playerName: string;
+  /** Flags brutas: "B,SAT,ME" etc. */
+  flags: string;
+  /** Classificação derivada de `@flags`: bounty | satellite | vanilla. */
+  tournamentType: "bounty" | "satellite" | "vanilla";
+  gameClass: string;
+  tournamentId: string;
+};
+
+function classifyTournamentType(flags: string): TournamentRow["tournamentType"] {
+  const upper = flags.toUpperCase();
+  if (upper.includes("SAT")) return "satellite";
+  if (upper.includes("B")) return "bounty";
+  return "vanilla";
 }
 
-/** Payload gravado em `SharkScopeCache.rawData` para `group_site_breakdown_*`. v2 inclui breakdown por nick SharkScope no grupo. */
-export type GroupSiteBreakdownPayload = {
-  v: 1 | 2;
+/** Payload v3 inclui `tournaments` (array de `TournamentRow`) para filtragem local. */
+export type GroupSiteBreakdownPayloadV3 = {
+  v: 3;
   groupName: string;
   filterBody: string;
   pagesFetched: number;
   tournamentRows: number;
   byNetwork: Record<string, NetworkAggBucket>;
-  /** Nick SharkScope normalizado (minúsculas) → rede → bucket */
   byPlayerNick?: Record<string, Record<string, NetworkAggBucket>>;
+  tournaments: TournamentRow[];
 };
+
+export function emptyNetworkAggBucket(): NetworkAggBucket {
+  return { profit: 0, stake: 0, entries: 0, itmHits: 0, earlyHits: 0, lateHits: 0 };
+}
+
+/** Payload gravado em `SharkScopeCache.rawData` para `group_site_breakdown_*`. */
+export type GroupSiteBreakdownPayload =
+  | {
+      v: 1 | 2;
+      groupName: string;
+      filterBody: string;
+      pagesFetched: number;
+      tournamentRows: number;
+      byNetwork: Record<string, NetworkAggBucket>;
+      byPlayerNick?: Record<string, Record<string, NetworkAggBucket>>;
+    }
+  | GroupSiteBreakdownPayloadV3;
 
 function parseNum(v: unknown): number {
   if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -50,7 +91,7 @@ export function parseGroupSiteBreakdownPayload(raw: unknown): GroupSiteBreakdown
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
   const v = r.v;
-  if (v !== 1 && v !== 2) return null;
+  if (v !== 1 && v !== 2 && v !== 3) return null;
   if (typeof r.groupName !== "string") return null;
   if (typeof r.filterBody !== "string") return null;
   if (typeof r.byNetwork !== "object" || r.byNetwork === null) return null;
@@ -62,7 +103,7 @@ export function parseGroupSiteBreakdownPayload(raw: unknown): GroupSiteBreakdown
   }
 
   let byPlayerNick: Record<string, Record<string, NetworkAggBucket>> | undefined;
-  if (v === 2 && r.byPlayerNick && typeof r.byPlayerNick === "object") {
+  if ((v === 2 || v === 3) && r.byPlayerNick && typeof r.byPlayerNick === "object") {
     const bp = r.byPlayerNick as Record<string, unknown>;
     byPlayerNick = {};
     for (const [pk, netObj] of Object.entries(bp)) {
@@ -76,10 +117,49 @@ export function parseGroupSiteBreakdownPayload(raw: unknown): GroupSiteBreakdown
     }
   }
 
+  let tournaments: TournamentRow[] | undefined;
+  if (v === 3 && Array.isArray(r.tournaments)) {
+    tournaments = [];
+    for (const t of r.tournaments) {
+      if (!t || typeof t !== "object") continue;
+      const tr = t as Record<string, unknown>;
+      tournaments.push({
+        date: parseNum(tr.date),
+        network: typeof tr.network === "string" ? tr.network : "",
+        networkKey: typeof tr.networkKey === "string" ? tr.networkKey : null,
+        stake: parseNum(tr.stake),
+        rake: parseNum(tr.rake),
+        prize: parseNum(tr.prize),
+        position: parseNum(tr.position),
+        entrants: parseNum(tr.entrants),
+        playerName: typeof tr.playerName === "string" ? tr.playerName : "",
+        flags: typeof tr.flags === "string" ? tr.flags : "",
+        tournamentType: (["bounty", "satellite", "vanilla"] as const).includes(tr.tournamentType as TournamentRow["tournamentType"])
+          ? (tr.tournamentType as TournamentRow["tournamentType"])
+          : "vanilla",
+        gameClass: typeof tr.gameClass === "string" ? tr.gameClass : "",
+        tournamentId: typeof tr.tournamentId === "string" ? tr.tournamentId : "",
+      });
+    }
+  }
+
+  if (v === 3) {
+    return {
+      v: 3,
+      groupName: r.groupName as string,
+      filterBody: r.filterBody as string,
+      pagesFetched: typeof r.pagesFetched === "number" ? r.pagesFetched : 0,
+      tournamentRows: typeof r.tournamentRows === "number" ? r.tournamentRows : 0,
+      byNetwork,
+      byPlayerNick,
+      tournaments: tournaments ?? [],
+    };
+  }
+
   return {
     v: v as 1 | 2,
-    groupName: r.groupName,
-    filterBody: r.filterBody,
+    groupName: r.groupName as string,
+    filterBody: r.filterBody as string,
     pagesFetched: typeof r.pagesFetched === "number" ? r.pagesFetched : 0,
     tournamentRows: typeof r.tournamentRows === "number" ? r.tournamentRows : 0,
     byNetwork,
@@ -159,12 +239,19 @@ function processOneEntry(
   entry: Record<string, unknown>,
   tournament: Record<string, unknown>,
   byNetwork: Map<string, NetworkAggBucket>,
-  byPlayer: Map<string, Map<string, NetworkAggBucket>>
+  byPlayer: Map<string, Map<string, NetworkAggBucket>>,
+  rows?: TournamentRow[],
+  skippedUnknownNetworks?: Map<string, number>
 ): boolean {
   const netRaw = tournament["@network"];
   if (typeof netRaw !== "string") return false;
   const appKey = sharkscopeNetworkToAppKey(netRaw);
-  if (!appKey) return false;
+  if (!appKey) {
+    if (skippedUnknownNetworks) {
+      skippedUnknownNetworks.set(netRaw, (skippedUnknownNetworks.get(netRaw) ?? 0) + 1);
+    }
+    return false;
+  }
 
   const stake = parseNum(tournament["@stake"]);
   const profit = prizeFromEntry(entry);
@@ -197,6 +284,25 @@ function processOneEntry(
     });
   }
 
+  if (rows) {
+    const flags = typeof tournament["@flags"] === "string" ? tournament["@flags"] : "";
+    rows.push({
+      date: parseNum(tournament["@date"]),
+      network: netRaw,
+      networkKey: appKey,
+      stake,
+      rake: parseNum(tournament["@rake"]),
+      prize: profit,
+      position,
+      entrants,
+      playerName: typeof nameRaw === "string" ? nameRaw.trim() : "",
+      flags,
+      tournamentType: classifyTournamentType(flags),
+      gameClass: typeof tournament["@gameClass"] === "string" ? tournament["@gameClass"] : "",
+      tournamentId: String(tournament["@id"] ?? ""),
+    });
+  }
+
   return true;
 }
 
@@ -204,7 +310,9 @@ function processTournamentNode(
   r: Record<string, unknown>,
   byNetwork: Map<string, NetworkAggBucket>,
   byPlayer: Map<string, Map<string, NetworkAggBucket>>,
-  tournamentRows: { n: number }
+  tournamentCount: { n: number },
+  rows?: TournamentRow[],
+  skippedUnknownNetworks?: Map<string, number>
 ): void {
   if (r.TournamentEntry == null) return;
   const hasNet = typeof r["@network"] === "string";
@@ -217,39 +325,49 @@ function processTournamentNode(
   let any = false;
   for (const e of entries) {
     if (e && typeof e === "object") {
-      if (processOneEntry(e as Record<string, unknown>, r, byNetwork, byPlayer)) any = true;
+      if (processOneEntry(e as Record<string, unknown>, r, byNetwork, byPlayer, rows, skippedUnknownNetworks))
+        any = true;
     }
   }
-  if (any) tournamentRows.n += 1;
+  if (any) tournamentCount.n += 1;
 }
 
 function walk(
   o: unknown,
   byNetwork: Map<string, NetworkAggBucket>,
   byPlayer: Map<string, Map<string, NetworkAggBucket>>,
-  tournamentRows: { n: number }
+  tournamentCount: { n: number },
+  rows?: TournamentRow[],
+  skippedUnknownNetworks?: Map<string, number>
 ): void {
   if (o === null || o === undefined) return;
   if (Array.isArray(o)) {
-    for (const x of o) walk(x, byNetwork, byPlayer, tournamentRows);
+    for (const x of o) walk(x, byNetwork, byPlayer, tournamentCount, rows, skippedUnknownNetworks);
     return;
   }
   if (typeof o !== "object") return;
   const r = o as Record<string, unknown>;
-  processTournamentNode(r, byNetwork, byPlayer, tournamentRows);
-  for (const v of Object.values(r)) walk(v, byNetwork, byPlayer, tournamentRows);
+  processTournamentNode(r, byNetwork, byPlayer, tournamentCount, rows, skippedUnknownNetworks);
+  for (const v of Object.values(r)) walk(v, byNetwork, byPlayer, tournamentCount, rows, skippedUnknownNetworks);
 }
 
-export function aggregateCompletedTournamentsFull(raw: unknown): {
+export function aggregateCompletedTournamentsFull(
+  raw: unknown,
+  collectRows = false
+): {
   byNetwork: Map<string, NetworkAggBucket>;
   byPlayer: Map<string, Map<string, NetworkAggBucket>>;
   tournamentRows: number;
+  rows: TournamentRow[];
+  skippedUnknownNetworks: Map<string, number>;
 } {
   const byNetwork = new Map<string, NetworkAggBucket>();
   const byPlayer = new Map<string, Map<string, NetworkAggBucket>>();
-  const tournamentRows = { n: 0 };
-  walk(raw, byNetwork, byPlayer, tournamentRows);
-  return { byNetwork, byPlayer, tournamentRows: tournamentRows.n };
+  const tournamentCount = { n: 0 };
+  const rows: TournamentRow[] = [];
+  const skippedUnknownNetworks = new Map<string, number>();
+  walk(raw, byNetwork, byPlayer, tournamentCount, collectRows ? rows : undefined, skippedUnknownNetworks);
+  return { byNetwork, byPlayer, tournamentRows: tournamentCount.n, rows, skippedUnknownNetworks };
 }
 
 export function mergeNetworkAggMaps(
@@ -302,4 +420,86 @@ export function roiFromAgg(bucket: NetworkAggBucket): number | null {
 export function pctFromRatio(hits: number, entries: number): number | null {
   if (entries <= 0) return null;
   return (100 * hits) / entries;
+}
+
+/** Filtra `TournamentRow[]` por janela de tempo e opcionalmente por tipo de torneio. */
+export function filterTournamentRows(
+  rows: TournamentRow[],
+  opts?: {
+    afterTimestamp?: number;
+    beforeTimestamp?: number;
+    tournamentType?: TournamentRow["tournamentType"];
+  }
+): TournamentRow[] {
+  return rows.filter((r) => {
+    if (opts?.afterTimestamp != null && r.date < opts.afterTimestamp) return false;
+    if (opts?.beforeTimestamp != null && r.date > opts.beforeTimestamp) return false;
+    if (opts?.tournamentType != null && r.tournamentType !== opts.tournamentType) return false;
+    return true;
+  });
+}
+
+/** Agrega um array de `TournamentRow` em NetworkAggBucket por rede. */
+export function aggregateRows(rows: TournamentRow[]): {
+  byNetwork: Map<string, NetworkAggBucket>;
+  byPlayer: Map<string, Map<string, NetworkAggBucket>>;
+  totals: NetworkAggBucket;
+} {
+  const byNetwork = new Map<string, NetworkAggBucket>();
+  const byPlayer = new Map<string, Map<string, NetworkAggBucket>>();
+  const totals = emptyNetworkAggBucket();
+
+  for (const r of rows) {
+    const netKey = r.networkKey;
+    if (!netKey) continue;
+
+    const cashed = r.prize > 0.005;
+    const { early, late } = classifyFinish(r.position, r.entrants);
+    const itmHit = cashed ? 1 : 0;
+    const delta = {
+      profit: r.prize,
+      stake: r.stake,
+      entries: 1,
+      itmHits: itmHit,
+      earlyHits: early ? 1 : 0,
+      lateHits: late ? 1 : 0,
+    };
+
+    bumpBucket(byNetwork, netKey, delta);
+    addToBucket(totals, delta);
+
+    if (r.playerName) {
+      const pk = r.playerName.toLowerCase();
+      if (!byPlayer.has(pk)) byPlayer.set(pk, new Map());
+      bumpBucket(byPlayer.get(pk)!, netKey, delta);
+    }
+  }
+
+  return { byNetwork, byPlayer, totals };
+}
+
+/** Computa stats-like a partir de TournamentRow[]: roi, earlyFinish, lateFinish, etc. */
+export function computeStatsFromRows(rows: TournamentRow[]): {
+  count: number;
+  entries: number;
+  totalProfit: number;
+  totalStake: number;
+  totalRoi: number | null;
+  itm: number | null;
+  earlyFinish: number | null;
+  lateFinish: number | null;
+  avStake: number | null;
+} {
+  const { totals } = aggregateRows(rows);
+  return {
+    count: rows.length,
+    entries: totals.entries,
+    totalProfit: totals.profit,
+    totalStake: totals.stake,
+    totalRoi: roiFromAgg(totals),
+    itm: pctFromRatio(totals.itmHits, totals.entries),
+    earlyFinish: pctFromRatio(totals.earlyHits, totals.entries),
+    lateFinish: pctFromRatio(totals.lateHits, totals.entries),
+    avStake: totals.entries > 0 ? totals.stake / totals.entries : null,
+  };
 }

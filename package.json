@@ -8,9 +8,13 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:sharkscope": "vitest run lib/sharkscope/sharkscope-sync-optimization.test.ts && tsx scripts/verify-sharkscope-sync-footprint.ts",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:perf": "vitest run lib/utils/perf.test.ts && playwright test e2e/performance-public.spec.ts",
     "sync:nicks": "tsx scripts/sync-sharkscope-group-nicks.ts",
+    "sync:sharkscope-group": "tsx scripts/sync-sharkscope-single-group.ts",
+    "sharkscope:10d": "tsx scripts/sharkscope-player-group-10d-stats.ts",
     "import:tournaments-csv": "tsx scripts/import-player-group-tournaments-csv.ts",
     "postinstall": "prisma generate"
   },
@@ -33,6 +37,7 @@
     "lucide-react": "^1.7.0",
     "next": "16.2.1",
     "nodemailer": "^8.0.4",
+    "pg": "^8.16.3",
     "pino": "^10.3.1",
     "prisma": "^7.5.0",
     "radix-ui": "^1.4.3",
@@ -55,6 +60,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
+    "@types/pg": "^8.11.11",
     "@playwright/test": "^1.51.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

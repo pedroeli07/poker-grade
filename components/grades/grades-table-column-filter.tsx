@@ -1,4 +1,5 @@
 import ColumnFilter from "@/components/column-filter";
+import FilteredColumnTitle from "@/components/data-table/filtered-column-title";
 import { memo } from "react";
 import type { GradesColumnKey, GradesColumnOptions, GradesColumnFilters } from "@/lib/types";
 import type { GradesSetCol } from "@/lib/types";
@@ -21,7 +22,10 @@ const GradesTableColumnFilter = memo(function GradesTableColumnFilter({
     return (
       <ColumnFilter
         columnId={columnId}
-        label={label}
+        ariaLabel={label}
+        label={
+          <FilteredColumnTitle active={filters[col] !== null}>{label}</FilteredColumnTitle>
+        }
         options={options[col]}
         applied={filters[col]}
         onApply={setCol(col)}

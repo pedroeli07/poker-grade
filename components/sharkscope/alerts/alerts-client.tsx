@@ -1,6 +1,7 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useMemo } from "react";
+import DataTableToolbar from "@/components/data-table/data-table-toolbar";
 import AlertsBulkDeleteDialog from "@/components/sharkscope/alerts/alerts-bulk-delete-dialog";
 import AlertsFiltersRow from "@/components/sharkscope/alerts/alerts-filters-row";
 import AlertsListSection from "@/components/sharkscope/alerts/alerts-list-section";
@@ -8,6 +9,10 @@ import AlertsPageHeader from "@/components/sharkscope/alerts/alerts-page-header"
 import AlertsSelectionHint from "@/components/sharkscope/alerts/alerts-selection-hint";
 import { useAlertsPageClient } from "@/hooks/sharkscope/alerts/use-alerts-page-client";
 import type { SharkscopeAlertRow } from "@/lib/types";
+import {
+  alertsHasActiveView,
+  buildAlertsFilterSummaryLines,
+} from "@/lib/utils/alerts-toolbar-display";
 
 const AlertsClient = memo(function AlertsClient({
   initialAlerts,
@@ -17,12 +22,14 @@ const AlertsClient = memo(function AlertsClient({
   canAcknowledge: boolean;
 }) {
   const {
+    alerts,
     filterSeverity,
     setFilterSeverity,
     filterType,
     setFilterType,
     filterAck,
     setFilterAck,
+    resetAlertFilters,
     filtered,
     unackedCount,
     isPending,
@@ -42,6 +49,26 @@ const AlertsClient = memo(function AlertsClient({
     toggleSelectCurrentPage,
     confirmBulkDelete,
   } = useAlertsPageClient(initialAlerts);
+
+  const alertsToolbarActive = useMemo(
+    () =>
+      alertsHasActiveView({
+        severity: filterSeverity,
+        type: filterType,
+        ack: filterAck,
+      }),
+    [filterSeverity, filterType, filterAck]
+  );
+
+  const alertsFilterLines = useMemo(
+    () =>
+      buildAlertsFilterSummaryLines({
+        severity: filterSeverity,
+        type: filterType,
+        ack: filterAck,
+      }),
+    [filterSeverity, filterType, filterAck]
+  );
 
   return (
     <div className="space-y-6">
@@ -67,7 +94,17 @@ const AlertsClient = memo(function AlertsClient({
         onFilterType={setFilterType}
         filterAck={filterAck}
         onFilterAck={setFilterAck}
+      />
+
+      <DataTableToolbar
         filteredCount={filtered.length}
+        totalCount={alerts.length}
+        entityLabels={["alerta", "alertas"]}
+        hasActiveView={alertsToolbarActive}
+        anyFilter={alertsToolbarActive}
+        sortSummary={null}
+        filterSummaryLines={alertsFilterLines}
+        onClear={resetAlertFilters}
       />
 
       {canAcknowledge && filtered.length > 0 && <AlertsSelectionHint />}

@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
-import { NewPlayerModal } from "@/components/new-player-modal";
+import NewPlayerModal from "@/components/modals/new-player-modal";
 import dynamicImport from "next/dynamic";
 import { loadPlayersListPageProps } from "../../../hooks/players/players-page-load";
 import { SyncSharkScopeButton } from "@/components/sharkscope/sync-button";

@@ -8,7 +8,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await requireSession();
-  const shellProps = loadDashboardShellProps(session);
+  const shellProps = await loadDashboardShellProps(session);
 
   return (
     <DashboardShell {...shellProps}>

@@ -17,7 +17,7 @@ import { NotificationsPageData } from "@/lib/types/index";
 import {
   NOTIFICATIONS_LS_FILTER,
   NOTIFICATIONS_LS_PAGE,
-} from "@/lib/constants/notifications-page";
+} from "@/lib/constants/notification/notifications-page";
 
 export function useNotificationsPage(initialData: NotificationsPageData) {
   const [page, setPage] = useState(initialData.page);

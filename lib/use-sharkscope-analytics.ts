@@ -6,8 +6,14 @@ import { useAnalyticsBountyStore } from "@/lib/stores/use-analytics-bounty-store
 import { useAnalyticsRankingStore } from "@/lib/stores/use-analytics-ranking-store";
 import { useAnalyticsSiteStore } from "@/lib/stores/use-analytics-site-store";
 import { useAnalyticsTierStore } from "@/lib/stores/use-analytics-tier-store";
-import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope-analytics-labels";
+import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope/analytics/sharkscope-analytics-labels";
+import { useAnalyticsSortedRows } from "@/hooks/sharkscope/analytics/use-analytics-sorted-rows";
 import type { TypeStat, RankingEntry, NetworkStat, TierStat } from "@/lib/types";
+import {
+  sortBountyTypeRows,
+  sortRankingRows,
+  sortTierRows,
+} from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-table-sort";
 
 export function useBountyAnalytics(typeStats30d: TypeStat[]) {
   const { filters, setColumnFilter } = useAnalyticsBountyStore();
@@ -43,6 +49,8 @@ export function useBountyAnalytics(typeStats30d: TypeStat[]) {
   const uniqueProfits = useMemo(() => getUniqueValues(typeStats30d, (s) => s.profit), [typeStats30d]);
   const uniqueCounts = useMemo(() => getUniqueValues(typeStats30d, (s) => s.count), [typeStats30d]);
 
+  const { sort, toggleSort, sorted } = useAnalyticsSortedRows(filtered, sortBountyTypeRows);
+
   return {
     filters,
     numFilters,
@@ -55,6 +63,9 @@ export function useBountyAnalytics(typeStats30d: TypeStat[]) {
     uniqueRoiWeighted,
     uniqueProfits,
     uniqueCounts,
+    sort,
+    toggleSort,
+    sorted,
   };
 }
 
@@ -81,6 +92,8 @@ export function useRankingAnalytics(ranking: RankingEntry[]) {
   const uniqueEarly = useMemo(() => getUniqueValues(ranking, (r) => r.earlyFinish), [ranking]);
   const uniqueLate = useMemo(() => getUniqueValues(ranking, (r) => r.lateFinish), [ranking]);
 
+  const { sort, toggleSort, sorted } = useAnalyticsSortedRows(filtered, sortRankingRows);
+
   return {
     filters,
     numFilters,
@@ -96,6 +109,9 @@ export function useRankingAnalytics(ranking: RankingEntry[]) {
     uniqueStakes,
     uniqueEarly,
     uniqueLate,
+    sort,
+    toggleSort,
+    sorted,
   };
 }
 
@@ -179,6 +195,8 @@ export function useTierAnalytics(tierStats: TierStat[]) {
   const uniqueCounts = useMemo(() => getUniqueValues(tierStats, (s) => s.count), [tierStats]);
   const uniquePlayers = useMemo(() => getUniqueValues(tierStats, (s) => s.players), [tierStats]);
 
+  const { sort, toggleSort, sorted } = useAnalyticsSortedRows(filtered, sortTierRows);
+
   return {
     filters,
     numFilters,
@@ -192,5 +210,8 @@ export function useTierAnalytics(tierStats: TierStat[]) {
     uniqueProfits,
     uniqueCounts,
     uniquePlayers,
+    sort,
+    toggleSort,
+    sorted,
   };
 }

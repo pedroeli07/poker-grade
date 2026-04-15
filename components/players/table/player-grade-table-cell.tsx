@@ -1,23 +1,27 @@
 import { Badge } from "@/components/ui/badge";
 import { TableCell } from "@/components/ui/table";
-import { memo } from "react"
+import {
+  playerTableCoachGradeBadgeClassName,
+  playerTableCoachGradeBadgeEmptyClassName,
+} from "@/lib/constants/classes";
+import { playersTableCol } from "@/lib/constants/classes";
+import { cn } from "@/lib/utils";
+import { memo } from "react";
 
-export const badgeClassName = "inline-flex h-8 max-w-full items-center border-primary/20 bg-primary/5 px-1.5 py-0 text-[11px] shadow-blue-500/50 hover:bg-blue-500/20 hover:shadow-blue-500 shadow-lg hover:shadow-lg leading-none text-primary"
+import type { PlayerGradeTableCellProps } from "@/lib/types/playerComponents";
 
 const PlayerGradeTableCell = memo(function PlayerGradeTableCell({
   gradeKey,
   gradeLabel,
-}: {
-  gradeKey: string;
-  gradeLabel: string;
-}) {
+}: PlayerGradeTableCellProps) {
+  const empty = gradeKey === "__none__";
   return (
-    <TableCell className="w-[9%] min-w-0 whitespace-normal text-center align-middle">
+    <TableCell className={cn(playersTableCol.grade, "whitespace-normal text-center align-middle")}>
       <div className="flex justify-center">
         <Badge
           variant="outline"
           title={gradeLabel}
-          className={badgeClassName}
+          className={empty ? playerTableCoachGradeBadgeEmptyClassName : playerTableCoachGradeBadgeClassName}
         >
           <span className="truncate">{gradeKey !== "__none__" ? gradeLabel : "Não atribuída"}</span>
         </Badge>

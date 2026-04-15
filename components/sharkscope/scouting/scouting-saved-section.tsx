@@ -1,4 +1,4 @@
-import { ScoutingSavedCard } from "@/components/sharkscope/scouting-saved-card";
+import { ScoutingSavedCard } from "@/components/sharkscope/scouting/scouting-saved-card";
 import type { ScoutingAnalysisRow } from "@/lib/types";
 import { memo } from "react";
 

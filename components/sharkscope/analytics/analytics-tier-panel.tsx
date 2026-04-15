@@ -3,31 +3,14 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ColumnFilter from "@/components/column-filter";
 import NumberRangeFilter from "@/components/number-range-filter";
-import { AnalyticsProfitCell, AnalyticsRoiBadge } from "@/components/sharkscope/analytics-cells";
-import { AnalyticsRoiBarChart } from "@/components/sharkscope/analytics-roi-bar-chart";
+import AnalyticsProfitCell from "@/components/sharkscope/analytics/analytics-profit-cell";
+import AnalyticsRoiBadge from "@/components/sharkscope/analytics/analytics-roi-badge";
+import AnalyticsRoiBarChart from "@/components/sharkscope/analytics/analytics-roi-bar-chart"; 
+import SortButton from "@/components/sort-button";
 import type { SharkscopeAnalyticsPeriod, TierStat } from "@/lib/types";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo } from "react";
 import { useTierAnalytics } from "@/lib/use-sharkscope-analytics";
-import { fmtEntries } from "@/lib/utils/sharkscope-analytics-format";
-import { TableColumnSortButton } from "@/components/table-column-sort-button";
-import {
-  compareNumberNullsLast,
-  compareString,
-  nextSortState,
-  type SortDir,
-} from "@/lib/table-sort";
-
-const TIER_ORDER: Record<string, number> = { Low: 0, Mid: 1, High: 2 };
-
-type TierSortKey = "tier" | "roi" | "roiWeighted" | "profit" | "count" | "players";
-
-function compareTier(a: string, b: string, dir: SortDir): number {
-  const oa = TIER_ORDER[a] ?? 99;
-  const ob = TIER_ORDER[b] ?? 99;
-  const d = oa - ob;
-  if (d !== 0) return dir === "asc" ? d : -d;
-  return compareString(a, b, dir);
-}
+import { fmtEntries } from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-format";
 
 const AnalyticsTierPanel = memo(function AnalyticsTierPanel({
   period,
@@ -41,7 +24,6 @@ const AnalyticsTierPanel = memo(function AnalyticsTierPanel({
     numFilters,
     setNumFilter,
     setCol,
-    filtered,
     tierOptions,
     barRows,
     uniqueRois,
@@ -49,50 +31,10 @@ const AnalyticsTierPanel = memo(function AnalyticsTierPanel({
     uniqueProfits,
     uniqueCounts,
     uniquePlayers,
+    sort,
+    toggleSort,
+    sorted,
   } = useTierAnalytics(tierStats);
-
-  const [sort, setSort] = useState<{ key: TierSortKey; dir: SortDir } | null>(null);
-
-  const toggleSort = useCallback((key: TierSortKey, kind: "number" | "string") => {
-    setSort((prev) => nextSortState(prev, key, kind));
-  }, []);
-
-  const sorted = useMemo(() => {
-    if (!sort) return filtered;
-    const { key, dir } = sort;
-    const copy = [...filtered];
-    copy.sort((a, b) => {
-      switch (key) {
-        case "tier":
-          return compareTier(a.tier, b.tier, dir);
-        case "roi":
-          return compareNumberNullsLast(a.roi, b.roi, dir);
-        case "roiWeighted":
-          return compareNumberNullsLast(a.roiWeighted, b.roiWeighted, dir);
-        case "profit":
-          return compareNumberNullsLast(a.profit, b.profit, dir);
-        case "count":
-          return compareNumberNullsLast(a.count, b.count, dir);
-        case "players":
-          return compareNumberNullsLast(a.players, b.players, dir);
-        default:
-          return 0;
-      }
-    });
-    return copy;
-  }, [filtered, sort]);
-
-  const sortBtn = (key: TierSortKey, kind: "number" | "string", label: string) => {
-    const active = sort?.key === key;
-    return (
-      <TableColumnSortButton
-        ariaLabel={`Ordenar por ${label}`}
-        isActive={active}
-        direction={active ? sort!.dir : null}
-        onClick={() => toggleSort(key, kind)}
-      />
-    );
-  };
 
   return (
     <div className="space-y-4">
@@ -106,37 +48,37 @@ const AnalyticsTierPanel = memo(function AnalyticsTierPanel({
             <TableRow className="bg-blue-500/20 hover:bg-blue-500/20">
               <TableHead className="min-w-32">
                 <div className="flex items-center gap-0.5">
-                  {sortBtn("tier", "string", "tier")}
+                  <SortButton columnKey="tier" sort={sort} toggleSort={toggleSort} kind="string" label="tier" />
                   <ColumnFilter columnId="tier" label="Tier" options={tierOptions} applied={filters.tier} onApply={setCol("tier")} />
                 </div>
               </TableHead>
               <TableHead>
                 <div className="flex items-center gap-0.5">
-                  {sortBtn("roi", "number", "ROI médio")}
+                  <SortButton columnKey="roi" sort={sort} toggleSort={toggleSort} kind="number" label="ROI médio" />
                   <NumberRangeFilter label="Média (ROI)" value={numFilters.roi ?? null} onChange={setNumFilter("roi")} suffix="%" uniqueValues={uniqueRois} />
                 </div>
               </TableHead>
               <TableHead>
                 <div className="flex items-center gap-0.5">
-                  {sortBtn("roiWeighted", "number", "ROI ponderado")}
+                  <SortButton columnKey="roiWeighted" sort={sort} toggleSort={toggleSort} kind="number" label="ROI ponderado" />
                   <NumberRangeFilter label="ROI ponds." value={numFilters.roiWeighted ?? null} onChange={setNumFilter("roiWeighted")} suffix="%" uniqueValues={uniqueRoiWeighted} />
                 </div>
               </TableHead>
               <TableHead>
                 <div className="flex items-center gap-0.5">
-                  {sortBtn("profit", "number", "lucro")}
+                  <SortButton columnKey="profit" sort={sort} toggleSort={toggleSort} kind="number" label="lucro" />
                   <NumberRangeFilter label="Lucro" value={numFilters.profit ?? null} onChange={setNumFilter("profit")} suffix="$" uniqueValues={uniqueProfits} />
                 </div>
               </TableHead>
               <TableHead>
                 <div className="flex items-center gap-0.5">
-                  {sortBtn("count", "number", "volume")}
+                  <SortButton columnKey="count" sort={sort} toggleSort={toggleSort} kind="number" label="volume" />
                   <NumberRangeFilter label="Volume" value={numFilters.count ?? null} onChange={setNumFilter("count")} uniqueValues={uniqueCounts} />
                 </div>
               </TableHead>
               <TableHead>
                 <div className="flex items-center gap-0.5">
-                  {sortBtn("players", "number", "jogadores")}
+                  <SortButton columnKey="players" sort={sort} toggleSort={toggleSort} kind="number" label="jogadores" />
                   <NumberRangeFilter label="Jogadores" value={numFilters.players ?? null} onChange={setNumFilter("players")} uniqueValues={uniquePlayers} />
                 </div>
               </TableHead>

@@ -4,6 +4,7 @@
  * Env vars:
  *   LOG_LEVEL=debug|info|warn|error  (default: info prod, debug dev)
  *   LOG_SCOPES=scope1,scope2         (comma-sep allow-list)
+ *   LOG_PERF=0|1                     (métricas [perf] — ver lib/utils/perf.ts; dev: ativo salvo LOG_PERF=0)
  */
 
 import { ANSI, prodLogger } from "./constants";

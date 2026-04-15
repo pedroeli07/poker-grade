@@ -1,6 +1,8 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { POKER_NETWORKS } from "@/lib/constants";
 import { createLogger } from "@/lib/logger";
+import { ModalDialogContentOwnProps } from "./modalPrimitives";
+import { DialogContent } from "@/components/ui/dialog";
 
 export type ReadKey = "payload" | "rows" | "data";
 export type QueryLogger = ReturnType<typeof createLogger>;
@@ -68,6 +70,7 @@ export enum ErrorTypes {
   NOT_CONFIGURED = "Não configurado",
   SHARK_SYNC_UNKNOWN_ERROR = "Erro desconhecido ao sincronizar",
   SHARK_SYNC_CREDENTIALS_NOT_CONFIGURED = "Credenciais do SharkScope não configuradas",
+  SHARK_SYNC_CANCELLED = "Sincronização cancelada.",
   SHARK_GROUP_NOT_FOUND = "Grupo não encontrado no SharkScope",
   NICK_ALREADY_EXISTS = "Este nick já está cadastrado nessa rede.",
   NICK_NOT_FOUND = "Nick não encontrado ou inativo.",
@@ -116,3 +119,6 @@ export type ScopedLogger = {
 };
 
 export type GenerateMetadataProps = { params: Promise<{ id: string }> };
+
+export type ModalDialogContentProps = ComponentProps<typeof DialogContent> &
+  ModalDialogContentOwnProps;

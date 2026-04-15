@@ -5,7 +5,7 @@ import { DataTablePagination } from "@/components/data-table-pagination";
 import AlertsBulkActionsBar from "@/components/sharkscope/alerts/alerts-bulk-actions-bar";
 import AlertsEmptyState from "@/components/sharkscope/alerts/alerts-empty-state";
 import AlertsTable from "@/components/sharkscope/alerts/alerts-table";
-import { SHARKSCOPE_ALERTS_PAGE_SIZE_OPTIONS } from "@/lib/constants/sharkscope-alerts-page";
+import { SHARKSCOPE_ALERTS_PAGE_SIZE_OPTIONS } from "@/lib/constants/sharkscope/alerts/sharkscope-alerts-page";
 import type { SharkscopeAlertRow } from "@/lib/types";
 
 const AlertsListSection = memo(function AlertsListSection({

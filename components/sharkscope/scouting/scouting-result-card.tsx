@@ -6,11 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MessageSquare, Save } from "lucide-react";
 import { POKER_NETWORKS } from "@/lib/constants";
-import {
-  ScoutingRoiDisplay,
-  ScoutingStatCard,
-} from "@/components/sharkscope/scouting-cells";
+import ScoutingRoiDisplay from "@/components/sharkscope/scouting/scouting-roi-display";
+import ScoutingStatCard from "@/components/sharkscope/scouting/scounting-stat-card";
 import type { PokerNetworkKey, ScoutingSearchStats } from "@/lib/types";
+import { scoutingProfitClass, scoutingProfitText } from "@/lib/utils/sharlscope/scouting/scouting-format";
 import { memo } from "react";
 
 const ScoutingResultCard = memo(function ScoutingResultCard({
@@ -65,9 +64,7 @@ const ScoutingResultCard = memo(function ScoutingResultCard({
             label="Lucro Total"
             value={
               profit !== null ? (
-                <span className={profit >= 0 ? "text-emerald-600" : "text-red-500"}>
-                  {profit >= 0 ? "+" : ""}${profit.toFixed(0)}
-                </span>
+                <span className={scoutingProfitClass(profit)}>{scoutingProfitText(profit)}</span>
               ) : (
                 "—"
               )

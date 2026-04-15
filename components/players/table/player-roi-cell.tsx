@@ -1,54 +1,17 @@
 "use client";
 
-import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { memo } from "react";
+import type { PlayerRoiCellProps } from "@/lib/types/playerComponents";
+import {
+  playersTableRoiBadgeClassNames,
+  playersTableRoiDisplayText,
+} from "@/lib/utils/player/player-table-display";
 
-const roiClass =
-  "inline-flex flex-row items-center justify-center gap-1 tabular-nums px-2 py-1 rounded-md border text-xs font-bold min-w-[68px]";
-const roiIconClass = "h-3.5 w-3.5 shrink-0";
-
-function roiValue(roi: number) {
-  return `${roi.toFixed(1)}%`;
-}
-
-const PlayerRoiCell = memo(function PlayerRoiCell({ roi }: { roi: number | null }) {
+const PlayerRoiCell = memo(function PlayerRoiCell({ roi }: PlayerRoiCellProps) {
   if (roi === null) return <span className="text-muted-foreground text-xs">—</span>;
-  if (roi < -40) {
-    return (
-      <span className={`${roiClass} bg-red-500/10 text-red-600 border-red-500/20`}>
-        {/*
-        <TrendingDown className={roiIconClass} />
-        */}
-        <span>{roiValue(roi)}</span>
-      </span>
-    );
-  }
-  if (roi < -20) {
-    return (
-      <span className={`${roiClass} bg-amber-500/10 text-amber-600 border-amber-500/20`}>
-        {/*
-        <TrendingDown className={roiIconClass} />
-        */}
-        <span>{roiValue(roi)}</span>
-      </span>
-    );
-  }
-  if (roi >= 0) {
-    return (
-      <span className={`${roiClass} bg-emerald-500/10 text-emerald-600 border-emerald-500/20`}>
-        {/*
-        <TrendingUp className={roiIconClass} />
-        */}
-        <span>+{roiValue(roi)}</span>
-      </span>
-    );
-  }
   return (
-    <span className={`${roiClass} bg-muted text-muted-foreground border-border/50`}>
-      {/*
-      <Minus className={roiIconClass} />
-      */}
-      <span>{roiValue(roi)}</span>
+    <span className={playersTableRoiBadgeClassNames(roi)}>
+      <span>{playersTableRoiDisplayText(roi)}</span>
     </span>
   );
 });

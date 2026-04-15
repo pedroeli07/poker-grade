@@ -1,23 +1,16 @@
 "use client";
 
 import { memo } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ALERT_TYPE_LABEL } from "@/lib/constants";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"; 
+import { ALERT_TYPE_LABEL } from "@/lib/constants/sharkscope/alerts/alerts-messages";
 
-const AlertsFiltersRow = memo(function AlertsFiltersRow({
+const AlertsFiltersRow = memo(function AlertsFiltersRow({ 
   filterSeverity,
   onFilterSeverity,
   filterType,
   onFilterType,
   filterAck,
   onFilterAck,
-  filteredCount,
 }: {
   filterSeverity: string;
   onFilterSeverity: (v: string) => void;
@@ -25,7 +18,6 @@ const AlertsFiltersRow = memo(function AlertsFiltersRow({
   onFilterType: (v: string) => void;
   filterAck: string;
   onFilterAck: (v: string) => void;
-  filteredCount: number;
 }) {
   return (
     <div className="flex flex-wrap gap-3">
@@ -65,10 +57,6 @@ const AlertsFiltersRow = memo(function AlertsFiltersRow({
           <SelectItem value="acknowledged">Reconhecidos</SelectItem>
         </SelectContent>
       </Select>
-
-      <span className="ml-auto self-center text-xs text-muted-foreground">
-        {filteredCount} alerta{filteredCount !== 1 ? "s" : ""}
-      </span>
     </div>
   );
 });

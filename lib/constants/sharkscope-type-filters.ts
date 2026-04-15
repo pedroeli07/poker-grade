@@ -1,4 +1,5 @@
 /** Query suffix stored as SharkScopeCache.filterKey — must match cron + analytics. */
+export const SHARKSCOPE_STATS_FILTER_10D = "?filter=Date:10D" as const;
 export const SHARKSCOPE_STATS_FILTER_30D = "?filter=Date:30D" as const;
 export const SHARKSCOPE_STATS_FILTER_90D = "?filter=Date:90D" as const;
 

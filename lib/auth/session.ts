@@ -1,9 +1,11 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createLogger } from "@/lib/logger";
 import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC } from "@/lib/constants";
+import { logPerf } from "@/lib/utils/perf";
 import { signSessionToken, verifySessionJwt } from "./jwt";
 
 const log = createLogger("auth.session");
@@ -20,15 +22,25 @@ export type AppSession = {
 
 const DB_ERROR = Symbol("DB_ERROR");
 
+type SessionRowWithUser = {
+  expiresAt: Date;
+  userId: string;
+  user: { displayName: string | null; email: string };
+};
+
 async function querySessionFromDb(
   jti: string
-): Promise<{ expiresAt: Date; userId: string } | null | typeof DB_ERROR> {
+): Promise<SessionRowWithUser | null | typeof DB_ERROR> {
   const maxRetries = 2;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await prisma.authSession.findFirst({
         where: { id: jti },
-        select: { expiresAt: true, userId: true },
+        select: {
+          expiresAt: true,
+          userId: true,
+          user: { select: { displayName: true, email: true } },
+        },
       });
     } catch (err) {
       if (attempt < maxRetries) {
@@ -50,23 +62,34 @@ async function querySessionFromDb(
   return DB_ERROR;
 }
 
-export async function getSession(): Promise<AppSession | null> {
+/**
+ * Uma resolução por request React (RSC): layout + página + imports partilham o mesmo resultado
+ * sem repetir cookies/jwt/DB.
+ */
+async function loadSession(): Promise<AppSession | null> {
+  const tCookies = performance.now();
   const jar = await cookies();
+  logPerf("auth.session", "cookies", tCookies);
+
   const token = jar.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
 
+  const tJwt = performance.now();
   let payload;
   try {
     payload = await verifySessionJwt(token);
   } catch {
     return null;
   }
+  logPerf("auth.session", "jwt.verify", tJwt);
 
   const jti = typeof payload.jti === "string" ? payload.jti : null;
   const sub = typeof payload.sub === "string" ? payload.sub : null;
   if (!jti || !sub) return null;
 
+  const tDb = performance.now();
   const row = await querySessionFromDb(jti);
+  logPerf("auth.session", "db.sessionWithUser", tDb);
 
   // DB was unreachable — trust the cryptographically verified JWT.
   // This prevents false login redirects during Prisma hot-reload or transient DB errors.
@@ -88,21 +111,18 @@ export async function getSession(): Promise<AppSession | null> {
     return null;
   }
 
-  const user = await prisma.authUser.findUnique({
-    where: { id: sub },
-    select: { displayName: true, email: true },
-  });
-
   return {
     userId: sub,
     role: payload.role,
     sessionId: jti,
     playerId: (payload.playerId as string | null | undefined) ?? null,
     coachId: (payload.coachId as string | null | undefined) ?? null,
-    displayName: user?.displayName ?? null,
-    email: user?.email ?? "",
+    displayName: row.user.displayName ?? null,
+    email: row.user.email ?? "",
   };
 }
+
+export const getSession = cache(loadSession);
 
 export async function requireSession(): Promise<AppSession> {
   const s = await getSession();

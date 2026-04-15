@@ -4,31 +4,16 @@ import Link from "next/link";
 import { Trophy } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ColumnFilter from "@/components/column-filter";
-import { RankingAbilityBadge, RankingFinishPctBadge, AnalyticsRoiBadge, RankingProfitBadge } from "@/components/sharkscope/analytics-cells";
+import RankingAbilityBadge from "@/components/sharkscope/analytics/ranking-ability-badge";
+import RankingFinishPctBadge from "@/components/sharkscope/analytics/ranking-finish-pct-badge";
+import AnalyticsRoiBadge from "@/components/sharkscope/analytics/analytics-roi-badge";
+import RankingProfitBadge from "@/components/sharkscope/analytics/ranking-profit-badge";
+import SortButton from "@/components/sort-button";
 import type { RankingEntry, SharkscopeAnalyticsPeriod } from "@/lib/types";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo } from "react";
 import NumberRangeFilter from "@/components/number-range-filter";
 import { useRankingAnalytics } from "@/lib/use-sharkscope-analytics";
-import { fmtEntries, fmtPct, fmtStake, thCenter, tdCenter, filterWrap } from "@/lib/utils/sharkscope-analytics-format";
-import { TableColumnSortButton } from "@/components/table-column-sort-button";
-import {
-  compareNumber,
-  compareNumberNullsLast,
-  compareString,
-  nextSortState,
-  type SortDir,
-} from "@/lib/table-sort";
-
-type RankingSortKey =
-  | "player"
-  | "roi"
-  | "entries"
-  | "profit"
-  | "itm"
-  | "ability"
-  | "avStake"
-  | "earlyFinish"
-  | "lateFinish";
+import { fmtEntries, fmtPct, fmtStake, thCenter, tdCenter, filterWrap } from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-format";
 
 const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
   ranking,
@@ -42,7 +27,6 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
     numFilters,
     setNumFilter,
     setCol,
-    filtered,
     playerOptions,
     uniqueRois,
     uniqueEntries,
@@ -52,56 +36,10 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
     uniqueStakes,
     uniqueEarly,
     uniqueLate,
+    sort,
+    toggleSort,
+    sorted,
   } = useRankingAnalytics(ranking);
-
-  const [sort, setSort] = useState<{ key: RankingSortKey; dir: SortDir } | null>(null);
-
-  const toggleSort = useCallback((key: RankingSortKey, kind: "number" | "string") => {
-    setSort((prev) => nextSortState(prev, key, kind));
-  }, []);
-
-  const sorted = useMemo(() => {
-    if (!sort) return filtered;
-    const { key, dir } = sort;
-    const copy = [...filtered];
-    copy.sort((a, b) => {
-      switch (key) {
-        case "player":
-          return compareString(a.player.name, b.player.name, dir);
-        case "roi":
-          return compareNumber(a.roi, b.roi, dir);
-        case "entries":
-          return compareNumberNullsLast(a.entries, b.entries, dir);
-        case "profit":
-          return compareNumberNullsLast(a.profit, b.profit, dir);
-        case "itm":
-          return compareNumberNullsLast(a.itm, b.itm, dir);
-        case "ability":
-          return compareNumberNullsLast(a.ability, b.ability, dir);
-        case "avStake":
-          return compareNumberNullsLast(a.avStake, b.avStake, dir);
-        case "earlyFinish":
-          return compareNumberNullsLast(a.earlyFinish, b.earlyFinish, dir);
-        case "lateFinish":
-          return compareNumberNullsLast(a.lateFinish, b.lateFinish, dir);
-        default:
-          return 0;
-      }
-    });
-    return copy;
-  }, [filtered, sort]);
-
-  const sortBtn = (key: RankingSortKey, kind: "number" | "string", label: string) => {
-    const active = sort?.key === key;
-    return (
-      <TableColumnSortButton
-        ariaLabel={`Ordenar por ${label}`}
-        isActive={active}
-        direction={active ? sort!.dir : null}
-        onClick={() => toggleSort(key, kind)}
-      />
-    );
-  };
 
   return (
     <div>
@@ -118,14 +56,14 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                 <TableHead className="w-10 text-center">#</TableHead>
                 <TableHead className="min-w-48">
                   <div className="flex items-center gap-0.5">
-                    {sortBtn("player", "string", "jogador")}
+                    <SortButton columnKey="player" sort={sort} toggleSort={toggleSort} kind="string" label="jogador" />
                     <ColumnFilter columnId="player" label="Jogador" options={playerOptions} applied={filters.player} onApply={setCol("player")} />
                   </div>
                 </TableHead>
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      {sortBtn("roi", "number", "ROI")}
+                      <SortButton columnKey="roi" sort={sort} toggleSort={toggleSort} kind="number" label="ROI" />
                       <NumberRangeFilter label={`ROI ${period}`} value={numFilters.roi ?? null} onChange={setNumFilter("roi")} suffix="%" uniqueValues={uniqueRois} />
                     </div>
                   </div>
@@ -133,7 +71,7 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      {sortBtn("entries", "number", "inscrições")}
+                      <SortButton columnKey="entries" sort={sort} toggleSort={toggleSort} kind="number" label="inscrições" />
                       <NumberRangeFilter label="Inscrições" value={numFilters.entries ?? null} onChange={setNumFilter("entries")} uniqueValues={uniqueEntries} />
                     </div>
                   </div>
@@ -141,7 +79,7 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      {sortBtn("profit", "number", "lucro")}
+                      <SortButton columnKey="profit" sort={sort} toggleSort={toggleSort} kind="number" label="lucro" />
                       <NumberRangeFilter label="Lucro" value={numFilters.profit ?? null} onChange={setNumFilter("profit")} suffix="$" uniqueValues={uniqueProfits} />
                     </div>
                   </div>
@@ -149,7 +87,7 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      {sortBtn("itm", "number", "ITM")}
+                      <SortButton columnKey="itm" sort={sort} toggleSort={toggleSort} kind="number" label="ITM" />
                       <NumberRangeFilter label="ITM %" value={numFilters.itm ?? null} onChange={setNumFilter("itm")} suffix="%" uniqueValues={uniqueItms} />
                     </div>
                   </div>
@@ -157,7 +95,7 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      {sortBtn("ability", "number", "capacidade")}
+                      <SortButton columnKey="ability" sort={sort} toggleSort={toggleSort} kind="number" label="capacidade" />
                       <NumberRangeFilter label="Capacidade" value={numFilters.ability ?? null} onChange={setNumFilter("ability")} uniqueValues={uniqueAbilities} />
                     </div>
                   </div>
@@ -165,7 +103,7 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      {sortBtn("avStake", "number", "stake médio")}
+                      <SortButton columnKey="avStake" sort={sort} toggleSort={toggleSort} kind="number" label="stake médio" />
                       <NumberRangeFilter label="Stake méd." value={numFilters.avStake ?? null} onChange={setNumFilter("avStake")} suffix="$" uniqueValues={uniqueStakes} />
                     </div>
                   </div>
@@ -173,7 +111,7 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      {sortBtn("earlyFinish", "number", "finalização precoce")}
+                      <SortButton columnKey="earlyFinish" sort={sort} toggleSort={toggleSort} kind="number" label="finalização precoce" />
                       <NumberRangeFilter label="Fin. precoce" value={numFilters.earlyFinish ?? null} onChange={setNumFilter("earlyFinish")} suffix="%" uniqueValues={uniqueEarly} />
                     </div>
                   </div>
@@ -181,7 +119,7 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      {sortBtn("lateFinish", "number", "finalização tardia")}
+                      <SortButton columnKey="lateFinish" sort={sort} toggleSort={toggleSort} kind="number" label="finalização tardia" />
                       <NumberRangeFilter label="Fin. tardia" value={numFilters.lateFinish ?? null} onChange={setNumFilter("lateFinish")} suffix="%" uniqueValues={uniqueLate} />
                     </div>
                   </div>
@@ -249,4 +187,5 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
 });
 
 AnalyticsRankingPanel.displayName = "AnalyticsRankingPanel";
+
 export default AnalyticsRankingPanel;

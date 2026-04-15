@@ -235,7 +235,7 @@ export async function fetchGroupSiteBreakdown30dLive(groupName: string): Promise
   const filterBody = "Date:30D";
 
   let merged = new Map<string, NetworkAggBucket>();
-  let mergedPlayer = new Map<string, Map<string, NetworkAggBucket>>();
+  const mergedPlayer = new Map<string, Map<string, NetworkAggBucket>>();
   let pagesFetched = 0;
   let tournamentRowsTotal = 0;
 

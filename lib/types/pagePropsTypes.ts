@@ -49,6 +49,8 @@ export type DashboardShellProps = {
   userRole: UserRole;
   displayName: string | null;
   email: string;
+  /** Contagem vinda do servidor no layout — evita 1ª ida ao server action no mount do topbar. */
+  initialUnreadCount: number;
 };
 
 export type UsuariosClientProps = {

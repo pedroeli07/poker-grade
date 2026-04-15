@@ -1,8 +1,10 @@
-export function TargetsPageSkeleton() {
-  return (
-    <div className="animate-pulse space-y-4">
-      <div className="h-10 w-full rounded-md bg-muted" />
-      <div className="h-64 rounded-lg bg-muted" />
-    </div>
-  );
-}
+import { PageSkeleton } from "@/components/page-skeleton";
+import { memo } from "react";
+
+const TargetsPageSkeleton = memo(function TargetsPageSkeleton() {
+  return <PageSkeleton titleWidth="w-64" contentHeight="h-64" />;
+});
+
+TargetsPageSkeleton.displayName = "TargetsPageSkeleton";
+
+export default TargetsPageSkeleton;

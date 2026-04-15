@@ -16,8 +16,7 @@ import {
 import { GradeRuleCardRule } from "@/lib/types";
 import { cardClassName } from "@/lib/constants";
 import { useEditableRule } from "@/hooks/grades/use-editable-rule";
-import { RuleDisplay } from "@/components/grades/rules/rule-display";
-import { RuleEditor } from "@/components/grades/rules/rule-editor";
+import RuleDisplay from "@/components/grades/rules/rule-display";
 import {
   SPEED_PRESETS,
   TOURNAMENT_TYPE_PRESETS,
@@ -27,6 +26,7 @@ import {
   WEEKDAY_PRESETS,
 } from "@/lib/constants";
 import { mergeOptions } from "@/lib/utils";
+import RuleEditor from "./rules/rule-editor";
 
 const GradeRuleCard = memo(function GradeRuleCard({
   rule,

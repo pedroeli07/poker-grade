@@ -1,5 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
+/** Evita aviso Node quando FORCE_COLOR e NO_COLOR estão ambos definidos (ex.: Cursor). */
+if (process.env.FORCE_COLOR && process.env.NO_COLOR) {
+  delete process.env.NO_COLOR;
+}
+
 export default defineConfig({
   testDir: "e2e",
   fullyParallel: true,

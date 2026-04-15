@@ -25,8 +25,8 @@ import {
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
-import { TYPE_CONFIG, TYPE_LABELS, STALE_TIME } from "@/lib/constants";
 import { NotificationFilterType } from "@/lib/types";
+import { STALE_TIME, TYPE_CONFIG, TYPE_LABELS } from "@/lib/constants";
 
 export function NotificationSheet() {
   const { open, setOpen, setUnreadCount } = useNotificationStore();

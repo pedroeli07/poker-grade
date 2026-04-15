@@ -5,7 +5,6 @@ import type { ImportListRow } from "@/lib/types";
 import ImportsDeleteDialog from "@/components/imports/imports-delete-dialog";
 import { useImportsListPage } from "@/hooks/imports/use-imports-list-page";
 import ImportsBulkSelectionBar from "@/components/imports/imports-bulk-selection-bar";
-import ImportsListFilterSummary from "@/components/imports/imports-list-filter-summary";
 import ImportsListTable from "@/components/imports/imports-list-table";
 import ImportsListFootnote from "@/components/imports/imports-list-footnote";
 
@@ -43,13 +42,6 @@ const ImportsClient = memo(function ImportsClient({
         onRequestBulkDelete={() => setIdsToDelete(Array.from(selected))}
       />
 
-      <ImportsListFilterSummary
-        importsLength={imports.length}
-        filteredLength={filtered.length}
-        anyFilter={anyFilter}
-        onClearFilters={clearFilters}
-      />
-
       <ImportsListTable
         canDelete={canDelete}
         imports={imports}
@@ -57,6 +49,8 @@ const ImportsClient = memo(function ImportsClient({
         options={options}
         filters={filters}
         setCol={setCol}
+        clearFilters={clearFilters}
+        anyFilter={anyFilter}
         allSelected={allSelected}
         selected={selected}
         isPending={isPending}

@@ -1,4 +1,4 @@
-import { NewImportModal } from "@/components/new-import-modal";
+import NewImportModal from "@/components/modals/new-import-modal";
 import { importsPageMetadata } from "@/lib/constants/metadata";
 import { memo } from "react";
 

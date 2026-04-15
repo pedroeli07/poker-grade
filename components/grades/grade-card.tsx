@@ -12,7 +12,7 @@ import { GradeCardProps } from "@/lib/types";
 import { cardClassName } from "@/lib/constants";
 import GradePlayersHover from "./grade-players-hover";
 import { DeleteGradeButton } from "@/components/delete-grade-button";
-import { EditGradeDialog } from "@/components/edit-grade-dialog";
+import EditGradeDialog from "@/components/modals/edit-grade-modal";
 import { memo } from "react";
 
 const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardProps) {

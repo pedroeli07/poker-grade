@@ -51,8 +51,8 @@ export const UserTableRow = memo(function UserTableRow({
       />
       
       {/* Coluna Membro */}
-      <TableCell>
-        <div className="flex min-w-0 items-center gap-3">
+      <TableCell className="text-center">
+        <div className="flex min-w-0 items-center justify-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xs font-semibold">
             {getInitials(row.email)}
           </div>
@@ -72,7 +72,8 @@ export const UserTableRow = memo(function UserTableRow({
       </TableCell>
 
       {/* Coluna Cargo */}
-      <TableCell>
+      <TableCell className="text-center">
+        <div className="flex justify-center">
         {editing ? (
           <Select
             value={role}
@@ -93,20 +94,23 @@ export const UserTableRow = memo(function UserTableRow({
         ) : (
           <RoleBadge role={row.role} />
         )}
+        </div>
       </TableCell>
 
       {/* Coluna Status */}
-      <TableCell>
-        <StatusBadge registered={row.isRegistered} />
+      <TableCell className="text-center">
+        <div className="flex justify-center">
+          <StatusBadge registered={row.isRegistered} />
+        </div>
       </TableCell>
 
       {/* Coluna WhatsApp */}
-      <TableCell className="text-xs font-mono text-muted-foreground">
+      <TableCell className="text-center text-[15px] font-mono text-muted-foreground">
         {row.whatsapp || <span className="opacity-30">—</span>}
       </TableCell>
 
       {/* Coluna Discord */}
-      <TableCell className="text-xs font-mono text-muted-foreground">
+      <TableCell className="text-center text-[15px] font-mono text-muted-foreground">
         {row.discord || <span className="opacity-30">—</span>}
       </TableCell>
 

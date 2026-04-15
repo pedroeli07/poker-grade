@@ -1,26 +1,27 @@
 "use client";
 
+import Image from "next/image";
 import { POKER_NETWORKS_UI } from "@/lib/constants";
-import type { PlayerTableRow } from "@/lib/types";
-import { memo, useState, useCallback } from "react";
+import type { PlayerNickItemProps, PlayerNicksTableCellProps } from "@/lib/types/playerComponents";
+import { filterNicksExcludingPlayerGroup } from "@/lib/utils/player/player-utils";
+import { memo, useCallback } from "react";
 import { AppTooltip } from "@/components/ui/app-tooltip";
 import { Check, Copy } from "lucide-react";
-import { toast } from "sonner";
+import { useCopyFeedback } from "@/hooks/use-copy-feedback";
 
-const PlayerNickItem = memo(({ nick, network }: { nick: string; network: string }) => {
-  const [copied, setCopied] = useState(false);
+const PlayerNickItem = memo(({ nick, network }: PlayerNickItemProps) => {
   const net = POKER_NETWORKS_UI.find((x) => x.value === network);
+  const { copied, copy } = useCopyFeedback({
+    successTitle: "Nick copiado com sucesso!",
+    getDescription: () => nick,
+  });
 
-  const onCopy = useCallback((e: React.MouseEvent | React.KeyboardEvent) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(nick);
-    setCopied(true);
-    toast.success("Nick copiado com sucesso!", {
-      description: nick,
-      duration: 2000,
-    });
-    setTimeout(() => setCopied(false), 2000);
-  }, [nick]);
+  const onCopy = useCallback(
+    (e: React.MouseEvent | React.KeyboardEvent) => {
+      copy(nick, e);
+    },
+    [copy, nick]
+  );
 
   return (
     <AppTooltip
@@ -31,7 +32,14 @@ const PlayerNickItem = memo(({ nick, network }: { nick: string; network: string 
         >
           <div className="flex items-center gap-2 border-b border-background/20 pb-1">
             {net?.icon && (
-              <img src={net.icon} alt={net.label} className="h-4 w-4 rounded-[2px]" />
+              <Image
+                src={net.icon}
+                alt={net.label}
+                width={16}
+                height={16}
+                className="rounded-[2px] object-contain"
+                sizes="16px"
+              />
             )}
             <span className="font-semibold text-[13px]">{net?.label || network}</span>
           </div>
@@ -54,16 +62,19 @@ const PlayerNickItem = memo(({ nick, network }: { nick: string; network: string 
         tabIndex={0}
         onClick={onCopy}
         onKeyDown={(e) => e.key === "Enter" && onCopy(e)}
-        className="bg-muted/60 hover:bg-muted group flex items-center gap-1.5 rounded px-2 py-0.5 transition-colors cursor-copy max-w-full"
+        className="bg-gray-100 hover:bg-muted group flex items-center gap-1.5 rounded px-2 py-0.5 transition-colors cursor-copy max-w-full"
       >
         {net?.icon && (
-          <img
+          <Image
             src={net.icon}
             alt={net.label}
-            className="h-3.5 w-3.5 shrink-0 rounded-[2px] object-contain"
+            width={14}
+            height={14}
+            className="shrink-0 rounded-[2px] object-contain"
+            sizes="14px"
           />
         )}
-        <span className="font-mono text-[12px] leading-tight text-foreground/80 group-hover:text-foreground break-all">
+        <span className="font-mono text-[14px] leading-tight text-foreground/80 group-hover:text-foreground break-all">
           {nick}
         </span>
         <div className="ml-auto flex shrink-0 items-center">
@@ -80,8 +91,8 @@ const PlayerNickItem = memo(({ nick, network }: { nick: string; network: string 
 
 PlayerNickItem.displayName = "PlayerNickItem";
 
-const PlayerNicksTableCell = memo(function PlayerNicksTableCell({ nicks }: { nicks: PlayerTableRow["nicks"] }) {
-  const visible = nicks?.filter((n) => n.network !== "PlayerGroup") ?? [];
+const PlayerNicksTableCell = memo(function PlayerNicksTableCell({ nicks }: PlayerNicksTableCellProps) {
+  const visible = filterNicksExcludingPlayerGroup(nicks);
   if (visible.length === 0) {
     return <span className="block text-center text-muted-foreground text-xs">—</span>;
   }

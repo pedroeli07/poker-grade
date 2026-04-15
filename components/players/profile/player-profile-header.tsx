@@ -2,11 +2,11 @@ import Link from "next/link";
 import { ArrowLeft, User, Mail, AtSign, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { PlayerProfileRecord } from "@/lib/types";
+import type { PlayerProfileHeaderProps } from "@/lib/types/playerComponents";
 import { PlayerStatus } from "@prisma/client";
 import { memo } from "react";
 
-const PlayerProfileHeader = memo(function PlayerProfileHeader({ player }: { player: PlayerProfileRecord }) {
+const PlayerProfileHeader = memo(function PlayerProfileHeader({ player }: PlayerProfileHeaderProps) {
   return (
     <div className="flex items-start gap-4">
       <Button variant="ghost" size="icon" asChild className="mt-0.5 shrink-0">

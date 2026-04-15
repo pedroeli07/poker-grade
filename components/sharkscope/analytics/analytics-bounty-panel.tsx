@@ -4,22 +4,15 @@ import { Zap } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ColumnFilter from "@/components/column-filter";
 import NumberRangeFilter from "@/components/number-range-filter";
-import { AnalyticsProfitCell, AnalyticsRoiBadge } from "@/components/sharkscope/analytics-cells";
-import { AnalyticsRoiBarChart } from "@/components/sharkscope/analytics-roi-bar-chart";
-import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope-analytics-labels";
+import AnalyticsProfitCell from "@/components/sharkscope/analytics/analytics-profit-cell";
+import AnalyticsRoiBadge from "@/components/sharkscope/analytics/analytics-roi-badge";
+import AnalyticsRoiBarChart from "@/components/sharkscope/analytics/analytics-roi-bar-chart";
+import SortButton from "@/components/sort-button";
+import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope/analytics/sharkscope-analytics-labels";
 import type { SharkscopeAnalyticsPeriod, TypeStat } from "@/lib/types";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo } from "react";
 import { useBountyAnalytics } from "@/lib/use-sharkscope-analytics";
-import { fmtEntries } from "@/lib/utils/sharkscope-analytics-format";
-import { TableColumnSortButton } from "@/components/table-column-sort-button";
-import {
-  compareNumberNullsLast,
-  compareString,
-  nextSortState,
-  type SortDir,
-} from "@/lib/table-sort";
-
-type BountySortKey = "type" | "roi" | "roiWeighted" | "profit" | "count";
+import { fmtEntries } from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-format";
 
 const AnalyticsBountyPanel = memo(function AnalyticsBountyPanel({
   period,
@@ -35,59 +28,16 @@ const AnalyticsBountyPanel = memo(function AnalyticsBountyPanel({
     numFilters,
     setNumFilter,
     setCol,
-    filtered,
     typeOptions,
     barRows,
     uniqueRois,
     uniqueRoiWeighted,
     uniqueProfits,
     uniqueCounts,
+    sort,
+    toggleSort,
+    sorted,
   } = useBountyAnalytics(typeStats30d);
-
-  const [sort, setSort] = useState<{ key: BountySortKey; dir: SortDir } | null>(null);
-
-  const toggleSort = useCallback((key: BountySortKey, kind: "number" | "string") => {
-    setSort((prev) => nextSortState(prev, key, kind));
-  }, []);
-
-  const sorted = useMemo(() => {
-    if (!sort) return filtered;
-    const { key, dir } = sort;
-    const copy = [...filtered];
-    copy.sort((a, b) => {
-      switch (key) {
-        case "type":
-          return compareString(
-            SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT[a.type],
-            SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT[b.type],
-            dir
-          );
-        case "roi":
-          return compareNumberNullsLast(a.roi, b.roi, dir);
-        case "roiWeighted":
-          return compareNumberNullsLast(a.roiWeighted, b.roiWeighted, dir);
-        case "profit":
-          return compareNumberNullsLast(a.profit, b.profit, dir);
-        case "count":
-          return compareNumberNullsLast(a.count, b.count, dir);
-        default:
-          return 0;
-      }
-    });
-    return copy;
-  }, [filtered, sort]);
-
-  const sortBtn = (key: BountySortKey, kind: "number" | "string", label: string) => {
-    const active = sort?.key === key;
-    return (
-      <TableColumnSortButton
-        ariaLabel={`Ordenar por ${label}`}
-        isActive={active}
-        direction={active ? sort!.dir : null}
-        onClick={() => toggleSort(key, kind)}
-      />
-    );
-  };
 
   return (
     <div className="space-y-4">
@@ -111,31 +61,31 @@ const AnalyticsBountyPanel = memo(function AnalyticsBountyPanel({
               <TableRow className="bg-amber-500/15 hover:bg-amber-500/15">
                 <TableHead className="min-w-40">
                   <div className="flex items-center gap-0.5">
-                    {sortBtn("type", "string", "tipo")}
+                    <SortButton columnKey="type" sort={sort} toggleSort={toggleSort} kind="string" label="tipo" />
                     <ColumnFilter columnId="type" label="Tipo" options={typeOptions} applied={filters.type} onApply={setCol("type")} />
                   </div>
                 </TableHead>
                 <TableHead>
                   <div className="flex items-center gap-0.5">
-                    {sortBtn("roi", "number", "ROI médio")}
+                    <SortButton columnKey="roi" sort={sort} toggleSort={toggleSort} kind="number" label="ROI médio" />
                     <NumberRangeFilter label="Média (ROI)" value={numFilters.roi ?? null} onChange={setNumFilter("roi")} suffix="%" uniqueValues={uniqueRois} />
                   </div>
                 </TableHead>
                 <TableHead>
                   <div className="flex items-center gap-0.5">
-                    {sortBtn("roiWeighted", "number", "ROI ponderado")}
+                    <SortButton columnKey="roiWeighted" sort={sort} toggleSort={toggleSort} kind="number" label="ROI ponderado" />
                     <NumberRangeFilter label="ROI ponds." value={numFilters.roiWeighted ?? null} onChange={setNumFilter("roiWeighted")} suffix="%" uniqueValues={uniqueRoiWeighted} />
                   </div>
                 </TableHead>
                 <TableHead>
                   <div className="flex items-center gap-0.5">
-                    {sortBtn("profit", "number", "lucro")}
+                    <SortButton columnKey="profit" sort={sort} toggleSort={toggleSort} kind="number" label="lucro" />
                     <NumberRangeFilter label="Lucro" value={numFilters.profit ?? null} onChange={setNumFilter("profit")} suffix="$" uniqueValues={uniqueProfits} />
                   </div>
                 </TableHead>
                 <TableHead>
                   <div className="flex items-center gap-0.5">
-                    {sortBtn("count", "number", "volume")}
+                    <SortButton columnKey="count" sort={sort} toggleSort={toggleSort} kind="number" label="volume" />
                     <NumberRangeFilter label="Volume" value={numFilters.count ?? null} onChange={setNumFilter("count")} uniqueValues={uniqueCounts} />
                   </div>
                 </TableHead>
@@ -175,4 +125,5 @@ const AnalyticsBountyPanel = memo(function AnalyticsBountyPanel({
 });
 
 AnalyticsBountyPanel.displayName = "AnalyticsBountyPanel";
+
 export default AnalyticsBountyPanel;

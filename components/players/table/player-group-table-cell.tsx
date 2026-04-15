@@ -1,30 +1,28 @@
 "use client";
 
 import { AlertTriangle, Copy, Check } from "lucide-react";
-import { memo, useState, useCallback } from "react";
+import { memo, useCallback } from "react";
 import { AppTooltip } from "@/components/ui/app-tooltip";
-import { toast } from "sonner";
+import { useCopyFeedback } from "@/hooks/use-copy-feedback";
+
+import type { PlayerGroupTableCellProps } from "@/lib/types/playerComponents";
 
 const PlayerGroupTableCell = memo(function PlayerGroupTableCell({
   playerGroup,
   sharkGroupNotFound,
-}: {
-  playerGroup: string | null;
-  sharkGroupNotFound?: boolean;
-}) {
-  const [copied, setCopied] = useState(false);
+}: PlayerGroupTableCellProps) {
+  const { copied, copy } = useCopyFeedback({
+    successTitle: "Grupo copiado com sucesso!",
+    getDescription: () => playerGroup ?? "",
+  });
 
-  const onCopy = useCallback((e: React.MouseEvent) => {
-    if (!playerGroup) return;
-    e.stopPropagation();
-    navigator.clipboard.writeText(playerGroup);
-    setCopied(true);
-    toast.success("Grupo copiado com sucesso!", {
-      description: playerGroup,
-      duration: 2000,
-    });
-    setTimeout(() => setCopied(false), 2000);
-  }, [playerGroup]);
+  const onCopy = useCallback(
+    (e: React.MouseEvent) => {
+      if (!playerGroup) return;
+      copy(playerGroup, e);
+    },
+    [copy, playerGroup]
+  );
 
   if (!playerGroup) {
     return <span className="text-[12px] text-muted-foreground italic opacity-50">—</span>;
@@ -39,7 +37,7 @@ const PlayerGroupTableCell = memo(function PlayerGroupTableCell({
               <span className="font-semibold text-[13px]">Grupo SharkScope</span>
             </div>
             <div className="flex items-center justify-between gap-4 font-mono text-[14px]">
-              <span className="text-blue-300">{playerGroup}</span>
+              <span className="text-blue-300 text-[14px]">{playerGroup}</span>
               {copied ? (
                 <Check className="h-3.5 w-3.5 text-emerald-400" />
               ) : (
@@ -52,17 +50,17 @@ const PlayerGroupTableCell = memo(function PlayerGroupTableCell({
           </div>
         }
       >
-        <span
+        <span 
           role="button"
           tabIndex={0}
           onClick={onCopy}
-          className="cursor-copy hover:text-foreground transition-colors line-clamp-2 break-words text-[12px] text-muted-foreground"
+          className="cursor-copy hover:text-foreground transition-colors line-clamp-2 break-words text-[14px] text-muted-foreground"
         >
           {playerGroup}
         </span>
       </AppTooltip>
       {sharkGroupNotFound && (
-        <span className="inline-flex items-center gap-1 rounded-sm border border-amber-500/30 bg-amber-500/10 px-1 py-0.5 text-[10px] font-medium text-amber-600">
+        <span className="inline-flex items-center gap-1 rounded-sm border border-amber-500/30 bg-amber-500/10 px-1 py-0.5 text-[11px] font-medium text-amber-600">
           <AlertTriangle className="h-3 w-3 shrink-0" />
           Não encontrado
         </span>

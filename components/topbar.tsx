@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState, useEffect } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { Bell, User } from "lucide-react";
 import Link from "next/link";
@@ -68,18 +68,38 @@ function CurrentTimeDisplay() {
 function Topbar({
   displayName,
   email,
+  initialUnreadCount,
 }: {
   displayName: string | null;
   email: string;
+  initialUnreadCount: number;
 }) {
   const pathname = usePathname();
   const { unreadCount, setUnreadCount, toggle } = useNotificationStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const prevPathRef = useRef<string | null>(null);
 
   useEffect(() => {
+    setUnreadCount(initialUnreadCount);
+  }, [initialUnreadCount, setUnreadCount]);
+
+  useEffect(() => {
+    if (prevPathRef.current === null) {
+      prevPathRef.current = pathname;
+      return;
+    }
+    if (prevPathRef.current === pathname) return;
+    prevPathRef.current = pathname;
+
+    let ignore = false;
     getUnreadCount()
-      .then(setUnreadCount)
+      .then((n) => {
+        if (!ignore) setUnreadCount(n);
+      })
       .catch(() => {});
+    return () => {
+      ignore = true;
+    };
   }, [pathname, setUnreadCount]);
 
   useEffect(() => {

@@ -1,125 +1,54 @@
 "use client";
 
-import { memo, useMemo, useState, useCallback } from "react";
+import { memo } from "react";
 import { Search, UserPlus, Users, UserCheck, Clock, LayoutGrid, Table2 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn, distinctOptions } from "@/lib/utils";
-import { UsuariosInviteModal } from "@/components/user/user-invite-modal";
+import { cn } from "@/lib/utils";
+import UsuariosInviteModal from "@/components/modals/user-invite-modal";
 import ColumnFilter from "@/components/column-filter";
-import { useUsuariosStore } from "@/lib/stores/use-usuarios-store";
-import { useUserActions } from "@/hooks/user/use-user-actions";
-import { ROLE_VISUAL } from "@/components/user/user-badges";
 import { UserCard } from "@/components/user/user-card";
 import { UserTableRow } from "@/components/user/user-table-row";
-import type { UsuarioDirectoryRow, UsuariosColumnKey } from "@/lib/types";
 import { cardClassName } from "@/lib/constants";
-import { useUserPermissions } from "@/hooks/user/use-user-permissions";
 import UserStatCard from "@/components/user/user-view-components";
 import UserEmptyState from "@/components/user/user-empty-state";
-import { TableColumnSortButton } from "@/components/table-column-sort-button";
-import { compareString, nextSortState, type SortDir } from "@/lib/table-sort";
+import DataTableShell from "@/components/data-table/data-table-shell";
+import DataTableToolbar from "@/components/data-table/data-table-toolbar";
+import FilteredColumnTitle from "@/components/data-table/filtered-column-title";
+import SortButton from "@/components/sort-button";
+import { dataTableHeaderRowActiveRingClass, dataTableHeaderRowClass } from "@/lib/constants";
+import type { UsuariosClientProps } from "@/lib/types";
+import { useUsuariosClient } from "@/hooks/usuarios/use-usuarios-client";
 
-type UsuarioSortKey = "email" | "role" | "status";
-
-const UsuariosClient = memo(function UsuariosClient({
-  initialRows,
-}: {
-  initialRows: UsuarioDirectoryRow[];
-}) {
-  const { canManage } = useUserPermissions();
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const canManageUsers = canManage ?? false;
-  const [searchQuery, setSearchQuery] = useState("");
-  const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
-    useUsuariosStore();
-  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
-  const [tableSort, setTableSort] = useState<{ key: UsuarioSortKey; dir: SortDir } | null>(null);
-  const { runAction, pending } = useUserActions();
-
-  // Opções de filtros de coluna
-  const options = useMemo(
-    () => ({
-      email: distinctOptions(initialRows, (r) => ({
-        value: r.email,
-        label: r.email,
-      })),
-      role: distinctOptions(initialRows, (r) => ({
-        value: r.role,
-        label: ROLE_VISUAL[r.role].label,
-      })),
-      status: distinctOptions(initialRows, (r) => ({
-        value: r.isRegistered ? "REGISTERED" : "PENDING",
-        label: r.isRegistered ? "Ativo" : "Pendente",
-      })),
-    }),
-    [initialRows]
-  );
-
-  // Lógica de filtragem centralizada
-  const filtered = useMemo(() => {
-    return initialRows.filter((u) => {
-      const s = searchQuery.toLowerCase().trim();
-      if (s && !u.email.toLowerCase().includes(s)) return false;
-
-      if (filters.email && !filters.email.has(u.email)) return false;
-      if (filters.role && !filters.role.has(u.role)) return false;
-
-      const statusVal = u.isRegistered ? "REGISTERED" : "PENDING";
-      if (filters.status && !filters.status.has(statusVal)) return false;
-
-      return true;
-    });
-  }, [initialRows, searchQuery, filters]);
-
-  const sortedTableRows = useMemo(() => {
-    if (!tableSort) return filtered;
-    const { key, dir } = tableSort;
-    const copy = [...filtered];
-    copy.sort((a, b) => {
-      switch (key) {
-        case "email":
-          return compareString(a.email, b.email, dir);
-        case "role":
-          return compareString(a.role, b.role, dir);
-        case "status": {
-          const sa = a.isRegistered ? "REGISTERED" : "PENDING";
-          const sb = b.isRegistered ? "REGISTERED" : "PENDING";
-          return compareString(sa, sb, dir);
-        }
-        default:
-          return 0;
-      }
-    });
-    return copy;
-  }, [filtered, tableSort]);
-
-  const toggleUsuarioSort = useCallback((key: UsuarioSortKey) => {
-    setTableSort((prev) => nextSortState(prev, key, "string"));
-  }, []);
-
-  // Estatísticas do topo
-  const stats = useMemo(() => {
-    const reg = initialRows.filter((u) => u.isRegistered).length;
-    return {
-      total: initialRows.length,
-      reg,
-      pend: initialRows.length - reg,
-    };
-  }, [initialRows]);
-
-  const setCol = useCallback(
-    (col: UsuariosColumnKey) => (next: Set<string> | null) =>
-      setColumnFilter(col, next),
-    [setColumnFilter]
-  );
+const UsuariosClient = memo(function UsuariosClient({ initialRows }: UsuariosClientProps) {
+  const {
+    canManageUsers,
+    inviteOpen,
+    setInviteOpen,
+    searchQuery,
+    setSearchQuery,
+    viewMode,
+    setViewMode,
+    tableSort,
+    filters,
+    options,
+    anyFilter,
+    filtered,
+    sortedTableRows,
+    toggleUsuarioSort,
+    stats,
+    setCol,
+    anyFilterOrSearch,
+    hasTableActiveView,
+    filterSummaryLines,
+    sortSummary,
+    clearTableView,
+    clearFilters,
+    runAction,
+    pending,
+    entityLabels,
+  } = useUsuariosClient(initialRows);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -159,24 +88,7 @@ const UsuariosClient = memo(function UsuariosClient({
       </div>
 
       {/* Toolbar: Search & View Toggles */}
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card/50 p-3 md:flex-row md:items-center md:justify-between">
-        <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar por e-mail…"
-            className="bg-background pl-9"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          {viewMode === "table" && (
-            <span className="text-xs text-muted-foreground mr-2">
-              Mostrando <strong className="text-foreground">{filtered.length}</strong> de{" "}
-              {initialRows.length}
-            </span>
-          )}
+      <div className="flex items-center gap-2">
           <div className="inline-flex shrink-0 rounded-lg border border-border p-0.5 bg-muted/30">
             <Button
               variant={viewMode === "grid" ? "secondary" : "ghost"}
@@ -196,7 +108,6 @@ const UsuariosClient = memo(function UsuariosClient({
             </Button>
           </div>
         </div>
-      </div>
 
       {/* Column Filters Notice (Grid Mode) */}
       {viewMode === "grid" && anyFilter && (
@@ -227,86 +138,121 @@ const UsuariosClient = memo(function UsuariosClient({
         </div>
       ) : (
           <div className="space-y-3">
-            {anyFilter && (
-              <div className="flex justify-end">
-                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={clearFilters}>
-                  Limpar todos os filtros
-                </Button>
+            <DataTableToolbar
+              filteredCount={filtered.length}
+              totalCount={initialRows.length}
+              entityLabels={entityLabels}
+              hasActiveView={hasTableActiveView}
+              anyFilter={anyFilterOrSearch}
+              sortSummary={sortSummary}
+              filterSummaryLines={filterSummaryLines}
+              onClear={clearTableView}
+            />
+            <DataTableShell hasActiveView={hasTableActiveView}>
+              <div className="rounded-xl border border-border overflow-x-auto bg-card/10">
+                <Table>
+                  <TableHeader>
+                    <TableRow
+                      className={cn(
+                        cardClassName,
+                        dataTableHeaderRowClass,
+                        hasTableActiveView && dataTableHeaderRowActiveRingClass
+                      )}
+                    >
+                      <TableHead className="text-center">
+                        <div className="flex items-center justify-center gap-0.5">
+                          <SortButton
+                            columnKey="email"
+                            sort={tableSort}
+                            toggleSort={toggleUsuarioSort}
+                            kind="string"
+                            label="e-mail"
+                          />
+                          <ColumnFilter
+                            columnId="u-email"
+                            ariaLabel="Membro"
+                            label={
+                              <FilteredColumnTitle active={filters.email !== null}>
+                                Membro
+                              </FilteredColumnTitle>
+                            }
+                            options={options.email}
+                            applied={filters.email}
+                            onApply={setCol("email")}
+                          />
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-center">
+                        <div className="flex items-center justify-center gap-0.5">
+                          <SortButton
+                            columnKey="role"
+                            sort={tableSort}
+                            toggleSort={toggleUsuarioSort}
+                            kind="string"
+                            label="cargo"
+                          />
+                          <ColumnFilter
+                            columnId="u-role"
+                            ariaLabel="Cargo"
+                            label={
+                              <FilteredColumnTitle active={filters.role !== null}>
+                                Cargo
+                              </FilteredColumnTitle>
+                            }
+                            options={options.role}
+                            applied={filters.role}
+                            onApply={setCol("role")}
+                          />
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-center">
+                        <div className="flex items-center justify-center gap-0.5">
+                          <SortButton
+                            columnKey="status"
+                            sort={tableSort}
+                            toggleSort={toggleUsuarioSort}
+                            kind="string"
+                            label="status"
+                          />
+                          <ColumnFilter
+                            columnId="u-status"
+                            ariaLabel="Status"
+                            label={
+                              <FilteredColumnTitle active={filters.status !== null}>
+                                Status
+                              </FilteredColumnTitle>
+                            }
+                            options={options.status}
+                            applied={filters.status}
+                            onApply={setCol("status")}
+                          />
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-center text-[15px] font-semibold text-muted-foreground">
+                        WhatsApp
+                      </TableHead>
+                      <TableHead className="text-center text-[15px] font-semibold text-muted-foreground">
+                        Discord
+                      </TableHead>
+                      {canManageUsers && (
+                        <TableHead className="text-right w-[14px]"></TableHead>
+                      )}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedTableRows.map((row) => (
+                      <UserTableRow
+                        key={row.id}
+                        row={row}
+                        disabled={pending}
+                        onAction={runAction}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-            )}
-            <div className="rounded-xl border border-border overflow-x-auto bg-card/10">
-              <Table>
-                <TableHeader>
-                  <TableRow className={`${cardClassName} bg-blue-500/20 hover:bg-blue-500/20`}>
-                    <TableHead>
-                      <div className="flex items-center gap-0.5">
-                        <TableColumnSortButton
-                          ariaLabel="Ordenar por e-mail"
-                          isActive={tableSort?.key === "email"}
-                          direction={tableSort?.key === "email" ? tableSort.dir : null}
-                          onClick={() => toggleUsuarioSort("email")}
-                        />
-                        <ColumnFilter
-                          columnId="u-email"
-                          label="Membro"
-                          options={options.email}
-                          applied={filters.email}
-                          onApply={setCol("email")}
-                        />
-                      </div>
-                  </TableHead>
-                  <TableHead>
-                      <div className="flex items-center gap-0.5">
-                        <TableColumnSortButton
-                          ariaLabel="Ordenar por cargo"
-                          isActive={tableSort?.key === "role"}
-                          direction={tableSort?.key === "role" ? tableSort.dir : null}
-                          onClick={() => toggleUsuarioSort("role")}
-                        />
-                        <ColumnFilter
-                          columnId="u-role"
-                          label="Cargo"
-                          options={options.role}
-                          applied={filters.role}
-                          onApply={setCol("role")}
-                        />
-                      </div>
-                  </TableHead>
-                  <TableHead>
-                      <div className="flex items-center gap-0.5">
-                        <TableColumnSortButton
-                          ariaLabel="Ordenar por status"
-                          isActive={tableSort?.key === "status"}
-                          direction={tableSort?.key === "status" ? tableSort.dir : null}
-                          onClick={() => toggleUsuarioSort("status")}
-                        />
-                        <ColumnFilter
-                          columnId="u-status"
-                          label="Status"
-                          options={options.status}
-                          applied={filters.status}
-                          onApply={setCol("status")}
-                        />
-                      </div>
-                  </TableHead>
-                  <TableHead className="text-[12px] font-semibold text-muted-foreground">WhatsApp</TableHead>
-                  <TableHead className="text-[12px] font-semibold text-muted-foreground">Discord</TableHead>
-                  {canManageUsers && <TableHead className="text-right w-[140px]">Ações</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedTableRows.map((row) => (
-                  <UserTableRow
-                    key={row.id}
-                    row={row}
-                    disabled={pending}
-                    onAction={runAction}
-                  />
-                ))}
-              </TableBody>
-            </Table>
+            </DataTableShell>
           </div>
-        </div>
       )}
     </div>
   );

@@ -8,6 +8,8 @@ import { limitDashboardMutation, limitDashboardRead } from "@/lib/rate-limit";
 import { notificationIdsDeleteSchema, notificationsPageParamsSchema } from "@/lib/schemas";
 import { NOTIFICATION_PAGE_SIZE, notificationIdSchema } from "@/lib/constants";
 import { insertLog, notificationsQueriesLog } from "@/lib/constants/queries-mutations";
+import { countUnreadNotificationsForUser } from "@/lib/queries/db/notification-unread-server";
+import { logPerf } from "@/lib/utils/perf";
 import { CreateNotificationInput, ErrorTypes, NotificationFilterType, NotificationItem, NotificationsPageResult } from "@/lib/types";
 import { UserRole } from "@prisma/client";
 
@@ -72,12 +74,14 @@ export async function getNotificationsPage(
 
 export async function getUnreadCount(): Promise<number> {
   try {
+    const t0 = performance.now();
     const session = await requireSession();
-    const rl = await limitDashboardRead(session.userId);
-    if (!rl.ok) return 0;
-    return await prisma.notification.count({
-      where: { userId: session.userId, read: false },
-    });
+    logPerf("notifications.unread", "requireSession", t0);
+
+    const tCount = performance.now();
+    const n = await countUnreadNotificationsForUser(session.userId);
+    logPerf("notifications.unread", "countForUser", tCount);
+    return n;
   } catch {
     return 0;
   }

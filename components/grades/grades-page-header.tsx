@@ -1,4 +1,5 @@
-import { NewGradeModal, ImportGradeModal } from "@/components/grade-modals";
+import ImportGradeModal from "@/components/modals/grade-modals";
+import NewGradeModal from "@/components/modals/new-grade-modal";
 import { gradesPageMetadata } from "@/lib/constants/metadata";
 import { memo } from "react";
 

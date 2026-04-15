@@ -39,9 +39,9 @@ const GradeDetailClient = memo(({
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         {data.rules.length === 0 ? (
-          <div className={`${cardClassName} py-10 text-center text-muted-foreground text-sm`}>
+          <div className={`${cardClassName} col-span-full py-10 text-center text-muted-foreground text-sm`}>
             Nenhuma regra nesta grade.
           </div>
         ) : (

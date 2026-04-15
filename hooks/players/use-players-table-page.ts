@@ -3,7 +3,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { distinctOptions } from "@/lib/utils";
-import type { PlayerTableRow, PlayersTableColumnKey } from "@/lib/types";
+import type { PlayerTableRow, PlayersTableColumnKey, PlayersTableSortKey } from "@/lib/types";
 import type { PlayersTablePayload } from "@/lib/types";
 import { getPlayersTableDataAction } from "@/lib/queries/db/player-queries";
 import { playerKeys } from "@/lib/queries/player-query-keys";
@@ -11,25 +11,13 @@ import { EMPTY_NICK, PLAYER_GROUP_FILTER_HAS_ANY, STALE_TIME } from "@/lib/const
 import { usePlayersStore } from "@/lib/stores/use-players-store";
 import type { NumberFilterValue } from "@/lib/number-filter";
 import { matchNumberFilter, getUniqueValues } from "@/lib/match-number-filter";
+import type { ColumnSortKind } from "@/lib/types/sortButton";
 import {
   compareNumberNullsLast,
   compareString,
   nextSortState,
   type SortDir,
 } from "@/lib/table-sort";
-
-export type PlayersTableSortKey =
-  | "name"
-  | "email"
-  | "nicks"
-  | "playerGroup"
-  | "coachLabel"
-  | "gradeLabel"
-  | "abiNumericValue"
-  | "roiTenDay"
-  | "fpTenDay"
-  | "ftTenDay"
-  | "status";
 
 function nickRowKey(n: { network: string; nick: string }) {
   return `${n.network}\t${n.nick}`;
@@ -221,7 +209,7 @@ export function usePlayersTablePage(initialPayload: PlayersTablePayload) {
     []
   );
 
-  const toggleSort = useCallback((key: PlayersTableSortKey, kind: "number" | "string") => {
+  const toggleSort = useCallback((key: PlayersTableSortKey, kind: ColumnSortKind) => {
     setSort((prev) => nextSortState(prev, key, kind));
   }, []);
 
@@ -259,3 +247,5 @@ export function usePlayersTablePage(initialPayload: PlayersTablePayload) {
     onEditPlayer,
   };
 }
+
+export type { PlayersTableSortKey } from "@/lib/types";

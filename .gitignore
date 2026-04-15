@@ -47,5 +47,10 @@ next-env.d.ts
 
 .agent
 
+# MCP / ferramentas locais
+.playwright-mcp/
+
 # scratch API dumps (podem conter dados reais)
 scratch/*-sample.json
+
+player-group-data/*

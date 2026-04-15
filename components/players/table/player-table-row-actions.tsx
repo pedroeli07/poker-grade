@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, startTransition, useState, useTransition } from "react";
+import { memo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -26,15 +26,16 @@ import { MoreVertical, Pencil, Settings2, Trash } from "lucide-react";
 import { deletePlayer } from "@/lib/queries/db/player-queries";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import type { PlayerTableRow } from "@/lib/types";
+import { playersTableCol } from "@/lib/constants/classes";
+import type { PlayerTableRowActionsProps } from "@/lib/types/playerComponents";
+import { deletePlayerActionErrorMessage } from "@/lib/utils/player/player-table-display";
+import { cn } from "@/lib/utils";
 
-type PlayerTableRowActionsProps = {
-  player: PlayerTableRow;
-  canEditPlayers: boolean;
-  onEdit: (p: PlayerTableRow) => void;
-};
-
-const PlayerTableRowActions = memo(function PlayerTableRowActions({ player, canEditPlayers, onEdit }: PlayerTableRowActionsProps) {
+const PlayerTableRowActions = memo(function PlayerTableRowActions({
+  player,
+  canEditPlayers,
+  onEdit,
+}: PlayerTableRowActionsProps) {
   const router = useRouter();
   const invalidatePlayers = useInvalidate("players");
   const [isPending, startTransition] = useTransition();
@@ -55,20 +56,14 @@ const PlayerTableRowActions = memo(function PlayerTableRowActions({ player, canE
           invalidatePlayers();
           router.refresh();
         } catch (err) {
-          const msg =
-            err instanceof Error && err.message === "FORBIDDEN"
-              ? "Sem permissão para excluir este jogador."
-              : err instanceof Error && err.message === "NOT_FOUND"
-                ? "Jogador não encontrado."
-                : "Não foi possível excluir. Tente novamente.";
-          toast.error("Erro ao excluir", msg);
+          toast.error("Erro ao excluir", deletePlayerActionErrorMessage(err));
         }
       })();
     });
   }
 
   return (
-    <TableCell className="w-[5%] min-w-0 px-1.5 py-3 text-right align-middle">
+    <TableCell className={cn(playersTableCol.actions, "py-3 text-right align-middle")}>
       <AlertDialog
         open={deleteOpen}
         onOpenChange={(o) => {

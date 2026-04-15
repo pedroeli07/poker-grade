@@ -253,16 +253,6 @@ export function descriptionPick(r: GradeListRow) {
   };
 }
 
-// ─── Target Utilities ─────────────────────────────────────────────────────────
-
-export function progressLabel(r: TargetListRow): string {
-  if (r.targetType === "NUMERIC" && r.numericValue != null)
-    return `${r.numericCurrent ?? "—"} / ${r.numericValue}${r.unit ? ` ${r.unit}` : ""}`;
-  if (r.targetType === "TEXT")
-    return `${r.textCurrent ?? "—"} / ${r.textValue ?? "—"}`;
-  return "—";
-}
-
 export const statusLabel = (s: TargetListRow["status"]) => STATUS_CONFIG[s].label;
 
 const TIER_UPPER: [number, "Low" | "Mid" | "High"][] = [
@@ -357,10 +347,14 @@ export function sharkScopeResponseErrorMessage(data: unknown): string | null {
   return "SharkScope retornou success=false";
 }
 
-export async function sharkScopeGet<T = unknown>(path: string): Promise<SharkScopeResponse<T>> {
+export async function sharkScopeGet<T = unknown>(
+  path: string,
+  init?: { signal?: AbortSignal }
+): Promise<SharkScopeResponse<T>> {
   const res = await fetch(`${sharkScopeBaseUrl()}${path}`, {
     headers: sharkScopeHeaders(),
     next: { revalidate: 0 },
+    signal: init?.signal,
   });
   if (!res.ok) throw new Error(`SharkScope HTTP ${res.status}: ${await res.text()}`);
   const data = (await res.json()) as SharkScopeResponse<T>;

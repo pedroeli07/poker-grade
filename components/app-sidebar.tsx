@@ -278,7 +278,11 @@ function AppSidebar({ userRole }: { userRole: UserRole }) {
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-4 space-y-0.5">
+      <nav
+        className={cn(
+          "sidebar-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-2 py-4 space-y-0.5"
+        )}
+      >
         {isOpen && (
           <div className="px-3 mb-3">
             <span className="text-[11px] font-bold tracking-[0.22em] uppercase text-muted-foreground/60">

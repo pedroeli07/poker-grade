@@ -44,6 +44,7 @@ const GradesPageClient = memo(function GradesPageClient({ rows: initialRows, man
             view={view}
             manage={manage}
             filtered={filtered}
+            totalCount={rows.length}
             options={options}
             filters={filters}
             setCol={setCol}

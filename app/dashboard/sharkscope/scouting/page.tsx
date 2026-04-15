@@ -1,7 +1,7 @@
 import dynamicImport from "next/dynamic";
 import { getScoutingPageProps } from "@/lib/sharkscope/scouting-page-server";
-import { ScoutingPageSkeleton } from "@/components/sharkscope/scouting-page-skeleton";
-import { sharkscopeScoutingPageMetadata } from "@/lib/constants/sharkscope-scouting-page";
+import ScoutingPageSkeleton from "@/components/sharkscope/scouting/scouting-page-skeleton";
+import { sharkscopeScoutingPageMetadata } from "@/lib/constants/sharkscope/scouting/sharkscope-scouting-page";
 
 export const dynamic = "force-dynamic";
 

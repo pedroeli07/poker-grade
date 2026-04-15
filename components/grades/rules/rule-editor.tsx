@@ -3,39 +3,11 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import MultiToggleRow from "./multi-toggle-row";
-import { Pencil } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { GradeRuleCardRule, LobbyzeFilterItem } from "@/lib/types";
-import { ReactNode } from "react";
+import { memo } from "react";
+import LabeledTextRow from "./labeled-text-row";
 
-function InputEndPencil({ className }: { className?: string }) {
-  return (
-    <Pencil
-      className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground/55", className)}
-      aria-hidden
-    />
-  );
-}
-
-function LabeledTextRow({
-  label,
-  children,
-}: {
-  label: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <div className="space-y-1">
-      <div>{label}</div>
-      <div className="flex items-center gap-2">
-        <div className="min-w-0 flex-1">{children}</div>
-        <InputEndPencil className="self-center" />
-      </div>
-    </div>
-  );
-}
-
-export function RuleEditor({
+const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
   form,
   set,
   speedOptions,
@@ -45,8 +17,9 @@ export function RuleEditor({
   pcOptions,
   wdOptions,
 }: {
-  form: GradeRuleCardRule;
-  set: (key: string, val: unknown) => void;
+  form: T;
+  /** Valores de inputs HTML são `string`; o estado de edição usa `unknown` até o save (parse em `useEditableRule`). */
+  set: (key: keyof T, val: unknown) => void;
   speedOptions: LobbyzeFilterItem[];
   ttOptions: LobbyzeFilterItem[];
   vOptions: LobbyzeFilterItem[];
@@ -69,7 +42,7 @@ export function RuleEditor({
             <MultiToggleRow
               options={[]}
               selected={form.sites}
-              onChange={(v) => set("sites", v)}
+              onChange={(v) => set("sites", v as T["sites"])}
             />
           </LabeledTextRow>
 
@@ -84,7 +57,7 @@ export function RuleEditor({
               <MultiToggleRow
                 options={speedOptions}
                 selected={form.speed}
-                onChange={(v) => set("speed", v)}
+                onChange={(v) => set("speed", v as T["speed"])}
               />
             </LabeledTextRow>
             <LabeledTextRow
@@ -97,7 +70,7 @@ export function RuleEditor({
               <MultiToggleRow
                 options={ttOptions}
                 selected={form.tournamentType}
-                onChange={(v) => set("tournamentType", v)}
+                onChange={(v) => set("tournamentType", v as T["tournamentType"])}
               />
             </LabeledTextRow>
             <LabeledTextRow
@@ -110,7 +83,7 @@ export function RuleEditor({
               <MultiToggleRow
                 options={vOptions}
                 selected={form.variant}
-                onChange={(v) => set("variant", v)}
+                onChange={(v) => set("variant", v as T["variant"])}
               />
             </LabeledTextRow>
             <LabeledTextRow
@@ -123,7 +96,7 @@ export function RuleEditor({
               <MultiToggleRow
                 options={gameOptions}
                 selected={form.gameType}
-                onChange={(v) => set("gameType", v)}
+                onChange={(v) => set("gameType", v as T["gameType"])}
               />
             </LabeledTextRow>
           </div>
@@ -333,4 +306,8 @@ export function RuleEditor({
       </div>
     </div>
   );
-}
+});
+
+RuleEditor.displayName = "RuleEditor";
+
+export default RuleEditor;

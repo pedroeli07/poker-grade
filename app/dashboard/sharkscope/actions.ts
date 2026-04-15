@@ -1,40 +1,31 @@
 "use server";
 
 import { requireSession } from "@/lib/auth/session";
-import { canWriteOperations, getAppBaseUrl } from "@/lib/utils";
-import { cronSecret } from "@/lib/constants";
+import { canWriteOperations } from "@/lib/utils";
+import { runDailySyncSharkScope } from "@/lib/sharkscope/run-daily-sync";
 import { ErrorTypes } from "@/lib/types";
 
 export async function syncSharkScopeManualAction() {
   const session = await requireSession();
   if (!canWriteOperations(session)) throw new Error(ErrorTypes.UNAUTHORIZED);
 
-  const appUrl = getAppBaseUrl() || "http://localhost:3000";
-
-  if (!cronSecret) {
-    return { success: false, error: ErrorTypes.CRON_SECRET_NOT_CONFIGURED };
-  }
-
   try {
-    const response = await fetch(`${appUrl}/api/cron/daily-sync?force=1`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${cronSecret}`,
-      },
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      return { success: false, error: `Erro HTTP ${response.status}: ${text}` };
-    }
-
-    const data = await response.json();
-    return { success: true, processed: data.processed, errors: data.errors };
+    const data = await runDailySyncSharkScope(true);
+    return {
+      success: true,
+      processed: data.processed,
+      errors: data.errors,
+      sharkHttpCalls: data.sharkHttpCalls,
+      remainingSearches: data.remainingSearches,
+    };
   } catch (err) {
+    const msg = err instanceof Error ? err.message : ErrorTypes.SHARK_SYNC_UNKNOWN_ERROR;
+    if (msg === ErrorTypes.SHARK_SYNC_CREDENTIALS_NOT_CONFIGURED) {
+      return { success: false, error: msg };
+    }
     return {
       success: false,
-      error: err instanceof Error ? err.message : ErrorTypes.SHARK_SYNC_UNKNOWN_ERROR,
+      error: msg,
     };
   }
 }

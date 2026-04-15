@@ -1,62 +1,27 @@
 "use client";
 
-import { memo, useCallback, useMemo, type ReactNode } from "react";
-import { ArrowDownWideNarrow, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { memo, useMemo } from "react";
 import { isFilterActive } from "@/lib/number-filter";
-import { buildPlayersFilterSummaryLines } from "@/lib/utils/players-table-filter-summary";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { buildPlayersFilterSummaryLines } from "@/lib/utils/player/players-table-filter-summary";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import ColumnFilter from "@/components/column-filter";
 import NumberRangeFilter from "@/components/number-range-filter";
-import { EditPlayerModal } from "@/components/edit-player-modal";
-import type { PlayersTablePayload } from "@/lib/types";
-import { usePlayersTablePage, type PlayersTableSortKey } from "../../../hooks/players/use-players-table-page";
+import DataTableShell from "@/components/data-table/data-table-shell";
+import DataTableToolbar from "@/components/data-table/data-table-toolbar";
+import FilteredColumnTitle from "@/components/data-table/filtered-column-title";
+import { usePlayersTablePage } from "@/hooks/players/use-players-table-page";
 import PlayerTableRow from "@/components/players/player-table-row";
-import { TableColumnSortButton } from "@/components/table-column-sort-button";
 import { cn } from "@/lib/utils";
-
-const STATS_TABLE_HEAD =
-  "w-[8%] min-w-0 px-0.5 align-middle text-center text-[14px] leading-tight";
-
-const SORT_LABELS: Record<PlayersTableSortKey, string> = {
-  name: "Nome",
-  email: "E-mail",
-  nicks: "Nicks",
-  playerGroup: "Grupo Shark",
-  coachLabel: "Coach",
-  gradeLabel: "Grade",
-  abiNumericValue: "ABI",
-  roiTenDay: "ROI (10d)",
-  fpTenDay: "FP (10d)",
-  ftTenDay: "FT (10d)",
-  status: "Status",
-};
-
-/** Título da coluna dentro de badge azul quando o filtro da coluna está ativo. */
-function FilteredColumnTitle({ active, children }: { active: boolean; children: ReactNode }) {
-  if (!active) return <>{children}</>;
-  return (
-    <Badge className="max-w-[min(100%,13rem)] animate-pulse truncate border-primary/50 bg-primary/20 px-3 py-1.5 text-xs font-semibold leading-snug text-primary shadow-sm sm:max-w-[16rem] sm:text-sm">
-      {children}
-    </Badge>
-  );
-}
+import { playersTableCol, playersTableStatsHeadClass, dataTableHeaderRowActiveRingClass, dataTableHeaderRowClass } from "@/lib/constants";
+import SortButton from "@/components/sort-button";
+import type { PlayersTableClientProps } from "@/lib/types/playerComponents";
+import { formatPlayersTableSortSummary } from "@/lib/utils/player-table-display";
+import EditPlayerModal from "@/components/modals/edit-player-modal";
 
 const PlayersTableClient = memo(function PlayersTableClient({
   initialPayload,
   canEditPlayers,
-}: {
-  initialPayload: PlayersTablePayload;
-  canEditPlayers: boolean;
-}) {
+}: PlayersTableClientProps) {
   const {
     rows,
     coaches,
@@ -80,29 +45,9 @@ const PlayersTableClient = memo(function PlayersTableClient({
     onEditPlayer,
   } = usePlayersTablePage(initialPayload);
 
-  const sortBtn = useCallback(
-    (key: PlayersTableSortKey, kind: "number" | "string", label: string) => {
-      const active = sort?.key === key;
-      return (
-        <TableColumnSortButton
-          ariaLabel={`Ordenar por ${label}`}
-          isActive={active}
-          direction={active ? sort!.dir : null}
-          onClick={() => toggleSort(key, kind)}
-        />
-      );
-    },
-    [sort, toggleSort]
-  );
-
   const hasActiveView = anyFilter || sort !== null;
 
-  const sortSummary = useMemo(() => {
-    if (!sort) return null;
-    const label = SORT_LABELS[sort.key] ?? sort.key;
-    const dirPt = sort.dir === "asc" ? "crescente" : "decrescente";
-    return `${label} (${dirPt})`;
-  }, [sort]);
+  const sortSummary = useMemo(() => formatPlayersTableSortSummary(sort), [sort]);
 
   const filterSummaryLines = useMemo(
     () => buildPlayersFilterSummaryLines(filters, options, numFilters),
@@ -114,97 +59,35 @@ const PlayersTableClient = memo(function PlayersTableClient({
       <EditPlayerModal
         player={editRow}
         open={editRow !== null}
-        onOpenChange={(o) => {
+        onOpenChange={(o: boolean) => {
           if (!o) setEditRow(null);
         }}
         coaches={coaches}
         grades={grades}
         allowCoachSelect={allowCoachSelect}
       />
-      <div
-        className={cn(
-          "flex flex-col gap-2 px-4 py-2 text-sm transition-all duration-300",
-          hasActiveView
-            ? "rounded-xl border border-primary/40 bg-gradient-to-r from-primary/[0.12] via-primary/[0.07] to-transparent shadow-[inset_0_1px_0_0_rgba(59,130,246,0.15)]"
-            : "text-muted-foreground"
-        )}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
-            <span className={cn(hasActiveView && "font-medium text-foreground")}>
-              Mostrando{" "}
-              <span className="font-semibold tabular-nums text-primary">{filtered.length}</span> de{" "}
-              <span className="tabular-nums">{rows.length}</span> jogador{rows.length !== 1 ? "es" : ""}
-            </span>
-            {hasActiveView && (
-              <div className="flex flex-wrap items-center gap-2">
-                {anyFilter && (
-                  <Badge className="gap-1 border-primary/30 bg-primary/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary shadow-sm">
-                    <Filter className="h-3 w-3" aria-hidden />
-                    Filtros ativos
-                  </Badge>
-                )}
-                {sort && (
-                  <Badge
-                    variant="outline"
-                    className="gap-1 border-primary/40 bg-background/80 px-2 py-0.5 text-[11px] font-semibold text-primary shadow-sm"
-                  >
-                    <ArrowDownWideNarrow className="h-3 w-3" aria-hidden />
-                    Ordenação: {sortSummary}
-                  </Badge>
-                )}
-              </div>
-            )}
-          </div>
-          {hasActiveView && (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="h-8 shrink-0 border-primary/25 bg-background/90 text-xs font-medium text-primary hover:bg-primary/10"
-              onClick={clearFilters}
-            >
-              Limpar filtros e ordenação
-            </Button>
-          )}
-        </div>
-        {anyFilter && filterSummaryLines.length > 0 && (
-          <div className="border-t border-primary/20 pt-2">
-            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-primary/90">
-              Valores filtrados
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {filterSummaryLines.map((line, i) => (
-                <span
-                  key={i}
-                  className="inline-flex max-w-full break-words rounded-md border border-primary/30 bg-background/85 px-2 py-1 text-[11px] leading-snug text-foreground shadow-sm"
-                >
-                  {line}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-      <div
-        className={cn(
-          "min-w-0 max-w-full overflow-hidden transition-all duration-300",
-          hasActiveView
-            ? "rounded-xl border-2 border-primary/40 bg-primary/[0.03] shadow-[0_0_0_1px_rgba(59,130,246,0.12),0_16px_48px_-16px_rgba(37,99,235,0.18)]"
-            : "border-y border-border"
-        )}
-      >
+      <DataTableToolbar
+        filteredCount={filtered.length}
+        totalCount={rows.length}
+        entityLabels={["jogador", "jogadores"]}
+        hasActiveView={hasActiveView}
+        anyFilter={anyFilter}
+        sortSummary={sortSummary}
+        filterSummaryLines={filterSummaryLines}
+        onClear={clearFilters}
+      />
+      <DataTableShell hasActiveView={hasActiveView}>
         <Table className="table-fixed w-full max-w-full">
           <TableHeader>
             <TableRow
               className={cn(
-                "bg-blue-500/20 hover:bg-blue-500/20 transition-colors",
-                hasActiveView && "bg-primary/20 ring-1 ring-inset ring-primary/15"
+                dataTableHeaderRowClass,
+                hasActiveView && dataTableHeaderRowActiveRingClass
               )}
             >
-              <TableHead className="w-[9%] min-w-0 text-center">
+              <TableHead className={cn(playersTableCol.name, "text-center")}>
                 <div className="flex items-center justify-center gap-0.5">
-                  {sortBtn("name", "string", "nome")}
+                  <SortButton columnKey="name" sort={sort} toggleSort={toggleSort} kind="string" label="nome" />
                   <ColumnFilter
                     columnId="name"
                     ariaLabel="Nome"
@@ -215,10 +98,10 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   />
                 </div>
               </TableHead>
-              {/*}
+              {/*
               <TableHead className="w-[8%] min-w-0">
                 <div className="flex items-center gap-0.5">
-                  {sortBtn("email", "string", "e-mail")}
+                  <SortButton columnKey="email" sort={sort} toggleSort={toggleSort} kind="string" label="e-mail" />
                   <ColumnFilter
                     columnId="email"
                     label="E-mail"
@@ -229,9 +112,9 @@ const PlayersTableClient = memo(function PlayersTableClient({
                 </div>
               </TableHead>
               */}
-              <TableHead className="w-[22%] min-w-0 text-center">
+              <TableHead className={cn(playersTableCol.nicks, "text-center")}>
                 <div className="flex items-center justify-center gap-0.5">
-                  {sortBtn("nicks", "string", "nicks")}
+                  <SortButton columnKey="nicks" sort={sort} toggleSort={toggleSort} kind="string" label="nicks" />
                   <ColumnFilter
                     columnId="nicks"
                     ariaLabel="Nicks"
@@ -242,9 +125,9 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   />
                 </div>
               </TableHead>
-              <TableHead className="w-[12%] min-w-0 text-center">
+              <TableHead className={cn(playersTableCol.grupoShark, "text-center")}>
                 <div className="flex items-center justify-center gap-0.5 ">
-                  {sortBtn("playerGroup", "string", "grupo Shark")}
+                  <SortButton columnKey="playerGroup" sort={sort} toggleSort={toggleSort} kind="string" label="grupo Shark" />
                   <ColumnFilter
                     columnId="playerGroup"
                     ariaLabel="Grupo Shark"
@@ -257,9 +140,9 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   />
                 </div>
               </TableHead>
-              <TableHead className="w-[5%] min-w-0 px-1.5 text-center">
+              <TableHead className={cn(playersTableCol.status, "text-center")}>
                 <div className="flex items-center justify-center gap-0.5">
-                  {sortBtn("status", "string", "status")}
+                  <SortButton columnKey="status" sort={sort} toggleSort={toggleSort} kind="string" label="status" />
                   <ColumnFilter
                     columnId="status"
                     ariaLabel="Status"
@@ -270,9 +153,9 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   />
                 </div>
               </TableHead>
-              <TableHead className="w-[8%] min-w-0 text-center">
+              <TableHead className={cn(playersTableCol.coach, "text-center")}>
                 <div className="flex items-center justify-center gap-0.5">
-                  {sortBtn("coachLabel", "string", "coach")}
+                  <SortButton columnKey="coachLabel" sort={sort} toggleSort={toggleSort} kind="string" label="coach" />
                   <ColumnFilter
                     columnId="coach"
                     ariaLabel="Coach"
@@ -283,9 +166,9 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   />
                 </div>
               </TableHead>
-              <TableHead className="w-[8%] min-w-0 text-center">
+              <TableHead className={cn(playersTableCol.grade, "text-center")}>
                 <div className="flex items-center justify-center gap-0.5">
-                  {sortBtn("gradeLabel", "string", "grade")}
+                  <SortButton columnKey="gradeLabel" sort={sort} toggleSort={toggleSort} kind="string" label="grade" />
                   <ColumnFilter
                     columnId="grade"
                     ariaLabel="Grade"
@@ -296,9 +179,9 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   />
                 </div>
               </TableHead>
-              <TableHead className="w-[6%] min-w-0 pr-1 align-middle text-center">
+              <TableHead className={cn(playersTableCol.abi, "pr-1 align-middle text-center")}>
                 <div className="flex items-center justify-center gap-0.5">
-                  {sortBtn("abiNumericValue", "number", "ABI")}
+                  <SortButton columnKey="abiNumericValue" sort={sort} toggleSort={toggleSort} kind="number" label="ABI" />
                   <ColumnFilter
                     columnId="abi"
                     ariaLabel="ABI"
@@ -309,10 +192,10 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   />
                 </div>
               </TableHead>
-              <TableHead className={STATS_TABLE_HEAD}>
+              <TableHead className={playersTableStatsHeadClass}>
                 <div className="flex flex-col items-center gap-0.5">
                   <div className="flex items-center justify-center gap-0.5">
-                    {sortBtn("roiTenDay", "number", "ROI 10d")}
+                    <SortButton columnKey="roiTenDay" sort={sort} toggleSort={toggleSort} kind="number" label="ROI 10d" />
                     <NumberRangeFilter
                       ariaLabel="ROI (10d)"
                       label={
@@ -328,10 +211,10 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   </div>
                 </div>
               </TableHead>
-              <TableHead className={STATS_TABLE_HEAD}>
+              <TableHead className={playersTableStatsHeadClass}>
                 <div className="flex flex-col items-center gap-0.5">
                   <div className="flex items-center justify-center gap-0.5">
-                    {sortBtn("fpTenDay", "number", "FP 10d")}
+                    <SortButton columnKey="fpTenDay" sort={sort} toggleSort={toggleSort} kind="number" label="FP 10d" />
                     <NumberRangeFilter
                       ariaLabel="FP (10d)"
                       label={
@@ -347,10 +230,10 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   </div>
                 </div>
               </TableHead>
-              <TableHead className={STATS_TABLE_HEAD}>
+              <TableHead className={playersTableStatsHeadClass}>
                 <div className="flex flex-col items-center gap-0.5">
                   <div className="flex items-center justify-center gap-0.5">
-                    {sortBtn("ftTenDay", "number", "FT 10d")}
+                    <SortButton columnKey="ftTenDay" sort={sort} toggleSort={toggleSort} kind="number" label="FT 10d" />
                     <NumberRangeFilter
                       ariaLabel="FT (10d)"
                       label={
@@ -366,13 +249,13 @@ const PlayersTableClient = memo(function PlayersTableClient({
                   </div>
                 </div>
               </TableHead>
-              <TableHead className="w-[3%] min-w-0 px-1.5 text-right"></TableHead>
+              <TableHead className={cn(playersTableCol.actions, "text-right")}></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
                   Nenhum jogador encontrado com os filtros selecionados.
                 </TableCell>
               </TableRow>
@@ -388,7 +271,7 @@ const PlayersTableClient = memo(function PlayersTableClient({
             )}
           </TableBody>
         </Table>
-      </div>
+      </DataTableShell>
     </div>
   );
 });

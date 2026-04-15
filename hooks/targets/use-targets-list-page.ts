@@ -5,9 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import type { TargetListRow } from "@/lib/types";
 import { getTargetsListDataAction } from "@/lib/queries/db/target-queries";
 import { targetKeys } from "@/lib/queries/target-query-keys";
-import { LIMIT_ACTION_LABEL, NONE_LIMIT } from "@/lib/constants";
-import { TARGETS_LS_VIEW } from "@/lib/constants/targets-page";
-import { distinctOptions, statusLabel } from "@/lib/utils";
+import { LIMIT_ACTION_LABEL, NONE_LIMIT } from "@/lib/constants/grade/grade-rule-editor";
+import { TARGETS_LS_VIEW } from "@/lib/constants/target/targets-page";
+import { distinctOptions } from "@/lib/utils";
+import { getTargetStatusLabel } from "@/lib/utils/target/target-utils";
 import type { ColKey } from "@/lib/types";
 import { useTargetsListStore } from "@/lib/stores/use-targets-list-store";
 
@@ -61,7 +62,7 @@ export function useTargetsListPage(initialRows: TargetListRow[]) {
       })),
       status: distinctOptions(rows, (r) => ({
         value: r.status,
-        label: statusLabel(r.status),
+        label: getTargetStatusLabel(r.status),
       })),
       targetType: distinctOptions(rows, (r) => ({
         value: r.targetType,

@@ -1,14 +1,15 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Target } from "lucide-react";
+import DataTableToolbar from "@/components/data-table/data-table-toolbar";
 import TargetsColFilters from "@/components/targets/targets-col-filters";
 import TargetsCardsSection from "@/components/targets/targets-cards-section";
-import TargetsListToolbar from "@/components/targets/targets-list-toolbar";
 import TargetsTableSection from "@/components/targets/targets-table-section";
 import TargetsViewToggle from "@/components/targets/targets-view-toggle";
 import type { ColKey, Filters, TargetListRow, TargetsColumnOptions } from "@/lib/types";
+import { buildTargetsFilterSummaryLines } from "@/lib/utils/targets-table-display";
 
 const TargetsControlsCard = memo(function TargetsControlsCard({
   view,
@@ -31,6 +32,11 @@ const TargetsControlsCard = memo(function TargetsControlsCard({
   anyFilter: boolean;
   clearFilters: () => void;
 }) {
+  const cardsFilterLines = useMemo(
+    () => buildTargetsFilterSummaryLines(filters, options),
+    [filters, options]
+  );
+
   return (
     <Card className="overflow-hidden rounded-xl border border-border/80 bg-card/60 shadow-sm">
       <CardHeader className="border-b border-border/40 bg-muted/10 px-6 pb-5 pt-6">
@@ -60,21 +66,32 @@ const TargetsControlsCard = memo(function TargetsControlsCard({
       </CardHeader>
 
       <CardContent className="p-0">
-        <TargetsListToolbar
-          filteredCount={filtered.length}
-          totalCount={rows.length}
-          anyFilter={anyFilter}
-          onClearFilters={clearFilters}
-        />
+        {view === "cards" && (
+          <DataTableToolbar
+            filteredCount={filtered.length}
+            totalCount={rows.length}
+            entityLabels={["target", "targets"]}
+            hasActiveView={anyFilter}
+            anyFilter={anyFilter}
+            sortSummary={null}
+            filterSummaryLines={cardsFilterLines}
+            onClear={clearFilters}
+          />
+        )}
         {view === "cards" ? (
           <TargetsCardsSection filtered={filtered} anyFilter={anyFilter} onClearFilters={clearFilters} />
         ) : (
-          <TargetsTableSection
-            filtered={filtered}
-            options={options}
-            filters={filters}
-            setCol={setCol}
-          />
+          <div className="px-0 pb-0 pt-0">
+            <TargetsTableSection
+              filtered={filtered}
+              options={options}
+              filters={filters}
+              setCol={setCol}
+              totalCount={rows.length}
+              anyFilter={anyFilter}
+              clearFilters={clearFilters}
+            />
+          </div>
         )}
       </CardContent>
     </Card>

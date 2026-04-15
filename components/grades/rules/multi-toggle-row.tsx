@@ -3,7 +3,6 @@ import { toggleByText } from "./toggle-by-text";
 import { LobbyzeFilterItem } from "@/lib/types";
 import { memo } from "react";
 
-
 const MultiToggleRow = memo(function MultiToggleRow({
   options,
   selected,
@@ -39,5 +38,4 @@ const MultiToggleRow = memo(function MultiToggleRow({
 
 MultiToggleRow.displayName = "MultiToggleRow";
 
-export { MultiToggleRow };
 export default MultiToggleRow;

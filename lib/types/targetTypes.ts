@@ -1,5 +1,17 @@
 import type { TargetStatus, TargetType } from "@prisma/client";
+import type { SortDir } from "@/lib/table-sort";
+import type { ColKey } from "./columnKeys";
 import type { PlayerRef, WithIdAndStatus } from "./primitives";
+
+/** Ordenação da tabela de targets (UI). */
+export type TargetsTableSortState = { key: ColKey; dir: SortDir } | null;
+
+/** Contagens por estado para cards de resumo na página de targets. */
+export type TargetsSummaryInput = {
+  onTrack: number;
+  attention: number;
+  offTrack: number;
+};
 
 export type TargetLimitAction = "UPGRADE" | "MAINTAIN" | "DOWNGRADE" | null;
 

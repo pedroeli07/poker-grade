@@ -4,7 +4,6 @@ import { memo } from "react";
 import BuyInRange from "./buy-in-range";
 import Pills from "./pills";
 
-
 const RuleDisplay = memo(function RuleDisplay({ rule }: { rule: GradeRuleCardRule }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
@@ -156,5 +155,4 @@ const RuleDisplay = memo(function RuleDisplay({ rule }: { rule: GradeRuleCardRul
 
 RuleDisplay.displayName = "RuleDisplay";
 
-export { RuleDisplay };
 export default RuleDisplay;

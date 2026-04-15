@@ -6,7 +6,7 @@ import {
   SHARKSCOPE_ALERTS_LS_PAGE,
   SHARKSCOPE_ALERTS_LS_PAGE_SIZE,
   SHARKSCOPE_ALERTS_LS_SELECTED,
-} from "@/lib/constants/sharkscope-alerts-page";
+} from "@/lib/constants/sharkscope/alerts/sharkscope-alerts-page";
 import type { SharkscopeAlertRow } from "@/lib/types";
 import { useAlertsDashboard } from "@/hooks/sharkscope/alerts/use-alerts-dashboard";
 
@@ -165,6 +165,13 @@ export function useAlertsPageClient(initialAlerts: SharkscopeAlertRow[]) {
     [paginatedRows]
   );
 
+  const resetAlertFilters = useCallback(() => {
+    setPage(1);
+    setFilterSeverityInner("all");
+    setFilterTypeInner("all");
+    setFilterAckInner("unacknowledged");
+  }, [setFilterSeverityInner, setFilterTypeInner, setFilterAckInner]);
+
   const confirmBulkDelete = useCallback(() => {
     const ids = [...visibleSelectedIds];
     deleteAlerts(ids, {
@@ -176,12 +183,14 @@ export function useAlertsPageClient(initialAlerts: SharkscopeAlertRow[]) {
   }, [deleteAlerts, visibleSelectedIds]);
 
   return {
+    alerts,
     filterSeverity,
     setFilterSeverity,
     filterType,
     setFilterType,
     filterAck,
     setFilterAck,
+    resetAlertFilters,
     filtered,
     unackedCount,
     isPending,

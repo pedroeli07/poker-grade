@@ -20,6 +20,20 @@ type PlayerNickRow = { network: string; nick: string };
 
 type PlayerNameStatus = WithIdAndStatus<PlayerStatus> & PlayerNameFields & { playerGroup: string | null };
 
+/** Colunas ordenáveis na tabela de jogadores (dashboard). */
+export type PlayersTableSortKey =
+  | "name"
+  | "email"
+  | "nicks"
+  | "playerGroup"
+  | "coachLabel"
+  | "gradeLabel"
+  | "abiNumericValue"
+  | "roiTenDay"
+  | "fpTenDay"
+  | "ftTenDay"
+  | "status";
+
 export type PlayerTableRow = PlayerNameStatus & {
   coachKey: string;
   coachLabel: string;

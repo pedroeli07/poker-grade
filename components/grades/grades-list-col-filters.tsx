@@ -1,4 +1,4 @@
-import { GRADES_LIST_CARD_FILTER_COLUMNS } from "@/lib/constants/grades-list-ui";
+import { GRADES_LIST_CARD_FILTER_COLUMNS } from "@/lib/constants/grade/grades-list-ui";
 import ColumnFilter from "../column-filter";
 import { memo } from "react";
 import { GradesColumnFilters, GradesColumnOptions, GradesSetCol } from "@/lib/types";

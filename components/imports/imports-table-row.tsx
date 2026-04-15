@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { AppTooltip } from "@/components/ui/app-tooltip";
 import { FileSpreadsheet, ShieldCheck, AlertTriangle, ChevronRight, Check, Trash2 } from "lucide-react";
 import { cn, importRowDateLabel } from "@/lib/utils";
 import type { ImportsTableRowProps } from "@/lib/types";
@@ -42,19 +43,19 @@ const ImportsTableRow = memo(function ImportsTableRow({
           </button>
         </TableCell>
       )}
-      <TableCell className="font-medium">
-        <Link
-          href={`/dashboard/imports/${item.id}`}
-          className="flex items-center gap-2 hover:text-primary transition-colors"
-        >
-          <FileSpreadsheet className="h-4 w-4 text-emerald-500 shrink-0" />
-          <span className="truncate max-w-[280px]" title={item.fileName}>
-            {item.fileName}
-          </span>
-          <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-60 transition-opacity shrink-0" />
-        </Link>
+      <TableCell className="text-center font-medium">
+        <AppTooltip content={<span className="max-w-sm break-all">{item.fileName}</span>}>
+          <Link
+            href={`/dashboard/imports/${item.id}`}
+            className="inline-flex max-w-full items-center justify-center gap-2 hover:text-primary transition-colors"
+          >
+            <FileSpreadsheet className="h-4 w-4 text-emerald-500 shrink-0" />
+            <span className="truncate max-w-[280px] text-left">{item.fileName}</span>
+            <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-60 transition-opacity shrink-0" />
+          </Link>
+        </AppTooltip>
       </TableCell>
-      <TableCell>
+      <TableCell className="text-center">
         {item.playerName || (
           <span className="text-muted-foreground italic text-sm">
             Não Identificado

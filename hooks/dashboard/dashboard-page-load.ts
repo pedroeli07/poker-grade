@@ -2,8 +2,10 @@ import type { AppSession } from "@/lib/auth/session";
 import { canDeleteImports } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { UserRole, PlayerStatus, TargetStatus, ReviewStatus } from "@prisma/client";
+import { logPerf, timed } from "@/lib/utils/perf";
 
 export async function loadDashboardPageData(session: AppSession) {
+  const tLoad = performance.now();
   const [
     activePlayers,
     pendingReviews,
@@ -12,44 +14,65 @@ export async function loadDashboardPageData(session: AppSession) {
     recentLimitChanges,
     alertCounts,
   ] = await Promise.all([
-    prisma.player.count({ where: { status: PlayerStatus.ACTIVE } }),
+    timed("dashboard.load", "activePlayers", prisma.player.count({ where: { status: PlayerStatus.ACTIVE } })),
 
-    session.role === UserRole.PLAYER
-      ? 0
-      : prisma.gradeReviewItem.count({ where: { status: ReviewStatus.PENDING } }),
+    timed(
+      "dashboard.load",
+      "pendingReviews",
+      session.role === UserRole.PLAYER
+        ? Promise.resolve(0)
+        : prisma.gradeReviewItem.count({ where: { status: ReviewStatus.PENDING } })
+    ),
 
-    prisma.tournamentImport.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
+    timed(
+      "dashboard.load",
+      "recentImports",
+      prisma.tournamentImport.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      })
+    ),
 
-    prisma.playerTarget.groupBy({
-      by: ["status"],
-      _count: true,
-      where: { isActive: true },
-    }),
+    timed(
+      "dashboard.load",
+      "targetsStats",
+      prisma.playerTarget.groupBy({
+        by: ["status"],
+        _count: true,
+        where: { isActive: true },
+      })
+    ),
 
-    session.role === UserRole.PLAYER
-      ? []
-      : prisma.limitChangeHistory.findMany({
-          orderBy: { createdAt: "desc" },
-          take: 5,
-          include: { player: { select: { name: true, nickname: true } } },
-        }),
-
-    session.role === UserRole.PLAYER
-      ? { red: 0, yellow: 0 }
-      : prisma.alertLog
-          .groupBy({
-            by: ["severity"],
-            _count: true,
-            where: { acknowledged: false },
+    timed(
+      "dashboard.load",
+      "recentLimitChanges",
+      session.role === UserRole.PLAYER
+        ? Promise.resolve([])
+        : prisma.limitChangeHistory.findMany({
+            orderBy: { createdAt: "desc" },
+            take: 5,
+            include: { player: { select: { name: true, nickname: true } } },
           })
-          .then((rows) => ({
-            red: rows.find((r) => r.severity === "red")?._count ?? 0,
-            yellow: rows.find((r) => r.severity === "yellow")?._count ?? 0,
-          })),
+    ),
+
+    timed(
+      "dashboard.load",
+      "alertCounts",
+      session.role === UserRole.PLAYER
+        ? Promise.resolve({ red: 0, yellow: 0 })
+        : prisma.alertLog
+            .groupBy({
+              by: ["severity"],
+              _count: true,
+              where: { acknowledged: false },
+            })
+            .then((rows) => ({
+              red: rows.find((r) => r.severity === "red")?._count ?? 0,
+              yellow: rows.find((r) => r.severity === "yellow")?._count ?? 0,
+            }))
+    ),
   ]);
+  logPerf("dashboard.load", "parallel.total", tLoad, { role: session.role });
 
   const totalPlayed = recentImports.reduce(
     (s, i) => s + (i.matchedInGrade + i.outOfGrade),

@@ -6,6 +6,7 @@ import {
   Bell,
   BellRing,
   Binoculars,
+  Bug,
   FlaskConical,
   Grid3X3,
   History,
@@ -20,6 +21,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { STAFF_WRITE_ROLES } from "./session-rbac";
+import { nodeEnv } from "./env";
+
 
 type PrimaryNavRow = { title: string; href: string; icon: LucideIcon; exact?: true };
 
@@ -39,7 +42,12 @@ const SHARKSCOPE_ITEMS = [
   { title: "Alertas", href: "/dashboard/sharkscope/alerts", icon: BellRing },
   { title: "Analytics", href: "/dashboard/sharkscope/analytics", icon: LineChart },
   { title: "Scouting", href: "/dashboard/sharkscope/scouting", icon: Binoculars },
-  { title: "Debug grupo", href: "/dashboard/sharkscope/group-compare", icon: FlaskConical },
+  ...(nodeEnv === "development"
+    ? [
+        { title: "Debug grupo", href: "/dashboard/sharkscope/group-compare", icon: FlaskConical },
+        { title: "Debug 1 jogador", href: "/dashboard/sharkscope/player-debug", icon: Bug },
+      ]
+    : []),
 ] as const;
 
 export const SIDEBAR_NAV_ITEMS: SidebarNavEntry[] = [
