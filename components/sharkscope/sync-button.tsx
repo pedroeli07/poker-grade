@@ -6,41 +6,87 @@ import { RefreshCw, Square } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { ErrorTypes } from "@/lib/types";
+import type { SharkscopeSyncJson, SharkScopeSyncMode } from "@/lib/types/sharkScopeTypes";
+import { createLogger } from "@/lib/logger";
 
-type SyncJson = {
-  ok?: boolean;
-  processed?: number;
-  errors?: number;
-  sharkHttpCalls?: number;
-  remainingSearches?: number | null;
-  cancelled?: boolean;
-  error?: string;
-};
+const log = createLogger("sharkscope.sync-button");
 
-export function SyncSharkScopeButton() {
+export function SyncSharkScopeButton({ syncMode = "full" }: { syncMode?: SharkScopeSyncMode }) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   function onCancel() {
+    log.info("Cancelar clicado — abort() no AbortController", { syncMode });
     abortRef.current?.abort();
+    log.info("Sincronização interrompida pelo utilizador", { syncMode });
   }
 
   async function onSync() {
-    if (isPending) return;
+    if (isPending) {
+      log.debug("onSync ignorado — já em progresso", { syncMode });
+      return;
+    }
+    const startedAt = performance.now();
+    log.info("Sincronização iniciada", { syncMode });
     const ac = new AbortController();
     abortRef.current = ac;
     setIsPending(true);
+
     try {
+      log.info("POST /api/sharkscope/sync", { syncMode, signalActive: !ac.signal.aborted });
       const res = await fetch("/api/sharkscope/sync", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ syncMode }),
         signal: ac.signal,
         credentials: "same-origin",
       });
-      const data = (await res.json()) as SyncJson;
+
+      const networkMs = Math.round(performance.now() - startedAt);
+      log.info("Resposta HTTP recebida", {
+        syncMode,
+        status: res.status,
+        statusText: res.statusText,
+        ok: res.ok,
+        networkMs,
+        contentType: res.headers.get("content-type"),
+      });
+
+      let data: SharkscopeSyncJson;
+      try {
+        data = (await res.json()) as SharkscopeSyncJson;
+      } catch (parseErr) {
+        const cause = parseErr instanceof Error ? parseErr : new Error(String(parseErr));
+        log.error("Corpo da resposta não é JSON válido", cause, {
+          syncMode,
+          status: res.status,
+          contentType: res.headers.get("content-type"),
+          networkMs,
+        });
+        toast.error("Erro na sincronização", "Resposta inválida do servidor");
+        return;
+      }
+
+      log.info("Payload JSON parseado", {
+        syncMode,
+        ok: data.ok,
+        processed: data.processed,
+        errors: data.errors,
+        sharkHttpCalls: data.sharkHttpCalls,
+        remainingSearches: data.remainingSearches,
+        cancelled: data.cancelled,
+        error: data.error,
+      });
 
       if (!res.ok) {
-        toast.error("Erro na sincronização", data.error ?? `HTTP ${res.status}`);
+        const msg = data.error ?? `HTTP ${res.status}`;
+        toast.error("Erro na sincronização", msg);
+        log.error("API devolveu erro HTTP", new Error(msg), {
+          syncMode,
+          httpStatus: res.status,
+          data,
+        });
         return;
       }
 
@@ -53,6 +99,14 @@ export function SyncSharkScopeButton() {
           "Sincronização cancelada",
           `Requisições HTTP até parar: ${data.sharkHttpCalls ?? 0} | Buscas restantes na conta: ${rem} | Jogadores processados: ${data.processed ?? 0} | Erros: ${data.errors ?? 0}`
         );
+        log.info("Sincronização cancelada (flag cancelled)", {
+          syncMode,
+          sharkHttpCalls: data.sharkHttpCalls,
+          remainingSearches: data.remainingSearches,
+          processed: data.processed,
+          errors: data.errors,
+          totalMs: Math.round(performance.now() - startedAt),
+        });
         router.refresh();
         return;
       }
@@ -65,17 +119,29 @@ export function SyncSharkScopeButton() {
         "Sincronização concluída",
         `Requisições HTTP SharkScope: ${data.sharkHttpCalls ?? 0} | Buscas restantes na conta: ${rem} | Jogadores processados: ${data.processed ?? 0} | Erros: ${data.errors ?? 0}`
       );
+      log.info("Sincronização concluída com sucesso", {
+        syncMode,
+        sharkHttpCalls: data.sharkHttpCalls,
+        remainingSearches: data.remainingSearches,
+        processed: data.processed,
+        errors: data.errors,
+        totalMs: Math.round(performance.now() - startedAt),
+      });
       router.refresh();
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") {
+        log.info("Fetch abortado (AbortError)", { syncMode, totalMs: Math.round(performance.now() - startedAt) });
         toast.info("Sincronização interrompida", ErrorTypes.SHARK_SYNC_CANCELLED);
         router.refresh();
         return;
       }
-      toast.error("Erro na sincronização", e instanceof Error ? e.message : ErrorTypes.SHARK_SYNC_UNKNOWN_ERROR);
+      const cause = e instanceof Error ? e : new Error(String(e));
+      log.error("Exceção durante sincronização", cause, { syncMode });
+      toast.error("Erro na sincronização", cause.message || ErrorTypes.SHARK_SYNC_UNKNOWN_ERROR);
     } finally {
       abortRef.current = null;
       setIsPending(false);
+      log.debug("onSync finalizado (estado limpo)", { syncMode });
     }
   }
 

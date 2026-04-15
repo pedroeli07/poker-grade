@@ -14,10 +14,14 @@ import {
   type NetworkAggBucket,
 } from "@/lib/sharkscope/completed-tournaments-aggregate";
 import {
+  SHARKSCOPE_COMPLETED_TOURNAMENTS_EXPAND_MULTI,
   SHARKSCOPE_GROUP_SITE_BREAKDOWN_30D,
   sharkscopeSiteMaxPages,
 } from "@/lib/constants/sharkscope-group-site";
 import { SHARKSCOPE_STATS_FILTER_30D } from "@/lib/constants/sharkscope-type-filters";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("sharkscope.sync-nicks");
 
 export type PlayerLite = { id: string; name: string; nickname: string | null };
 
@@ -238,19 +242,27 @@ export async function fetchGroupSiteBreakdown30dLive(groupName: string): Promise
   const mergedPlayer = new Map<string, Map<string, NetworkAggBucket>>();
   let pagesFetched = 0;
   let tournamentRowsTotal = 0;
+  let lastPageTournamentRows = 0;
 
   for (let page = 0; page < maxPages; page++) {
     const start = page * 100 + 1;
     const end = start + 99;
-    const path = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/completedTournaments?order=Last,${start}~${end}&filter=${encodeURIComponent(filterBody)}`;
+    const path = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/completedTournaments?order=Last,${start}~${end}&filter=${encodeURIComponent(filterBody)}&${SHARKSCOPE_COMPLETED_TOURNAMENTS_EXPAND_MULTI}`;
     const raw = await sharkScopeGet(path);
     const { byNetwork, byPlayer, tournamentRows } = aggregateCompletedTournamentsFull(raw);
     merged = mergeNetworkAggMaps(merged, byNetwork);
     mergePlayerNetworkMaps(mergedPlayer, byPlayer);
     tournamentRowsTotal += tournamentRows;
     pagesFetched++;
+    lastPageTournamentRows = tournamentRows;
     if (tournamentRows === 0) break;
     if (tournamentRows < 100) break;
+  }
+
+  if (pagesFetched === maxPages && lastPageTournamentRows === 100) {
+    log.warn(
+      `completedTournaments ${filterBody}: atingido teto de ${maxPages} páginas para o grupo "${groupName}". Aumente SHARKSCOPE_SITE_MAX_PAGES se precisar de mais torneios.`
+    );
   }
 
   const byPlayerNick: Record<string, Record<string, NetworkAggBucket>> = {};

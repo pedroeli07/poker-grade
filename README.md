@@ -63,7 +63,7 @@ CRON_SECRET="..."
 # UPSTASH_REDIS_REST_TOKEN=...
 
 # Opcional: tuning SharkScope (ver CLAUDE.md)
-# SHARKSCOPE_SITE_MAX_PAGES=5
+# SHARKSCOPE_SITE_MAX_PAGES=500   # teto opcional de páginas (100 torneios/página); omitir = até ~1M torneios
 # SHARKSCOPE_SYNC_SITE_NICKS=0
 # SHARKSCOPE_ANALYTICS_SITE_FALLBACK_NICKS=0
 ```
@@ -118,7 +118,7 @@ Todas as leituras centralizadas ou referenciadas em **`lib/constants/env.ts`**. 
 | `SHARKSCOPE_USERNAME`, `SHARKSCOPE_PASSWORD_HASH` | Autenticação Basic-style conforme documentação SharkScope. |
 | `SHARKSCOPE_NLQ_TIMEZONE` | Timezone para funcionalidades NLQ (default `America/Sao_Paulo`). |
 | `CRON_SECRET` | Segredo partilhado com o agendador (Vercel Cron, GitHub Actions, etc.) para **`/api/cron/daily-sync`**. |
-| `SHARKSCOPE_SITE_MAX_PAGES` | Máximo de páginas (cada uma até ~100 torneios) por grupo no fetch `completedTournaments` — impacto direto no **custo em buscas**. |
+| `SHARKSCOPE_SITE_MAX_PAGES` | Teto opcional de páginas no `completedTournaments` (omissão: paginar até acabar o período, até ~1M torneios). Cada página ≈ **1 busca** na API. |
 | `SHARKSCOPE_SYNC_SITE_NICKS` | Se verdadeiro, ativa sync **por nick e por rede** (caro; normalmente desligado). |
 | `SHARKSCOPE_ANALYTICS_SITE_FALLBACK_NICKS` | Fallback de analytics para caches legados por nick quando não há breakdown de grupo. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | OAuth Google para login. |

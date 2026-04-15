@@ -9,7 +9,7 @@ export function updateNickNetworkAt(
 ): PlayerNickFormRow[] {
   const next = [...rows];
   next[index] = { ...next[index], network };
-  if (network === "pokerstars_fr" && !next[index].nick.trim()) {
+  if ((network === "pokerstars_fr" || network === "pokerstars_es") && !next[index].nick.trim()) {
     const main = getPokerstarsMainNickFromRows(next);
     if (main) next[index] = { ...next[index], nick: main };
   }

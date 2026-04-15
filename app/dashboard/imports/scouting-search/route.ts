@@ -7,6 +7,7 @@ import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeSearch } from "@/lib/rate-limit";
 import { scoutSearchQuerySchema } from "@/lib/schemas";
 import { ErrorTypes } from "@/lib/types";
+import { sharkscopeApiNetworkSegment } from "@/lib/constants";
 
 export async function GET(req: Request) {
   const session = await getSession();
@@ -39,7 +40,7 @@ export async function GET(req: Request) {
     );
   }
 
-  const path = `/networks/${network}/players/${encodeURIComponent(nick)}/statistics/AvROI,Count,TotalProfit,AvStake,AvEntrants`;
+  const path = `/networks/${sharkscopeApiNetworkSegment(network)}/players/${encodeURIComponent(nick)}/statistics/AvROI,Count,TotalProfit,AvStake,AvEntrants`;
 
   try {
     const data = await sharkScopeGet(path);

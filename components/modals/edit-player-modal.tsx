@@ -31,7 +31,7 @@ const EditPlayerModal = memo(function EditPlayerModal({
             allowCoachSelect={allowCoachSelect}
             isPending={isPending}
             startTransition={startTransition}
-            onClose={() => handleDialogOpenChange(false)}
+            onClose={() => onOpenChange(false)}
           />
         ) : null}
       </ModalDialogContent>

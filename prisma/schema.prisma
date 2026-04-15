@@ -494,7 +494,7 @@ model PlayerNick {
   id        String  @id @default(cuid())
   playerId  String
   nick      String
-  // "gg" | "pokerstars" | "pokerstars_fr" | "888" | "partypoker" | "ipoker" | "wpt" | "coinpoker" | "chico" | …
+  // "gg" | "pokerstars" | "pokerstars_fr" | "pokerstars_es" | "pokerstars_pt" | "888" | "partypoker" | "ipoker" | "wpt" | "coinpoker" | "chico" | …
   network   String
   isActive  Boolean @default(true)
   createdAt DateTime @default(now())

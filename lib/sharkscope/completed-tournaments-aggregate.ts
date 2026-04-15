@@ -1,8 +1,9 @@
 import { POKER_NETWORKS } from "@/lib/constants/poker-networks";
 
-/** Agregação por rede (time ou jogador): lucro, stake, volume e contadores para ITM / heurísticas FP/FT. */
+/** Agregação por rede (time ou jogador): lucro, investimento total (buy-in+rake), volume e contadores ITM/FP/FT. */
 export type NetworkAggBucket = {
   profit: number;
+  /** Soma de buy-in por linha (incl. rake); denominador do ROI. */
   stake: number;
   entries: number;
   itmHits: number;
@@ -19,6 +20,9 @@ export type TournamentRow = {
   networkKey: string | null;
   stake: number;
   rake: number;
+  /** Buy-in total por linha (stake+rake ou nível entrada); usado no denominador do ROI. */
+  investment: number;
+  /** Lucro líquido da linha (preferir `@profit` na API quando existir). */
   prize: number;
   position: number;
   entrants: number;
@@ -123,12 +127,19 @@ export function parseGroupSiteBreakdownPayload(raw: unknown): GroupSiteBreakdown
     for (const t of r.tournaments) {
       if (!t || typeof t !== "object") continue;
       const tr = t as Record<string, unknown>;
+      const stake = parseNum(tr.stake);
+      const rake = parseNum(tr.rake);
+      const investment =
+        typeof tr.investment === "number" && Number.isFinite(tr.investment)
+          ? tr.investment
+          : stake + rake;
       tournaments.push({
         date: parseNum(tr.date),
         network: typeof tr.network === "string" ? tr.network : "",
         networkKey: typeof tr.networkKey === "string" ? tr.networkKey : null,
-        stake: parseNum(tr.stake),
-        rake: parseNum(tr.rake),
+        stake,
+        rake,
+        investment,
         prize: parseNum(tr.prize),
         position: parseNum(tr.position),
         entrants: parseNum(tr.entrants),
@@ -175,6 +186,7 @@ export function sharkscopeNetworkToAppKey(networkRaw: string): string | null {
 
   const lower = n.toLowerCase();
 
+  if (lower.includes("pokerstars.es") || lower.includes("pokerstarses")) return "pokerstars_es";
   if (lower.includes("fr-es-pt")) return "pokerstars_fr";
   if (lower.includes("pokerstars")) return "pokerstars";
   if (lower === "ggnetwork" || lower === "gg") return "gg";
@@ -194,6 +206,23 @@ export function sharkscopeNetworkToAppKey(networkRaw: string): string | null {
 
 function prizeFromEntry(entry: Record<string, unknown>): number {
   return parseNum(entry["@prize"]);
+}
+
+/** Buy-in incl. rake: nível entrada quando `expandMultiEntries`, senão nó torneio. */
+function lineInvestment(tournament: Record<string, unknown>, entry: Record<string, unknown>): number {
+  const es = parseNum(entry["@stake"]);
+  const er = parseNum(entry["@rake"]);
+  if (es > 0 || er > 0) return es + er;
+  return parseNum(tournament["@stake"]) + parseNum(tournament["@rake"]);
+}
+
+/** Lucro líquido; `@profit` quando a API envia, senão `@prize` (net na resposta típica). */
+function netProfitFromEntry(entry: Record<string, unknown>): number {
+  const raw = entry["@profit"];
+  if (raw !== undefined && raw !== null && raw !== "") {
+    return parseNum(raw);
+  }
+  return prizeFromEntry(entry);
 }
 
 /** Heurística a partir de posição vs field: “tardia” ~ top 12%; “precoce” ~ pior que ~55% do field. ITM usa prêmio > 0 na entrada. */
@@ -254,7 +283,9 @@ function processOneEntry(
   }
 
   const stake = parseNum(tournament["@stake"]);
-  const profit = prizeFromEntry(entry);
+  const rake = parseNum(tournament["@rake"]);
+  const investment = lineInvestment(tournament, entry);
+  const profit = netProfitFromEntry(entry);
   const position = parseNum(entry["@position"]);
   const entrants = parseNum(tournament["@totalEntrants"]);
   const cashed = profit > 0.005;
@@ -263,7 +294,7 @@ function processOneEntry(
 
   bumpBucket(byNetwork, appKey, {
     profit,
-    stake,
+    stake: investment,
     entries: 1,
     itmHits: itmHit,
     earlyHits: early ? 1 : 0,
@@ -276,7 +307,7 @@ function processOneEntry(
     if (!byPlayer.has(pk)) byPlayer.set(pk, new Map());
     bumpBucket(byPlayer.get(pk)!, appKey, {
       profit,
-      stake,
+      stake: investment,
       entries: 1,
       itmHits: itmHit,
       earlyHits: early ? 1 : 0,
@@ -291,7 +322,8 @@ function processOneEntry(
       network: netRaw,
       networkKey: appKey,
       stake,
-      rake: parseNum(tournament["@rake"]),
+      rake,
+      investment,
       prize: profit,
       position,
       entrants,
@@ -411,7 +443,7 @@ export function mergePlayerNetworkMaps(
   return into;
 }
 
-/** ROI agregado: 100 × lucro / stake. */
+/** ROI agregado: 100 × lucro / investimento (buy-in incl. rake por linha). */
 export function roiFromAgg(bucket: NetworkAggBucket): number | null {
   if (bucket.stake <= 0) return null;
   return (100 * bucket.profit) / bucket.stake;
@@ -456,9 +488,10 @@ export function aggregateRows(rows: TournamentRow[]): {
     const cashed = r.prize > 0.005;
     const { early, late } = classifyFinish(r.position, r.entrants);
     const itmHit = cashed ? 1 : 0;
+    const invested = r.investment > 0 ? r.investment : r.stake + r.rake;
     const delta = {
       profit: r.prize,
-      stake: r.stake,
+      stake: invested,
       entries: 1,
       itmHits: itmHit,
       earlyHits: early ? 1 : 0,

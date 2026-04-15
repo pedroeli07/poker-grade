@@ -255,19 +255,6 @@ export function descriptionPick(r: GradeListRow) {
 
 export const statusLabel = (s: TargetListRow["status"]) => STATUS_CONFIG[s].label;
 
-const TIER_UPPER: [number, "Low" | "Mid" | "High"][] = [
-  [15, "Low"],
-  [50, "Mid"],
-];
-
-export const classifyTier = (stake: number | null): "Low" | "Mid" | "High" | null => {
-  if (stake === null) return null;
-  for (const [max, tier] of TIER_UPPER) {
-    if (stake < max) return tier;
-  }
-  return "High";
-};
-
 // ─── Distinct Options ─────────────────────────────────────────────────────────
 
 export function distinctOptions<T>(rows: T[], pick: (r: T) => { value: string; label: string }) {
@@ -345,6 +332,27 @@ export function sharkScopeResponseErrorMessage(data: unknown): string | null {
     if (typeof msg === "string") return msg;
   }
   return "SharkScope retornou success=false";
+}
+
+/**
+ * Mensagens de indisponibilidade do Player Group na API SharkScope (EN + PT).
+ * O sync diário usa isto para `AlertLog` `group_not_found`; antes só se reconhecia inglês ("not found"),
+ * e a API documenta erros em PT (ex.: cód. 105001 / 200039 — "Grupo de jogadores não encontrado").
+ */
+export function isSharkScopePlayerGroupUnavailableMessage(message: string): boolean {
+  const s = message.toLowerCase();
+  if (s.includes("not found") || s.includes("opted out") || s.includes("opt out")) {
+    return true;
+  }
+  const n = s.normalize("NFD").replace(/\p{M}/gu, "");
+  if (n.includes("grupo de jogadores") && n.includes("nao encontrado")) {
+    return true;
+  }
+  // Ex.: 200004 — jogador/grupo com opt-out
+  if (n.includes("nao encontrado") && n.includes("opt out")) {
+    return true;
+  }
+  return false;
 }
 
 export async function sharkScopeGet<T = unknown>(

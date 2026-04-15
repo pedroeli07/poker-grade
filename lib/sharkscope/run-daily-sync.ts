@@ -1,6 +1,6 @@
 import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { sharkScopeGet } from "@/lib/utils";
+import { isSharkScopePlayerGroupUnavailableMessage, sharkScopeGet } from "@/lib/utils";
 import { getOrFetchSharkScope, replicateSharkScopeCachesToPlayerNick } from "@/lib/sharkscope-cache";
 import {
   syncGroupSiteBreakdownForGroup,
@@ -13,6 +13,7 @@ import {
 } from "@/lib/sharkscope/completed-tournaments-aggregate";
 import {
   playerGroupStatisticsPath,
+  SHARKSCOPE_PLAYER_GROUP_STATS_IDS,
   sharkscopeSyncSiteNicksEnabled,
 } from "@/lib/constants/sharkscope-group-site";
 import {
@@ -24,13 +25,14 @@ import {
   lateFinishSeverity,
 } from "@/lib/sharkscope-parse";
 import { createLogger } from "@/lib/logger";
-import { POKER_NETWORKS, sharkScopeAppName, sharkScopeAppKey } from "@/lib/constants";
+import { POKER_NETWORKS, sharkScopeAppName, sharkScopeAppKey, sharkscopeApiNetworkSegment } from "@/lib/constants";
 import {
   SHARKSCOPE_STATS_FILTER_10D,
   SHARKSCOPE_STATS_FILTER_30D,
   SHARKSCOPE_STATS_FILTER_90D,
 } from "@/lib/constants/sharkscope-type-filters";
 import { ErrorTypes } from "@/lib/types";
+import type { SharkScopeSyncMode } from "@/lib/types/sharkScopeTypes";
 
 const log = createLogger("cron.daily-sync");
 
@@ -41,19 +43,37 @@ export type DailySyncSharkScopeResult = {
   remainingSearches: number | null;
   ts: string;
   cancelled?: boolean;
-  syncMode?: "full" | "light";
+  syncMode?: SharkScopeSyncMode;
 };
 
 export type RunDailySyncOptions = {
   signal?: AbortSignal;
-  /** Sincroniza só este `playerGroup` (nome do grupo no SharkScope). Pula sync de stats por nick×rede. */
+  /**
+   * Sincroniza só este `playerGroup`. Com `syncMode: "analytics"`, pula stats por nick×rede.
+   * Com `analytics_nick`, mantém statistics do grupo + nick×rede **só** para jogadores deste grupo.
+   */
   onlyPlayerGroup?: string;
   /**
-   * `light` — só `statistics` (lifetime + Date:10D/30D/90D), sem `completedTournaments` (poupa buscas).
-   * `full` — statistics + paginação CT + breakdown por tipo (Bounty/Sat/vanilla) a partir das linhas.
+   * `players` — só `Date:10D` (o que a tabela de jogadores lê); sem 30d/90d ou CT.
+   * `analytics` — 30d/90d + CT + breakdown; **não** refaz `Date:10D` (evita duplicar o botão de jogadores). Não pede `statistics` lifetime (poupa buscas).
+   * `analytics_nick` — 30d/90d por Player Group + `statistics` por nick×rede; **sem** `completedTournaments` (poupa buscas vs `analytics`).
+   * `light` — 10d/30d/90d, sem CT. Não pede lifetime.
+   * `full` — 10d/30d/90d + CT + breakdown por tipo. Não pede lifetime.
    */
-  syncMode?: "full" | "light";
+  syncMode?: SharkScopeSyncMode;
 };
+
+function shouldFetchStats10d(mode: SharkScopeSyncMode): boolean {
+  return mode === "players" || mode === "light" || mode === "full";
+}
+
+function shouldFetchStats30d90(mode: SharkScopeSyncMode): boolean {
+  return mode === "analytics" || mode === "analytics_nick" || mode === "light" || mode === "full";
+}
+
+function shouldFetchCT(mode: SharkScopeSyncMode): boolean {
+  return mode === "analytics" || mode === "full";
+}
 
 function isAbortError(e: unknown): boolean {
   return (
@@ -75,8 +95,10 @@ function daysAgoTimestamp(days: number): number {
 /**
  * Núcleo do sync SharkScope (cron e botão manual).
  *
- * Por grupo: `statistics` lifetime + `statistics` com `Date:10D` / `Date:30D` / `Date:90D` (API — alinha ROI/FP/FT ao site).
- * Modo `full`: adiciona `completedTournaments` (90d) paginado para `group_site_breakdown_*` e cortes por tipo.
+ * Por grupo: **não** pedimos `statistics` lifetime (custo de buscas); períodos 10d/30d/90d e CT dependem de `syncMode`.
+ * Modos com CT: `analytics` e `full` — `completedTournaments` (90d) paginado para `group_site_breakdown_*` e cortes por tipo.
+ * `analytics_nick` não usa CT; aba Por site usa caches `statistics` por nick×rede (ver `SHARKSCOPE_ANALYTICS_SITE_BY_NICK`).
+ * Alerta `high_variance`: `AvEntrants` de **Date:30D** (não lifetime).
  *
  * Validação operacional: após sync full, comparar TotalROI / FP / FT com a pesquisa avançada no site (mesmo `Date:10D`).
  */
@@ -89,7 +111,7 @@ export async function runDailySyncSharkScope(
   }
 
   const signal = options?.signal;
-  const syncMode = options?.syncMode ?? "full";
+  const syncMode: SharkScopeSyncMode = options?.syncMode ?? "full";
 
   log.info("Iniciando daily-sync SharkScope", { forceRefresh, syncMode });
 
@@ -120,7 +142,13 @@ export async function runDailySyncSharkScope(
     byGroup = new Map();
     if (one?.length) {
       byGroup.set(want, one);
-      log.info(`Modo grupo único: "${want}" (${one.length} jogador(es)); sync por nick×rede desligado.`);
+      if (syncMode === "analytics_nick") {
+        log.info(
+          `Modo grupo único (analytics_nick): "${want}" (${one.length} jogador(es)); statistics por nick×rede só para este(s) jogador(es).`
+        );
+      } else {
+        log.info(`Modo grupo único: "${want}" (${one.length} jogador(es)); sync por nick×rede desligado.`);
+      }
     } else {
       log.warn(`Nenhum jogador ativo com playerGroup exatamente "${want}".`);
     }
@@ -156,54 +184,53 @@ export async function runDailySyncSharkScope(
 
       const primaryNick = await upsertGroupNick(primaryPlayer.id);
 
-      const statsPathLifetime = playerGroupStatisticsPath(groupName);
-      const rawLifetime = await getOrFetchSharkScope(
-        primaryNick.id,
-        "stats_lifetime",
-        "?lifetime",
-        () => countedSharkScopeGet(statsPathLifetime),
-        24,
-        forceRefresh
-      );
+      const need10 = shouldFetchStats10d(syncMode);
+      const need3090 = shouldFetchStats30d90(syncMode);
+      const needCT = shouldFetchCT(syncMode);
 
-      const remLifetime = extractRemainingSearches(rawLifetime);
-      if (remLifetime !== null) remainingSearches = remLifetime;
+      let rawStats10d: unknown | undefined;
+      let rawStats30d: unknown | undefined;
+      let rawStats90d: unknown | undefined;
 
-      const rawStats10d = await getOrFetchSharkScope(
-        primaryNick.id,
-        "stats_10d",
-        SHARKSCOPE_STATS_FILTER_10D,
-        () => countedSharkScopeGet(playerGroupStatisticsPath(groupName, "Date:10D")),
-        24,
-        forceRefresh
-      );
-      const rem10 = extractRemainingSearches(rawStats10d);
-      if (rem10 !== null) remainingSearches = rem10;
+      if (need10) {
+        rawStats10d = await getOrFetchSharkScope(
+          primaryNick.id,
+          "stats_10d",
+          SHARKSCOPE_STATS_FILTER_10D,
+          () => countedSharkScopeGet(playerGroupStatisticsPath(groupName, "Date:10D")),
+          24,
+          forceRefresh
+        );
+        const rem10 = extractRemainingSearches(rawStats10d);
+        if (rem10 !== null) remainingSearches = rem10;
+      }
 
-      const rawStats30d = await getOrFetchSharkScope(
-        primaryNick.id,
-        "stats_30d",
-        SHARKSCOPE_STATS_FILTER_30D,
-        () => countedSharkScopeGet(playerGroupStatisticsPath(groupName, "Date:30D")),
-        24,
-        forceRefresh
-      );
-      const rem30 = extractRemainingSearches(rawStats30d);
-      if (rem30 !== null) remainingSearches = rem30;
+      if (need3090) {
+        rawStats30d = await getOrFetchSharkScope(
+          primaryNick.id,
+          "stats_30d",
+          SHARKSCOPE_STATS_FILTER_30D,
+          () => countedSharkScopeGet(playerGroupStatisticsPath(groupName, "Date:30D")),
+          24,
+          forceRefresh
+        );
+        const rem30 = extractRemainingSearches(rawStats30d);
+        if (rem30 !== null) remainingSearches = rem30;
 
-      const rawStats90d = await getOrFetchSharkScope(
-        primaryNick.id,
-        "stats_90d",
-        SHARKSCOPE_STATS_FILTER_90D,
-        () => countedSharkScopeGet(playerGroupStatisticsPath(groupName, "Date:90D")),
-        24,
-        forceRefresh
-      );
-      const rem90 = extractRemainingSearches(rawStats90d);
-      if (rem90 !== null) remainingSearches = rem90;
+        rawStats90d = await getOrFetchSharkScope(
+          primaryNick.id,
+          "stats_90d",
+          SHARKSCOPE_STATS_FILTER_90D,
+          () => countedSharkScopeGet(playerGroupStatisticsPath(groupName, "Date:90D")),
+          24,
+          forceRefresh
+        );
+        const rem90 = extractRemainingSearches(rawStats90d);
+        if (rem90 !== null) remainingSearches = rem90;
+      }
 
       let allRows: TournamentRow[] = [];
-      if (syncMode === "full") {
+      if (needCT) {
         allRows = await syncGroupSiteBreakdownForGroup(
           primaryNick.id,
           groupName,
@@ -211,13 +238,24 @@ export async function runDailySyncSharkScope(
           countedSharkScopeGet,
           signal
         );
-      } else {
+        if (syncMode === "analytics") {
+          log.info(
+            `[${groupName}] modo analytics: CT + stats 30d/90d; 10d não atualizado neste run (use o botão em Jogadores).`
+          );
+        }
+      } else if (syncMode === "light") {
         log.info(
-          `[${groupName}] sync leve: sem completedTournaments — KPIs vêm da API; breakdown por rede só atualiza em sync full.`
+          `[${groupName}] sync leve: statistics 10d/30d/90d sem completedTournaments — breakdown por rede só em modo com CT.`
+        );
+      } else if (syncMode === "players") {
+        log.info(`[${groupName}] modo players: só Date:10D (tabela); sem lifetime/30d/90d/CT.`);
+      } else if (syncMode === "analytics_nick") {
+        log.info(
+          `[${groupName}] modo analytics_nick: statistics 30d/90d (grupo + nick×rede); sem CT — ranking/tipo dependem de sync anterior ou modo full/analytics.`
         );
       }
 
-      if (syncMode === "full" && allRows.length > 0) {
+      if (needCT && allRows.length > 0) {
         const cutoff30d = daysAgoTimestamp(30);
         const rows30d = filterTournamentRows(allRows, { afterTimestamp: cutoff30d });
         const bountyRows30 = filterTournamentRows(rows30d, { tournamentType: "bounty" });
@@ -227,6 +265,14 @@ export async function runDailySyncSharkScope(
         await saveComputedStats(primaryNick.id, "stats_30d", `?filter=${encodeURIComponent("Date:30D;Type:B")}`, computeStatsFromRows(bountyRows30), forceRefresh);
         await saveComputedStats(primaryNick.id, "stats_30d", `?filter=${encodeURIComponent("Date:30D;Type:SAT")}`, computeStatsFromRows(satRows30), forceRefresh);
         await saveComputedStats(primaryNick.id, "stats_30d", `?filter=${encodeURIComponent("Date:30D;Type!:B;Type!:SAT")}`, computeStatsFromRows(vanillaRows30), forceRefresh);
+
+        const bountyRows90 = filterTournamentRows(allRows, { tournamentType: "bounty" });
+        const satRows90 = filterTournamentRows(allRows, { tournamentType: "satellite" });
+        const vanillaRows90 = filterTournamentRows(allRows, { tournamentType: "vanilla" });
+
+        await saveComputedStats(primaryNick.id, "stats_90d", `?filter=${encodeURIComponent("Date:90D;Type:B")}`, computeStatsFromRows(bountyRows90), forceRefresh);
+        await saveComputedStats(primaryNick.id, "stats_90d", `?filter=${encodeURIComponent("Date:90D;Type:SAT")}`, computeStatsFromRows(satRows90), forceRefresh);
+        await saveComputedStats(primaryNick.id, "stats_90d", `?filter=${encodeURIComponent("Date:90D;Type!:B;Type!:SAT")}`, computeStatsFromRows(vanillaRows90), forceRefresh);
       }
 
       // Replicar caches para membros do grupo
@@ -235,7 +281,8 @@ export async function runDailySyncSharkScope(
         await replicateSharkScopeCachesToPlayerNick(primaryNick.id, memberNick.id);
       }
 
-      const avgEntrants30d = extractStat(rawLifetime, "AvEntrants");
+      const avgEntrants30d =
+        rawStats30d != null ? extractStat(rawStats30d, "AvEntrants") : null;
       const roi10d = extractStat(rawStats10d, "TotalROI");
       const earlyFinish10d = extractStat(rawStats10d, "EarlyFinish");
       const lateFinish10d = extractStat(rawStats10d, "LateFinish");
@@ -346,7 +393,7 @@ export async function runDailySyncSharkScope(
       }
 
       log.info(
-        `✅ [${groupName}] Sincronizado (${members.length} jogador(es), ${syncMode === "full" ? `${allRows.length} torneios 90d (CT)` : "sem CT"}) | ROI(10d): ${roi10d != null ? roi10d.toFixed(1) : "-"} | FP(10d): ${earlyFinish10d != null ? earlyFinish10d.toFixed(1) : "-"} | FT(10d): ${lateFinish10d != null ? lateFinish10d.toFixed(1) : "-"}`
+        `✅ [${groupName}] Sincronizado (${members.length} jogador(es), modo=${syncMode}, ${needCT ? `${allRows.length} torneios 90d (CT)` : "sem CT"}) | ROI(10d): ${roi10d != null ? roi10d.toFixed(1) : "-"} | FP(10d): ${earlyFinish10d != null ? earlyFinish10d.toFixed(1) : "-"} | FT(10d): ${lateFinish10d != null ? lateFinish10d.toFixed(1) : "-"}`
       );
 
       processed += members.length;
@@ -354,8 +401,7 @@ export async function runDailySyncSharkScope(
       if (isAbortError(err)) throw err;
       errors++;
       const errMsg = err instanceof Error ? err.message : String(err);
-      const lower = errMsg.toLowerCase();
-      const isGroupUnavailable = lower.includes("not found") || lower.includes("opted out");
+      const isGroupUnavailable = isSharkScopePlayerGroupUnavailableMessage(errMsg);
 
       if (isGroupUnavailable) {
         for (const player of members) {
@@ -387,30 +433,44 @@ export async function runDailySyncSharkScope(
   }
 
   const siteNetworks = Object.keys(POKER_NETWORKS);
+  const nickSyncPlayerIds =
+    syncMode === "analytics_nick" && options?.onlyPlayerGroup?.trim()
+      ? [...byGroup.values()].flat().map((p) => p.id)
+      : null;
+
   const siteNicks = await prisma.playerNick.findMany({
-    where: { isActive: true, network: { in: siteNetworks } },
+    where: {
+      isActive: true,
+      network: { in: siteNetworks },
+      ...(nickSyncPlayerIds && nickSyncPlayerIds.length > 0 ? { playerId: { in: nickSyncPlayerIds } } : {}),
+    },
     select: { id: true, nick: true, network: true },
   });
 
-  const skipSiteNickStats = Boolean(options?.onlyPlayerGroup?.trim());
+  const skipSiteNickStats = Boolean(options?.onlyPlayerGroup?.trim()) && syncMode !== "analytics_nick";
+  const shouldRunNickSiteSync =
+    !skipSiteNickStats && (sharkscopeSyncSiteNicksEnabled() || syncMode === "analytics_nick");
 
   if (skipSiteNickStats) {
-    log.info("SharkScope: sync por nick×rede omitido (sync de grupo único).");
-  } else if (sharkscopeSyncSiteNicksEnabled()) {
-    log.info(`SharkScope: sincronizando ${siteNicks.length} nicks por rede (analytics legado — SHARKSCOPE_SYNC_SITE_NICKS)`);
+    log.info("SharkScope: sync por nick×rede omitido (sync de grupo único em modo analytics).");
+  } else if (shouldRunNickSiteSync && syncMode === "analytics_nick") {
+    log.info(`SharkScope: statistics por nick×rede (${siteNicks.length} nicks) — modo analytics_nick (sem CT).`);
+  } else if (shouldRunNickSiteSync && sharkscopeSyncSiteNicksEnabled()) {
+    log.info(`SharkScope: sincronizando ${siteNicks.length} nicks por rede (SHARKSCOPE_SYNC_SITE_NICKS)`);
   } else {
     log.info(
-      "SharkScope: sync por nick×rede desativado (use SHARKSCOPE_SYNC_SITE_NICKS=1 para reativar). Por site vem de group_site_breakdown_*."
+      "SharkScope: sync por nick×rede desativado (use analytics_nick, ou SHARKSCOPE_SYNC_SITE_NICKS=1). Por site pode vir de group_site_breakdown_* ou caches por nick."
     );
   }
 
-  if (!skipSiteNickStats && sharkscopeSyncSiteNicksEnabled()) {
+  if (shouldRunNickSiteSync) {
     for (const pn of siteNicks) {
       throwIfAborted(signal);
       try {
         const enc = encodeURIComponent(pn.nick);
-        const pathSite30 = `/networks/${pn.network}/players/${enc}/statistics/AvROI,Count,TotalProfit,AvStake,AvEntrants,FinshesEarly,FinshesLate,Entrants?filter=Date:30D`;
-        const pathSite90 = `/networks/${pn.network}/players/${enc}/statistics/AvROI,Count,TotalProfit,AvStake,AvEntrants,FinshesEarly,FinshesLate,Entrants${SHARKSCOPE_STATS_FILTER_90D}`;
+        const apiNet = sharkscopeApiNetworkSegment(pn.network);
+        const pathSite30 = `/networks/${apiNet}/players/${enc}/statistics/${SHARKSCOPE_PLAYER_GROUP_STATS_IDS}?filter=${encodeURIComponent("Date:30D")}`;
+        const pathSite90 = `/networks/${apiNet}/players/${enc}/statistics/${SHARKSCOPE_PLAYER_GROUP_STATS_IDS}?filter=${encodeURIComponent("Date:90D")}`;
         const [rawSite30, rawSite90] = await Promise.all([
           getOrFetchSharkScope(
             pn.id,

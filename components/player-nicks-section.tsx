@@ -168,7 +168,7 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
                         onValueChange={(v) => {
                           const next = v as PokerNetworkKey;
                           setEditNetwork(next);
-                          if (next === "pokerstars_fr" && !editNick.trim()) {
+                          if ((next === "pokerstars_fr" || next === "pokerstars_es") && !editNick.trim()) {
                             const main = getPokerstarsMainNickFromRows(nicks);
                             if (main) setEditNick(main);
                           }
@@ -290,7 +290,7 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
                 onValueChange={(v) => {
                   const next = v as PokerNetworkKey;
                   setNewNetwork(next);
-                  if (next === "pokerstars_fr" && !newNick.trim()) {
+                  if ((next === "pokerstars_fr" || next === "pokerstars_es") && !newNick.trim()) {
                     const main = getPokerstarsMainNickFromRows(nicks);
                     if (main) setNewNick(main);
                   }

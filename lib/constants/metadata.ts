@@ -7,6 +7,10 @@ const PAGES: Record<string, { title: string; desc: string }> = {
   notifications: { title: "Notificações", desc: "Visualize suas notificações e marque como lidas." },
   sharkscopeAlerts: { title: "Alertas SharkScope", desc: "Alertas de performance do SharkScope para os jogadores do time." },
   sharkscopeAnalytics: { title: "Analytics SharkScope", desc: "Análise de performance do time por rede e período. Dados do cache." },
+  sharkscopeAnalyticsDebug: {
+    title: "Debug Analytics SharkScope",
+    desc: "Sincroniza e visualiza métricas de um jogador para comparar com o site.",
+  },
   sharkscopeScouting: {
     title: "Scouting SharkScope",
     desc: "Pesquise jogadores avulsos para avaliação de contratação.",
@@ -52,6 +56,7 @@ export const importDetailPageMetadata = toMetadata(PAGES.importDetail);
 export const notificationsPageMetadata = toMetadata(PAGES.notifications);
 export const sharkscopeAlertsPageMetadata = toMetadata(PAGES.sharkscopeAlerts);
 export const sharkscopeAnalyticsPageMetadata = toMetadata(PAGES.sharkscopeAnalytics);
+export const sharkscopeAnalyticsDebugPageMetadata = toMetadata(PAGES.sharkscopeAnalyticsDebug);
 export const sharkscopeScoutingPageMetadata = toMetadata(PAGES.sharkscopeScouting);
 export const targetsPageMetadata = toMetadata(PAGES.targets);
 export const historyPageMetadata = toMetadata(PAGES.history);

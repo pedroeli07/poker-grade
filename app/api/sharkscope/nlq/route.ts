@@ -8,7 +8,7 @@ import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeSearch } from "@/lib/rate-limit";
 import { bodySchema } from "@/lib/schemas";
 import { sharkScopeGet } from "@/lib/utils";
-import { sharkScopeAppKey, sharkScopeAppName } from "@/lib/constants";
+import { sharkScopeAppKey, sharkScopeAppName, sharkscopeApiNetworkSegment } from "@/lib/constants";
 import { ErrorTypes } from "@/lib/types";
 
 const log = createLogger("sharkscope.nlq");
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: ErrorTypes.NICK_NOT_FOUND }, { status: 404 });
   }
 
-  const path = `/networks/${playerNick.network}/players/${encodeURIComponent(playerNick.nick)}?nlq=${encodeURIComponent(question)}&timezone=${encodeURIComponent(timezone)}`;
+  const path = `/networks/${sharkscopeApiNetworkSegment(playerNick.network)}/players/${encodeURIComponent(playerNick.nick)}?nlq=${encodeURIComponent(question)}&timezone=${encodeURIComponent(timezone)}`;
 
   try {
     log.info("NLQ SharkScope", { nick: playerNick.nick, question });

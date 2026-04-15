@@ -1,5 +1,5 @@
 import type { AnalyticsMetricBarRow } from "@/lib/types/analyticsMetricBarChart";
-import type { NetworkStat, SharkscopeAnalyticsPeriod, SiteAnalyticsPayload } from "@/lib/types";
+import type { NetworkStat, SharkscopeAnalyticsPeriod, SiteAnalyticsPayload, TierStat } from "@/lib/types";
 import {
   mergeNetworkStatsForSelection,
   SITE_CHART_Y_METRICS,
@@ -25,6 +25,10 @@ export function computeDisplaySiteStats(
   if (rowsList.length === 0) {
     return stats;
   }
+  /** Uma seleção: evita `mergeNetworkStatsForSelection` (exige stake CT; linhas por nick têm stake 0). */
+  if (rowsList.length === 1) {
+    return rowsList[0]!;
+  }
   return mergeNetworkStatsForSelection(rowsList);
 }
 
@@ -38,6 +42,9 @@ export function siteAnalyticsSelectionSummary(
   playersWithSiteData: { id: string; name: string }[]
 ): string {
   if (!canFilterPlayers || selectedPlayerIds.length === 0) {
+    if (playersWithSiteData.length === 1) {
+      return playersWithSiteData[0]!.name;
+    }
     return "time inteiro";
   }
   const names = selectedPlayerIds
@@ -55,7 +62,12 @@ export function siteAnalyticsTriggerLabel(
   playersWithSiteData: { id: string; name: string }[]
 ): string {
   if (!canFilterPlayers) return "Time inteiro";
-  if (selectedPlayerIds.length === 0) return "Time inteiro";
+  if (selectedPlayerIds.length === 0) {
+    if (playersWithSiteData.length === 1) {
+      return playersWithSiteData[0]!.name;
+    }
+    return "Time inteiro";
+  }
   if (selectedPlayerIds.length === 1) {
     return playersWithSiteData.find((p) => p.id === selectedPlayerIds[0])?.name ?? "1 jogador";
   }
@@ -78,6 +90,29 @@ export function buildSiteChartRows(
       };
     })
     .filter((r): r is NonNullable<typeof r> => r !== null);
+}
+
+export function buildTierChartRows(
+  sortedForTable: TierStat[],
+  yMetric: SiteChartYMetric
+): AnalyticsMetricBarRow[] {
+  return sortedForTable
+    .map((s) => {
+      const v = siteChartYValue(s, yMetric);
+      if (v === null || Number.isNaN(v)) return null;
+      return {
+        key: s.tier,
+        shortLabel: s.label.length > 22 ? `${s.label.slice(0, 20)}…` : s.label,
+        fullLabel: s.label,
+        value: v,
+      };
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null);
+}
+
+export function tierAnalyticsChartTitle(yMetric: SiteChartYMetric, periodLabel: string): string {
+  const metricMeta = SITE_CHART_Y_METRICS.find((m) => m.id === yMetric)!;
+  return `${metricMeta.label} por tier (${periodLabel})`;
 }
 
 export function siteAnalyticsChartTitle(

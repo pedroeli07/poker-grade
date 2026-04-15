@@ -176,11 +176,11 @@ O ficheiro **`SharkScope_WS_API_PT.md`** descreve endpoints, filtros e **modelo 
 
 ### 5.3 Estratégia atual (resumo técnico)
 
-- **Uma** chamada `statistics` **sem filtro de data** por grupo (métricas “lifetime” como Ability, totais históricos).
+- O sync diário/manual **não** pede `statistics` **lifetime** por grupo (poupa buscas). Usa `statistics` com filtros `Date:10D` / `Date:30D` / `Date:90D` conforme `syncMode` em `run-daily-sync.ts`. Alerta `high_variance` usa `AvEntrants` em **30d**, não lifetime.
 - **Uma** sequência paginada de **`completedTournaments`** com filtro **90d** (não repetir 30d na API — a janela 90d contém 30d e 10d).
 - **Agregação local** em `completed-tournaments-aggregate.ts`: extrai `TournamentRow` (`@date`, `@flags`, stake, prize, rede, etc.), filtra por recorte temporal, recalcula ROI, FP/FT, breakdowns por tipo (bounty/satellite/vanilla) **sem** novas chamadas filtradas à API para cada período.
 - Breakdown **por site** gravado em `group_site_breakdown_*` com payloads versionados; 30d pode ser derivado localmente do conjunto 90d para poupar páginas.
-- **`SHARKSCOPE_SITE_MAX_PAGES`**: limite superior de páginas (×100 torneios) por grupo; ajustar em produção conforme volume real e orçamento de buscas.
+- **`SHARKSCOPE_SITE_MAX_PAGES`**: teto opcional de páginas (×100 torneios) por grupo no `completedTournaments`; por omissão o sync pagina até a API esgotar o período (teto interno alto). Defina um valor **menor** para cortar custo em buscas.
 - Opcional **`SHARKSCOPE_SYNC_SITE_NICKS`**: se ativado, sincroniza estatísticas por **nick × rede** (muito mais caro; desligado por defeito).
 
 ### 5.4 Ficheiros que qualquer alteração em quota deve rever

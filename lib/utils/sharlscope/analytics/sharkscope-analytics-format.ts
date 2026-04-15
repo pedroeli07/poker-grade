@@ -1,9 +1,14 @@
-export function fmtEntries(n: number | null): string {
-  return n !== null ? n.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) : "—";
+function isMissingNumber(n: number | null | undefined): n is null | undefined {
+  return n == null || !Number.isFinite(n);
 }
 
-export function fmtProfitUsd(n: number | null): string {
-  if (n === null) return "—";
+export function fmtEntries(n: number | null | undefined): string {
+  if (isMissingNumber(n)) return "—";
+  return n.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+}
+
+export function fmtProfitUsd(n: number | null | undefined): string {
+  if (isMissingNumber(n)) return "—";
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "USD",
@@ -11,12 +16,13 @@ export function fmtProfitUsd(n: number | null): string {
   }).format(n);
 }
 
-export function fmtPct(n: number | null): string {
-  return n !== null ? `${n.toFixed(1)}%` : "—";
+export function fmtPct(n: number | null | undefined): string {
+  if (isMissingNumber(n)) return "—";
+  return `${n.toFixed(1)}%`;
 }
 
-export function fmtStake(n: number | null): string {
-  if (n === null) return "—";
+export function fmtStake(n: number | null | undefined): string {
+  if (isMissingNumber(n)) return "—";
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "USD",

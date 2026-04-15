@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState, useCallback, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { distinctOptions } from "@/lib/utils";
 import type { PlayerTableRow, PlayersTableColumnKey, PlayersTableSortKey } from "@/lib/types";
 import type { PlayersTablePayload } from "@/lib/types";
@@ -24,6 +24,14 @@ function nickRowKey(n: { network: string; nick: string }) {
 }
 
 export function usePlayersTablePage(initialPayload: PlayersTablePayload) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    return () => {
+      void queryClient.cancelQueries({ queryKey: playerKeys.all });
+    };
+  }, [queryClient]);
+
   const { data: payload = initialPayload } = useQuery({
     queryKey: playerKeys.list(),
     queryFn: async () => {

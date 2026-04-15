@@ -72,8 +72,17 @@ export type AnalyticsClientProps = {
   tierStats30d: TierStat[];
   tierStats90d: TierStat[];
   typeStats30d: TypeStat[];
+  typeStats90d: TypeStat[];
   hasData30d: boolean;
   hasData90d: boolean;
+};
+
+export type AnalyticsDebugPageData = {
+  players: { id: string; name: string; playerGroup: string }[];
+  selectedPlayerId: string | null;
+  playerMeta: { name: string; playerGroup: string } | null;
+  analyticsProps: AnalyticsClientProps | null;
+  listError: string | null;
 };
 
 export type AlertsClientProps = {

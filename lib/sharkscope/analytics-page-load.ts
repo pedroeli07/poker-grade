@@ -13,6 +13,7 @@ export async function loadAnalyticsClientProps(): Promise<AnalyticsClientProps> 
     tierStats30d,
     tierStats90d,
     typeStats30d,
+    typeStats90d,
   } = await getCachedSharkscopeAnalytics();
 
   return {
@@ -25,6 +26,7 @@ export async function loadAnalyticsClientProps(): Promise<AnalyticsClientProps> 
     tierStats30d,
     tierStats90d,
     typeStats30d,
+    typeStats90d,
     hasData30d: sharkscopeStatsHasData(stats30d),
     hasData90d: sharkscopeStatsHasData(stats90d),
   };

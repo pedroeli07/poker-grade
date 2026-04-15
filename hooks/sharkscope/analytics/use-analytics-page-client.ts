@@ -33,6 +33,7 @@ export function useAnalyticsPageClient({
   tierStats30d,
   tierStats90d,
   typeStats30d,
+  typeStats90d,
   hasData30d,
   hasData90d,
 }: AnalyticsClientProps) {
@@ -101,24 +102,29 @@ export function useAnalyticsPageClient({
     [period, tierStats30d, tierStats90d]
   );
 
+  const typeStats = useMemo(
+    () => (period === "30d" ? typeStats30d : typeStats90d),
+    [period, typeStats30d, typeStats90d]
+  );
+
   const hasTypeData = useMemo(
     () =>
-      typeStats30d.some(
+      typeStats.some(
         (s) =>
           s.roi !== null ||
           s.roiWeighted !== null ||
           s.profit !== null ||
-          (s.count !== null && s.count > 0)
+          (s.entries !== null && s.entries > 0)
       ),
-    [typeStats30d]
+    [typeStats]
   );
 
   const tierBarRows = useMemo(
     () =>
       tierStats.map((s) => ({
         key: s.tier,
-        shortLabel: s.tier,
-        fullLabel: `Tier ${s.tier} (Low / Mid / High)`,
+        shortLabel: s.label,
+        fullLabel: s.label,
         roi: s.roiWeighted,
       })),
     [tierStats]
@@ -134,7 +140,7 @@ export function useAnalyticsPageClient({
     hasData,
     ranking,
     tierStats,
-    typeStats30d,
+    typeStats,
     hasTypeData,
     tierBarRows,
   };

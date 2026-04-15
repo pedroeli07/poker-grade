@@ -10,7 +10,7 @@ export async function syncSharkScopeManualAction() {
   if (!canWriteOperations(session)) throw new Error(ErrorTypes.UNAUTHORIZED);
 
   try {
-    const data = await runDailySyncSharkScope(true);
+    const data = await runDailySyncSharkScope(true, { syncMode: "players" });
     return {
       success: true,
       processed: data.processed,

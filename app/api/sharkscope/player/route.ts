@@ -8,7 +8,7 @@ import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeRead } from "@/lib/rate-limit";
 import { playerQuerySchema } from "@/lib/schemas";
 import { sharkScopeGet } from "@/lib/utils";
-import { DATA_TYPE_CONFIG } from "@/lib/constants";
+import { DATA_TYPE_CONFIG, sharkscopeApiNetworkSegment } from "@/lib/constants";
 import { ErrorTypes } from "@/lib/types";
 
 export async function GET(req: Request) {
@@ -33,7 +33,7 @@ export async function GET(req: Request) {
 
   const cfg = DATA_TYPE_CONFIG[dataType] ?? { pathSuffix: "", defaultQuery: "", ttlHours: 24 };
   const query = filter ? `?filter=${encodeURIComponent(filter)}` : cfg.defaultQuery;
-  const apiPath = `/networks/${nick.network}/players/${encodeURIComponent(nick.nick)}${cfg.pathSuffix}${query}`;
+  const apiPath = `/networks/${sharkscopeApiNetworkSegment(nick.network)}/players/${encodeURIComponent(nick.nick)}${cfg.pathSuffix}${query}`;
 
   try {
     const data = await getOrFetchSharkScope(nick.id, dataType, `${cfg.pathSuffix}|${query || "default"}`, () => sharkScopeGet(apiPath), cfg.ttlHours);

@@ -22,7 +22,7 @@ const AnalyticsClient = memo(function AnalyticsClient(props: AnalyticsClientProp
     hasData,
     ranking,
     tierStats,
-    typeStats30d,
+    typeStats,
     hasTypeData,
   } = useAnalyticsPageClient(props);
 
@@ -42,7 +42,7 @@ const AnalyticsClient = memo(function AnalyticsClient(props: AnalyticsClientProp
       )}
 
       {activeTab === "bounty" && (
-        <AnalyticsBountyPanel period={period} hasTypeData={hasTypeData} typeStats30d={typeStats30d} />
+        <AnalyticsBountyPanel period={period} hasTypeData={hasTypeData} typeStats={typeStats} />
       )}
 
       <AnalyticsAboutCard />

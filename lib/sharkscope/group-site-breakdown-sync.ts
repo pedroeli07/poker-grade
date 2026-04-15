@@ -11,6 +11,7 @@ import {
   type TournamentRow,
 } from "@/lib/sharkscope/completed-tournaments-aggregate";
 import {
+  SHARKSCOPE_COMPLETED_TOURNAMENTS_EXPAND_MULTI,
   SHARKSCOPE_GROUP_SITE_BREAKDOWN_30D,
   SHARKSCOPE_GROUP_SITE_BREAKDOWN_90D,
   SHARKSCOPE_GROUP_SITE_FILTER_KEYS,
@@ -54,12 +55,13 @@ export async function syncGroupSiteBreakdownForGroup(
   const mergedSkippedUnknown = new Map<string, number>();
   let pagesFetched = 0;
   let tournamentRowsTotal = 0;
+  let lastPageTournamentRows = 0;
 
   for (let page = 0; page < maxPages; page++) {
     throwIfAborted(signal);
     const start = page * 100 + 1;
     const end = start + 99;
-    const path = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/completedTournaments?order=Last,${start}~${end}&filter=${encodeURIComponent("Date:90D")}`;
+    const path = `/networks/PlayerGroup/players/${encodeURIComponent(groupName)}/completedTournaments?order=Last,${start}~${end}&filter=${encodeURIComponent("Date:90D")}&${SHARKSCOPE_COMPLETED_TOURNAMENTS_EXPAND_MULTI}`;
     const raw = await fetchFn(path, { signal });
     const { byNetwork, byPlayer, tournamentRows, rows, skippedUnknownNetworks } =
       aggregateCompletedTournamentsFull(raw, true);
@@ -71,8 +73,15 @@ export async function syncGroupSiteBreakdownForGroup(
     allRows.push(...rows);
     tournamentRowsTotal += tournamentRows;
     pagesFetched++;
+    lastPageTournamentRows = tournamentRows;
     if (tournamentRows === 0) break;
     if (tournamentRows < 100) break;
+  }
+
+  if (pagesFetched === maxPages && lastPageTournamentRows === 100) {
+    log.warn(
+      `completedTournaments Date:90D: atingido teto de ${maxPages} páginas (~${maxPages * 100} torneios) para o grupo "${groupName}". Pode haver mais torneios no período — aumente SHARKSCOPE_SITE_MAX_PAGES (custo: 1 busca por página).`
+    );
   }
 
   if (mergedSkippedUnknown.size > 0) {

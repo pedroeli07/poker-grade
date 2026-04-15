@@ -24,7 +24,7 @@ const AnalyticsTabBar = memo(function AnalyticsTabBar({
             key={id}
             type="button"
             onClick={() => setActiveTab(id)}
-            className={`cursor-pointer flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+            className={`bg-blue-500/10 rounded-lg cursor-pointer flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === id
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"

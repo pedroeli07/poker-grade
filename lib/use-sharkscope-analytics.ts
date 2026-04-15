@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { distinctOptions } from "@/lib/utils";
 import { getUniqueValues } from "@/lib/match-number-filter";
 import { useAnalyticsFilter } from "@/lib/use-analytics-filter";
@@ -8,29 +8,38 @@ import { useAnalyticsSiteStore } from "@/lib/stores/use-analytics-site-store";
 import { useAnalyticsTierStore } from "@/lib/stores/use-analytics-tier-store";
 import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope/analytics/sharkscope-analytics-labels";
 import { useAnalyticsSortedRows } from "@/hooks/sharkscope/analytics/use-analytics-sorted-rows";
-import type { TypeStat, RankingEntry, NetworkStat, TierStat } from "@/lib/types";
+import useAnalyticsColumnSort from "@/hooks/sharkscope/analytics/use-analytics-column-sort";
+import type { TypeStat, RankingEntry, NetworkStat, TierStat, SharkscopeAnalyticsPeriod } from "@/lib/types";
+import type { TierSortKey } from "@/lib/types/sharkscopeAnalyticsUi";
 import {
   sortBountyTypeRows,
   sortRankingRows,
   sortTierRows,
 } from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-table-sort";
+import {
+  buildTierChartRows,
+  siteAnalyticsPeriodLabel,
+  tierAnalyticsChartTitle,
+} from "@/lib/utils/sharlscope/analytics/site-analytics-site-panel";
+import { SITE_CHART_Y_METRICS, type SiteChartYMetric } from "@/lib/site-analytics-chart";
+import { siteChartFormattersForMetric } from "@/lib/utils/sharlscope/analytics/site-analytics-panel-format";
 
-export function useBountyAnalytics(typeStats30d: TypeStat[]) {
+export function useBountyAnalytics(typeStats: TypeStat[]) {
   const { filters, setColumnFilter } = useAnalyticsBountyStore();
   const { numFilters, setNumFilter, setCol, filtered } = useAnalyticsFilter(
-    typeStats30d,
+    typeStats,
     filters,
     setColumnFilter,
-    ["roi", "roiWeighted", "profit", "count"]
+    ["roi", "entries", "profit", "itm", "ability", "avStake", "earlyFinish", "lateFinish"]
   );
 
   const typeOptions = useMemo(
     () =>
-      distinctOptions(typeStats30d, (s) => ({
+      distinctOptions(typeStats, (s) => ({
         value: s.type,
         label: SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT[s.type],
       })),
-    [typeStats30d]
+    [typeStats]
   );
 
   const barRows = useMemo(
@@ -39,15 +48,19 @@ export function useBountyAnalytics(typeStats30d: TypeStat[]) {
         key: s.type,
         shortLabel: SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT[s.type],
         fullLabel: SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT[s.type],
-        roi: s.roiWeighted,
+        roi: s.roi ?? s.roiWeighted,
       })),
     [filtered]
   );
 
-  const uniqueRois = useMemo(() => getUniqueValues(typeStats30d, (s) => s.roi), [typeStats30d]);
-  const uniqueRoiWeighted = useMemo(() => getUniqueValues(typeStats30d, (s) => s.roiWeighted), [typeStats30d]);
-  const uniqueProfits = useMemo(() => getUniqueValues(typeStats30d, (s) => s.profit), [typeStats30d]);
-  const uniqueCounts = useMemo(() => getUniqueValues(typeStats30d, (s) => s.count), [typeStats30d]);
+  const uniqueRois = useMemo(() => getUniqueValues(typeStats, (s) => s.roi), [typeStats]);
+  const uniqueEntries = useMemo(() => getUniqueValues(typeStats, (s) => s.entries), [typeStats]);
+  const uniqueProfits = useMemo(() => getUniqueValues(typeStats, (s) => s.profit), [typeStats]);
+  const uniqueItms = useMemo(() => getUniqueValues(typeStats, (s) => s.itm), [typeStats]);
+  const uniqueAbilities = useMemo(() => getUniqueValues(typeStats, (s) => s.ability), [typeStats]);
+  const uniqueStakes = useMemo(() => getUniqueValues(typeStats, (s) => s.avStake), [typeStats]);
+  const uniqueEarly = useMemo(() => getUniqueValues(typeStats, (s) => s.earlyFinish), [typeStats]);
+  const uniqueLate = useMemo(() => getUniqueValues(typeStats, (s) => s.lateFinish), [typeStats]);
 
   const { sort, toggleSort, sorted } = useAnalyticsSortedRows(filtered, sortBountyTypeRows);
 
@@ -60,9 +73,13 @@ export function useBountyAnalytics(typeStats30d: TypeStat[]) {
     typeOptions,
     barRows,
     uniqueRois,
-    uniqueRoiWeighted,
+    uniqueEntries,
     uniqueProfits,
-    uniqueCounts,
+    uniqueItms,
+    uniqueAbilities,
+    uniqueStakes,
+    uniqueEarly,
+    uniqueLate,
     sort,
     toggleSort,
     sorted,
@@ -121,7 +138,7 @@ export function useSiteAnalytics(stats: NetworkStat[]) {
     stats,
     filters,
     setColumnFilter,
-    ["roi", "profit", "itm", "earlyFinish", "lateFinish", "count"]
+    ["roi", "entries", "profit", "itm", "ability", "avStake", "earlyFinish", "lateFinish"]
   );
 
   const networkOptions = useMemo(
@@ -145,7 +162,9 @@ export function useSiteAnalytics(stats: NetworkStat[]) {
   const uniqueItms = useMemo(() => getUniqueValues(stats, (s) => s.itm ?? null), [stats]);
   const uniqueEarly = useMemo(() => getUniqueValues(stats, (s) => s.earlyFinish ?? null), [stats]);
   const uniqueLate = useMemo(() => getUniqueValues(stats, (s) => s.lateFinish ?? null), [stats]);
-  const uniqueCounts = useMemo(() => getUniqueValues(stats, (s) => s.count), [stats]);
+  const uniqueEntries = useMemo(() => getUniqueValues(stats, (s) => s.entries), [stats]);
+  const uniqueAbilities = useMemo(() => getUniqueValues(stats, (s) => s.ability ?? null), [stats]);
+  const uniqueAvStakes = useMemo(() => getUniqueValues(stats, (s) => s.avStake ?? null), [stats]);
 
   return {
     filters,
@@ -160,42 +179,67 @@ export function useSiteAnalytics(stats: NetworkStat[]) {
     uniqueItms,
     uniqueEarly,
     uniqueLate,
-    uniqueCounts,
+    uniqueEntries,
+    uniqueAbilities,
+    uniqueAvStakes,
   };
 }
 
-export function useTierAnalytics(tierStats: TierStat[]) {
+export function useTierAnalytics(tierStats: TierStat[], period: SharkscopeAnalyticsPeriod) {
   const { filters, setColumnFilter } = useAnalyticsTierStore();
   const { numFilters, setNumFilter, setCol, filtered } = useAnalyticsFilter(
     tierStats,
     filters,
     setColumnFilter,
-    ["roi", "roiWeighted", "profit", "count", "players"]
+    ["roi", "entries", "profit", "itm", "ability", "avStake", "earlyFinish", "lateFinish"]
+  );
+
+  const { sort: tableSort, toggleSort: toggleTableSort } = useAnalyticsColumnSort<TierSortKey>();
+
+  const sortedForTable = useMemo(
+    () => sortTierRows(filtered, tableSort),
+    [filtered, tableSort]
   );
 
   const tierOptions = useMemo(
-    () => distinctOptions(tierStats, (s) => ({ value: s.tier, label: s.tier })),
+    () => distinctOptions(tierStats, (s) => ({ value: s.tier, label: s.label })),
     [tierStats]
   );
 
-  const barRows = useMemo(
-    () =>
-      filtered.map((s) => ({
-        key: s.tier,
-        shortLabel: s.tier,
-        fullLabel: `Tier ${s.tier} (Low / Mid / High)`,
-        roi: s.roiWeighted,
-      })),
-    [filtered]
+  const [yMetric, setYMetric] = useState<SiteChartYMetric>("profit");
+
+  const metricMeta = useMemo(() => SITE_CHART_Y_METRICS.find((m) => m.id === yMetric)!, [yMetric]);
+
+  const { tickFormatter, tooltipFormatter } = useMemo(
+    () => siteChartFormattersForMetric(yMetric),
+    [yMetric]
+  );
+
+  const chartRows = useMemo(
+    () => buildTierChartRows(sortedForTable, yMetric),
+    [sortedForTable, yMetric]
+  );
+
+  const periodLabel = useMemo(() => siteAnalyticsPeriodLabel(period), [period]);
+
+  const chartTitle = useMemo(
+    () => tierAnalyticsChartTitle(yMetric, periodLabel),
+    [yMetric, periodLabel]
+  );
+
+  const chartHeuristicNote = useMemo(
+    () => yMetric === "itm" || yMetric === "earlyFinish" || yMetric === "lateFinish",
+    [yMetric]
   );
 
   const uniqueRois = useMemo(() => getUniqueValues(tierStats, (s) => s.roi), [tierStats]);
-  const uniqueRoiWeighted = useMemo(() => getUniqueValues(tierStats, (s) => s.roiWeighted), [tierStats]);
   const uniqueProfits = useMemo(() => getUniqueValues(tierStats, (s) => s.profit), [tierStats]);
-  const uniqueCounts = useMemo(() => getUniqueValues(tierStats, (s) => s.count), [tierStats]);
-  const uniquePlayers = useMemo(() => getUniqueValues(tierStats, (s) => s.players), [tierStats]);
-
-  const { sort, toggleSort, sorted } = useAnalyticsSortedRows(filtered, sortTierRows);
+  const uniqueItms = useMemo(() => getUniqueValues(tierStats, (s) => s.itm), [tierStats]);
+  const uniqueEarly = useMemo(() => getUniqueValues(tierStats, (s) => s.earlyFinish), [tierStats]);
+  const uniqueLate = useMemo(() => getUniqueValues(tierStats, (s) => s.lateFinish), [tierStats]);
+  const uniqueEntries = useMemo(() => getUniqueValues(tierStats, (s) => s.entries), [tierStats]);
+  const uniqueAbilities = useMemo(() => getUniqueValues(tierStats, (s) => s.ability), [tierStats]);
+  const uniqueAvStakes = useMemo(() => getUniqueValues(tierStats, (s) => s.avStake), [tierStats]);
 
   return {
     filters,
@@ -204,14 +248,24 @@ export function useTierAnalytics(tierStats: TierStat[]) {
     setCol,
     filtered,
     tierOptions,
-    barRows,
     uniqueRois,
-    uniqueRoiWeighted,
     uniqueProfits,
-    uniqueCounts,
-    uniquePlayers,
-    sort,
-    toggleSort,
-    sorted,
+    uniqueItms,
+    uniqueEarly,
+    uniqueLate,
+    uniqueEntries,
+    uniqueAbilities,
+    uniqueAvStakes,
+    tableSort,
+    toggleTableSort,
+    sortedForTable,
+    yMetric,
+    setYMetric,
+    metricMeta,
+    tickFormatter,
+    tooltipFormatter,
+    chartRows,
+    chartTitle,
+    chartHeuristicNote,
   };
 }

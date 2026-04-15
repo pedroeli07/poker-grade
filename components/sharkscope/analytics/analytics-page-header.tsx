@@ -21,7 +21,7 @@ const AnalyticsPageHeader = memo(function AnalyticsPageHeader({
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <SyncSharkScopeButton />
+        <SyncSharkScopeButton syncMode="analytics" />
         <div className="flex items-center gap-1 rounded-lg border border-border/60 p-1 bg-muted/30 w-fit">
           {SHARKSCOPE_ANALYTICS_PERIODS.map((p) => (
             <button

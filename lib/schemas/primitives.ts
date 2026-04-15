@@ -5,6 +5,7 @@ const POKER_NETWORK_ENUM = [
   "gg",
   "pokerstars",
   "pokerstars_fr",
+  "pokerstars_es",
   "888",
   "partypoker",
   "ipoker",

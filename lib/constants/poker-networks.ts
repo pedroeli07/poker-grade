@@ -1,7 +1,13 @@
 const NETWORK_ROWS = [
   ["gg", "GGPoker", "/gg-poker-logo.png", "gg"],
   ["pokerstars", "PokerStars", "/poker-stars-logo.png", "pokerstars"],
-  ["pokerstars_fr", "PokerStars FR-ES-PT", "/poker-stars-logo.png", "pokerstars_fr"],
+  /**
+   * Pool FR (cliente FR / parte do “FR-ES-PT” no site). API: `pokerstarsfr` — não confundir com ES ou .com.
+   * @see SharkScope `allpokerstars` = pokerstars + pokerstarsit + pokerstarsfr + pokerstarses
+   */
+  ["pokerstars_fr", "PokerStars FR", "/poker-stars-logo.png", "pokerstarsfr"],
+  ["pokerstars_es", "PokerStars ES", "/poker-stars-logo.png", "pokerstarses"],
+  ["pokerstars_pt", "PokerStars PT", "/poker-stars-logo.png", "pokerstarspt"],
   ["888", "888 Poker", "/888-poker-logo.png", "888"],
   ["partypoker", "Party Poker", "/party-poker-logoo.png", "partypoker"],
   ["ipoker", "iPoker", "/i-poker-logo.png", "ipoker"],
@@ -29,6 +35,8 @@ export const POKER_NETWORKS = Object.fromEntries(
   readonly gg: { label: string; sharkscopeCode: string };
   readonly pokerstars: { label: string; sharkscopeCode: string };
   readonly pokerstars_fr: { label: string; sharkscopeCode: string };
+  readonly pokerstars_es: { label: string; sharkscopeCode: string };
+  readonly pokerstars_pt: { label: string; sharkscopeCode: string };
   readonly "888": { label: string; sharkscopeCode: string };
   readonly partypoker: { label: string; sharkscopeCode: string };
   readonly ipoker: { label: string; sharkscopeCode: string };
@@ -41,6 +49,15 @@ export const NETWORK_OPTS = Object.entries(POKER_NETWORKS).map(([k, v]) => ({
   value: k as keyof typeof POKER_NETWORKS,
   label: v.label,
 }));
+
+/**
+ * Segmento de rede na URL SharkScope (`/networks/{segment}/players/{nick}/...`).
+ * Pode diferir da chave em `PlayerNick.network` (ex.: `pokerstars_fr` → `pokerstarsfr`, `pokerstars_es` → `pokerstarses`).
+ */
+export function sharkscopeApiNetworkSegment(appNetworkKey: string): string {
+  const entry = POKER_NETWORKS[appNetworkKey as keyof typeof POKER_NETWORKS];
+  return entry?.sharkscopeCode ?? appNetworkKey;
+}
 
 /** Nick da linha PokerStars principal (para pré-preencher PokerStars FR-ES-PT). */
 export function getPokerstarsMainNickFromRows(

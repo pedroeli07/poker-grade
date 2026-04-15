@@ -1,9 +1,7 @@
 import type { ColumnSortState } from "@/lib/types/sortButton";
 
-export type BountySortKey = "type" | "roi" | "roiWeighted" | "profit" | "count";
-
-export type RankingSortKey =
-  | "player"
+/** Ordem de métricas alinhada ao ranking: ROI → inscrições (`entries`) → … */
+type CommonSortKey =
   | "roi"
   | "entries"
   | "profit"
@@ -13,16 +11,10 @@ export type RankingSortKey =
   | "earlyFinish"
   | "lateFinish";
 
-export type TierSortKey = "tier" | "roi" | "roiWeighted" | "profit" | "count" | "players";
-
-export type SiteTableSortKey =
-  | "network"
-  | "roi"
-  | "profit"
-  | "itm"
-  | "earlyFinish"
-  | "lateFinish"
-  | "count";
+export type BountySortKey = CommonSortKey | "type";
+export type RankingSortKey = CommonSortKey | "player";
+export type TierSortKey = CommonSortKey | "tier";
+export type SiteTableSortKey = CommonSortKey | "network";
 
 /** Alias para ordenação das tabelas SharkScope analytics (mesmo modelo que `ColumnSortState`). */
 export type AnalyticsSortState<K extends string> = ColumnSortState<K>;

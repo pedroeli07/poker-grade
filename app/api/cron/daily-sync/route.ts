@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { cronSecret } from "@/lib/constants";
-import { sharkscopeCronSyncMode } from "@/lib/constants/sharkscope-group-site";
+import {
+  sharkscopeCronSyncMode,
+  type SharkScopeSyncMode,
+} from "@/lib/constants/sharkscope-group-site";
 import { runDailySyncSharkScope } from "@/lib/sharkscope/run-daily-sync";
 import { ErrorTypes } from "@/lib/types";
 
@@ -17,8 +20,14 @@ export async function GET(request: Request) {
   const forceRefresh =
     url.searchParams.get("force") === "1" || url.searchParams.get("force") === "true";
   const modeParam = url.searchParams.get("mode");
-  const syncMode =
-    modeParam === "full" || modeParam === "light" ? modeParam : sharkscopeCronSyncMode();
+  const syncMode: SharkScopeSyncMode =
+    modeParam === "full" ||
+    modeParam === "light" ||
+    modeParam === "players" ||
+    modeParam === "analytics" ||
+    modeParam === "analytics_nick"
+      ? modeParam
+      : sharkscopeCronSyncMode();
 
   try {
     const result = await runDailySyncSharkScope(forceRefresh, { syncMode });

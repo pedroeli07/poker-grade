@@ -7,7 +7,10 @@ export const ANALYTICS_METRIC_BAR_SITE_FILLS: Record<string, string> = {
   partypoker: "#f97316",
   coinpoker: "url(#coinPokerGradient)",
   pokerstars: "#dc2626",
-  pokerstars_fr: "#dc2626",
+  /** FR / ES / PT — um tom abaixo do .com para distinguir pools regionais. */
+  pokerstars_fr: "#991b1b",
+  pokerstars_es: "#991b1b",
+  pokerstars_pt: "#991b1b",
   ipoker: "#94a3b8",
   wpt: "url(#wptGlobalGradient)",
   chico: "#15803d",

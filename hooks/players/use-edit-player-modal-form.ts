@@ -2,7 +2,6 @@
 
 import type { PlayerStatus } from "@prisma/client";
 import { useCallback, useMemo, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { updatePlayer } from "@/lib/queries/db/player-queries";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
@@ -59,7 +58,6 @@ export function useEditPlayerModalForm({
   );
   const [abiAlvoUnit, setAbiAlvoUnit] = useState(() => initialAbiUnit(player.abiUnit));
   const [status, setStatus] = useState<PlayerStatus>(player.status);
-  const router = useRouter();
   const invalidatePlayers = useInvalidate("players");
   const formDisabled = isPending;
 
@@ -95,8 +93,9 @@ export function useEditPlayerModalForm({
             await updatePlayer(formData);
             toast.success("Jogador atualizado", "As alterações foram salvas.");
             onClose();
-            invalidatePlayers();
-            router.refresh();
+            setTimeout(() => {
+              invalidatePlayers();
+            }, 0);
           } catch (err) {
             const msg =
               err instanceof Error && err.message === "FORBIDDEN"
@@ -123,7 +122,6 @@ export function useEditPlayerModalForm({
       startTransition,
       onClose,
       invalidatePlayers,
-      router,
     ]
   );
 

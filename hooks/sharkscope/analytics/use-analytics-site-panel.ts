@@ -20,12 +20,20 @@ import {
 } from "@/lib/utils/sharlscope/analytics/site-analytics-site-panel";
 import { SITE_CHART_Y_METRICS, type SiteChartYMetric } from "@/lib/site-analytics-chart";
 
+export type UseAnalyticsSitePanelOptions = {
+  /** Ex.: debug com jogador na URL — pré-seleciona o multiselect “Jogadores”. */
+  initialSelectedPlayerIds?: string[];
+};
+
 export function useAnalyticsSitePanel(
   stats: NetworkStat[],
   siteAnalytics: SiteAnalyticsPayload,
-  period: SharkscopeAnalyticsPeriod
+  period: SharkscopeAnalyticsPeriod,
+  options?: UseAnalyticsSitePanelOptions
 ) {
-  const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
+  const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>(
+    () => options?.initialSelectedPlayerIds ?? []
+  );
   const [yMetric, setYMetric] = useState<SiteChartYMetric>("roi");
   const [playerPickerOpen, setPlayerPickerOpen] = useState(false);
   const { sort: tableSort, toggleSort: toggleTableSort } = useAnalyticsColumnSort<SiteTableSortKey>();
@@ -52,7 +60,9 @@ export function useAnalyticsSitePanel(
     uniqueItms,
     uniqueEarly,
     uniqueLate,
-    uniqueCounts,
+    uniqueEntries,
+    uniqueAbilities,
+    uniqueAvStakes,
   } = useSiteAnalytics(displayStats);
 
   const sortedForTable = useMemo(
@@ -96,9 +106,15 @@ export function useAnalyticsSitePanel(
     setSelectedPlayerIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }, []);
 
-  const clearPlayers = useCallback(() => {
+  /** Limpa a seleção de jogadores (volta ao “time inteiro”). Não fecha o popover — use ao limpar filtros dentro do menu. */
+  const resetPlayerFilter = useCallback(() => {
     setSelectedPlayerIds([]);
-    setPlayerPickerOpen(false);
+  }, []);
+
+  /** Junta estes ids à seleção (ex.: “marcar todos” na lista filtrada). */
+  const addPlayerIdsToSelection = useCallback((ids: string[]) => {
+    if (ids.length === 0) return;
+    setSelectedPlayerIds((prev) => Array.from(new Set([...prev, ...ids])));
   }, []);
 
   const triggerLabel = useMemo(
@@ -113,6 +129,11 @@ export function useAnalyticsSitePanel(
 
   const chartHeuristicNote = useMemo(() => isSiteChartHeuristicMetric(yMetric), [yMetric]);
 
+  const tableSectionSubtitle = useMemo(
+    () => `${periodLabel} — ${selectionSummary}`,
+    [periodLabel, selectionSummary]
+  );
+
   return {
     selectedPlayerIds,
     yMetric,
@@ -123,6 +144,7 @@ export function useAnalyticsSitePanel(
     toggleTableSort,
     canFilterPlayers,
     selectionUsesFallback,
+    tableSectionSubtitle,
     filters,
     numFilters,
     setNumFilter,
@@ -133,7 +155,9 @@ export function useAnalyticsSitePanel(
     uniqueItms,
     uniqueEarly,
     uniqueLate,
-    uniqueCounts,
+    uniqueEntries,
+    uniqueAbilities,
+    uniqueAvStakes,
     sortedForTable,
     metricMeta,
     tickFormatter,
@@ -141,7 +165,8 @@ export function useAnalyticsSitePanel(
     chartRows,
     chartTitle,
     togglePlayer,
-    clearPlayers,
+    resetPlayerFilter,
+    addPlayerIdsToSelection,
     triggerLabel,
     chartHeuristicNote,
   };

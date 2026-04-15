@@ -23,7 +23,6 @@ import type { LucideIcon } from "lucide-react";
 import { STAFF_WRITE_ROLES } from "./session-rbac";
 import { nodeEnv } from "./env";
 
-
 type PrimaryNavRow = { title: string; href: string; icon: LucideIcon; exact?: true };
 
 const PRIMARY_NAV: PrimaryNavRow[] = [
@@ -46,9 +45,10 @@ const SHARKSCOPE_ITEMS = [
     ? [
         { title: "Debug grupo", href: "/dashboard/sharkscope/group-compare", icon: FlaskConical },
         { title: "Debug 1 jogador", href: "/dashboard/sharkscope/player-debug", icon: Bug },
+        { title: "Debug analytics", href: "/dashboard/sharkscope/analytics-debug", icon: LineChart },
       ]
     : []),
-] as const;
+];
 
 export const SIDEBAR_NAV_ITEMS: SidebarNavEntry[] = [
   ...PRIMARY_NAV.map((row) => ({
@@ -87,5 +87,10 @@ export const TOPBAR_PAGE_TITLES = Object.fromEntries(
   ]),
 ) as Record<string, string>;
 
-export const canCreate = (session: { role: UserRole }) => STAFF_WRITE_ROLES.includes(session.role);
-export const canEditPlayers = (session: { role: UserRole }) => STAFF_WRITE_ROLES.includes(session.role);
+export function canCreate(session: { role: UserRole }): boolean {
+  return STAFF_WRITE_ROLES.includes(session.role);
+}
+
+export function canEditPlayers(session: { role: UserRole }): boolean {
+  return STAFF_WRITE_ROLES.includes(session.role);
+}

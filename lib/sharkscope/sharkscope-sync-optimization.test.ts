@@ -15,6 +15,7 @@ function baseRow(
     networkKey: "pokerstars",
     stake: 10,
     rake: 0,
+    investment: 10,
     prize: 0,
     position: 60,
     entrants: 100,

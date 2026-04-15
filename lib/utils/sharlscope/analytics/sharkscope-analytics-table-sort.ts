@@ -19,7 +19,13 @@ import {
   type SortDir,
 } from "@/lib/table-sort";
 
-const TIER_ORDER: Record<string, number> = { Low: 0, Mid: 1, High: 2 };
+const TIER_ORDER: Record<string, number> = {
+  micro: 0,
+  low: 1,
+  lowMid: 2,
+  mid: 3,
+  high: 4,
+};
 
 function compareTier(a: string, b: string, dir: SortDir): number {
   const oa = TIER_ORDER[a] ?? 99;
@@ -46,12 +52,20 @@ export function sortBountyTypeRows(
         );
       case "roi":
         return compareNumberNullsLast(a.roi, b.roi, dir);
-      case "roiWeighted":
-        return compareNumberNullsLast(a.roiWeighted, b.roiWeighted, dir);
+      case "entries":
+        return compareNumberNullsLast(a.entries, b.entries, dir);
       case "profit":
         return compareNumberNullsLast(a.profit, b.profit, dir);
-      case "count":
-        return compareNumberNullsLast(a.count, b.count, dir);
+      case "itm":
+        return compareNumberNullsLast(a.itm, b.itm, dir);
+      case "ability":
+        return compareNumberNullsLast(a.ability, b.ability, dir);
+      case "avStake":
+        return compareNumberNullsLast(a.avStake, b.avStake, dir);
+      case "earlyFinish":
+        return compareNumberNullsLast(a.earlyFinish, b.earlyFinish, dir);
+      case "lateFinish":
+        return compareNumberNullsLast(a.lateFinish, b.lateFinish, dir);
       default:
         return 0;
     }
@@ -103,14 +117,20 @@ export function sortTierRows(rows: TierStat[], sort: AnalyticsSortState<TierSort
         return compareTier(a.tier, b.tier, dir);
       case "roi":
         return compareNumberNullsLast(a.roi, b.roi, dir);
-      case "roiWeighted":
-        return compareNumberNullsLast(a.roiWeighted, b.roiWeighted, dir);
+      case "entries":
+        return compareNumberNullsLast(a.entries, b.entries, dir);
       case "profit":
         return compareNumberNullsLast(a.profit, b.profit, dir);
-      case "count":
-        return compareNumberNullsLast(a.count, b.count, dir);
-      case "players":
-        return compareNumberNullsLast(a.players, b.players, dir);
+      case "itm":
+        return compareNumberNullsLast(a.itm, b.itm, dir);
+      case "ability":
+        return compareNumberNullsLast(a.ability, b.ability, dir);
+      case "avStake":
+        return compareNumberNullsLast(a.avStake, b.avStake, dir);
+      case "earlyFinish":
+        return compareNumberNullsLast(a.earlyFinish, b.earlyFinish, dir);
+      case "lateFinish":
+        return compareNumberNullsLast(a.lateFinish, b.lateFinish, dir);
       default:
         return 0;
     }
@@ -131,16 +151,20 @@ export function sortSiteNetworkRows(
         return compareString(a.label, b.label, dir);
       case "roi":
         return compareNumberNullsLast(a.roi, b.roi, dir);
+      case "entries":
+        return compareNumberNullsLast(a.entries, b.entries, dir);
       case "profit":
         return compareNumberNullsLast(a.profit, b.profit, dir);
       case "itm":
         return compareNumberNullsLast(a.itm ?? null, b.itm ?? null, dir);
+      case "ability":
+        return compareNumberNullsLast(a.ability ?? null, b.ability ?? null, dir);
+      case "avStake":
+        return compareNumberNullsLast(a.avStake ?? null, b.avStake ?? null, dir);
       case "earlyFinish":
         return compareNumberNullsLast(a.earlyFinish ?? null, b.earlyFinish ?? null, dir);
       case "lateFinish":
         return compareNumberNullsLast(a.lateFinish ?? null, b.lateFinish ?? null, dir);
-      case "count":
-        return compareNumberNullsLast(a.count, b.count, dir);
       default:
         return 0;
     }

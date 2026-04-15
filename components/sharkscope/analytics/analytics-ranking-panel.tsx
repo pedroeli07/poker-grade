@@ -63,8 +63,8 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      <SortButton columnKey="roi" sort={sort} toggleSort={toggleSort} kind="number" label="ROI" />
-                      <NumberRangeFilter label={`ROI ${period}`} value={numFilters.roi ?? null} onChange={setNumFilter("roi")} suffix="%" uniqueValues={uniqueRois} />
+                      <SortButton columnKey="roi" sort={sort} toggleSort={toggleSort} kind="number" label="ROI total" />
+                      <NumberRangeFilter label={`ROI Total`} value={numFilters.roi ?? null} onChange={setNumFilter("roi")} suffix="%" uniqueValues={uniqueRois} />
                     </div>
                   </div>
                 </TableHead>
@@ -111,16 +111,16 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      <SortButton columnKey="earlyFinish" sort={sort} toggleSort={toggleSort} kind="number" label="finalização precoce" />
-                      <NumberRangeFilter label="Fin. precoce" value={numFilters.earlyFinish ?? null} onChange={setNumFilter("earlyFinish")} suffix="%" uniqueValues={uniqueEarly} />
+                      <SortButton columnKey="earlyFinish" sort={sort} toggleSort={toggleSort} kind="number" label="FP" />
+                      <NumberRangeFilter label="Finalização precoce " value={numFilters.earlyFinish ?? null} onChange={setNumFilter("earlyFinish")} suffix="%" uniqueValues={uniqueEarly} />
                     </div>
                   </div>
                 </TableHead>
                 <TableHead className={thCenter}>
                   <div className={filterWrap}>
                     <div className="inline-flex items-center gap-0.5 justify-center">
-                      <SortButton columnKey="lateFinish" sort={sort} toggleSort={toggleSort} kind="number" label="finalização tardia" />
-                      <NumberRangeFilter label="Fin. tardia" value={numFilters.lateFinish ?? null} onChange={setNumFilter("lateFinish")} suffix="%" uniqueValues={uniqueLate} />
+                      <SortButton columnKey="lateFinish" sort={sort} toggleSort={toggleSort} kind="number" label="FT" />
+                      <NumberRangeFilter label="Finalização tardia " value={numFilters.lateFinish ?? null} onChange={setNumFilter("lateFinish")} suffix="%" uniqueValues={uniqueLate} />
                     </div>
                   </div>
                 </TableHead>

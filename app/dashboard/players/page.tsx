@@ -37,7 +37,7 @@ export default async function PlayersPage() {
         </div>
         {canCreatePlayer ? (
           <div className="shrink-0 self-start sm:self-center flex items-center gap-2">
-            <SyncSharkScopeButton />
+            <SyncSharkScopeButton syncMode="players" />
             <NewPlayerModal
               coaches={tablePayload.coaches}
               grades={tablePayload.grades}

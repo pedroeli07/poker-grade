@@ -23,7 +23,7 @@ const AlertsPageHeader = memo(function AlertsPageHeader({
         <p className="mt-1 text-muted-foreground">Alertas automáticos gerados pelo cron job diário.</p>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        {canAcknowledge && <SyncSharkScopeButton />}
+        {canAcknowledge && <SyncSharkScopeButton syncMode="players" />}
         {canAcknowledge && unackedCount > 0 && (
           <Button variant="outline" size="sm" disabled={isPending} onClick={onAcknowledgeAll}>
             {isPending ? (

@@ -3,11 +3,32 @@ import { getSession } from "@/lib/auth/session";
 import { canWriteOperations } from "@/lib/utils";
 import { runDailySyncSharkScope } from "@/lib/sharkscope/run-daily-sync";
 import { ErrorTypes } from "@/lib/types";
+import type { SharkScopeSyncMode } from "@/lib/constants/sharkscope-group-site";
+
+function parseSyncModeFromBody(body: unknown): SharkScopeSyncMode {
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "syncMode" in body &&
+    typeof (body as { syncMode?: unknown }).syncMode === "string"
+  ) {
+    const m = (body as { syncMode: string }).syncMode;
+    if (
+      m === "full" ||
+      m === "light" ||
+      m === "players" ||
+      m === "analytics" ||
+      m === "analytics_nick"
+    )
+      return m;
+  }
+  return "full";
+}
 
 /**
  * Sincronização manual SharkScope (botão na UI).
  * Usa `request.signal`: ao cancelar o fetch no cliente, o servidor interrompe entre grupos/páginas.
- * Body JSON opcional: `{ "syncMode": "light" }` — só `statistics` (sem `completedTournaments`); omissão = `full`.
+ * Body JSON opcional: `{ "syncMode": "players" | "analytics" | "analytics_nick" | "light" | "full" }`; omissão = `full`.
  */
 export async function POST(request: Request) {
   const session = await getSession();
@@ -15,12 +36,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: ErrorTypes.UNAUTHORIZED }, { status: 401 });
   }
 
-  let syncMode: "full" | "light" = "full";
+  let syncMode: SharkScopeSyncMode = "full";
   try {
     const ct = request.headers.get("content-type") ?? "";
     if (ct.includes("application/json")) {
-      const body = (await request.json()) as { syncMode?: string };
-      if (body?.syncMode === "light") syncMode = "light";
+      const body = await request.json();
+      syncMode = parseSyncModeFromBody(body);
     }
   } catch {
     /* body vazio ou inválido */

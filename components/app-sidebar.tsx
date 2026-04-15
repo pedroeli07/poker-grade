@@ -6,7 +6,7 @@ import { Spade, ChevronLeft, ChevronDown } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/lib/stores/use-sidebar-store";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import {
   SIDEBAR_NAV_ITEMS,
   SIDEBAR_SECONDARY_ITEMS,
@@ -226,7 +226,10 @@ function AppSidebar({ userRole }: { userRole: UserRole }) {
   const pathname = usePathname();
   const { isOpen, toggle } = useSidebarStore();
 
-  const navItems = filterNavForRole(SIDEBAR_NAV_ITEMS, userRole);
+  const navItems = useMemo(
+    () => filterNavForRole(SIDEBAR_NAV_ITEMS, userRole),
+    [userRole]
+  );
 
   return (
     <aside
