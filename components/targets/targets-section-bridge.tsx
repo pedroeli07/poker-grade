@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { TargetsSummaryInput } from "@/lib/types";
-import type { TargetSummaryCardData } from "@/lib/utils/target/target-utils";
+import type { TargetSummaryCardData } from "@/lib/utils/target";
 import { useTargetsSummaryCards } from "@/hooks/targets/use-targets-summary-cards";
 import { memo } from "react";
 

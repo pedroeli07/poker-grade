@@ -7,9 +7,9 @@ import {
   PLAYER_TABLE_STATUS_INACTIVE_BADGE_CLASS,
   PLAYER_TABLE_STATUS_LABEL,
   PLAYER_TABLE_STATUS_SUSPENDED_BADGE_CLASS,
-} from "@/lib/constants/player/players-table-ui";
+} from "@/lib/constants/players-table-ui";
 import { playersTableCol } from "@/lib/constants/classes";
-import type { PlayerStatusTableCellProps } from "@/lib/types/playerComponents";
+import type { PlayerStatusTableCellProps } from "@/lib/types/player";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { PlayerStatus } from "@prisma/client";

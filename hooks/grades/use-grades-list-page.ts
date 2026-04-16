@@ -6,7 +6,7 @@ import { descriptionPick, distinctOptions } from "@/lib/utils";
 import { EMPTY_DESC, STALE_TIME } from "@/lib/constants";
 import { GRADES_LS_VIEW } from "@/lib/constants/metadata";
 import type { GradeListRow, ColumnKey } from "@/lib/types";
-import { getGradesListRowsAction } from "@/lib/queries/db/grade-queries";
+import { getGradesListRowsAction } from "@/lib/queries/db/grade";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
 import { useGradesListStore } from "@/lib/stores/use-grades-list-store";
 

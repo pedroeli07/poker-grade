@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { analyticsStatPillClass, statBadgeEmerald, statBadgeRed } from "@/lib/constants/classes";
-import { fmtProfitUsd } from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-format";
+import { fmtProfitUsd } from "@/lib/utils/sharkscope/analytics";
 
 /** Lucro em badge verde / vermelho (ex.: ranking SharkScope). */
 const RankingProfitBadge = memo(function RankingProfitBadge({

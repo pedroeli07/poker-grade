@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { POKER_NETWORKS_UI } from "@/lib/constants";
-import type { PlayerNickItemProps, PlayerNicksTableCellProps } from "@/lib/types/playerComponents";
-import { filterNicksExcludingPlayerGroup } from "@/lib/utils/player/player-utils";
+import type { PlayerNickItemProps, PlayerNicksTableCellProps } from "@/lib/types/player";
+import { filterNicksExcludingPlayerGroup } from "@/lib/utils/player";
 import { memo, useCallback } from "react";
 import { AppTooltip } from "@/components/ui/app-tooltip";
 import { Check, Copy } from "lucide-react";

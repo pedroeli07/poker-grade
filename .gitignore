@@ -38,6 +38,10 @@ yarn-error.log*
 
 # vercel
 .vercel
+.CLAUDE.md
+.AGENTS.md
+.DOCUMENTAÇÃO_TECNICA.md
+
 
 # typescript
 *.tsbuildinfo
@@ -54,3 +58,5 @@ next-env.d.ts
 scratch/*-sample.json
 
 player-group-data/*
+
+scripts/*

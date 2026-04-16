@@ -1,8 +1,7 @@
 import Link from "next/link";
-import type { Tab } from "@/lib/types";
-import type { ImportDetailTabWithCount } from "@/lib/imports/import-detail-tabs";
-import { IMPORT_DETAIL_CARD_INACTIVE_CLS } from "@/lib/imports/import-detail-tabs";
+import type { ImportDetailTabWithCount, Tab } from "@/lib/types";
 import { memo } from "react";
+import { IMPORT_DETAIL_CARD_INACTIVE_CLS } from "@/lib/constants";
 
 const ImportDetailMetricCards = memo(function ImportDetailMetricCards({
   importId,

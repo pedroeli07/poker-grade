@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import type { TargetListViewModel } from "@/lib/utils/target/target-utils";
+import type { TargetListViewModel } from "@/lib/utils/target";
 
 export function TargetCard({ vm }: { vm: TargetListViewModel }) {
   return (

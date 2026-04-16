@@ -1,0 +1,43 @@
+import type { UserRole } from "@prisma/client";
+import type { BaseEntity, FilterMap, ModalProps } from "../primitives";
+
+type BaseUserRow = BaseEntity & { 
+  email: string; 
+  role: UserRole; 
+  whatsapp: string | null;
+  discord: string | null;
+};
+
+export type UserDirectoryRow =
+  | (BaseUserRow & { kind: "pending"; isRegistered: false })
+  | (BaseUserRow & { kind: "account"; isRegistered: true });
+
+export interface ProfileData {
+  email: string;
+  displayName: string | null;
+  whatsapp: string | null;
+  discord: string | null;
+  role: string;
+  createdAt: string;
+}
+
+export type UserClientProps = { initialRows: UserDirectoryRow[] };
+
+export type UserInviteModalProps = ModalProps;
+
+export interface UserViewProps {
+    row: UserDirectoryRow;
+    disabled: boolean;
+    onAction: (
+      fn: () => Promise<{ error?: string; success?: boolean }>,
+      onSuccess?: () => void
+    ) => void;
+  }
+
+export type UserCardProps = UserViewProps;
+export type UserTableRowProps = UserViewProps;
+  
+export type UserColumnKey = "email" | "role" | "status";
+export type UserColumnFilters = FilterMap<UserColumnKey>;
+
+  

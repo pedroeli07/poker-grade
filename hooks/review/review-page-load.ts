@@ -1,5 +1,5 @@
 import type { AppSession } from "@/lib/auth/session";
-import { getPendingReviewsForSession } from "@/lib/queries/db";
+import { getPendingReviewsForSession } from "@/lib/queries/db/review";
 import {
   PLAYERS_PER_PAGE,
   REVIEW_NO_COACH_SENTINEL,

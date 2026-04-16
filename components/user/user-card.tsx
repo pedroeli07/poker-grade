@@ -4,7 +4,7 @@ import { memo } from "react";
 import { getInitials } from "@/lib/utils";
 import { useEditableUser } from "@/hooks/user/use-editable-user";
 import { useUserPermissions } from "@/hooks/user/use-user-permissions";
-import { UsuarioDeleteDialog } from "./user-delete-dialog";
+import UserDeleteDialog from "./user-delete-dialog";
 import { UserRowContent } from "./user-row-content";
 import { UserActions } from "./user-actions";
 import { cardClassName } from "@/lib/constants";
@@ -32,7 +32,7 @@ export const UserCard = memo(function UserCard({
 
   return (
     <div className={`${cardClassName} p-4 transition-colors hover:bg-card/60`}>
-      <UsuarioDeleteDialog
+      <UserDeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         row={row}

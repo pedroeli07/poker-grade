@@ -12,3 +12,6 @@ export const PLAYER_PATHS = [
   "/dashboard/targets",
   "/dashboard",
 ] as const;
+
+/** Default `staleTime` (ms) para TanStack Query: listagens, cliente global e caches de UI. */
+export const STALE_TIME = 30_000;

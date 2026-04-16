@@ -5,9 +5,7 @@
  * Produção: só com LOG_PERF=1.
  */
 
-const ANSI_DIM = "\x1b[2m";
-const ANSI_CYAN = "\x1b[96m";
-const ANSI_RESET = "\x1b[0m";
+import { PERF_LOG_ANSI_CYAN, PERF_LOG_ANSI_DIM, PERF_LOG_ANSI_RESET } from "@/lib/constants/perf-log";
 
 export function isPerfLoggingEnabled(): boolean {
   if (process.env.NODE_ENV === "production") {
@@ -31,7 +29,7 @@ export function logPerf(
   const ms = elapsedMs(start);
   const meta = { area, step, ms, ...extra };
   console.info(
-    `${ANSI_DIM}${ANSI_CYAN}[perf]${ANSI_RESET} ${area}.${step} ${ANSI_DIM}ms=${ms}${ANSI_RESET}`,
+    `${PERF_LOG_ANSI_DIM}${PERF_LOG_ANSI_CYAN}[perf]${PERF_LOG_ANSI_RESET} ${area}.${step} ${PERF_LOG_ANSI_DIM}ms=${ms}${PERF_LOG_ANSI_RESET}`,
     meta
   );
 }

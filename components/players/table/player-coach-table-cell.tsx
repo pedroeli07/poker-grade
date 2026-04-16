@@ -8,7 +8,7 @@ import { playersTableCol } from "@/lib/constants/classes";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 
-import type { PlayerCoachTableCellProps } from "@/lib/types/playerComponents";
+import type { PlayerCoachTableCellProps } from "@/lib/types/player";
 
 const PlayerCoachTableCell = memo(function PlayerCoachTableCell({
   coachKey,

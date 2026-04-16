@@ -5,7 +5,7 @@ import { playersTableCol } from "@/lib/constants/classes";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 
-import type { PlayerAbiTableCellProps } from "@/lib/types/playerComponents";
+import type { PlayerAbiTableCellProps } from "@/lib/types/player";
 
 const PlayerAbiTableCell = memo(function PlayerAbiTableCell({
   abiKey,

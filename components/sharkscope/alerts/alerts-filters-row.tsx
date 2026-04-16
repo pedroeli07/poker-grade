@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"; 
-import { ALERT_TYPE_LABEL } from "@/lib/constants/sharkscope/alerts/alerts-messages";
+import { ALERT_TYPE_LABEL } from "@/lib/constants/sharkscope/alerts";
 
 const AlertsFiltersRow = memo(function AlertsFiltersRow({ 
   filterSeverity,

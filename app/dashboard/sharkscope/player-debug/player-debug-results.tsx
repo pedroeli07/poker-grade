@@ -1,6 +1,6 @@
-import type { SharkscopePlayerDebugResult } from "@/lib/data/sharkscope-player-debug";
+import type { SharkscopePlayerDebugResult } from "@/lib/data/sharkscope/player-debug";
 
-/** Uma casa decimal, alinhado à tabela de jogadores (`player-table-display` / FP/FT cells). */
+/** Uma casa decimal, alinhado à tabela de jogadores (`lib/utils/player` / FP/FT cells). */
 function fmtPct(v: number | null) {
   if (v === null) return "—";
   return `${v.toFixed(1)}%`;

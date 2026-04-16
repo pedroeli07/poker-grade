@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { buildImportDetailTabs } from "@/lib/imports/import-detail-tabs";
+import { buildImportDetailTabs } from "@/lib/utils/imports";
 import type { ImportDetailPageData } from "@/lib/types";
 import ImportDetailHeader from "@/components/imports/import-detail-header";
 import ImportDetailMetricCards from "@/components/imports/import-detail-metric-cards";

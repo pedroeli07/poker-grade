@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { analyticsStatPillClass } from "@/lib/constants/classes";
-import { analyticsAbilityBadgeClass } from "@/lib/utils/sharlscope/analytics/analytics-cells-display";
+import { analyticsAbilityBadgeClass } from "@/lib/utils/sharkscope/analytics";
 
 /** Capacidade (0–100): maior é melhor. */
 const RankingAbilityBadge = memo(function RankingAbilityBadge({

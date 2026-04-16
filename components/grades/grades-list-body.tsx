@@ -26,10 +26,9 @@ import {
   dataTableHeaderRowActiveRingClass,
   dataTableHeaderRowClass,
 } from "@/lib/constants";
-import { buildGradesFilterSummaryLines } from "@/lib/utils/grades-filter-summary";
-import { formatGradesTableSortSummary } from "@/lib/utils/grades-table-display";
+import { buildGradesFilterSummaryLines, formatGradesTableSortSummary } from "@/lib/utils/grade";
 import { memo, useCallback, useMemo, useState } from "react";
-import type { ColumnSortKind } from "@/lib/types/sortButton";
+import type { ColumnSortKind } from "@/lib/types/dataTable";
 import {
   compareNumber,
   compareString,

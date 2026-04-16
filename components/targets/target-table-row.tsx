@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
-import type { TargetListViewModel } from "@/lib/utils/target/target-utils";
+import type { TargetListViewModel } from "@/lib/utils/target";
 import { memo } from "react";
 
 const TargetTableRow = memo(function TargetTableRow({ vm }: { vm: TargetListViewModel }) {

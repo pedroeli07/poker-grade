@@ -9,7 +9,7 @@ import TargetsCardsSection from "@/components/targets/targets-cards-section";
 import TargetsTableSection from "@/components/targets/targets-table-section";
 import TargetsViewToggle from "@/components/targets/targets-view-toggle";
 import type { ColKey, Filters, TargetListRow, TargetsColumnOptions } from "@/lib/types";
-import { buildTargetsFilterSummaryLines } from "@/lib/utils/targets-table-display";
+import { buildTargetsFilterSummaryLines } from "@/lib/utils/target";
 
 const TargetsControlsCard = memo(function TargetsControlsCard({
   view,

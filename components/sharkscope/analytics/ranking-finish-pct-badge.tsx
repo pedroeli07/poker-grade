@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { earlyFinishSeverity, lateFinishSeverity } from "@/lib/sharkscope-parse";
 import { analyticsStatPillClass } from "@/lib/constants/classes";
-import { analyticsFinishSeverityBadgeClass } from "@/lib/utils/sharlscope/analytics/analytics-cells-display";
+import { analyticsFinishSeverityBadgeClass } from "@/lib/utils/sharkscope/analytics";
 
 /** Finalização precoce / tardia — mesmos limiares dos alertas (`earlyFinishSeverity` / `lateFinishSeverity`). */
 const RankingFinishPctBadge = memo(function RankingFinishPctBadge({

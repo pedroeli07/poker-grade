@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { cronSecret } from "@/lib/constants";
-import {
-  sharkscopeCronSyncMode,
-  type SharkScopeSyncMode,
-} from "@/lib/constants/sharkscope-group-site";
+import { sharkscopeCronSyncMode } from "@/lib/constants/sharkscope-group-site";
+import type { SharkScopeSyncMode } from "@/lib/types/sharkScopeTypes";
 import { runDailySyncSharkScope } from "@/lib/sharkscope/run-daily-sync";
 import { ErrorTypes } from "@/lib/types";
 

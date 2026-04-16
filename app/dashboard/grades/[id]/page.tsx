@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import dynamicImport from "next/dynamic";
 import { gradeDetailFallbackMetadata } from "@/lib/constants/metadata";
 import GradeDetailPageSkeleton from "@/components/grades/grade-detail-page-skeleton";
-import { getGradeDetailPageProps } from "@/lib/grades/grade-detail-page-server";
+import { getGradeDetailPageProps } from "@/lib/data/grades";
 import { GenerateMetadataProps } from "@/lib/types";
 
 export const dynamic = "force-dynamic";

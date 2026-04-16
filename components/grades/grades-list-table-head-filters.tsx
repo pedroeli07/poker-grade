@@ -1,10 +1,10 @@
 import { memo } from "react";
 import { GradesColumnFilters, GradesColumnKey, GradesColumnOptions, GradesSetCol } from "@/lib/types";
-import { GRADES_LIST_TABLE_HEAD_COLUMNS } from "@/lib/constants/grade/grades-list-ui";
+import { GRADES_LIST_TABLE_HEAD_COLUMNS } from "@/lib/constants/grade";
 import GradesTableColumnFilter from "@/components/grades/grades-table-column-filter";
 import { TableHead } from "@/components/ui/table";
 import SortButton from "@/components/sort-button";
-import type { ColumnSortKind } from "@/lib/types/sortButton";
+import type { ColumnSortKind } from "@/lib/types/dataTable";
 import type { SortDir } from "@/lib/table-sort";
 
 const GradesListTableHeadFilters = memo(function GradesListTableHeadFilters({

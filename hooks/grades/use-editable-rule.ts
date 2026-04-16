@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/toast";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
-import { deleteGradeRule, updateGradeRule } from "@/lib/queries/db/grade-queries";
+import { deleteGradeRule, updateGradeRule } from "@/lib/queries/db/grade";
 import { FIELD_CONFIG } from "@/lib/constants";
 import { parseValue, normalizeArray } from "@/lib/utils/index";
 import type { GradeRuleCardRule, UpdateGradeRuleInput } from "@/lib/types";
@@ -17,7 +17,7 @@ export function useEditableRule(rule: GradeRuleCardRule, manage: boolean, gradeP
     qc.invalidateQueries({ queryKey: gradeKeys.list() });
   };
 
-  // 🔥 SINGLE STATE
+  // ðŸ”¥ SINGLE STATE
   const [form, setForm] = useState(() => ({ ...rule }));
   const [meta, setMeta] = useState({
     editing: false,
@@ -26,7 +26,7 @@ export function useEditableRule(rule: GradeRuleCardRule, manage: boolean, gradeP
     deleteOpen: false,
   });
 
-  // 🔥 sync server → form
+  // ðŸ”¥ sync server â†’ form
   useEffect(() => setForm(rule), [rule]);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function useEditableRule(rule: GradeRuleCardRule, manage: boolean, gradeP
 
       if (cfg.type === "float" || cfg.type === "int") {
         const parsed = parseValue(cfg.type, val);
-        if (Number.isNaN(parsed)) errors.push(`${key} inválido`);
+        if (Number.isNaN(parsed)) errors.push(`${key} invÃ¡lido`);
         payload[key] = parsed || null;
       }
 
@@ -72,7 +72,7 @@ export function useEditableRule(rule: GradeRuleCardRule, manage: boolean, gradeP
     }
 
     if (errors.length) {
-      toast.error("Validação", errors.join(". "));
+      toast.error("ValidaÃ§Ã£o", errors.join(". "));
       setMeta((s) => ({ ...s, saving: false }));
       return;
     }
@@ -98,7 +98,7 @@ export function useEditableRule(rule: GradeRuleCardRule, manage: boolean, gradeP
 
     if (!res.ok) toast.error("Erro ao excluir", res.error);
     else {
-      toast.success("Excluído");
+      toast.success("ExcluÃ­do");
       setMeta((s) => ({ ...s, deleteOpen: false }));
       invalidate();
     }

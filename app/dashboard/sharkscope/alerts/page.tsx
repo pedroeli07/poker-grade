@@ -1,7 +1,7 @@
 import dynamicImport from "next/dynamic";
 import AlertsPageSkeleton from "@/components/sharkscope/alerts/alerts-page-skeleton";
 import { sharkscopeAlertsPageMetadata } from "@/lib/constants/metadata";
-import { getAlertsPageProps } from "@/lib/sharkscope/alerts-page-server";
+import { getAlertsPageProps } from "@/lib/data/sharkscope/alerts";
 
 export const dynamic = "force-dynamic";
 

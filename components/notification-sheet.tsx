@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, useCallback } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useNotificationStore } from "@/lib/stores/use-notification-store";
@@ -11,7 +11,7 @@ import {
   markAllNotificationsRead,
   deleteNotification,
   deleteSelectedNotifications,
-} from "@/lib/queries/db/notification-queries";
+} from "@/lib/queries/db/notification";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import { notificationKeys } from "@/lib/queries/notification-query-keys";
@@ -37,11 +37,11 @@ export function NotificationSheet() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
 
-  const setFilterAndReset = (f: "all" | "unread" | "read") => {
+  const setFilterAndReset = useCallback((f: "all" | "unread" | "read") => {
     setFilter(f);
     setPage(1);
     setSelected(new Set());
-  };
+  }, []);
 
   /* eslint-disable react-hooks/set-state-in-effect -- reset de paginação ao abrir o painel */
   useEffect(() => {
@@ -140,7 +140,7 @@ export function NotificationSheet() {
 
         <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-muted/30">
           <span className="text-sm text-muted-foreground">
-            {filter === "all" ? "Todas" : filter === "unread" ? "Não lidas" : "Lidas"} <span className="text-foreground font-semibold">({total})</span>
+            {filter === "all" ? "Todas" : filter === "unread" ? "NÃ£o lidas" : "Lidas"} <span className="text-foreground font-semibold">({total})</span>
           </span>
           <div className="flex items-center gap-2">
             {selected.size > 0 && (
@@ -159,7 +159,7 @@ export function NotificationSheet() {
         <div className="flex items-center gap-1 px-6 py-2.5 border-b border-border">
           {(["all", "unread", "read"] as const).map((f) => (
             <button key={f} type="button" onClick={() => setFilterAndReset(f)} className={cn("px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer", filter === f ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted")}>
-              {f === "all" ? "Todas" : f === "unread" ? "Não lidas" : "Lidas"}
+              {f === "all" ? "Todas" : f === "unread" ? "NÃ£o lidas" : "Lidas"}
             </button>
           ))}
           <div className="ml-auto flex items-center gap-2">

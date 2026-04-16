@@ -35,10 +35,56 @@ export type TournamentRow = {
   tournamentId: string;
 };
 
-function classifyTournamentType(flags: string): TournamentRow["tournamentType"] {
-  const upper = flags.toUpperCase();
-  if (upper.includes("SAT")) return "satellite";
-  if (upper.includes("B")) return "bounty";
+/** Códigos SharkScope `Type` / PrizeStructure para “família bounty” (alinhado ao site: B + MB + Jackpot/Progressive, etc.). */
+const BOUNTY_TYPE_CODES = new Set([
+  "B",
+  "MB",
+  "PB",
+  "JB",
+  "PSB",
+  "YBB",
+]);
+
+function normalizeFlagTokens(flags: string): string[] {
+  return flags
+    .split(/[,;]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => s.toUpperCase());
+}
+
+function isBountyStructure(flags: string): boolean {
+  const raw = flags.trim();
+  if (!raw) return false;
+
+  // Rótulos longos (export CSV / payloads descritivos), não só códigos curtos.
+  if (/\bBOUNTY\b/i.test(raw)) return true;
+  if (/MYSTERY-BOUNTY|PROGRESSIVE-BOUNTY|PROGRESSIVE KO|\bPKO\b/i.test(raw)) return true;
+
+  for (const t of normalizeFlagTokens(flags)) {
+    if (BOUNTY_TYPE_CODES.has(t)) return true;
+  }
+  return false;
+}
+
+function isSatelliteFormat(flags: string): boolean {
+  const raw = flags.trim();
+  if (!raw) return false;
+
+  for (const t of normalizeFlagTokens(flags)) {
+    if (t === "SAT") return true;
+  }
+  if (/^\s*Satellite\b/i.test(raw) || /\bSatellite\b/i.test(raw)) return true;
+  return false;
+}
+
+/**
+ * Bounty antes de satélite: satélites para torneios PKO (“Satellite Bounty”) entram em bounty, como no filtro do site.
+ * Evita `includes("B")` na string inteira (ex.: token `SUB` não deve virar bounty).
+ */
+export function classifyTournamentType(flags: string): TournamentRow["tournamentType"] {
+  if (isBountyStructure(flags)) return "bounty";
+  if (isSatelliteFormat(flags)) return "satellite";
   return "vanilla";
 }
 
@@ -133,6 +179,7 @@ export function parseGroupSiteBreakdownPayload(raw: unknown): GroupSiteBreakdown
         typeof tr.investment === "number" && Number.isFinite(tr.investment)
           ? tr.investment
           : stake + rake;
+      const flagsStr = typeof tr.flags === "string" ? tr.flags : "";
       tournaments.push({
         date: parseNum(tr.date),
         network: typeof tr.network === "string" ? tr.network : "",
@@ -144,10 +191,8 @@ export function parseGroupSiteBreakdownPayload(raw: unknown): GroupSiteBreakdown
         position: parseNum(tr.position),
         entrants: parseNum(tr.entrants),
         playerName: typeof tr.playerName === "string" ? tr.playerName : "",
-        flags: typeof tr.flags === "string" ? tr.flags : "",
-        tournamentType: (["bounty", "satellite", "vanilla"] as const).includes(tr.tournamentType as TournamentRow["tournamentType"])
-          ? (tr.tournamentType as TournamentRow["tournamentType"])
-          : "vanilla",
+        flags: flagsStr,
+        tournamentType: classifyTournamentType(flagsStr),
         gameClass: typeof tr.gameClass === "string" ? tr.gameClass : "",
         tournamentId: typeof tr.tournamentId === "string" ? tr.tournamentId : "",
       });

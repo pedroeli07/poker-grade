@@ -2,10 +2,9 @@
 
 import { memo, useLayoutEffect, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis } from "recharts";
-import { ANALYTICS_ROI_BAR_CHART_HEIGHT } from "@/lib/constants/sharkscope/analytics/analytics-roi-bar-chart";
-import type { AnalyticsRoiBarChartProps } from "@/lib/types/analyticsRoiBarChart";
-import { analyticsBarRoiFillByPercent } from "@/lib/utils/sharlscope/analytics/analytics-bar-roi-fill";
-import { mapRoiBarChartData, roiBarYAxisDomain } from "@/lib/utils/sharlscope/analytics/analytics-roi-bar-chart";
+import { ANALYTICS_ROI_BAR_CHART_HEIGHT } from "@/lib/constants/sharkscope/analytics";
+import type { AnalyticsRoiBarChartProps } from "@/lib/types/sharkscope/analytics";
+import { analyticsBarRoiFillByPercent, mapRoiBarChartData, roiBarYAxisDomain } from "@/lib/utils/sharkscope/analytics";
 
 const AnalyticsRoiBarChart = memo(function AnalyticsRoiBarChart({
   title,

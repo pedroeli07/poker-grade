@@ -1,5 +1,5 @@
 import dynamicImport from "next/dynamic";
-import { getAnalyticsPageProps } from "@/lib/sharkscope/analytics-page-server";
+import { getAnalyticsPageProps } from "@/lib/data/sharkscope/analytics";
 import AnalyticsPageSkeleton from "@/components/sharkscope/analytics/analytics-page-skeleton";
 import { sharkscopeAnalyticsPageMetadata } from "@/lib/constants/metadata";
 

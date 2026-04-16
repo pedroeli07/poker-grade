@@ -1,4 +1,4 @@
-import type { HistoryPageData } from "@/lib/history/history-page-load";
+import type { HistoryPageData } from "@/lib/data/history";
 import HistoryPageHeader from "@/components/history/history-page-header";
 import HistorySummaryCards from "@/components/history/history-summary-cards";
 import HistoryTimeline from "@/components/history/history-timeline";

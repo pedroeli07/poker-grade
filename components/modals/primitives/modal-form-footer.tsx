@@ -1,6 +1,6 @@
 import { DialogFooter } from "@/components/ui/dialog";
-import { MODAL_FORM_FOOTER_BASE } from "@/lib/constants/modals/modal-dialog-ui";
-import { ModalFormFooterProps } from "@/lib/types/modalPrimitives";
+import { MODAL_FORM_FOOTER_BASE } from "@/lib/constants/modals";
+import { ModalFormFooterProps } from "@/lib/types/primitives";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 

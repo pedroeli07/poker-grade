@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
-import type { ModalDensity, ModalHeaderVariant } from "@/lib/types/modalPrimitives";
+import type { ModalDensity, ModalHeaderVariant } from "@/lib/types/primitives";
+import { cn } from "@/lib/utils/cn";
 
 function flags(density: ModalDensity, variant: ModalHeaderVariant) {
   return {
@@ -49,9 +49,7 @@ export function modalGradientHeaderIconWrapClass(
   );
 }
 
-export function modalGradientHeaderIconClass(
-  density: ModalDensity
-): string {
+export function modalGradientHeaderIconClass(density: ModalDensity): string {
   return cn("text-primary", density === "compact" ? "h-4 w-4" : "h-6 w-6");
 }
 

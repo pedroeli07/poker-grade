@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, User, Mail, AtSign, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { PlayerProfileHeaderProps } from "@/lib/types/playerComponents";
+import type { PlayerProfileHeaderProps } from "@/lib/types/player";
 import { PlayerStatus } from "@prisma/client";
 import { memo } from "react";
 

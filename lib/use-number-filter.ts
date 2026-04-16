@@ -50,5 +50,18 @@ export function useNumberFilter(value: NumberFilterValue | null, uniqueValues?: 
     setMax(value?.max?.toString() ?? "");
   }, [value, uniqueValues]);
 
-  return { mode, setMode, op, setOp, min, setMin, max, setMax, selectedValues, setSelectedValues, valueOptions, active, handleApply, handleClear, toggleValue, resetOpen };
+  return { 
+    mode, 
+    setMode, 
+    op, setOp, 
+    min, setMin, 
+    max, setMax, 
+    selectedValues, 
+    setSelectedValues, 
+    valueOptions, 
+    active, 
+    handleApply, 
+    handleClear, 
+    toggleValue, 
+    resetOpen };
 }

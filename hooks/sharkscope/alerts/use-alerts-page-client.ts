@@ -6,7 +6,7 @@ import {
   SHARKSCOPE_ALERTS_LS_PAGE,
   SHARKSCOPE_ALERTS_LS_PAGE_SIZE,
   SHARKSCOPE_ALERTS_LS_SELECTED,
-} from "@/lib/constants/sharkscope/alerts/sharkscope-alerts-page";
+} from "@/lib/constants/sharkscope/alerts";
 import type { SharkscopeAlertRow } from "@/lib/types";
 import { useAlertsDashboard } from "@/hooks/sharkscope/alerts/use-alerts-dashboard";
 

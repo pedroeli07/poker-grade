@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "@/lib/toast";
-import { deleteImports } from "@/lib/queries/db/import-queries";
+import { deleteImports } from "@/lib/queries/db/imports";
 
 export function useImportsActions({
   invalidate,
@@ -32,8 +32,8 @@ export function useImportsActions({
       if (res.success) {
         toast.success(
           ids.length === 1
-            ? "Importação excluída"
-            : `${ids.length} importações excluídas`
+            ? "ImportaÃ§Ã£o excluÃ­da"
+            : `${ids.length} importaÃ§Ãµes excluÃ­das`
         );
         setSelected(new Set());
         invalidate();

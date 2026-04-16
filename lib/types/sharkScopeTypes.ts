@@ -1,8 +1,3 @@
-import type { PlayerRef, WithId } from "./primitives";
-
-export type SharkscopeAnalyticsPeriod = "30d" | "90d";
-export type SharkscopeAnalyticsTab = "site" | "ranking" | "tier" | "bounty";
-
 /** `entries` = inscrições SharkScope (Entries), soma de entradas incl. rebuys; fallback Count no ingest se Entries não vier. */
 type BaseStat = { roi: number | null; profit: number | null; entries: number | null };
 
@@ -22,12 +17,7 @@ export type NetworkStat = BaseStat & {
   lateFinish?: number | null;
 };
 
-/** Dados extra para aba Por site: breakdown por jogador (cache v2). */
-export type SiteAnalyticsPayload = {
-  playersWithSiteData: { id: string; name: string }[];
-  byPlayerId: Record<string, NetworkStat[]>;
-  hasPerPlayerBreakdown: boolean;
-};
+
 
 export type StakeTierKey = "micro" | "low" | "lowMid" | "mid" | "high";
 
@@ -57,57 +47,12 @@ export type TypeStat = BaseStat & {
   lateFinish: number | null;
 };
 
-export type RankingEntry = {
-  player: PlayerRef;
-  /** TotalROI (SharkScope) */
-  roi: number;
-  /** Inscrições (Entries); não usar Count de outro slice de filtro */
-  entries: number | null;
-  profit: number | null;
-  itm: number | null;
-  /** Capacidade — stat API `Ability` (UI “Capacidade”), típico 0–100 */
-  ability: number | null;
-  avStake: number | null;
-  earlyFinish: number | null;
-  lateFinish: number | null;
-};
-
-export type SharkscopeAlertRow = WithId & {
-  playerId: string;
-  alertType: string;
-  severity: string;
-  metricValue: number;
-  threshold: number;
-  context: unknown;
-  triggeredAt: string;
-  acknowledged: boolean;
-  acknowledgedAt: string | null;
-  acknowledgedBy: string | null;
-  player: PlayerRef;
-};
-
-export type SharkscopeAlertFilters = {
-  severity: string;
-  alertType: string;
-  ack: string;
-};
-
 export type ScoutingSearchStats = {
   roi: number | null;
   profit: number | null;
   count: number | null;
   abi: number | null;
   entrants: number | null;
-};
-
-export type ScoutingAnalysisRow = WithId & {
-  nick: string;
-  network: string;
-  rawData: unknown;
-  nlqAnswer: unknown;
-  notes: string | null;
-  createdAt: string;
-  savedBy: string;
 };
 
 export type SharkScopeResponse<T = unknown> = {
@@ -131,4 +76,31 @@ export type SharkscopeSyncJson = {
   remainingSearches?: number | null;
   cancelled?: boolean;
   error?: string;
+};
+
+export type DailySyncSharkScopeResult = {
+  processed: number;
+  errors: number;
+  sharkHttpCalls: number;
+  remainingSearches: number | null;
+  ts: string;
+  cancelled?: boolean;
+  syncMode?: SharkScopeSyncMode;
+};
+
+export type RunDailySyncOptions = {
+  signal?: AbortSignal;
+  /**
+   * Sincroniza só este `playerGroup`. Com `syncMode: "analytics"`, pula stats por nick×rede.
+   * Com `analytics_nick`, mantém statistics do grupo + nick×rede **só** para jogadores deste grupo.
+   */
+  onlyPlayerGroup?: string;
+  /**
+   * `players` — só `Date:10D` (o que a tabela de jogadores lê); sem 30d/90d ou CT.
+   * `analytics` — 30d/90d + CT + breakdown; **não** refaz `Date:10D` (evita duplicar o botão de jogadores). Não pede `statistics` lifetime (poupa buscas).
+   * `analytics_nick` — 30d/90d por Player Group + `statistics` por nick×rede; **sem** `completedTournaments` (poupa buscas vs `analytics`).
+   * `light` — 10d/30d/90d, sem CT. Não pede lifetime.
+   * `full` — 10d/30d/90d + CT + breakdown por tipo. Não pede lifetime.
+   */
+  syncMode?: SharkScopeSyncMode;
 };

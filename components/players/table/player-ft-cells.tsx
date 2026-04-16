@@ -1,8 +1,8 @@
 "use client";
 
 import { memo } from "react";
-import type { PlayerFtTenDayCellProps } from "@/lib/types/playerComponents";
-import { playersTableFtTenDayClassName } from "@/lib/utils/player/player-table-display";
+import type { PlayerFtTenDayCellProps } from "@/lib/types/player";
+import { playersTableFtTenDayClassName } from "@/lib/utils/player";
 
 const PlayerFtTenDayCell = memo(function PlayerFtTenDayCell({ value }: PlayerFtTenDayCellProps) {
   if (value === null) return <span className="text-muted-foreground text-xs">—</span>;

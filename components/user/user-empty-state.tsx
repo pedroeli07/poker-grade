@@ -1,5 +1,5 @@
 import { useState, useEffect, memo } from "react";
-import { getUserPermissions } from "@/lib/queries/db/user-queries";
+import { getUserPermissions } from "@/lib/queries/db/user";
 import { Users } from "lucide-react";
 
 const UserEmptyState = memo(function UserEmptyState({ hasFilters }: { hasFilters: boolean }) {
@@ -26,7 +26,7 @@ const UserEmptyState = memo(function UserEmptyState({ hasFilters }: { hasFilters
             ? "Ajuste os filtros ou a busca."
             : canManage
             ? "Adicione um convite para autorizar um novo cadastro."
-            : "Não há usuários ou convites listados no momento."}
+            : "NÃ£o hÃ¡ usuÃ¡rios ou convites listados no momento."}
         </p>
       </div>
     );

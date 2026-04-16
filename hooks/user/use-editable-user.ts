@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import type { UsuarioDirectoryRow } from "@/lib/types";
+import type { UserDirectoryRow } from "@/lib/types";
 import { UserRole } from "@prisma/client";
 import { isSuperAdminEmail } from "@/lib/utils";
 import {
   updateAuthAccount,
   updatePendingInvite,
-} from "@/lib/queries/db/user-queries";
+} from "@/lib/queries/db/user";
 
 export function useEditableUser(
-  row: UsuarioDirectoryRow,
+  row: UserDirectoryRow,
   runAction: (
     fn: () => Promise<{ error?: string; success?: boolean }>,
     onSuccess?: () => void

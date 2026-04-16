@@ -3,12 +3,12 @@
 import { useMemo, useState, useCallback, useEffect, useLayoutEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { TargetListRow } from "@/lib/types";
-import { getTargetsListDataAction } from "@/lib/queries/db/target-queries";
+import { getTargetsListDataAction } from "@/lib/queries/db/target";
 import { targetKeys } from "@/lib/queries/target-query-keys";
-import { LIMIT_ACTION_LABEL, NONE_LIMIT } from "@/lib/constants/grade/grade-rule-editor";
-import { TARGETS_LS_VIEW } from "@/lib/constants/target/targets-page";
+import { LIMIT_ACTION_LABEL, NONE_LIMIT } from "@/lib/constants/grade";
+import { TARGETS_LS_VIEW } from "@/lib/constants/target";
 import { distinctOptions } from "@/lib/utils";
-import { getTargetStatusLabel } from "@/lib/utils/target/target-utils";
+import { getTargetStatusLabel } from "@/lib/utils/target";
 import type { ColKey } from "@/lib/types";
 import { useTargetsListStore } from "@/lib/stores/use-targets-list-store";
 
@@ -66,7 +66,7 @@ export function useTargetsListPage(initialRows: TargetListRow[]) {
       })),
       targetType: distinctOptions(rows, (r) => ({
         value: r.targetType,
-        label: r.targetType === "NUMERIC" ? "Numérico" : "Texto",
+        label: r.targetType === "NUMERIC" ? "NumÃ©rico" : "Texto",
       })),
       limitAction: distinctOptions(rows, (r) => {
         const v = r.limitAction ?? NONE_LIMIT;

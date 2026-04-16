@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import type { ColumnSortKind } from "@/lib/types/sortButton";
+import type { ColumnSortKind } from "@/lib/types/dataTable";
 import type { ColKey, TargetListRow, TargetsTableSortState } from "@/lib/types";
 import { nextSortState } from "@/lib/table-sort";
-import { sortTargetsTableRows } from "@/lib/utils/target/target-utils";
+import { sortTargetsTableRows } from "@/lib/utils/target";
 import { useTargetListViewModels } from "@/hooks/targets/use-target-list-view-models";
 
 export function useTargetsTableSection(filtered: TargetListRow[]) {

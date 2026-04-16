@@ -8,7 +8,7 @@ import {
   SHARKSCOPE_SCOUTING_LS_NICK,
   SHARKSCOPE_SCOUTING_LS_NLQ,
   SHARKSCOPE_SCOUTING_LS_NOTES,
-} from "@/lib/constants/sharkscope/scouting/sharkscope-scouting-page";
+} from "@/lib/constants/sharkscope/scouting";
 import { SHARKSCOPE_NLQ_TIMEZONE } from "@/lib/constants";
 import type { PokerNetworkKey, PokerNetworkOption, ScoutingAnalysisRow } from "@/lib/types";
 import { parseScoutingSearchPayload } from "@/lib/utils";

@@ -4,7 +4,7 @@ import { History } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ACTION_CONFIG } from "@/lib/constants";
-import type { HistoryPageData } from "@/lib/history/history-page-load";
+import type { HistoryPageData } from "@/lib/data/history";
 import { memo } from "react";
 
 const TIMELINE_CARD_CLS =

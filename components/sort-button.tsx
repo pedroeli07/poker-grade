@@ -1,7 +1,7 @@
 "use client";
 
 import TableColumnSortButton from "@/components/table-column-sort-button";
-import type { ColumnSortButtonProps } from "@/lib/types/sortButton";
+import type { ColumnSortButtonProps } from "@/lib/types/dataTable";
 
 function SortButton<K extends string>({
   columnKey,

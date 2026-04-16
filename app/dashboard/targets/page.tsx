@@ -1,6 +1,6 @@
 import dynamicImport from "next/dynamic";
 import TargetsPageSkeleton from "@/components/targets/targets-page-skeleton";
-import { getTargetsPageProps } from "@/lib/targets/targets-page-server";
+import { getTargetsPageProps } from "@/lib/data/targets";
 import { targetsPageMetadata } from "@/lib/constants/metadata";
 
 export const dynamic = "force-dynamic";

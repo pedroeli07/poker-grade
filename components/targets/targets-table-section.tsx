@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TARGETS_TABLE_HEAD_COLUMNS } from "@/lib/constants/target/targets-page";
+import { TARGETS_TABLE_HEAD_COLUMNS } from "@/lib/constants/target";
 import {
   dataTableHeaderRowActiveRingClass,
   dataTableHeaderRowClass,
@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import {
   buildTargetsFilterSummaryLines,
   formatTargetsSortSummary,
-} from "@/lib/utils/targets-table-display";
+} from "@/lib/utils/target";
 import TargetTableRow from "@/components/targets/target-table-row";
 import SortButton from "@/components/sort-button";
 

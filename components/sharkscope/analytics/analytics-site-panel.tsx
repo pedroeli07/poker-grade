@@ -23,8 +23,14 @@ import {
   useAnalyticsSitePanel,
   type UseAnalyticsSitePanelOptions,
 } from "@/hooks/sharkscope/analytics/use-analytics-site-panel";
-import { fmtEntries, fmtPct, fmtStake, tdCenter, filterWrap } from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-format";
-import { SITE_ANALYTICS_SELECT_TRIGGER_CLASS } from "@/lib/utils/sharlscope/analytics/site-analytics-panel-format";
+import {
+  fmtEntries,
+  fmtPct,
+  fmtStake,
+  tdCenter,
+  filterWrap,
+  SITE_ANALYTICS_SELECT_TRIGGER_CLASS,
+} from "@/lib/utils/sharkscope/analytics";
 import { SITE_CHART_Y_METRICS, type SiteChartYMetric } from "@/lib/site-analytics-chart";
 
 const AnalyticsSitePanel = memo(function AnalyticsSitePanel({

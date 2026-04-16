@@ -1,17 +1,11 @@
 import type { ReactNode } from "react";
+import type { SortDir } from "@/lib/table-sort";
 
-/** Título de coluna com destaque quando o filtro da coluna está ativo. */
-export type FilteredColumnTitleProps = {
-  active: boolean;
-  children: ReactNode;
-};
-
+export type FilteredColumnTitleProps = { active: boolean; children: ReactNode };
 export type DataTableToolbarProps = {
-  /** Texto antes dos números, ex.: "Mostrando" */
   showingLabel?: string;
   filteredCount: number;
   totalCount: number;
-  /** Singular e plural da entidade, ex.: ["jogador", "jogadores"] */
   entityLabels: [string, string];
   hasActiveView: boolean;
   anyFilter: boolean;
@@ -19,12 +13,17 @@ export type DataTableToolbarProps = {
   filterSummaryLines: string[];
   onClear: () => void;
   clearButtonLabel?: string;
-  /** Título da secção de chips (ex.: "Valores filtrados") */
   filterChipsSectionTitle?: string;
 };
+export type DataTableShellProps = { hasActiveView: boolean; children: ReactNode; className?: string };
 
-export type DataTableShellProps = {
-  hasActiveView: boolean;
-  children: ReactNode;
-  className?: string;
+export type ColumnSortKind = "number" | "string" | "date";
+export type ColumnSortState<K extends string> = { key: K; dir: SortDir } | null;
+export type ColumnSortToggle<K extends string> = (key: K, kind: ColumnSortKind) => void;
+export type ColumnSortButtonProps<K extends string> = {
+  columnKey: K;
+  sort: ColumnSortState<K>;
+  toggleSort: ColumnSortToggle<K>;
+  kind: ColumnSortKind;
+  label: string;
 };

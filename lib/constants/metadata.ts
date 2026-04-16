@@ -23,7 +23,7 @@ const PAGES: Record<string, { title: string; desc: string }> = {
   players: { title: "Jogadores", desc: "Gerencie o time de jogadores e aloque coaches responsáveis." },
   profile: { title: "Meu Perfil", desc: "Gerencie suas informações pessoais e credenciais" },
   review: { title: "Conferência de Torneios", desc: "Torneios extra-play e suspeitos aguardando decisão do coach." },
-  usuarios: { title: "Usuários", desc: "Gerencie os usuários do sistema e suas permissões." },
+  users: { title: "Usuários", desc: "Gerencie os usuários do sistema e suas permissões." },
   dashboard: { title: "Dashboard", desc: "Visão geral do time de jogadores." },
   forgotPassword: { title: "Recuperar Senha | Gestão de Grades", desc: "Redefina a sua senha." },
   login: { title: "Login | Gestão de Grades", desc: "Acesse sua conta" },
@@ -35,9 +35,6 @@ const KEYS = {
   GRADES_LS_VIEW: "gestao-grades:grades:view",
   NOTIFICATIONS_LS_FILTER: "gestao-grades:notifications:filter",
   NOTIFICATIONS_LS_PAGE: "gestao-grades:notifications:page",
-  SHARKSCOPE_ALERTS_LS_PAGE_SIZE: "gestao-grades:sharkscope-alerts:pageSize",
-  SHARKSCOPE_ALERTS_LS_PAGE: "gestao-grades:sharkscope-alerts:page",
-  SHARKSCOPE_ALERTS_LS_SELECTED: "gestao-grades:sharkscope-alerts:selectedIds",
   SHARKSCOPE_ANALYTICS_LS_PERIOD: "gestao-grades:sharkscope-analytics:period",
   SHARKSCOPE_ANALYTICS_LS_TAB: "gestao-grades:sharkscope-analytics:tab",
   SHARKSCOPE_SCOUTING_LS_NICK: "gestao-grades:sharkscope-scouting:nick",
@@ -66,7 +63,7 @@ export const playerProfilePageMetadata = toMetadata(PAGES.playerProfile);
 export const playersPageMetadata = toMetadata(PAGES.players);
 export const profilePageMetadata = toMetadata(PAGES.profile);
 export const reviewPageMetadata = toMetadata(PAGES.review);
-export const usuariosPageMetadata = toMetadata(PAGES.usuarios);
+export const usersPageMetadata = toMetadata(PAGES.users);
 export const dashboardPageMetadata = toMetadata(PAGES.dashboard);
 export const forgotPasswordPageMetadata = toMetadata(PAGES.forgotPassword);
 export const loginPageMetadata = toMetadata(PAGES.login);
@@ -74,7 +71,4 @@ export const registerPageMetadata = toMetadata(PAGES.register);
 export const errorPageMetadata = toMetadata(PAGES.error);
 export const defaultMetadata = { title: "Gestão de Grades", description: "Gestão de Grades" } satisfies Metadata;
 
-export const { GRADES_LS_VIEW, NOTIFICATIONS_LS_FILTER, NOTIFICATIONS_LS_PAGE, SHARKSCOPE_ALERTS_LS_PAGE_SIZE, SHARKSCOPE_ALERTS_LS_PAGE, SHARKSCOPE_ALERTS_LS_SELECTED, SHARKSCOPE_ANALYTICS_LS_PERIOD, SHARKSCOPE_ANALYTICS_LS_TAB, SHARKSCOPE_SCOUTING_LS_NICK, SHARKSCOPE_SCOUTING_LS_NETWORK, SHARKSCOPE_SCOUTING_LS_NOTES, SHARKSCOPE_SCOUTING_LS_NLQ, SHARKSCOPE_SCOUTING_LS_EXPANDED, TARGETS_LS_VIEW } = KEYS;
-
-export const SHARKSCOPE_ALERTS_PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 300] as const;
-export const SHARKSCOPE_ALERTS_ALLOWED_PAGE_SIZE = new Set<number>(SHARKSCOPE_ALERTS_PAGE_SIZE_OPTIONS);
+export const { GRADES_LS_VIEW, NOTIFICATIONS_LS_FILTER, NOTIFICATIONS_LS_PAGE, SHARKSCOPE_ANALYTICS_LS_PERIOD, SHARKSCOPE_ANALYTICS_LS_TAB, SHARKSCOPE_SCOUTING_LS_NICK, SHARKSCOPE_SCOUTING_LS_NETWORK, SHARKSCOPE_SCOUTING_LS_NOTES, SHARKSCOPE_SCOUTING_LS_NLQ, SHARKSCOPE_SCOUTING_LS_EXPANDED, TARGETS_LS_VIEW } = KEYS;

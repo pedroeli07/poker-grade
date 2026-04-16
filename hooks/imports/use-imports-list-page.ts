@@ -6,7 +6,7 @@ import { distinctOptions, importRowDateLabel } from "@/lib/utils";
 import { EMPTY_PLAYER, STALE_TIME } from "@/lib/constants";
 import { useImportsStore } from "@/lib/stores/use-imports-store";
 import { importKeys } from "@/lib/queries/import-query-keys";
-import { getImportsListRowsAction } from "@/lib/queries/db/import-queries";
+import { getImportsListRowsAction } from "@/lib/queries/db/imports";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import type { ImportListRow, ImportsColumnKey } from "@/lib/types";
 import { useImportsActions } from "@/hooks/imports/use-imports-actions";
@@ -45,7 +45,7 @@ export function useImportsListPage(initialImports: ImportListRow[]) {
       })),
       player: distinctOptions(imports, (r) => {
         const v = r.playerName ?? EMPTY_PLAYER;
-        return { value: v, label: r.playerName ?? "(não identificado)" };
+        return { value: v, label: r.playerName ?? "(nÃ£o identificado)" };
       }),
       totalRows: distinctOptions(imports, (r) => ({
         value: String(r.totalRows),

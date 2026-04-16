@@ -132,7 +132,7 @@ app/
     history/                  # histórico (limites, etc.)
     notifications/            # centro de notificações
     profile/                  # perfil do utilizador
-    usuarios/                 # gestão de utilizadores (papéis elevados)
+    users/                    # gestão de utilizadores (papéis elevados)
   api/
     auth/                     # login, logout, registo, Google, OTP, reset
     cron/daily-sync/          # job agendado SharkScope — exige CRON_SECRET

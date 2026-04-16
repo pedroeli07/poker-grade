@@ -1,4 +1,4 @@
-import { SHARKSCOPE_ANALYTICS_TAB_LABELS, TAB_ICONS, TAB_IDS } from "@/lib/constants/sharkscope/analytics/sharkscope-analytics-labels";
+import { SHARKSCOPE_ANALYTICS_TAB_LABELS, TAB_ICONS, TAB_IDS } from "@/lib/constants/sharkscope/analytics";
 import type { SharkscopeAnalyticsPeriod, SharkscopeAnalyticsTab } from "@/lib/types";
 import { memo } from "react";
 

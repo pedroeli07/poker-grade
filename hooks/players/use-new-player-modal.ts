@@ -1,23 +1,32 @@
 "use client";
 
-import { useCallback, useRef, useState, useTransition, type FormEvent } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  useTransition,
+  type ComponentProps,
+} from "react";
+
+type FormOnSubmitEvent = Parameters<
+  NonNullable<ComponentProps<"form">["onSubmit"]>
+>[0];
 import { useRouter } from "next/navigation";
-import { createPlayer } from "@/lib/queries/db/player-queries";
+import { createPlayer } from "@/lib/queries/db/player";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import type { NewPlayerModalProps } from "@/lib/types";
-import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals/modal-dialog-ui";
+import type { NewPlayerModalProps, PlayerNickFormRow } from "@/lib/types";
+import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals";
 import {
   PLAYER_MODAL_ABI_UNIT_NONE,
   PLAYER_MODAL_SELECT_NONE,
-} from "@/lib/constants/modals/player-modals";
+} from "@/lib/constants/modals";
 import {
   appendEmptyNickRow,
   removeNickRowAt,
-  type PlayerNickFormRow,
   updateNickNetworkAt,
   updateNickValueAt,
-} from "@/lib/utils/player-nick-form-rows";
+} from "@/lib/utils/player";
 
 export function useNewPlayerModal({ coaches, grades }: NewPlayerModalProps) {
   const [open, setOpen] = useState(false);
@@ -50,7 +59,7 @@ export function useNewPlayerModal({ coaches, grades }: NewPlayerModalProps) {
   );
 
   const handleSubmit = useCallback(
-    (e: FormEvent<HTMLFormElement>) => {
+    (e: FormOnSubmitEvent) => {
       e.preventDefault();
       const formData = new FormData(e.currentTarget);
       formData.set("coachId", coachId);

@@ -18,6 +18,7 @@ import { DeleteImportButton } from "@/components/delete-import-button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cardClassName } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import type { DashboardPageData } from "@/hooks/dashboard/dashboard-page-load";
 
 const ACTION_STYLE = {
@@ -112,10 +113,10 @@ export function DashboardPageView(data: DashboardPageData) {
           </CardContent>
         </Card>
 
-        <Card className={`${cardClassName} ${pendingReviews > 0 ? "hover:glow-primary" : ""}`}>
+        <Card className={cn(cardClassName, pendingReviews > 0 && "hover:glow-primary")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-semibold text-muted-foreground  tracking-wide">Revisões Pendentes</CardTitle>
-            <AlertTriangle className={`h-5 w-5 ${pendingReviews > 0 ? "text-red-500" : "text-muted-foreground"}`} />
+            <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">Revisões Pendentes</CardTitle>
+            <AlertTriangle className={cn("h-5 w-5", pendingReviews > 0 ? "text-red-500" : "text-muted-foreground")} />
           </CardHeader>
           <CardContent>
             <div className={`text-4xl font-bold ${pendingReviews > 0 ? "text-primary" : "text-primary"}`}>
@@ -135,7 +136,7 @@ export function DashboardPageView(data: DashboardPageData) {
 
         <Card className={cardClassName}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-semibold text-muted-foreground  tracking-wide">Targets On Track</CardTitle>
+            <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">Targets On Track</CardTitle>
             <Target className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
@@ -152,7 +153,7 @@ export function DashboardPageView(data: DashboardPageData) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-7">
-        <Card className={`col-span-4 ${cardClassName}`}>
+        <Card className={cn("col-span-4", cardClassName)}>
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-lg">Importações Recentes</CardTitle>
             <Button variant="ghost" size="sm" asChild className="text-[15px]">
@@ -226,7 +227,7 @@ export function DashboardPageView(data: DashboardPageData) {
           </CardContent>
         </Card>
 
-        <Card className={`col-span-3 ${cardClassName}`}>
+        <Card className={cn("col-span-3", cardClassName)}>
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-lg">Movimentações de Limite</CardTitle>
             <Button variant="ghost" size="sm" asChild className="text-[15px]">

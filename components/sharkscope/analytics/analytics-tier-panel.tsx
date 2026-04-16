@@ -13,8 +13,14 @@ import SortButton from "@/components/sort-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { SharkscopeAnalyticsPeriod, TierStat } from "@/lib/types";
 import { useTierAnalytics } from "@/lib/use-sharkscope-analytics";
-import { fmtEntries, fmtPct, fmtStake, tdCenter, filterWrap } from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-format";
-import { SITE_ANALYTICS_SELECT_TRIGGER_CLASS } from "@/lib/utils/sharlscope/analytics/site-analytics-panel-format";
+import {
+  fmtEntries,
+  fmtPct,
+  fmtStake,
+  tdCenter,
+  filterWrap,
+  SITE_ANALYTICS_SELECT_TRIGGER_CLASS,
+} from "@/lib/utils/sharkscope/analytics";
 import { SITE_CHART_Y_METRICS, type SiteChartYMetric } from "@/lib/site-analytics-chart";
 
 const AnalyticsTierPanel = memo(function AnalyticsTierPanel({
@@ -28,12 +34,6 @@ const AnalyticsTierPanel = memo(function AnalyticsTierPanel({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Consolidado por <strong className="text-foreground">tier</strong> usando o ABI médio (AvStake) no cache{" "}
-        <code className="text-[10px]">statistics</code> do Player Group (mesma base que Por site). Faixas: Micro (até $10),
-        Low ($10–$25), Low-Mid ($25–$50), Mid ($50–$150), High ($150+). Período:{" "}
-        <span className="font-medium text-foreground">{period}</span>.
-      </p>
       <div className="rounded-md border border-border overflow-x-auto">
         <Table>
           <TableHeader>

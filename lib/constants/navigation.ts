@@ -34,7 +34,7 @@ const PRIMARY_NAV: PrimaryNavRow[] = [
   { title: "Revisão", href: "/dashboard/review", icon: AlertTriangle },
   { title: "Targets", href: "/dashboard/targets", icon: Target },
   { title: "Histórico", href: "/dashboard/history", icon: History },
-  { title: "Usuários", href: "/dashboard/usuarios", icon: UserRoundCog },
+  { title: "Usuários", href: "/dashboard/users", icon: UserRoundCog },
 ];
 
 const SHARKSCOPE_ITEMS = [

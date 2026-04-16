@@ -1,28 +1,27 @@
 "use client";
 
 import type { PlayerStatus } from "@prisma/client";
-import { useCallback, useMemo, useState, type FormEvent } from "react";
-import { updatePlayer } from "@/lib/queries/db/player-queries";
+import { useCallback, useMemo, useState, type SubmitEvent } from "react";
+import { updatePlayer } from "@/lib/queries/db/player";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import type { CoachOpt, GradeOpt, PlayerTableRow } from "@/lib/types";
+import { type CoachOpt, type GradeOpt, type PlayerTableRow, type PlayerNickFormRow, ErrorTypes } from "@/lib/types";
 import { NONE } from "@/lib/constants";
 import {
   PLAYER_MODAL_ABI_UNIT_NONE,
   PLAYER_MODAL_SELECT_NONE,
-} from "@/lib/constants/modals/player-modals";
+} from "@/lib/constants/modals";
 import {
   appendEmptyNickRow,
   removeNickRowAt,
-  type PlayerNickFormRow,
   updateNickNetworkAt,
   updateNickValueAt,
-} from "@/lib/utils/player-nick-form-rows";
+} from "@/lib/utils";
 
 function initialAbiUnit(u: string | null | undefined): string {
   const t = u?.trim();
   if (!t) return PLAYER_MODAL_ABI_UNIT_NONE;
-  if (t === "$" || t === "€" || t === "¥") return t;
+  if (t === "$" || t === "â‚¬" || t === "Â¥") return t;
   return PLAYER_MODAL_ABI_UNIT_NONE;
 }
 
@@ -73,32 +72,37 @@ export function useEditPlayerModalForm({
   }, [grades, player.gradeKey, player.gradeLabel]);
 
   const handleSubmit = useCallback(
-    (e: FormEvent<HTMLFormElement>) => {
+    (e: SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
       const formData = new FormData(e.currentTarget);
-      formData.set("id", player.id);
-      formData.set("name", name.trim());
-      formData.set("email", email.trim());
-      formData.set("coachId", coachId);
-      formData.set("mainGradeId", mainGradeId);
-      formData.set("abiAlvoValue", abiAlvoValue);
-      formData.set("abiAlvoUnit", abiAlvoUnit);
-      formData.set("status", status);
-      formData.set("playerGroup", playerGroup.trim());
-      formData.set("nicksData", JSON.stringify(nicks));
+      const payload: Record<string, string> = {
+        id: player.id,
+        name: name.trim(),
+        email: email.trim(),
+        coachId,
+        mainGradeId,
+        abiAlvoValue,
+        abiAlvoUnit,
+        status,
+        playerGroup: playerGroup.trim(),
+        nicksData: JSON.stringify(nicks),
+      };
+      for (const [key, value] of Object.entries(payload)) {
+        formData.set(key, value);
+      }
 
       startTransition(() => {
         void (async () => {
           try {
             await updatePlayer(formData);
-            toast.success("Jogador atualizado", "As alterações foram salvas.");
+            toast.success("Jogador atualizado", "As alterações foram salvas com sucesso.");
             onClose();
             setTimeout(() => {
               invalidatePlayers();
             }, 0);
           } catch (err) {
             const msg =
-              err instanceof Error && err.message === "FORBIDDEN"
+              err instanceof Error && err.message === ErrorTypes.FORBIDDEN
                 ? "Sem permissão para editar este jogador."
                 : err instanceof Error && err.message
                   ? err.message

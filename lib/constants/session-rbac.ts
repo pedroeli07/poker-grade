@@ -1,6 +1,6 @@
 import { PlayerStatus, UserRole } from "@prisma/client";
 
-export const SUPER_ADMIN_EMAIL = "admin@clteam.com";
+export const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
 
 const ROLE_SELECT_DEFS = [
   [UserRole.VIEWER, "Viewer"],

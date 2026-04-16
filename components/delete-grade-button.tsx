@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteGrade } from "@/lib/queries/db/grade-queries";
+import { deleteGrade } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,7 @@ export function DeleteGradeButton({
     if (pending) return;
     setPending(true);
     try {
-      log.info("Usuário confirmou exclusão de grade", {
+      log.info("UsuÃ¡rio confirmou exclusÃ£o de grade", {
         id: gradeId,
         name: gradeName,
       });
@@ -54,7 +54,7 @@ export function DeleteGradeButton({
       log.error("Falha ao excluir grade no cliente", undefined, {
         id: gradeId,
       });
-      toast.error("Não foi possível remover a grade");
+      toast.error("NÃ£o foi possÃ­vel remover a grade");
     } finally {
       setPending(false);
     }
@@ -82,7 +82,7 @@ export function DeleteGradeButton({
           <AlertDialogDescription>
             A grade{" "}
             <span className="font-semibold text-foreground">{gradeName}</span>{" "}
-            será removida com todas as regras. Esta ação não pode ser desfeita.
+            serÃ¡ removida com todas as regras. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -95,7 +95,7 @@ export function DeleteGradeButton({
             disabled={pending}
             onClick={handleConfirm}
           >
-            {pending ? "Excluindo…" : "Excluir"}
+            {pending ? "Excluindoâ€¦" : "Excluir"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

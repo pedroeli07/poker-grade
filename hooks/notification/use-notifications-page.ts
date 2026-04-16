@@ -8,7 +8,7 @@ import {
   markAllNotificationsRead,
   deleteNotification,
   deleteSelectedNotifications,
-} from "@/lib/queries/db/notification-queries";
+} from "@/lib/queries/db/notification";
 import { notificationKeys } from "@/lib/queries/notification-query-keys";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import { toast } from "@/lib/toast";
@@ -17,7 +17,7 @@ import { NotificationsPageData } from "@/lib/types/index";
 import {
   NOTIFICATIONS_LS_FILTER,
   NOTIFICATIONS_LS_PAGE,
-} from "@/lib/constants/notification/notifications-page";
+} from "@/lib/constants/notification";
 
 export function useNotificationsPage(initialData: NotificationsPageData) {
   const [page, setPage] = useState(initialData.page);

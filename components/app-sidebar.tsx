@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Spade, ChevronLeft, ChevronDown } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/lib/stores/use-sidebar-store";
 import { memo, useEffect, useMemo, useState } from "react";
@@ -11,7 +10,7 @@ import {
   SIDEBAR_NAV_ITEMS,
   SIDEBAR_SECONDARY_ITEMS,
 } from "@/lib/constants";
-import type { SidebarNavEntry, SidebarNavGroup } from "@/lib/types";
+import type { SidebarIcon, SidebarNavEntry, SidebarNavGroup } from "@/lib/types";
 import type { UserRole } from "@prisma/client";
 import {
   Collapsible,
@@ -38,7 +37,7 @@ function filterNavForRole(
   return items.filter((item) => {
     if (item.kind === "link") {
       if (item.href === "/dashboard/minha-grade") return false;
-      if (item.href === "/dashboard/usuarios") {
+      if (item.href === "/dashboard/users") {
         return ["ADMIN", "MANAGER", "COACH"].includes(userRole);
       }
       return true;
@@ -58,7 +57,7 @@ function NavItem({
 }: {
   href: string;
   title: string;
-  icon: LucideIcon;
+  icon: SidebarIcon;
   exact?: boolean;
   isOpen: boolean;
   pathname: string;

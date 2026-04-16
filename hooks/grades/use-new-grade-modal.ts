@@ -2,11 +2,11 @@
 
 import { useCallback, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { createGradeProfile } from "@/lib/queries/db/grade-queries";
+import { createGradeProfile } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
 import { isNextRedirectError } from "@/lib/utils";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals/modal-dialog-ui";
+import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals";
 
 export function useNewGradeModal() {
   const [open, setOpen] = useState(false);

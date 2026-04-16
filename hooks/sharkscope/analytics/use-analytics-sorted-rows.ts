@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { AnalyticsSortState } from "@/lib/types/sharkscopeAnalyticsUi";
+import type { AnalyticsSortState } from "@/lib/types";
 import useAnalyticsColumnSort from "@/hooks/sharkscope/analytics/use-analytics-column-sort";
 
 /**

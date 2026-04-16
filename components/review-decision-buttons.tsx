@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { processReview } from "@/lib/queries/db/review-queries";
+import { processReview } from "@/lib/queries/db/review";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { useInvalidate } from "@/hooks/use-invalidate";
@@ -16,18 +16,18 @@ export function ReviewDecisionButtons({ reviewId }: { reviewId: string }) {
 
   async function decide(status: ReviewStatus, label: string) {
     try {
-      log.info("Decisão na fila de revisão", { reviewId, status });
+      log.info("DecisÃ£o na fila de revisÃ£o", { reviewId, status });
       await processReview(reviewId, status);
       toast.success(label);
       invalidateReview();
       router.refresh();
     } catch (e) {
-      log.error("Erro ao salvar decisão de revisão", undefined, {
+      log.error("Erro ao salvar decisÃ£o de revisÃ£o", undefined, {
         reviewId,
         status,
       });
       const msg =
-        e instanceof Error ? e.message : "Não foi possível salvar a decisão";
+        e instanceof Error ? e.message : "NÃ£o foi possÃ­vel salvar a decisÃ£o";
       toast.error("Erro", msg);
     }
   }
@@ -48,7 +48,7 @@ export function ReviewDecisionButtons({ reviewId }: { reviewId: string }) {
         size="sm"
         variant="outline"
         className="h-8 text-red-500 border-red-500/30 hover:bg-red-500/10 cursor-pointer"
-        onClick={() => decide("REJECTED", "Registrado como infração")}
+        onClick={() => decide("REJECTED", "Registrado como infraÃ§Ã£o")}
       >
         Infra
       </Button>

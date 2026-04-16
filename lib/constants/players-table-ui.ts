@@ -1,5 +1,5 @@
 import type { PlayerStatus } from "@prisma/client";
-import type { PlayersTableSortKey } from "@/lib/types/playerTypes";
+import type { PlayersTableSortKey } from "@/lib/types/player";
 
 /** Labels da ordenação (resumo no topo da tabela). */
 export const PLAYERS_TABLE_SORT_LABELS: Record<PlayersTableSortKey, string> = {
@@ -21,6 +21,12 @@ export const PLAYERS_TABLE_FP_ATTENTION_THRESHOLD = 8;
 
 /** Limiar FT 10d abaixo do qual o badge fica vermelho. */
 export const PLAYERS_TABLE_FT_LOW_THRESHOLD = 8;
+
+/** Faixas de ROI (%) para cor do badge na tabela (abaixo de `softNegative` e ≥0: cores distintas). */
+export const PLAYERS_TABLE_ROI_BADGE_THRESHOLDS = {
+  strongNegative: -40,
+  softNegative: -20,
+} as const;
 
 export const PLAYER_TABLE_STATUS_LABEL: Record<PlayerStatus, string> = {
   ACTIVE: "Ativo",

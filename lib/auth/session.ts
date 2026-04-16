@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createLogger } from "@/lib/logger";
-import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC } from "@/lib/constants";
-import { logPerf } from "@/lib/utils/perf";
+import { nodeEnv, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC } from "@/lib/constants";
+import { logPerf } from "@/lib/utils";
 import { signSessionToken, verifySessionJwt } from "./jwt";
 
 const log = createLogger("auth.session");
@@ -151,7 +151,7 @@ export async function setSessionCookie(token: string): Promise<void> {
   const jar = await cookies();
   jar.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: nodeEnv === "production",
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE_SEC,

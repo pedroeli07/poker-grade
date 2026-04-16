@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Info, Pencil, Loader2 } from "lucide-react";
-import { updateGradeCoachNote } from "@/lib/queries/db/grade-queries";
+import { updateGradeCoachNote } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
 
@@ -44,7 +44,7 @@ export function GradeCoachNoteSection({
     startTransition(async () => {
       const res = await updateGradeCoachNote(gradeId, text.trim() === "" ? null : text);
       if (!res.ok) {
-        toast.error("Não foi possível salvar", res.error);
+        toast.error("NÃ£o foi possÃ­vel salvar", res.error);
         return;
       }
       toast.success("Nota do coach atualizada");
@@ -100,7 +100,7 @@ export function GradeCoachNoteSection({
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Orientações sobre a grade, exceções, contexto para o jogador…"
+            placeholder="OrientaÃ§Ãµes sobre a grade, exceÃ§Ãµes, contexto para o jogadorâ€¦"
             className="min-h-[160px] text-sm resize-y"
             maxLength={2000}
             disabled={pending}
@@ -121,7 +121,7 @@ export function GradeCoachNoteSection({
               {pending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Salvando…
+                  Salvandoâ€¦
                 </>
               ) : (
                 "Salvar"

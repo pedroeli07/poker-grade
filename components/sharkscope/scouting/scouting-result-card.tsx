@@ -9,7 +9,7 @@ import { POKER_NETWORKS } from "@/lib/constants";
 import ScoutingRoiDisplay from "@/components/sharkscope/scouting/scouting-roi-display";
 import ScoutingStatCard from "@/components/sharkscope/scouting/scounting-stat-card";
 import type { PokerNetworkKey, ScoutingSearchStats } from "@/lib/types";
-import { scoutingProfitClass, scoutingProfitText } from "@/lib/utils/sharlscope/scouting/scouting-format";
+import { scoutingProfitClass, scoutingProfitText } from "@/lib/utils/sharkscope/scouting";
 import { memo } from "react";
 
 const ScoutingResultCard = memo(function ScoutingResultCard({

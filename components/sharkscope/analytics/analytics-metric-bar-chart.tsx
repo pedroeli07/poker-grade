@@ -2,9 +2,9 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import {Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis} from "recharts";
-import { ANALYTICS_METRIC_BAR_CHART_HEIGHT } from "@/lib/constants/sharkscope/analytics/analytics-metric-bar-chart";
-import type { AnalyticsMetricBarChartProps } from "@/lib/types/analyticsMetricBarChart";
-import { metricBarFillForCell, metricBarYAxisDomain } from "@/lib/utils/sharlscope/analytics/analytics-metric-bar-chart";
+import { ANALYTICS_METRIC_BAR_CHART_HEIGHT } from "@/lib/constants/sharkscope/analytics";
+import type { AnalyticsMetricBarChartProps } from "@/lib/types/sharkscope/analytics";
+import { metricBarFillForCell, metricBarYAxisDomain } from "@/lib/utils/sharkscope/analytics";
 import { cn } from "@/lib/utils";
 
 export function AnalyticsMetricBarChart({

@@ -5,13 +5,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { distinctOptions } from "@/lib/utils";
 import type { PlayerTableRow, PlayersTableColumnKey, PlayersTableSortKey } from "@/lib/types";
 import type { PlayersTablePayload } from "@/lib/types";
-import { getPlayersTableDataAction } from "@/lib/queries/db/player-queries";
+import { getPlayersTableDataAction } from "@/lib/queries/db/player";
 import { playerKeys } from "@/lib/queries/player-query-keys";
 import { EMPTY_NICK, PLAYER_GROUP_FILTER_HAS_ANY, STALE_TIME } from "@/lib/constants";
 import { usePlayersStore } from "@/lib/stores/use-players-store";
 import type { NumberFilterValue } from "@/lib/number-filter";
 import { matchNumberFilter, getUniqueValues } from "@/lib/match-number-filter";
-import type { ColumnSortKind } from "@/lib/types/sortButton";
+import type { ColumnSortKind } from "@/lib/types/dataTable";
 import {
   compareNumberNullsLast,
   compareString,
@@ -30,7 +30,9 @@ export function usePlayersTablePage(initialPayload: PlayersTablePayload) {
     return () => {
       void queryClient.cancelQueries({ queryKey: playerKeys.all });
     };
-  }, [queryClient]);
+    // queryClient é estável (singleton de useState) — sem dependência necessária
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: payload = initialPayload } = useQuery({
     queryKey: playerKeys.list(),
@@ -74,7 +76,7 @@ export function usePlayersTablePage(initialPayload: PlayersTablePayload) {
         for (const r of rows) {
           for (const n of r.nicks) {
             const key = nickRowKey(n);
-            if (!map.has(key)) map.set(key, `${n.nick} · ${n.network}`);
+            if (!map.has(key)) map.set(key, `${n.nick} Â· ${n.network}`);
           }
         }
         return [...map.entries()]

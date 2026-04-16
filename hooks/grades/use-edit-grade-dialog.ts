@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { updateGradeProfile } from "@/lib/queries/db/grade-queries";
+import { updateGradeProfile } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 
@@ -43,7 +43,7 @@ export function useEditGradeDialog({
       setOpen(false);
       invalidateGrades();
     } catch {
-      toast.error("Não foi possível salvar");
+      toast.error("NÃ£o foi possÃ­vel salvar");
     } finally {
       setPending(false);
     }

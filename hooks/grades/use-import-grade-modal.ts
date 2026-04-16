@@ -2,13 +2,12 @@
 
 import { useCallback, useRef, useState, useTransition, type ChangeEvent, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { importGradeFromJson } from "@/lib/queries/db/grade-queries";
+import { importGradeFromJson } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { isNextRedirectError } from "@/lib/utils";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals/modal-dialog-ui";
-import { GRADE_JSON_IMPORT_INVALID_PT } from "@/lib/constants/modals/import-modals";
+import { GRADE_JSON_IMPORT_INVALID_PT, MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals";
 
 const log = createLogger("grade-modals");
 
@@ -83,9 +82,9 @@ export function useImportGradeModal() {
         } catch (err) {
           if (isNextRedirectError(err)) throw err;
           const msg = err instanceof Error ? err.message : "Erro desconhecido ao importar JSON";
-          log.error("Erro na importação JSON", err instanceof Error ? err : undefined);
+          log.error("Erro na importaÃ§Ã£o JSON", err instanceof Error ? err : undefined);
           setError(msg);
-          toast.error("Não foi possível importar", msg);
+          toast.error("NÃ£o foi possÃ­vel importar", msg);
         }
       });
     },

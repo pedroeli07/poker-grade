@@ -1,8 +1,6 @@
 import { SHARKSCOPE_STATS_FILTER_30D, SHARKSCOPE_STATS_FILTER_90D } from "@/lib/constants/sharkscope-type-filters";
 import type { SharkScopeSyncMode } from "@/lib/types/sharkScopeTypes";
 
-export type { SharkScopeSyncMode };
-
 /** Query extra em `completedTournaments` — uma linha por entrada/reentrada (alinha volume/ROI ao site). */
 export const SHARKSCOPE_COMPLETED_TOURNAMENTS_EXPAND_MULTI =
   "expandMultiEntries=true" as const;

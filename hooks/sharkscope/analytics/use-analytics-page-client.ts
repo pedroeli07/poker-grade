@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "reac
 import {
   SHARKSCOPE_ANALYTICS_LS_PERIOD,
   SHARKSCOPE_ANALYTICS_LS_TAB,
-} from "@/lib/constants/sharkscope/analytics/sharkscope-analytics-page";
+} from "@/lib/constants/sharkscope/analytics";
 import { pickSharkscopeStatsByPeriod } from "@/lib/utils";
 import type {
   AnalyticsClientProps,

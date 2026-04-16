@@ -1,7 +1,7 @@
 import { requireSession } from "@/lib/auth/session";
 import ProfileClient from "./profile-client";
 import { profilePageMetadata } from "@/lib/constants/metadata";
-import { loadProfilePageData } from "@/lib/profile/profile-page-load";
+import { loadProfilePageData } from "@/lib/data/user";
 import ProfileNotFound from "@/components/profile/profile-not-found";
 
 export const dynamic = "force-dynamic";

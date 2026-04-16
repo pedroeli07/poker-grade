@@ -2,8 +2,8 @@ import { Trash2 } from "lucide-react";
 import {
   deleteAuthAccount,
   deletePendingInvite,
-} from "@/lib/queries/db/user-queries";
-import { UsuarioDirectoryRow } from "@/lib/types";
+} from "@/lib/queries/db/user";
+import { UserDirectoryRow } from "@/lib/types";
 
 // Re-checking imports from monolith
 import {
@@ -16,8 +16,9 @@ import {
   AlertDialogHeader as ADH,
   AlertDialogTitle as ADT,
 } from "@/components/ui/alert-dialog";
+import { memo } from "react";
 
-export function UsuarioDeleteDialog({
+const UserDeleteDialog = memo(function UserDeleteDialog({
   open,
   onOpenChange,
   row,
@@ -26,7 +27,7 @@ export function UsuarioDeleteDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  row: UsuarioDirectoryRow;
+  row: UserDirectoryRow;
   disabled: boolean;
   onAction: (
     fn: () => Promise<{ error?: string; success?: boolean }>,
@@ -62,10 +63,10 @@ export function UsuarioDeleteDialog({
               </p>
               <p>
                 {isPendingInvite
-                  ? "Este e-mail sai da lista de convites. Quem ainda não se cadastrou precisará de um novo convite."
-                  : "A conta de acesso será removida deste sistema. Dados vinculados ao usuário podem ser afetados conforme as regras do app."}{" "}
+                  ? "Este e-mail sai da lista de convites. Quem ainda nÃ£o se cadastrou precisarÃ¡ de um novo convite."
+                  : "A conta de acesso serÃ¡ removida deste sistema. Dados vinculados ao usuÃ¡rio podem ser afetados conforme as regras do app."}{" "}
                 <span className="font-medium text-foreground">
-                  Esta ação não pode ser desfeita.
+                  Esta aÃ§Ã£o nÃ£o pode ser desfeita.
                 </span>
               </p>
             </div>
@@ -96,10 +97,14 @@ export function UsuarioDeleteDialog({
             }}
             className="bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/40"
           >
-            {disabled ? "Removendo…" : "Remover"}
+            {disabled ? "Removendoâ€¦" : "Remover"}
           </ADA>
         </ADF>
       </ADContent>
     </AD>
   );
-}
+});
+
+UserDeleteDialog.displayName = "UserDeleteDialog";
+
+export default UserDeleteDialog;

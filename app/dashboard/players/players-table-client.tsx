@@ -2,7 +2,7 @@
 
 import { memo, useMemo } from "react";
 import { isFilterActive } from "@/lib/number-filter";
-import { buildPlayersFilterSummaryLines } from "@/lib/utils/player/players-table-filter-summary";
+import { buildPlayersFilterSummaryLines, formatPlayersTableSortSummary } from "@/lib/utils/player";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import ColumnFilter from "@/components/column-filter";
 import NumberRangeFilter from "@/components/number-range-filter";
@@ -14,8 +14,7 @@ import PlayerTableRow from "@/components/players/player-table-row";
 import { cn } from "@/lib/utils";
 import { playersTableCol, playersTableStatsHeadClass, dataTableHeaderRowActiveRingClass, dataTableHeaderRowClass } from "@/lib/constants";
 import SortButton from "@/components/sort-button";
-import type { PlayersTableClientProps } from "@/lib/types/playerComponents";
-import { formatPlayersTableSortSummary } from "@/lib/utils/player-table-display";
+import type { PlayersTableClientProps } from "@/lib/types/player";
 import EditPlayerModal from "@/components/modals/edit-player-modal";
 
 const PlayersTableClient = memo(function PlayersTableClient({

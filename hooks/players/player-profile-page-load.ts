@@ -1,19 +1,13 @@
 import type { AppSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
+import { getCachedPlayerWithProfileInclude } from "@/lib/data/player/cached-by-id";
 import { canManagePlayerProfile, canViewPlayer } from "@/lib/utils";
 import type { PlayerProfileLoadResult, PlayerProfileViewModel } from "@/lib/types";
-import { playerProfileInclude } from "@/lib/constants";
-
-
 
 export async function loadPlayerProfilePageData(
   session: AppSession,
   id: string
 ): Promise<PlayerProfileLoadResult> {
-  const player = await prisma.player.findUnique({
-    where: { id },
-    include: playerProfileInclude,
-  });
+  const player = await getCachedPlayerWithProfileInclude(id);
 
   if (!player) return { status: "not_found" };
   if (!canViewPlayer(session, player)) return { status: "forbidden" };

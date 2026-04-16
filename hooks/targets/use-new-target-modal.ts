@@ -2,17 +2,17 @@
 
 import { useCallback, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { createTarget } from "@/lib/queries/db/target-queries";
+import { createTarget } from "@/lib/queries/db/target";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import { isNextRedirectError } from "@/lib/utils";
 import type { NewTargetModalProps } from "@/lib/types";
-import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals/modal-dialog-ui";
+import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals";
 import {
   NEW_TARGET_MODAL_DEFAULT_CATEGORY,
   NEW_TARGET_MODAL_DEFAULT_LIMIT_ACTION,
   NEW_TARGET_MODAL_DEFAULT_TYPE,
-} from "@/lib/constants/target/new-target-modal";
+} from "@/lib/constants/target";
 
 export const useNewTargetModal = ({ players }: NewTargetModalProps) => {
   const [open, setOpen] = useState(false);

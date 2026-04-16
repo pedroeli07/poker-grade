@@ -1,7 +1,7 @@
 import {
   loadSharkscopePlayerDebug,
   listPlayersWithGroupForDebug,
-} from "@/lib/data/sharkscope-player-debug";
+} from "@/lib/data/sharkscope/player-debug";
 import { PlayerDebugClient } from "./player-debug-client";
 import { PlayerDebugResults } from "./player-debug-results";
 

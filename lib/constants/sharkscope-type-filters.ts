@@ -7,6 +7,7 @@ function filterQuery(filterBody: string): string {
   return `?filter=${encodeURIComponent(filterBody)}`;
 }
 
+/** Chaves estáveis em `sharkscope_cache`; os valores são agregados localmente a partir de CT (não dependem de `Type:B` cobrir todas as variantes na API). */
 export const SHARKSCOPE_TYPE_FILTER_KEY = {
   bounty30: filterQuery("Date:30D;Type:B"),
   satellite30: filterQuery("Date:30D;Type:SAT"),

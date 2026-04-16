@@ -1,7 +1,7 @@
 import dynamicImport from "next/dynamic";
 import AnalyticsPageSkeleton from "@/components/sharkscope/analytics/analytics-page-skeleton";
 import { sharkscopeAnalyticsDebugPageMetadata } from "@/lib/constants/metadata";
-import { getAnalyticsDebugPageData } from "@/lib/sharkscope/analytics-debug-page-server";
+import { getAnalyticsDebugPageData } from "@/lib/data/sharkscope/analytics";
 
 export const dynamic = "force-dynamic";
 

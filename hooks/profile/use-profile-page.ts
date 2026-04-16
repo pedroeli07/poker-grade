@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useCallback } from "react";
 import type { ProfileData } from "@/lib/types";
-import { updateProfile } from "@/lib/queries/db/user-queries";
+import { updateProfile } from "@/lib/queries/db/user";
 import { toast } from "@/lib/toast";
 
 export function useProfilePage(profile: ProfileData) {

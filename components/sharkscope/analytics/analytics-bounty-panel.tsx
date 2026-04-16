@@ -10,7 +10,7 @@ import RankingAbilityBadge from "@/components/sharkscope/analytics/ranking-abili
 import RankingFinishPctBadge from "@/components/sharkscope/analytics/ranking-finish-pct-badge";
 import RankingProfitBadge from "@/components/sharkscope/analytics/ranking-profit-badge";
 import SortButton from "@/components/sort-button";
-import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope/analytics/sharkscope-analytics-labels";
+import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope/analytics";
 import type { SharkscopeAnalyticsPeriod, TypeStat } from "@/lib/types";
 import { memo } from "react";
 import { useBountyAnalytics } from "@/lib/use-sharkscope-analytics";
@@ -20,7 +20,7 @@ import {
   fmtStake,
   tdCenter,
   filterWrap,
-} from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-format";
+} from "@/lib/utils/sharkscope/analytics";
 
 const AnalyticsBountyPanel = memo(function AnalyticsBountyPanel({
   period,

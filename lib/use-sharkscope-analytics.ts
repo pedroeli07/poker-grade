@@ -1,36 +1,49 @@
 import { useMemo, useState } from "react";
 import { distinctOptions } from "@/lib/utils";
-import { getUniqueValues } from "@/lib/match-number-filter";
+import {
+  ANALYTICS_NUM_FILTER_KEYS,
+  buildUniqueValuesMap,
+  BOUNTY_TYPE_UNIQUE_FIELDS,
+  RANKING_UNIQUE_FIELDS,
+  SITE_NETWORK_UNIQUE_FIELDS,
+  TIER_UNIQUE_FIELDS,
+} from "@/lib/analytics-unique-values";
 import { useAnalyticsFilter } from "@/lib/use-analytics-filter";
 import { useAnalyticsBountyStore } from "@/lib/stores/use-analytics-bounty-store";
 import { useAnalyticsRankingStore } from "@/lib/stores/use-analytics-ranking-store";
 import { useAnalyticsSiteStore } from "@/lib/stores/use-analytics-site-store";
 import { useAnalyticsTierStore } from "@/lib/stores/use-analytics-tier-store";
-import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope/analytics/sharkscope-analytics-labels";
+import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope/analytics";
 import { useAnalyticsSortedRows } from "@/hooks/sharkscope/analytics/use-analytics-sorted-rows";
 import useAnalyticsColumnSort from "@/hooks/sharkscope/analytics/use-analytics-column-sort";
-import type { TypeStat, RankingEntry, NetworkStat, TierStat, SharkscopeAnalyticsPeriod } from "@/lib/types";
-import type { TierSortKey } from "@/lib/types/sharkscopeAnalyticsUi";
-import {
-  sortBountyTypeRows,
-  sortRankingRows,
-  sortTierRows,
-} from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-table-sort";
+import type {
+  TypeStat,
+  RankingEntry,
+  NetworkStat,
+  TierStat,
+  SharkscopeAnalyticsPeriod,
+  TierSortKey,
+} from "@/lib/types";
 import {
   buildTierChartRows,
   siteAnalyticsPeriodLabel,
+  siteChartFormattersForMetric,
+  sortBountyTypeRows,
+  sortRankingRows,
+  sortTierRows,
   tierAnalyticsChartTitle,
-} from "@/lib/utils/sharlscope/analytics/site-analytics-site-panel";
+} from "@/lib/utils/sharkscope/analytics";
 import { SITE_CHART_Y_METRICS, type SiteChartYMetric } from "@/lib/site-analytics-chart";
-import { siteChartFormattersForMetric } from "@/lib/utils/sharlscope/analytics/site-analytics-panel-format";
 
-export function useBountyAnalytics(typeStats: TypeStat[]) {
+const ANALYTICS_NUM_FILTER_KEY_LIST = [...ANALYTICS_NUM_FILTER_KEYS] as string[];
+
+function useBountyAnalytics(typeStats: TypeStat[]) {
   const { filters, setColumnFilter } = useAnalyticsBountyStore();
   const { numFilters, setNumFilter, setCol, filtered } = useAnalyticsFilter(
     typeStats,
     filters,
     setColumnFilter,
-    ["roi", "entries", "profit", "itm", "ability", "avStake", "earlyFinish", "lateFinish"]
+    ANALYTICS_NUM_FILTER_KEY_LIST
   );
 
   const typeOptions = useMemo(
@@ -53,14 +66,10 @@ export function useBountyAnalytics(typeStats: TypeStat[]) {
     [filtered]
   );
 
-  const uniqueRois = useMemo(() => getUniqueValues(typeStats, (s) => s.roi), [typeStats]);
-  const uniqueEntries = useMemo(() => getUniqueValues(typeStats, (s) => s.entries), [typeStats]);
-  const uniqueProfits = useMemo(() => getUniqueValues(typeStats, (s) => s.profit), [typeStats]);
-  const uniqueItms = useMemo(() => getUniqueValues(typeStats, (s) => s.itm), [typeStats]);
-  const uniqueAbilities = useMemo(() => getUniqueValues(typeStats, (s) => s.ability), [typeStats]);
-  const uniqueStakes = useMemo(() => getUniqueValues(typeStats, (s) => s.avStake), [typeStats]);
-  const uniqueEarly = useMemo(() => getUniqueValues(typeStats, (s) => s.earlyFinish), [typeStats]);
-  const uniqueLate = useMemo(() => getUniqueValues(typeStats, (s) => s.lateFinish), [typeStats]);
+  const uniqueValues = useMemo(
+    () => buildUniqueValuesMap(typeStats, BOUNTY_TYPE_UNIQUE_FIELDS),
+    [typeStats]
+  );
 
   const { sort, toggleSort, sorted } = useAnalyticsSortedRows(filtered, sortBountyTypeRows);
 
@@ -72,27 +81,27 @@ export function useBountyAnalytics(typeStats: TypeStat[]) {
     filtered,
     typeOptions,
     barRows,
-    uniqueRois,
-    uniqueEntries,
-    uniqueProfits,
-    uniqueItms,
-    uniqueAbilities,
-    uniqueStakes,
-    uniqueEarly,
-    uniqueLate,
+    uniqueRois: uniqueValues.rois,
+    uniqueEntries: uniqueValues.entries,
+    uniqueProfits: uniqueValues.profits,
+    uniqueItms: uniqueValues.itms,
+    uniqueAbilities: uniqueValues.abilities,
+    uniqueStakes: uniqueValues.stakes,
+    uniqueEarly: uniqueValues.early,
+    uniqueLate: uniqueValues.late,
     sort,
     toggleSort,
     sorted,
   };
 }
 
-export function useRankingAnalytics(ranking: RankingEntry[]) {
+function useRankingAnalytics(ranking: RankingEntry[]) {
   const { filters, setColumnFilter } = useAnalyticsRankingStore();
   const { numFilters, setNumFilter, setCol, filtered } = useAnalyticsFilter(
     ranking,
     filters,
     setColumnFilter,
-    ["roi", "entries", "profit", "itm", "ability", "avStake", "earlyFinish", "lateFinish"]
+    ANALYTICS_NUM_FILTER_KEY_LIST
   );
 
   const playerOptions = useMemo(
@@ -100,14 +109,10 @@ export function useRankingAnalytics(ranking: RankingEntry[]) {
     [ranking]
   );
 
-  const uniqueRois = useMemo(() => getUniqueValues(ranking, (r) => r.roi), [ranking]);
-  const uniqueEntries = useMemo(() => getUniqueValues(ranking, (r) => r.entries), [ranking]);
-  const uniqueProfits = useMemo(() => getUniqueValues(ranking, (r) => r.profit), [ranking]);
-  const uniqueItms = useMemo(() => getUniqueValues(ranking, (r) => r.itm), [ranking]);
-  const uniqueAbilities = useMemo(() => getUniqueValues(ranking, (r) => r.ability), [ranking]);
-  const uniqueStakes = useMemo(() => getUniqueValues(ranking, (r) => r.avStake), [ranking]);
-  const uniqueEarly = useMemo(() => getUniqueValues(ranking, (r) => r.earlyFinish), [ranking]);
-  const uniqueLate = useMemo(() => getUniqueValues(ranking, (r) => r.lateFinish), [ranking]);
+  const uniqueValues = useMemo(
+    () => buildUniqueValuesMap(ranking, RANKING_UNIQUE_FIELDS),
+    [ranking]
+  );
 
   const { sort, toggleSort, sorted } = useAnalyticsSortedRows(filtered, sortRankingRows);
 
@@ -118,27 +123,27 @@ export function useRankingAnalytics(ranking: RankingEntry[]) {
     setCol,
     filtered,
     playerOptions,
-    uniqueRois,
-    uniqueEntries,
-    uniqueProfits,
-    uniqueItms,
-    uniqueAbilities,
-    uniqueStakes,
-    uniqueEarly,
-    uniqueLate,
+    uniqueRois: uniqueValues.rois,
+    uniqueEntries: uniqueValues.entries,
+    uniqueProfits: uniqueValues.profits,
+    uniqueItms: uniqueValues.itms,
+    uniqueAbilities: uniqueValues.abilities,
+    uniqueStakes: uniqueValues.stakes,
+    uniqueEarly: uniqueValues.early,
+    uniqueLate: uniqueValues.late,
     sort,
     toggleSort,
     sorted,
   };
 }
 
-export function useSiteAnalytics(stats: NetworkStat[]) {
+function useSiteAnalytics(stats: NetworkStat[]) {
   const { filters, setColumnFilter } = useAnalyticsSiteStore();
   const { numFilters, setNumFilter, setCol, filtered } = useAnalyticsFilter(
     stats,
     filters,
     setColumnFilter,
-    ["roi", "entries", "profit", "itm", "ability", "avStake", "earlyFinish", "lateFinish"]
+    ANALYTICS_NUM_FILTER_KEY_LIST
   );
 
   const networkOptions = useMemo(
@@ -157,14 +162,10 @@ export function useSiteAnalytics(stats: NetworkStat[]) {
     [filtered]
   );
 
-  const uniqueRois = useMemo(() => getUniqueValues(stats, (s) => s.roi), [stats]);
-  const uniqueProfits = useMemo(() => getUniqueValues(stats, (s) => s.profit), [stats]);
-  const uniqueItms = useMemo(() => getUniqueValues(stats, (s) => s.itm ?? null), [stats]);
-  const uniqueEarly = useMemo(() => getUniqueValues(stats, (s) => s.earlyFinish ?? null), [stats]);
-  const uniqueLate = useMemo(() => getUniqueValues(stats, (s) => s.lateFinish ?? null), [stats]);
-  const uniqueEntries = useMemo(() => getUniqueValues(stats, (s) => s.entries), [stats]);
-  const uniqueAbilities = useMemo(() => getUniqueValues(stats, (s) => s.ability ?? null), [stats]);
-  const uniqueAvStakes = useMemo(() => getUniqueValues(stats, (s) => s.avStake ?? null), [stats]);
+  const uniqueValues = useMemo(
+    () => buildUniqueValuesMap(stats, SITE_NETWORK_UNIQUE_FIELDS),
+    [stats]
+  );
 
   return {
     filters,
@@ -174,24 +175,24 @@ export function useSiteAnalytics(stats: NetworkStat[]) {
     filtered,
     networkOptions,
     barRows,
-    uniqueRois,
-    uniqueProfits,
-    uniqueItms,
-    uniqueEarly,
-    uniqueLate,
-    uniqueEntries,
-    uniqueAbilities,
-    uniqueAvStakes,
+    uniqueRois: uniqueValues.rois,
+    uniqueProfits: uniqueValues.profits,
+    uniqueItms: uniqueValues.itms,
+    uniqueEarly: uniqueValues.early,
+    uniqueLate: uniqueValues.late,
+    uniqueEntries: uniqueValues.entries,
+    uniqueAbilities: uniqueValues.abilities,
+    uniqueAvStakes: uniqueValues.avStakes,
   };
 }
 
-export function useTierAnalytics(tierStats: TierStat[], period: SharkscopeAnalyticsPeriod) {
+function useTierAnalytics(tierStats: TierStat[], period: SharkscopeAnalyticsPeriod) {
   const { filters, setColumnFilter } = useAnalyticsTierStore();
   const { numFilters, setNumFilter, setCol, filtered } = useAnalyticsFilter(
     tierStats,
     filters,
     setColumnFilter,
-    ["roi", "entries", "profit", "itm", "ability", "avStake", "earlyFinish", "lateFinish"]
+    ANALYTICS_NUM_FILTER_KEY_LIST
   );
 
   const { sort: tableSort, toggleSort: toggleTableSort } = useAnalyticsColumnSort<TierSortKey>();
@@ -232,14 +233,20 @@ export function useTierAnalytics(tierStats: TierStat[], period: SharkscopeAnalyt
     [yMetric]
   );
 
-  const uniqueRois = useMemo(() => getUniqueValues(tierStats, (s) => s.roi), [tierStats]);
-  const uniqueProfits = useMemo(() => getUniqueValues(tierStats, (s) => s.profit), [tierStats]);
-  const uniqueItms = useMemo(() => getUniqueValues(tierStats, (s) => s.itm), [tierStats]);
-  const uniqueEarly = useMemo(() => getUniqueValues(tierStats, (s) => s.earlyFinish), [tierStats]);
-  const uniqueLate = useMemo(() => getUniqueValues(tierStats, (s) => s.lateFinish), [tierStats]);
-  const uniqueEntries = useMemo(() => getUniqueValues(tierStats, (s) => s.entries), [tierStats]);
-  const uniqueAbilities = useMemo(() => getUniqueValues(tierStats, (s) => s.ability), [tierStats]);
-  const uniqueAvStakes = useMemo(() => getUniqueValues(tierStats, (s) => s.avStake), [tierStats]);
+  const uniqueValues = useMemo(
+    () => buildUniqueValuesMap(tierStats, TIER_UNIQUE_FIELDS),
+    [tierStats]
+  );
+  const {
+    rois: uniqueRois,
+    profits: uniqueProfits,
+    itms: uniqueItms,
+    early: uniqueEarly,
+    late: uniqueLate,
+    entries: uniqueEntries,
+    abilities: uniqueAbilities,
+    avStakes: uniqueAvStakes,
+  } = uniqueValues;
 
   return {
     filters,
@@ -269,3 +276,5 @@ export function useTierAnalytics(tierStats: TierStat[], period: SharkscopeAnalyt
     chartHeuristicNote,
   };
 }
+
+export { useBountyAnalytics, useRankingAnalytics, useSiteAnalytics, useTierAnalytics };

@@ -55,8 +55,5 @@ export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
+  prismaLog.info("PrismaClient pronto", { env: process.env.NODE_ENV });
 }
-
-prismaLog.info("PrismaClient pronto", {
-  env: process.env.NODE_ENV,
-});

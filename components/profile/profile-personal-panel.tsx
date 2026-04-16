@@ -67,7 +67,7 @@ const ProfilePersonalPanel = memo(function ProfilePersonalPanel({
             id="profile-discord"
             value={discord}
             onChange={setDiscord}
-            placeholder="usuario#0000"
+            placeholder="user#0000"
           />
         </div>
       </div>

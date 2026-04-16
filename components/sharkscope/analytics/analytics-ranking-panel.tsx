@@ -13,7 +13,7 @@ import type { RankingEntry, SharkscopeAnalyticsPeriod } from "@/lib/types";
 import { memo } from "react";
 import NumberRangeFilter from "@/components/number-range-filter";
 import { useRankingAnalytics } from "@/lib/use-sharkscope-analytics";
-import { fmtEntries, fmtPct, fmtStake, thCenter, tdCenter, filterWrap } from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-format";
+import { fmtEntries, fmtPct, fmtStake, thCenter, tdCenter, filterWrap } from "@/lib/utils/sharkscope/analytics";
 
 const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
   ranking,

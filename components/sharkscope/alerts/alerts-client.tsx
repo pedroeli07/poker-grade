@@ -9,10 +9,7 @@ import AlertsPageHeader from "@/components/sharkscope/alerts/alerts-page-header"
 import AlertsSelectionHint from "@/components/sharkscope/alerts/alerts-selection-hint";
 import { useAlertsPageClient } from "@/hooks/sharkscope/alerts/use-alerts-page-client";
 import type { SharkscopeAlertRow } from "@/lib/types";
-import {
-  alertsHasActiveView,
-  buildAlertsFilterSummaryLines,
-} from "@/lib/utils/alerts-toolbar-display";
+import { alertsHasActiveView, buildAlertsFilterSummaryLines } from "@/lib/utils/sharkscope/alerts";
 
 const AlertsClient = memo(function AlertsClient({
   initialAlerts,
@@ -54,7 +51,7 @@ const AlertsClient = memo(function AlertsClient({
     () =>
       alertsHasActiveView({
         severity: filterSeverity,
-        type: filterType,
+        alertType: filterType,
         ack: filterAck,
       }),
     [filterSeverity, filterType, filterAck]
@@ -64,7 +61,7 @@ const AlertsClient = memo(function AlertsClient({
     () =>
       buildAlertsFilterSummaryLines({
         severity: filterSeverity,
-        type: filterType,
+        alertType: filterType,
         ack: filterAck,
       }),
     [filterSeverity, filterType, filterAck]

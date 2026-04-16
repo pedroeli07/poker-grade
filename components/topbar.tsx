@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Bell, User } from "lucide-react";
 import Link from "next/link";
 import { useNotificationStore } from "@/lib/stores/use-notification-store";
-import { getUnreadCount } from "@/lib/queries/db/notification-queries";
+import { getUnreadCount } from "@/lib/queries/db/notification";
 import { cn } from "@/lib/utils";
 
 function CurrentTimeDisplay() {
@@ -132,7 +132,7 @@ function Topbar({
           type="button"
           onClick={toggle}
           className="relative flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-          title="Notificações"
+          title="NotificaÃ§Ãµes"
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
@@ -156,7 +156,7 @@ function Topbar({
               setDropdownOpen(!dropdownOpen);
             }}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer font-semibold text-sm"
-            title="Menu do usuário"
+            title="Menu do usuÃ¡rio"
           >
             {initials}
           </button>
@@ -165,7 +165,7 @@ function Topbar({
             <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-background shadow-lg overflow-hidden z-50">
               <div className="p-3 border-b border-border">
                 <p className="font-semibold text-sm text-foreground truncate">
-                  {displayName || "Usuário"}
+                  {displayName || "UsuÃ¡rio"}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   {email}

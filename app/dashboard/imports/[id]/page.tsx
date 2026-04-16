@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { importDetailPageMetadata } from "@/lib/constants/metadata";
-import { getImportDetailPageProps } from "@/lib/imports/import-detail-page-server";
+import { getImportDetailPageProps } from "@/lib/data/imports";
 import ImportsIdClient from "./imports-id-client";
 
 export const dynamic = "force-dynamic";

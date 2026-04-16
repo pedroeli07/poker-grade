@@ -11,7 +11,7 @@ import {
   dataTableHeaderRowActiveRingClass,
   dataTableHeaderRowClass,
 } from "@/lib/constants";
-import { buildImportsFilterSummaryLines, formatImportsSortSummary } from "@/lib/utils/imports-table-display";
+import { buildImportsFilterSummaryLines, formatImportsSortSummary } from "@/lib/utils/imports";
 import ImportsTableRow from "@/components/imports/imports-table-row";
 import {
   IMPORTS_COLUMN_IDS,
@@ -24,7 +24,7 @@ import type {
   ImportsColumnKey,
   ImportsFilters,
 } from "@/lib/types";
-import type { ColumnSortKind } from "@/lib/types/sortButton";
+import type { ColumnSortKind } from "@/lib/types/dataTable";
 import { memo, useCallback, useMemo, useState } from "react";
 import SortButton from "@/components/sort-button";
 import {

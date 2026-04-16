@@ -9,7 +9,7 @@ import { MinhaGradeLimits } from "@/components/minha-grade/minha-grade-limits";
 import { MinhaGradeAccountPending } from "@/components/minha-grade/minha-grade-account-pending";
 import { MinhaGradeCoachNote } from "@/components/minha-grade/minha-grade-coach-note";
 import { MinhaGradeDetailLink } from "@/components/minha-grade/minha-grade-detail-link";
-import { loadMinhaGradePageData } from "@/lib/minha-grade/minha-grade-page-load";
+import { loadMinhaGradePageData } from "@/lib/data/grades";
 import { minhaGradePageMetadata } from "@/lib/constants/metadata";
 import { UserRole } from "@prisma/client";
 

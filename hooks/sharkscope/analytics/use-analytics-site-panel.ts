@@ -4,10 +4,8 @@ import { useCallback, useMemo, useState } from "react";
 import type { NetworkStat, SharkscopeAnalyticsPeriod, SiteAnalyticsPayload, SiteTableSortKey } from "@/lib/types";
 import { useSiteAnalytics } from "@/lib/use-sharkscope-analytics";
 import useAnalyticsColumnSort from "@/hooks/sharkscope/analytics/use-analytics-column-sort";
-import { sortSiteNetworkRows } from "@/lib/utils/sharlscope/analytics/sharkscope-analytics-table-sort";
 // Não usar useAnalyticsSortedRows aqui: `filtered` só existe depois de useSiteAnalytics,
 // mas useAnalyticsColumnSort tem de correr antes (ordem de hooks estável).
-import { siteChartFormattersForMetric } from "@/lib/utils/sharlscope/analytics/site-analytics-panel-format";
 import {
   buildSiteChartRows,
   canSiteFilterPlayers,
@@ -17,7 +15,9 @@ import {
   siteAnalyticsPeriodLabel,
   siteAnalyticsSelectionSummary,
   siteAnalyticsTriggerLabel,
-} from "@/lib/utils/sharlscope/analytics/site-analytics-site-panel";
+  siteChartFormattersForMetric,
+  sortSiteNetworkRows,
+} from "@/lib/utils/sharkscope/analytics";
 import { SITE_CHART_Y_METRICS, type SiteChartYMetric } from "@/lib/site-analytics-chart";
 
 export type UseAnalyticsSitePanelOptions = {

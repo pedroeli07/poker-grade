@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Tab } from "@/lib/types";
-import type { ImportDetailTabWithCount } from "@/lib/imports/import-detail-tabs";
+import type { ImportDetailTabWithCount } from "@/lib/types";
 import { memo } from "react";
 
 const ImportDetailTabNav = memo(function ImportDetailTabNav({

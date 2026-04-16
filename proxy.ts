@@ -14,7 +14,7 @@ const PLAYER_BLOCKED_PREFIXES = [
   "/dashboard/imports",
   "/dashboard/review",
   "/dashboard/targets",
-  "/dashboard/usuarios",
+  "/dashboard/users",
 ];
 
 /** The landing page for a PLAYER after login */

@@ -3,7 +3,7 @@
 import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
-import { deleteImports } from "@/lib/queries/db/import-queries";
+import { deleteImports } from "@/lib/queries/db/imports";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import {
@@ -29,7 +29,7 @@ export function DeleteImportButton({ importId, iconOnly = false }: { importId: s
       const res = await deleteImports([importId]);
       setOpen(false);
       if (res.success) {
-        toast.success("Importação excluída");
+        toast.success("ImportaÃ§Ã£o excluÃ­da");
         invalidate();
         if (iconOnly) router.refresh();
         else router.push("/dashboard/imports");
@@ -51,14 +51,14 @@ export function DeleteImportButton({ importId, iconOnly = false }: { importId: s
           }
         >
           <Trash2 className="h-4 w-4" />
-          {!iconOnly && (isPending ? "Excluindo..." : "Excluir importação")}
+          {!iconOnly && (isPending ? "Excluindo..." : "Excluir importaÃ§Ã£o")}
         </button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Excluir importação?</AlertDialogTitle>
+          <AlertDialogTitle>Excluir importaÃ§Ã£o?</AlertDialogTitle>
           <AlertDialogDescription>
-            Isso removerá esta importação, todos os torneios contidos nela e as revisões associadas. Esta ação não pode ser desfeita.
+            Isso removerÃ¡ esta importaÃ§Ã£o, todos os torneios contidos nela e as revisÃµes associadas. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -9,7 +9,7 @@ import {
 import { UserRole } from "@prisma/client";
 import { ROLE_OPTIONS } from "@/lib/constants";
 import { RoleBadge, StatusBadge } from "./user-badges";
-import { UsuarioDirectoryRow } from "@/lib/types";
+import { UserDirectoryRow } from "@/lib/types";
 
 export function UserRowContent({
   editing,
@@ -26,7 +26,7 @@ export function UserRowContent({
   role: UserRole;
   setRole: (v: UserRole) => void;
   isBootstrap: boolean;
-  row: UsuarioDirectoryRow;
+  row: UserDirectoryRow;
 }) {
   return editing ? (
     <div className="space-y-2 flex-1">

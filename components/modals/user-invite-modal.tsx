@@ -17,11 +17,11 @@ import {
   USER_INVITE_MODAL_TITLE, USER_INVITE_ROLE_LABEL, USER_INVITE_ROLE_SELECT_PLACEHOLDER,
   USER_INVITE_SUBMIT, USER_INVITE_SUBMIT_SAVING,
 } from "@/lib/constants";
-import { UsuariosInviteModalProps } from "@/lib/types";
-import { useUserInviteModal } from "@/hooks/usuarios/use-user-invite-modal";
+import { UserInviteModalProps } from "@/lib/types";
+import { useUserInviteModal } from "@/hooks/users/use-user-invite-modal";
 import { memo } from "react";
 
-const UsuariosInviteModal = memo(function UsuariosInviteModal({ open, onOpenChange }: UsuariosInviteModalProps) {
+const UserInviteModal = memo(function UserInviteModal({ open, onOpenChange }: UserInviteModalProps) {
   const {
     pending,
     email,
@@ -113,6 +113,6 @@ const UsuariosInviteModal = memo(function UsuariosInviteModal({ open, onOpenChan
   );
 });
 
-UsuariosInviteModal.displayName = "UsuariosInviteModal";
+UserInviteModal.displayName = "UserInviteModal";
 
-export default UsuariosInviteModal;
+export default UserInviteModal;

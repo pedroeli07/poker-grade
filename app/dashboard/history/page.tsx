@@ -1,5 +1,5 @@
 import { requireSession } from "@/lib/auth/session";
-import { loadHistoryPageData } from "@/lib/history/history-page-load";
+import { loadHistoryPageData } from "@/lib/data/history";
 import { historyPageMetadata } from "@/lib/constants/metadata";
 import HistoryPageClient from "./history-page-client";
 

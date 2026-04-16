@@ -15,7 +15,7 @@ import { cardClassName, ROLE_OPTIONS } from "@/lib/constants";
 import { useEditableUser } from "@/hooks/user/use-editable-user";
 import { useUserPermissions } from "@/hooks/user/use-user-permissions";
 import { RoleBadge, StatusBadge } from "./user-badges";
-import { UsuarioDeleteDialog } from "./user-delete-dialog";
+import UserDeleteDialog from "./user-delete-dialog";
 import { UserActions } from "./user-actions";
 import { UserRole } from "@prisma/client";
 import type { UserTableRowProps } from "@/lib/types";
@@ -42,7 +42,7 @@ export const UserTableRow = memo(function UserTableRow({
 
   return (
     <TableRow className={`group ${cardClassName}`}>
-      <UsuarioDeleteDialog
+      <UserDeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         row={row}

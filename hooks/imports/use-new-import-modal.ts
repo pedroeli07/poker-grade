@@ -2,17 +2,17 @@
 
 import { useCallback, useRef, useState, useTransition, type ChangeEvent, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { uploadTournaments } from "@/lib/queries/db/import-queries";
+import { uploadTournaments } from "@/lib/queries/db/imports";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { isNextRedirectError } from "@/lib/utils";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import type { UploadResult } from "@/lib/types";
-import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals/modal-dialog-ui";
+import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals";
 import {
   LOBBYZE_IMPORT_ALLOWED_EXTENSIONS,
   LOBBYZE_IMPORT_INVALID_FORMAT_PT,
-} from "@/lib/constants/modals/import-modals";
+} from "@/lib/constants/modals";
 
 const log = createLogger("imports.modal");
 
@@ -82,30 +82,30 @@ export function useNewImportModal() {
 
       startTransition(async () => {
         try {
-          log.info("Enviando importação");
+          log.info("Enviando importaÃ§Ã£o");
           const res = await uploadTournaments(formData);
 
           if (!res.success) {
             const msg = res.error ?? "Erro desconhecido";
-            log.warn("Importação retornou erro", { msg });
+            log.warn("ImportaÃ§Ã£o retornou erro", { msg });
             setError(msg);
-            toast.error("Falha na importação", msg);
+            toast.error("Falha na importaÃ§Ã£o", msg);
             return;
           }
 
           setResult({ processed: res.processed, summary: res.summary });
           setFile(null);
-          toast.success("Importação concluída", `${res.processed} torneios processados`);
+          toast.success("ImportaÃ§Ã£o concluÃ­da", `${res.processed} torneios processados`);
           invalidateImports();
           router.refresh();
         } catch (err) {
           if (isNextRedirectError(err)) throw err;
 
           const msg =
-            err instanceof Error ? err.message : "Erro de comunicação com o servidor";
+            err instanceof Error ? err.message : "Erro de comunicaÃ§Ã£o com o servidor";
           log.error("Falha no upload", err instanceof Error ? err : undefined);
           setError(msg);
-          toast.error("Falha na importação", msg);
+          toast.error("Falha na importaÃ§Ã£o", msg);
         }
       });
     },
