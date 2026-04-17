@@ -1,9 +1,8 @@
-import type { AppSession } from "@/lib/auth/session";
 import { STAFF_WRITE_ROLES } from "@/lib/auth/rbac";
 import { requireSession } from "@/lib/auth/session";
 import { getTargetsForSession } from "@/lib/queries/db/target";
 import { prisma } from "@/lib/prisma";
-import { TargetPageStatus, type TargetListRow, type TargetsPageProps } from "@/lib/types";
+import { TargetPageStatus, TargetListRow, TargetsPageProps, AppSession } from "@/lib/types";
 import { UserRole } from "@prisma/client";
 
 export async function getTargetsListRowsForSession(session: AppSession): Promise<TargetListRow[]> {

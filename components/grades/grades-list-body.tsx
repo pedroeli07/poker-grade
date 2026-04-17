@@ -88,8 +88,6 @@ const GradesListBody = memo(function GradesListBody({
           return compareString(a.description ?? "", b.description ?? "", dir);
         case "rules":
           return compareNumber(a.rulesCount, b.rulesCount, dir);
-        case "players":
-          return compareNumber(a.assignmentsCount, b.assignmentsCount, dir);
         default:
           return 0;
       }
@@ -140,15 +138,15 @@ const GradesListBody = memo(function GradesListBody({
                   sort={sort}
                   onSort={onSort}
                 />
-                <TableHead className="text-center w-[140px] align-bottom text-foreground font-semibold">
-                  Ações
+                <TableHead className="text-center w-[30px] align-middle text-foreground font-semibold">
+                
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sortedTableRows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
                     Nenhuma grade com os filtros atuais.
                   </TableCell>
                 </TableRow>

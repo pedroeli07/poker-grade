@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { isSharkScopePlayerGroupUnavailableMessage, sharkScopeGet } from "@/lib/utils";
 import { getOrFetchSharkScope, replicateSharkScopeCachesToPlayerNick } from "@/lib/sharkscope-cache";
-import { syncGroupSiteBreakdownForGroup, type SharkScopeGetFn } from "@/lib/sharkscope/group-site-breakdown-sync";
+import { syncGroupSiteBreakdownForGroup } from "@/lib/sharkscope/group-site-breakdown-sync";
 import {computeStatsFromRows,filterTournamentRows,type TournamentRow,} from "@/lib/sharkscope/completed-tournaments-aggregate";
 import {playerGroupStatisticsPath,SHARKSCOPE_PLAYER_GROUP_STATS_IDS,sharkscopeSyncSiteNicksEnabled,} from "@/lib/constants/sharkscope-group-site";
 import {
@@ -19,27 +19,19 @@ import { createLogger } from "@/lib/logger";
 import {POKER_NETWORKS,sharkScopeAppName,sharkScopeAppKey,sharkscopeApiNetworkSegment} from "@/lib/constants";
 import {SHARKSCOPE_STATS_FILTER_10D,SHARKSCOPE_STATS_FILTER_30D,SHARKSCOPE_STATS_FILTER_90D} from "@/lib/constants/sharkscope-type-filters";
 import { ErrorTypes } from "@/lib/types";
-import type {DailySyncSharkScopeResult,RunDailySyncOptions,SharkScopeSyncMode} from "@/lib/types/sharkScopeTypes";
+import type {
+  DailySyncSharkScopeResult,
+  RunDailySyncOptions,
+  SharkScopeGetFn,
+  SharkScopeSyncMode,
+} from "@/lib/types";
+import {
+  dailySyncModeLogMessage,
+  DAILY_SYNC_MODE_FLAGS,
+  SHARKSCOPE_CT_TYPE_BREAKDOWN,
+} from "@/lib/constants/sharkscope-daily-sync";
 
 const log = createLogger("cron.daily-sync");
-
-// ─── Mode config ──────────────────────────────────────────────────────────────
-
-/** Flags derivadas do syncMode — substitui as 3 funções `should*` anteriores. */
-const MODE_FLAGS: Record<SharkScopeSyncMode, { stats10: boolean; stats3090: boolean; ct: boolean }> = {
-  players:        { stats10: true,  stats3090: false, ct: false },
-  light:          { stats10: true,  stats3090: true,  ct: false },
-  analytics:      { stats10: false, stats3090: true,  ct: true  },
-  analytics_nick: { stats10: false, stats3090: true,  ct: false },
-  full:           { stats10: true,  stats3090: true,  ct: true  },
-};
-
-/** Tipos de torneio e seus filtros 30d/90d para o breakdown por CT. */
-const CT_TYPE_BREAKDOWN = [
-  { type: "bounty"    as const, f30: "Date:30D;Type:B",            f90: "Date:90D;Type:B"            },
-  { type: "satellite" as const, f30: "Date:30D;Type:SAT",          f90: "Date:90D;Type:SAT"          },
-  { type: "vanilla"   as const, f30: "Date:30D;Type!:B;Type!:SAT", f90: "Date:90D;Type!:B;Type!:SAT" },
-] as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -95,7 +87,7 @@ export async function runDailySyncSharkScope(
 
   const signal = options?.signal;
   const syncMode: SharkScopeSyncMode = options?.syncMode ?? "full";
-  const { stats10: need10, stats3090: need3090, ct: needCT } = MODE_FLAGS[syncMode];
+  const { stats10: need10, stats3090: need3090, ct: needCT } = DAILY_SYNC_MODE_FLAGS[syncMode];
 
   log.info("Iniciando daily-sync SharkScope", { forceRefresh, syncMode });
 
@@ -200,7 +192,7 @@ export async function runDailySyncSharkScope(
 
           if (allRows.length > 0) {
             const rows30d = filterTournamentRows(allRows, { afterTimestamp: daysAgoTimestamp(30) });
-            for (const { type, f30, f90 } of CT_TYPE_BREAKDOWN) {
+            for (const { type, f30, f90 } of SHARKSCOPE_CT_TYPE_BREAKDOWN) {
               await saveComputedStats(
                 primaryNick.id, "stats_30d",
                 `?filter=${encodeURIComponent(f30)}`,
@@ -218,13 +210,7 @@ export async function runDailySyncSharkScope(
         }
 
         // ── Log de modo ───────────────────────────────────────────────────────
-        const MODE_LOGS: Partial<Record<SharkScopeSyncMode, string>> = {
-          analytics:      `[${groupName}] modo analytics: CT + stats 30d/90d; 10d não atualizado neste run.`,
-          light:          `[${groupName}] sync leve: statistics 10d/30d/90d sem completedTournaments.`,
-          players:        `[${groupName}] modo players: só Date:10D; sem lifetime/30d/90d/CT.`,
-          analytics_nick: `[${groupName}] modo analytics_nick: statistics 30d/90d; sem CT.`,
-        };
-        const modeMsg = MODE_LOGS[syncMode];
+        const modeMsg = dailySyncModeLogMessage(syncMode, groupName);
         if (modeMsg) log.info(modeMsg);
 
         // ── Replicar caches para demais membros ───────────────────────────────

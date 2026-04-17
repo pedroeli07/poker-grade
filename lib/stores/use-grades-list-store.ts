@@ -5,5 +5,4 @@ export const useGradesListStore = createFilterStore<GradesColumnFilters>({
   name: null,
   description: null,
   rules: null,
-  players: null,
 });

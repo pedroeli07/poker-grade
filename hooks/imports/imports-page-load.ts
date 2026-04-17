@@ -1,4 +1,4 @@
-import type { AppSession } from "@/lib/auth/session";
+import type { AppSession } from "@/lib/types";
 import { IMPORT_ROLES } from "@/lib/constants";
 import { getImportsListRowsForSession } from "@/lib/data/imports";
 import { canDeleteImports } from "@/lib/utils";

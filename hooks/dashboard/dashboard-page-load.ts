@@ -1,4 +1,4 @@
-import type { AppSession } from "@/lib/auth/session";
+import type { AppSession } from "@/lib/types";
 import { canDeleteImports } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { UserRole, PlayerStatus, TargetStatus, ReviewStatus } from "@prisma/client";

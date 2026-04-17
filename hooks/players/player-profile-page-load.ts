@@ -1,4 +1,4 @@
-import type { AppSession } from "@/lib/auth/session";
+import type { AppSession } from "@/lib/types";
 import { getCachedPlayerWithProfileInclude } from "@/lib/data/player/cached-by-id";
 import { canManagePlayerProfile, canViewPlayer } from "@/lib/utils";
 import type { PlayerProfileLoadResult, PlayerProfileViewModel } from "@/lib/types";

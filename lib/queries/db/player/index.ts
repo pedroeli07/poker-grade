@@ -1,7 +1,6 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import type { AppSession } from "@/lib/auth/session";
 import { assertCanWrite } from "@/lib/auth/rbac";
 import { dashboardQueryRead } from "@/lib/queries/db/query-pipeline";
 import {
@@ -17,7 +16,7 @@ import { coachPlayerFilter } from "../shared";
 import { playerMutations, playerQueriesLog } from "@/lib/constants/queries-mutations";
 import { revalidatePlayers } from "@/lib/constants/revalidate-app";
 import { GradeType, PlayerStatus, UserRole } from "@prisma/client";
-import { ErrorTypes } from "@/lib/types";
+import { ErrorTypes, AppSession } from "@/lib/types";
 
 export async function getPlayersForSession(session: AppSession) {
   const base = {

@@ -1,4 +1,4 @@
-import type { AppSession } from "@/lib/auth/session";
+import type { AppSession } from "@/lib/types";
 import { syncOrphanCoachProfiles } from "@/lib/auth/ensure-coach-profile";
 import { canCreate, canEditPlayers } from "@/lib/constants";
 import { getPlayersTablePayloadForSession } from "@/lib/data/player";

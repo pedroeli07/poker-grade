@@ -6,6 +6,7 @@ const POKER_NETWORK_ENUM = [
   "pokerstars",
   "pokerstars_fr",
   "pokerstars_es",
+  "pokerstars_pt",
   "888",
   "partypoker",
   "ipoker",
@@ -34,6 +35,9 @@ export const zodEmail = z
 export const zodName = z.string().trim().min(2).max(200);
 
 export const zodDescription = z.string().max(2000).optional().nullable();
+
+/** Para conteúdo HTML rico (editor WYSIWYG). */
+export const zodRichDescription = z.string().max(50_000).optional().nullable();
 
 export const zodCuidOptional = z
   .union([schemaCuid, z.literal("none"), z.literal("")])

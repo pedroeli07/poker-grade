@@ -1,7 +1,6 @@
-import type { AppSession } from "@/lib/auth/session";
 import { requireSession } from "@/lib/auth/session";
 import { fail } from "@/lib/constants/query-result";
-import { ErrorTypes, type Err, type RateLimitResult, type ReadKey, type QueryLogger } from "@/lib/types";
+import { ErrorTypes, Err, RateLimitResult, ReadKey, QueryLogger, AppSession } from "@/lib/types";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { limitDashboardRead, limitGradesRead, limitImportsRead } from "@/lib/rate-limit";
 

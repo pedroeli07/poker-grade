@@ -17,7 +17,5 @@ export const getCachedUnreadNotificationCountDb = cache(async (userId: string) =
 });
 
 export async function countUnreadNotificationsForUser(userId: string): Promise<number> {
-  const rl = await limitDashboardRead(userId);
-  if (!rl.ok) return 0;
   return getCachedUnreadNotificationCountDb(userId);
 }

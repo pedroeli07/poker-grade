@@ -15,3 +15,7 @@ export const PLAYER_COUNT_PRESETS = lobbyzeRows(5001, [
 export const WEEKDAY_PRESETS = lobbyzeRows(6001, [
   "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
 ]);
+
+export const SITES_PRESETS = lobbyzeRows(7001, [
+  "GG Network", "PokerStars", "iPoker", "888 Poker", "PartyPoker", "WPN Network", "Coin Poker", "WPT Global", "PokerStars.ES",
+]);

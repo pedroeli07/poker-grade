@@ -1,6 +1,7 @@
 import { requireSession } from "@/lib/auth/session";
-import { DashboardShell } from "./dashboard-shell";
+import DashboardShell from "./dashboard-shell";
 import { loadDashboardShellProps } from "../../hooks/dashboard/dashboard-layout-load";
+import { SessionRefresher } from "@/components/session-refresher";
 
 export default async function DashboardLayout({
   children,
@@ -12,6 +13,7 @@ export default async function DashboardLayout({
 
   return (
     <DashboardShell {...shellProps}>
+      <SessionRefresher />
       {children}
     </DashboardShell>
   );

@@ -1,5 +1,7 @@
+import { superAdminEmail } from "../constants";
+
 export function isSuperAdminEmail(email: string): boolean {
-  return email === process.env.SUPER_ADMIN_EMAIL;
+  return email === superAdminEmail;
 }
 
 export function normalizeAuthEmail(raw: string): string {

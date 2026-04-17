@@ -5,11 +5,18 @@ import { toast } from "@/lib/toast";
 import type { SharkscopeAlertRow } from "@/lib/types";
 import { countUnacknowledgedAlerts, filterSharkscopeAlerts } from "@/lib/utils";
 
+import type { NumberFilterValue } from "@/lib/number-filter";
+
 export function useAlertsDashboard(initialAlerts: SharkscopeAlertRow[]) {
   const [alerts, setAlerts] = useState<SharkscopeAlertRow[]>(initialAlerts);
-  const [filterSeverity, setFilterSeverity] = useState("all");
-  const [filterType, setFilterType] = useState("all");
-  const [filterAck, setFilterAck] = useState("unacknowledged");
+  const [filterSeverity, setFilterSeverity] = useState<Set<string> | null>(null);
+  const [filterType, setFilterType] = useState<Set<string> | null>(null);
+  // Default to only unacknowledged to match original behavior where "unacknowledged" was the default string
+  const [filterAck, setFilterAck] = useState<Set<string> | null>(() => new Set(["unacknowledged"]));
+  const [filterPlayer, setFilterPlayer] = useState<Set<string> | null>(null);
+  const [filterData, setFilterData] = useState<Set<string> | null>(null);
+  const [filterValor, setFilterValor] = useState<NumberFilterValue | null>(null);
+  const [filterLimite, setFilterLimite] = useState<NumberFilterValue | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const filtered = useMemo(
@@ -18,8 +25,12 @@ export function useAlertsDashboard(initialAlerts: SharkscopeAlertRow[]) {
         severity: filterSeverity,
         alertType: filterType,
         ack: filterAck,
+        player: filterPlayer,
+        data: filterData,
+        valor: filterValor,
+        limite: filterLimite,
       }),
-    [alerts, filterSeverity, filterType, filterAck]
+    [alerts, filterSeverity, filterType, filterAck, filterPlayer, filterData, filterValor, filterLimite]
   );
 
   const unackedCount = useMemo(
@@ -129,6 +140,14 @@ export function useAlertsDashboard(initialAlerts: SharkscopeAlertRow[]) {
     setFilterType,
     filterAck,
     setFilterAck,
+    filterPlayer,
+    setFilterPlayer,
+    filterData,
+    setFilterData,
+    filterValor,
+    setFilterValor,
+    filterLimite,
+    setFilterLimite,
     filtered,
     unackedCount,
     isPending,

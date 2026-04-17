@@ -119,15 +119,54 @@ export const pickSharkscopeStatsByPeriod = (
   stats90d: NetworkStat[]
 ) => (period === "30d" ? stats30d : stats90d);
 
+import type { NumberFilterValue } from "@/lib/number-filter";
+
+function checkNumberFilter(val: number | null | undefined, filter: NumberFilterValue | null): boolean {
+  if (!filter || val == null) return true;
+  const num = val;
+  if (filter.op === "in") return filter.values ? filter.values.includes(num) : true;
+  if (filter.op === "eq") return filter.min !== null ? num === filter.min : true;
+  if (filter.op === "gt") return filter.min !== null ? num > filter.min : true;
+  if (filter.op === "lt") return filter.min !== null ? num < filter.min : true;
+  if (filter.op === "gte") return filter.min !== null ? num >= filter.min : true;
+  if (filter.op === "lte") return filter.min !== null ? num <= filter.min : true;
+  if (filter.op === "between") {
+    if (filter.min !== null && num < filter.min) return false;
+    if (filter.max !== null && num > filter.max) return false;
+    return true;
+  }
+  return true;
+}
+
 export function filterSharkscopeAlerts(
   alerts: SharkscopeAlertRow[],
   f: SharkscopeAlertFilters
 ): SharkscopeAlertRow[] {
   return alerts.filter((a) => {
-    if (f.severity !== "all" && a.severity !== f.severity) return false;
-    if (f.alertType !== "all" && a.alertType !== f.alertType) return false;
-    if (f.ack === "unacknowledged" && a.acknowledged) return false;
-    if (f.ack === "acknowledged" && !a.acknowledged) return false;
+    if (f.severity && !f.severity.has(a.severity)) return false;
+    if (f.alertType && !f.alertType.has(a.alertType)) return false;
+    if (f.player && !f.player.has(a.player.name)) return false;
+    
+    if (f.data && f.data.size > 0) {
+      // just match the raw formatted date string prefix
+      const datePrefix = a.triggeredAt.split("T")[0]; // works for ISO string
+      let matchedData = false;
+      for (const d of f.data) {
+        if (a.triggeredAt.startsWith(d)) {
+          matchedData = true;
+          break;
+        }
+      }
+      if (!matchedData) return false;
+    }
+
+    if (!checkNumberFilter(a.metricValue, f.valor)) return false;
+    if (!checkNumberFilter(a.threshold, f.limite)) return false;
+
+    if (f.ack) {
+      if (a.acknowledged && !f.ack.has("acknowledged")) return false;
+      if (!a.acknowledged && !f.ack.has("unacknowledged")) return false;
+    }
     return true;
   });
 }

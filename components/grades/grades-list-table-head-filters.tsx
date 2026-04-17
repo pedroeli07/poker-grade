@@ -23,9 +23,9 @@ const GradesListTableHeadFilters = memo(function GradesListTableHeadFilters({
   return (
     <>
       {GRADES_LIST_TABLE_HEAD_COLUMNS.map(([w, id, col, label]) => {
-        const kind: ColumnSortKind = col === "rules" || col === "players" ? "number" : "string";
+        const kind: ColumnSortKind = col === "rules" ? "number" : "string";
         return (
-          <TableHead key={id} className={`${w} align-bottom text-center`}>
+          <TableHead key={id} className={`${w} align-middle text-center`}>
             <div className="flex items-center justify-center gap-0.5">
               <SortButton
                 columnKey={col}

@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { signSessionToken } from "@/lib/auth/jwt";
-import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC } from "@/lib/constants";
-import type { UserRole } from "@prisma/client";
+import { nodeEnv, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC } from "@/lib/constants";
+import type { IssueSessionUser } from "@/lib/types/issue-session";
 
-type UserRow = {
-  id: string;
-  role: UserRole;
-  playerId: string | null;
-  coachId: string | null;
-  displayName: string | null;
-  email: string;
-};
-
-export async function createAuthSession(user: UserRow): Promise<{
+export async function createAuthSession(user: IssueSessionUser): Promise<{
   token: string;
   sessionId: string;
 }> {
@@ -40,7 +31,7 @@ export async function createAuthSession(user: UserRow): Promise<{
 export function applySessionCookie(res: NextResponse, token: string): void {
   res.cookies.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: nodeEnv === "production",
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE_SEC,

@@ -1,4 +1,4 @@
-import type { AppSession } from "@/lib/auth/session";
+import type { AppSession } from "@/lib/types";
 import { getPendingReviewsForSession } from "@/lib/queries/db/review";
 import {
   PLAYERS_PER_PAGE,

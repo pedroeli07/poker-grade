@@ -1,12 +1,14 @@
 "use client";
 
-import { memo } from "react";
+import { lazy, memo } from "react";
 import type { GradesListPageProps } from "@/lib/types";
-import { GradesListInitialEmpty } from "@/components/grades/grades-view-components";
-import GradesPageHeader from "@/components/grades/grades-page-header";
-import GradesListToolbar from "@/components/grades/grades-list-toolbar";
-import GradesListBody from "@/components/grades/grades-list-body";
 import { useGradesListPage } from "@/hooks/grades/use-grades-list-page";
+import { GradesListInitialEmpty } from "@/components/grades/grades-view-components";
+
+// Lazy-loaded: tabelas / listas pesadas
+const GradesListBody = lazy(() => import("@/components/grades/grades-list-body"));
+const GradesListToolbar = lazy(() => import("@/components/grades/grades-list-toolbar"));
+const GradesPageHeader = lazy(() => import("@/components/grades/grades-page-header"));
 
 const GradesPageClient = memo(function GradesPageClient({ rows: initialRows, manage }: GradesListPageProps) {
   const {

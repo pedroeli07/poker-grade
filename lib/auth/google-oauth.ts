@@ -1,25 +1,28 @@
-const TOKEN_URL = "https://oauth2.googleapis.com/token";
-const USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
+import { googleClientId, googleClientSecret } from "@/lib/constants";
+import { GOOGLE_OAUTH_TOKEN_URL, GOOGLE_OAUTH_USERINFO_URL } from "@/lib/constants/google-oauth";
+import type { GoogleUserInfo } from "@/lib/types/google-oauth";
 
 export async function exchangeGoogleAuthorizationCode(
   code: string,
   redirectUri: string
 ): Promise<{ access_token: string }> {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  if (!clientId || !clientSecret) {
-    throw new Error("GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET ausentes");
+  if (!googleClientId) {
+    throw new Error("GOOGLE_CLIENT_ID ausente");
+  }
+
+  if (!googleClientSecret) {
+    throw new Error("GOOGLE_CLIENT_SECRET ausente");
   }
 
   const body = new URLSearchParams({
     code,
-    client_id: clientId,
-    client_secret: clientSecret,
+    client_id: googleClientId,
+    client_secret: googleClientSecret,
     redirect_uri: redirectUri,
     grant_type: "authorization_code",
   });
 
-  const res = await fetch(TOKEN_URL, {
+  const res = await fetch(GOOGLE_OAUTH_TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
@@ -33,18 +36,10 @@ export async function exchangeGoogleAuthorizationCode(
   return res.json() as Promise<{ access_token: string }>;
 }
 
-export type GoogleUserInfo = {
-  id: string;
-  email: string;
-  verified_email: boolean;
-  name: string;
-  picture?: string;
-};
-
 export async function fetchGoogleUserInfo(
   accessToken: string
 ): Promise<GoogleUserInfo> {
-  const res = await fetch(USERINFO_URL, {
+  const res = await fetch(GOOGLE_OAUTH_USERINFO_URL, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) {

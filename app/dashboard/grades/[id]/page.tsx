@@ -1,34 +1,36 @@
-import type { Metadata } from "next";
+// app/dashboard/grades/[id]/page.tsx
+
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import dynamicImport from "next/dynamic";
+import type { Metadata } from "next";
 import { gradeDetailFallbackMetadata } from "@/lib/constants/metadata";
 import GradeDetailPageSkeleton from "@/components/grades/grade-detail-page-skeleton";
 import { getGradeDetailPageProps } from "@/lib/data/grades";
-import { GenerateMetadataProps } from "@/lib/types";
+import type { GenerateMetadataProps } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: GenerateMetadataProps): Promise<Metadata> {
+const resolveProps = cache(async (params: GenerateMetadataProps["params"]) => {
   const { id } = await params;
-  const props = await getGradeDetailPageProps(id);
-  if (!props) return gradeDetailFallbackMetadata;
-  return {
-    title: `${props.initialData.name} | Grade`,
-    description:
-      props.initialData.description ?? gradeDetailFallbackMetadata.description,
-  };
-}
+  return getGradeDetailPageProps(id);
+});
 
 const GradeDetailClient = dynamicImport(() => import("./grade-detail-client"), {
   loading: () => <GradeDetailPageSkeleton />,
 });
 
-export default async function GradeDetailPage({ params }: GenerateMetadataProps) {
-  const { id } = await params;
-  const props = await getGradeDetailPageProps(id);
-  if (!props) notFound();
+export async function generateMetadata({ params }: GenerateMetadataProps): Promise<Metadata> {
+  const props = await resolveProps(params);
+  if (!props) return gradeDetailFallbackMetadata;
+  return {
+    title: `${props.initialData.name} | Grade`,
+    description: props.initialData.description ?? gradeDetailFallbackMetadata.description,
+  };
+}
 
-  return (
-    <GradeDetailClient gradeId={props.gradeId} initialData={props.initialData} />
-  );
+export default async function GradeDetailPage({ params }: GenerateMetadataProps) {
+  const props = await resolveProps(params);
+  if (!props) notFound();
+  return <GradeDetailClient gradeId={props.gradeId} initialData={props.initialData} />;
 }

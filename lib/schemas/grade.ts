@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { emptyToNullUnknown, zodLobbyzeList, schemaCuid as cuid, zodName, zodDescription } from "./primitives";
+import { emptyToNullUnknown, zodLobbyzeList, schemaCuid as cuid, zodName, zodDescription, zodRichDescription } from "./primitives";
 
 export const importGradeFormSchema = z.object({
   name: zodName,
@@ -13,7 +13,7 @@ export const deleteGradeSchema = z.object({
 
 export const updateGradeCoachNoteSchema = z.object({
   gradeId: cuid,
-  description: zodDescription,
+  description: zodRichDescription,
 });
 
 export const updateGradeProfileSchema = z.object({

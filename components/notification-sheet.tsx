@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition, useCallback } from "react";
+import { useEffect, useState, useTransition, useCallback, memo } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useNotificationStore } from "@/lib/stores/use-notification-store";
@@ -28,7 +28,7 @@ import {
 import { NotificationFilterType } from "@/lib/types";
 import { STALE_TIME, TYPE_CONFIG, TYPE_LABELS } from "@/lib/constants";
 
-export function NotificationSheet() {
+const NotificationSheet = memo(() => {
   const { open, setOpen, setUnreadCount } = useNotificationStore();
   const invalidateNotifications = useInvalidate("notifications");
 
@@ -239,4 +239,8 @@ export function NotificationSheet() {
       </aside>
     </>
   );
-}
+});
+
+NotificationSheet.displayName = "NotificationSheet";
+
+export default NotificationSheet;

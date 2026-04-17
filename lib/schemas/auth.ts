@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { UserRole } from "@prisma/client";
+import { passwordMeetsPolicy } from "@/lib/auth/password-policy";
 import {
   PASSWORD_MAX_LENGTH,
-  passwordMeetsPolicy,
   PASSWORD_POLICY_MESSAGE,
-} from "@/lib/auth/password-policy";
+} from "@/lib/constants/password";
 import { schemaCuid as cuid, zodEmail, zodName } from "./primitives";
 
 const passwordSchema = z.string().min(1).max(PASSWORD_MAX_LENGTH);
@@ -69,6 +69,6 @@ export const idParamSchema = z.object({
 });
 
 export const sendCodeSchema = z.object({
-  email: z.string().email(),
+  email: zodEmail,
   type: z.enum(["REGISTER", "RESET"]),
 });

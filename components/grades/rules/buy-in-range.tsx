@@ -13,18 +13,18 @@ const BuyInRange = memo(function BuyInRange({
     const pct = min && max ? ((min / max) * 100).toFixed(0) : null;
   
     return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-lg font-bold text-blue-400">
+      <div className="space-y-1.5">
+        <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+          <span className="font-mono text-base font-bold tabular-nums text-blue-500">
             ${min ?? "—"}
           </span>
-          <span className="text-muted-foreground/60">—</span>
-          <span className="font-mono text-lg font-bold text-blue-400">
+          <span className="text-muted-foreground/50">—</span>
+          <span className="font-mono text-base font-bold tabular-nums text-blue-500">
             ${max ?? "—"}
           </span>
         </div>
         {min && max && (
-          <div className="h-2 rounded-full bg-muted/50 overflow-hidden w-full max-w-[140px]">
+          <div className="h-1.5 max-w-[120px] overflow-hidden rounded-full bg-muted/60">
             <div
               className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400"
               style={{ width: `${100 - Number(pct)}%` }}

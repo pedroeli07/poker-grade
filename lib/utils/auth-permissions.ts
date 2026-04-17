@@ -1,7 +1,6 @@
 import { UserRole } from "@prisma/client";
-import { ErrorTypes } from "@/lib/types";
+import { ErrorTypes, AppSession } from "@/lib/types";
 import { GRADE_ADMIN_ROLES, IMPORT_ROLES, STAFF_WRITE_ROLES } from "@/lib/constants";
-import type { AppSession } from "@/lib/auth/session";
 
 export const canWriteOperations = (s: AppSession) => STAFF_WRITE_ROLES.includes(s.role);
 export const canManageGrades = (s: AppSession) => GRADE_ADMIN_ROLES.includes(s.role);

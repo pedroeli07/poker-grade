@@ -1,21 +1,21 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { memo, type ReactNode } from "react";
 import AppSidebar from "@/components/app-sidebar";
 import Topbar from "@/components/topbar";
-import { NotificationSheet } from "@/components/notification-sheet";
+import NotificationSheet from "@/components/notification-sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { DashboardShellProps } from "@/lib/types";
 import { useDashboardShellLayout } from "@/hooks/dashboard/use-dashboard-shell";
 import { cn } from "@/lib/utils";
 
-export function DashboardShell({
+const DashboardShell = memo(({  
   children,
   userRole,
   displayName,
   email,
   initialUnreadCount,
-}: DashboardShellProps & { children: ReactNode }) {
+}: DashboardShellProps & { children: ReactNode }) => {
   const { mainClassName } = useDashboardShellLayout();
 
   return (
@@ -40,4 +40,8 @@ export function DashboardShell({
       </div>
     </TooltipProvider>
   );
-}
+});
+
+DashboardShell.displayName = "DashboardShell";
+
+export default DashboardShell;

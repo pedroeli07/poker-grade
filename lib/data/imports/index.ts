@@ -1,8 +1,7 @@
-import type { AppSession } from "@/lib/auth/session";
 import { requireSession } from "@/lib/auth/session";
 import { getImportDetailForSession, getImportsForSession } from "@/lib/queries/db/imports";
 import { canDeleteImports, canReview, schedulingCategory } from "@/lib/utils";
-import type { ImportDetailPageData, ImportListRow, Tab } from "@/lib/types";
+import { ImportDetailPageData, ImportListRow, Tab, AppSession } from "@/lib/types";
 
 export async function getImportsListRowsForSession(
   session: AppSession

@@ -58,19 +58,44 @@ export function getAlertMetricBadgeProps(alert: SharkscopeAlertRow): {
 }
 
 export function alertsHasActiveView(f: SharkscopeAlertFilters): boolean {
-  return f.severity !== "all" || f.alertType !== "all" || f.ack !== "all";
+  return !!(
+    (f.severity && f.severity.size > 0) ||
+    (f.alertType && f.alertType.size > 0) ||
+    (f.player && f.player.size > 0) ||
+    (f.data && f.data.size > 0) ||
+    (f.valor !== null) ||
+    (f.limite !== null) ||
+    (f.ack && !(f.ack.size === 1 && f.ack.has("unacknowledged")))
+  );
 }
 
 export function buildAlertsFilterSummaryLines(f: SharkscopeAlertFilters): string[] {
   const lines: string[] = [];
-  if (f.severity !== "all") {
-    lines.push(`Severidade: ${SEVERITY_LABEL[f.severity] ?? f.severity}`);
+  if (f.severity && f.severity.size > 0) {
+    const vals = Array.from(f.severity).map((k) => SEVERITY_LABEL[k] ?? k);
+    lines.push(`Severidade: ${vals.join(", ")}`);
   }
-  if (f.alertType !== "all") {
-    lines.push(`Tipo: ${ALERT_TYPE_LABEL[f.alertType] ?? f.alertType}`);
+  if (f.alertType && f.alertType.size > 0) {
+    const vals = Array.from(f.alertType).map((k) => ALERT_TYPE_LABEL[k] ?? k);
+    lines.push(`Tipo: ${vals.join(", ")}`);
   }
-  if (f.ack !== "all") {
-    lines.push(`Estado: ${ACK_LABEL[f.ack] ?? f.ack}`);
+  if (f.player && f.player.size > 0) {
+    const vals = Array.from(f.player);
+    lines.push(`Jogador: ${vals.join(", ")}`);
+  }
+  if (f.data && f.data.size > 0) {
+    const vals = Array.from(f.data);
+    lines.push(`Data: ${vals.join(", ")}`);
+  }
+  if (f.valor !== null) {
+    lines.push(`Valor filtrado`);
+  }
+  if (f.limite !== null) {
+    lines.push(`Limite filtrado`);
+  }
+  if (f.ack && !(f.ack.size === 1 && f.ack.has("unacknowledged"))) {
+    const vals = Array.from(f.ack).map((k) => ACK_LABEL[k] ?? k);
+    lines.push(`Estado: ${vals.join(", ")}`);
   }
   return lines;
 }

@@ -1,4 +1,4 @@
-import type { AppSession } from "@/lib/auth/session";
+import type { AppSession } from "@/lib/types";
 import { UserRole } from "@prisma/client";
 
 export function coachPlayerFilter(coachId: string) {

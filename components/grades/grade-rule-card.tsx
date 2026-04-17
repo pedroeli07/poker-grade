@@ -13,6 +13,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Dialog } from "@/components/ui/dialog";
+import ModalDialogContent from "@/components/modals/primitives/modal-dialog-content";
+import ModalGradientHeader from "@/components/modals/primitives/modal-gradient-header";
 import { GradeRuleCardRule } from "@/lib/types";
 import { cardClassName } from "@/lib/constants";
 import { useEditableRule } from "@/hooks/grades/use-editable-rule";
@@ -24,6 +27,7 @@ import {
   GAME_TYPE_PRESETS,
   PLAYER_COUNT_PRESETS,
   WEEKDAY_PRESETS,
+  SITES_PRESETS,
 } from "@/lib/constants";
 import { mergeOptions } from "@/lib/utils";
 import RuleEditor from "./rules/rule-editor";
@@ -47,115 +51,128 @@ const GradeRuleCard = memo(function GradeRuleCard({
   const gameOptions = useMemo(() => mergeOptions(GAME_TYPE_PRESETS, form.gameType), [form.gameType]);
   const pcOptions = useMemo(() => mergeOptions(PLAYER_COUNT_PRESETS, form.playerCount), [form.playerCount]);
   const wdOptions = useMemo(() => mergeOptions(WEEKDAY_PRESETS, form.weekDay), [form.weekDay]);
+  const sitesOptions = useMemo(() => mergeOptions(SITES_PRESETS, form.sites), [form.sites]);
 
   return (
-    <div
-      className={`rounded-2xl border border-blue-500/15 bg-card overflow-hidden transition-all duration-300 ${
-        isEditing ? "ring-2 ring-blue-500/20 shadow-xl" : `hover:border-blue-500/30 ${cardClassName}`
-      }`}
-    >
-      {/* HEADER */}
-      <div className="bg-blue-500/[0.04] border-b border-blue-500/10 px-5 py-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 font-bold text-sm tracking-tight border border-blue-500/20">
-            {idx + 1}
-          </div>
-          {isEditing ? (
-            <input
-              type="text"
-              value={form.filterName || ""}
-              onChange={(e) => set("filterName", e.target.value)}
-              className="bg-background px-3 py-1.5 h-8 text-sm font-semibold rounded-md border border-border focus-visible:ring-2 focus-visible:ring-blue-500/20 outline-none w-full max-w-[300px]"
-              placeholder="Nome da restrição"
-            />
-          ) : (
-            <h3 className="text-lg font-bold text-foreground truncate tracking-tight">
+    <>
+      <div
+        className={`rounded-xl border border-blue-500/20 bg-card shadow-sm transition-colors duration-200 hover:border-blue-500/35 hover:shadow-md ${cardClassName}`}
+      >
+        <div className="flex items-center justify-between gap-2 border-b border-blue-500/10 bg-blue-500/[0.05] px-2.5 py-2 sm:px-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-blue-500/25 bg-blue-500/10 text-[11px] font-bold tabular-nums text-blue-600">
+              {idx + 1}
+            </div>
+            <h3 className="truncate text-sm font-bold leading-tight tracking-tight text-foreground sm:text-[15px]">
               {rule.filterName}
             </h3>
+          </div>
+          {manage && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => actions.setEditing(true)}
+              className="h-7 shrink-0 px-2 text-xs text-blue-600 hover:bg-blue-500/10 hover:text-blue-700"
+            >
+              <Edit2 className="mr-1 h-3.5 w-3.5" />
+              Editar
+            </Button>
           )}
         </div>
-        {!isEditing && manage && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => actions.setEditing(true)}
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-500/10 h-8 px-3 shrink-0"
-          >
-            <Edit2 className="h-4 w-4 mr-1.5" />
-            Editar
-          </Button>
-        )}
+
+        <div className="p-2.5 sm:p-3">
+           <RuleDisplay rule={rule} />
+        </div>
       </div>
 
-      <div className="p-5">
-        {!isEditing ? (
-           <RuleDisplay rule={rule} />
-        ) : (
-           <div className="space-y-6">
-              <RuleEditor 
-                form={form}
-                set={set}
-                speedOptions={speedOptions}
-                ttOptions={ttOptions}
-                vOptions={vOptions}
-                gameOptions={gameOptions}
-                pcOptions={pcOptions}
-                wdOptions={wdOptions}
+      <Dialog open={isEditing} onOpenChange={(val) => !val && actions.cancelEdit()}>
+        <ModalDialogContent size="lg" className="sm:max-w-5xl overflow-hidden p-0 border-0 flex flex-col max-h-[90vh]">
+          <ModalGradientHeader
+            icon={Edit2}
+            title="Editar Regra"
+            description="Modifique as restrições desta regra de grade."
+            density="compact"
+          />
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+            <div className="space-y-2">
+              <label className="text-[13px] font-semibold text-foreground/90">Nome da restrição</label>
+              <input
+                type="text"
+                value={form.filterName || ""}
+                onChange={(e) => set("filterName", e.target.value)}
+                className="bg-muted/40 px-3 py-1.5 h-10 border border-border/80 focus-visible:ring-2 focus-visible:ring-blue-500/20 outline-none w-full max-w-[400px] text-[14px] font-medium"
+                placeholder="Nome da restrição"
               />
-              <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border">
+            </div>
+            
+            <RuleEditor 
+              form={form}
+              set={set}
+              speedOptions={speedOptions}
+              ttOptions={ttOptions}
+              vOptions={vOptions}
+              gameOptions={gameOptions}
+              pcOptions={pcOptions}
+              wdOptions={wdOptions}
+              sitesOptions={sitesOptions}
+            />
+
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-6 mt-4 border-t border-border">
+              <AlertDialog open={meta.deleteOpen} onOpenChange={actions.setDeleteOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="outline" className="text-destructive border-transparent hover:border-destructive/30 hover:bg-destructive/10">
+                    Excluir filtro
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent size="default" className="sm:max-w-md">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir este filtro?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      A regra <span className="font-semibold text-foreground">{rule.filterName}</span> será removida desta grade. 
+                      Jogadores que usam esta grade deixarão de considerar este filtro.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel type="button" disabled={meta.deleting}>
+                      Cancelar
+                    </AlertDialogCancel>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      disabled={meta.deleting}
+                      onClick={actions.handleDelete}
+                    >
+                      {meta.deleting ? "Excluindo…" : "Excluir filtro"}
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <div className="flex items-center gap-2">
                 <Button
                   type="button"
-                  size="sm"
-                  onClick={actions.handleSave}
-                  disabled={meta.saving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {meta.saving ? "Salvando…" : "Salvar alterações"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
+                  variant="outline"
                   onClick={actions.cancelEdit}
                   disabled={meta.saving}
+                  className="border-border/60"
                 >
                   Cancelar
                 </Button>
-                <AlertDialog open={meta.deleteOpen} onOpenChange={actions.setDeleteOpen}>
-                  <AlertDialogTrigger asChild>
-                    <Button type="button" size="sm" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10">
-                      Excluir filtro
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent size="default" className="sm:max-w-md">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Excluir este filtro?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        A regra <span className="font-semibold text-foreground">{rule.filterName}</span> será removida desta grade. 
-                        Jogadores que usam esta grade deixarão de considerar este filtro.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel type="button" disabled={meta.deleting}>
-                        Cancelar
-                      </AlertDialogCancel>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        disabled={meta.deleting}
-                        onClick={actions.handleDelete}
-                      >
-                        {meta.deleting ? "Excluindo…" : "Excluir filtro"}
-                      </Button>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  type="button"
+                  onClick={actions.handleSave}
+                  disabled={meta.saving}
+                  className="glow-primary bg-primary text-primary-foreground hover:bg-primary/90 px-6"
+                >
+                  {meta.saving ? "Salvando…" : "Salvar alterações"}
+                </Button>
               </div>
-           </div>
-        )}
-      </div>
-    </div>
+            </div>
+          </div>
+        </ModalDialogContent>
+      </Dialog>
+    </>
   );
 });
 

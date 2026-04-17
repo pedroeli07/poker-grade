@@ -16,6 +16,7 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
   gameOptions,
   pcOptions,
   wdOptions,
+  sitesOptions,
 }: {
   form: T;
   /** Valores de inputs HTML são `string`; o estado de edição usa `unknown` até o save (parse em `useEditableRule`). */
@@ -26,12 +27,13 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
   gameOptions: LobbyzeFilterItem[];
   pcOptions: LobbyzeFilterItem[];
   wdOptions: LobbyzeFilterItem[];
+  sitesOptions: LobbyzeFilterItem[];
 }) {
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4">
       {/* Coluna 1: Main Config */}
-      <div className="space-y-6">
-        <div className="space-y-4 rounded-xl border border-border bg-muted/10 p-4">
+      <div className="space-y-4">
+        <div className="space-y-3 rounded-xl border border-border bg-muted/10 p-4">
           <LabeledTextRow
             label={
               <Label className="text-xs text-muted-foreground font-semibold">
@@ -40,7 +42,7 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
             }
           >
             <MultiToggleRow
-              options={[]}
+              options={sitesOptions}
               selected={form.sites}
               onChange={(v) => set("sites", v as T["sites"])}
             />
@@ -164,8 +166,8 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
       </div>
 
       {/* Coluna 2: Extras */}
-      <div className="space-y-6">
-        <div className="space-y-4 rounded-xl border border-border bg-muted/10 p-4">
+      <div className="space-y-4">
+        <div className="space-y-3 rounded-xl border border-border bg-muted/10 p-4">
           <LabeledTextRow
             label={
               <Label className="text-xs text-muted-foreground font-semibold">
@@ -196,16 +198,16 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
 
           <LabeledTextRow
             label={
-              <Label className="text-xs text-muted-foreground font-semibold">
-                Não registrar se conter as palavras (ex: Sat, Phase)
+              <Label className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">
+                Excluir automático se conter (ex: Sat, Phase)
               </Label>
             }
           >
             <Textarea
               value={form.excludePattern ?? ""}
               onChange={(e) => set("excludePattern", e.target.value)}
-              placeholder="separadas por vírgula..."
-              className="min-h-[60px] bg-background resize-none text-sm leading-relaxed"
+              placeholder="Digite palavras ou expressões separadas por | (pipe)..."
+              className="min-h-[80px] bg-background resize-none text-sm leading-relaxed border-border/80 focus-visible:ring-blue-500/20"
             />
           </LabeledTextRow>
         </div>
@@ -275,7 +277,7 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
            </div>
         </div>
 
-        <div className="flex gap-6 rounded-xl border border-border bg-muted/10 p-4">
+        <div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-4 rounded-xl border border-border bg-muted/10 p-5">
           <div className="flex items-center gap-2">
             <Switch
               id={`auto-${form?.id}`}

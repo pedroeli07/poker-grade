@@ -1,6 +1,6 @@
 import type { ColumnOptions, FilterMap } from "./primitives";
 
-export type GradesColumnKey = "name" | "description" | "rules" | "players";
+export type GradesColumnKey = "name" | "description" | "rules";
 export type GradesColumnFilters = FilterMap<GradesColumnKey>;
 export type GradesColumnOptions = ColumnOptions<GradesColumnKey>;
 

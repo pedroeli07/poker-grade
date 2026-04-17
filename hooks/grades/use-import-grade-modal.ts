@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useRef, useState, useTransition, type ChangeEvent, type DragEvent, type FormEvent } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  useTransition,
+  type ChangeEvent,
+  type DragEvent,
+  type SubmitEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import { importGradeFromJson } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
@@ -64,7 +72,7 @@ export function useImportGradeModal() {
   }, []);
 
   const handleSubmit = useCallback(
-    (e: FormEvent<HTMLFormElement>) => {
+    (e: SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!file) return;
       const formData = new FormData(e.currentTarget);
@@ -81,10 +89,10 @@ export function useImportGradeModal() {
           router.push("/dashboard/grades");
         } catch (err) {
           if (isNextRedirectError(err)) throw err;
-          const msg = err instanceof Error ? err.message : "Erro desconhecido ao importar JSON";
-          log.error("Erro na importaÃ§Ã£o JSON", err instanceof Error ? err : undefined);
+          const msg = err instanceof Error ? err.message : "Erro desconhecido ao importar JSON da grade";
+          log.error("Erro na importação JSON", err instanceof Error ? err : undefined);
           setError(msg);
-          toast.error("NÃ£o foi possÃ­vel importar", msg);
+          toast.error("Não foi possível importar", msg);
         }
       });
     },

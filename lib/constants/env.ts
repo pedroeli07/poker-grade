@@ -18,6 +18,7 @@ export const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL;
 export const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 export const vercelUrl = process.env.VERCEL_URL;
 export const cronSecret = process.env.CRON_SECRET;
+export const authSecret = process.env.AUTH_SECRET;
 export const superAdminEmail = process.env.SUPER_ADMIN_EMAIL;
 
 /** Limite de ligações no pool `pg` (Prisma). Default 15. */

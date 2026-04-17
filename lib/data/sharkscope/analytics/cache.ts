@@ -221,7 +221,7 @@ async function buildNetworkStatsFromGroupBreakdown(
     if (seenGroups.has(gk)) continue;
     seenGroups.add(gk);
 
-    for (const [net, b] of Object.entries(payload.byNetwork)) {
+    for (const [net, b] of Object.entries(payload.byNetwork) as [string, NetworkAggBucket][]) {
       const netKey = sharkscopeNetworkToAppKey(net) ?? net;
       const cur = merged.get(netKey) ?? emptyNetworkAggBucket();
       merged.set(netKey, {

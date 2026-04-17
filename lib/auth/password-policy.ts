@@ -2,30 +2,16 @@
  * Regras alinhadas ao registo (servidor + feedback em tempo real no cliente).
  */
 
-export const PASSWORD_MIN_LENGTH = 12;
-export const PASSWORD_MAX_LENGTH = 128;
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  TRIVIAL_PASSWORD_EXACT_LIST,
+} from "@/lib/constants/password";
+import type { PasswordChecks, StrengthLevel } from "@/lib/types/password-policy";
 
-export type PasswordChecks = {
-  minLength: boolean;
-  maxLength: boolean;
-  lower: boolean;
-  upper: boolean;
-  digit: boolean;
-  special: boolean;
-};
-
-/** Senhas triviais — só o valor inteiro (evita bloquear "Administrador123!@#"). */
-const TRIVIAL_EXACT = new Set([
-  "password",
-  "password123",
-  "senha",
-  "123456",
-  "12345678",
-  "qwerty",
-  "admin",
-  "letmein",
-  "welcome",
-]);
+const TRIVIAL_EXACT = new Set(
+  TRIVIAL_PASSWORD_EXACT_LIST.map((s) => s.toLowerCase())
+);
 
 export function isTrivialPassword(password: string): boolean {
   return TRIVIAL_EXACT.has(password.trim().toLowerCase());
@@ -70,8 +56,6 @@ export function getPasswordPolicyGaps(password: string): string[] {
   }
   return gaps;
 }
-
-export type StrengthLevel = "empty" | "weak" | "fair" | "good" | "strong";
 
 export function getPasswordStrength(password: string): {
   level: StrengthLevel;
@@ -132,6 +116,3 @@ export function getPasswordStrength(password: string): {
 
   return { level, percent, checks, trivialRejected };
 }
-
-export const PASSWORD_POLICY_MESSAGE =
-  "A senha deve ter entre 12 e 128 caracteres, incluindo maiúscula, minúscula, número e caractere especial.";

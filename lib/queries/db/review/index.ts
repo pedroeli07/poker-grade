@@ -2,14 +2,13 @@
 
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
-import type { AppSession } from "@/lib/auth/session";
 import { assertCanReview } from "@/lib/auth/rbac";
 import { processReviewSchema } from "@/lib/schemas";
 import { sanitizeOptional } from "@/lib/utils";
 import { notifyReviewDecision } from "@/lib/queries/db/notification";
 import { coachNestedPlayerWhere, coachPlayerFilter } from "../shared";
 import { ReviewStatus, UserRole } from "@prisma/client";
-import { ErrorTypes } from "@/lib/types";
+import { ErrorTypes, AppSession } from "@/lib/types";
 import { reviewMutations, reviewQueriesLog } from "@/lib/constants/queries-mutations";
 import { revalidateReview } from "@/lib/constants/revalidate-app";
 

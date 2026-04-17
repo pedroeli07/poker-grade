@@ -7,8 +7,12 @@ import AlertsEmptyState from "@/components/sharkscope/alerts/alerts-empty-state"
 import AlertsTable from "@/components/sharkscope/alerts/alerts-table";
 import { SHARKSCOPE_ALERTS_PAGE_SIZE_OPTIONS } from "@/lib/constants/sharkscope/alerts";
 import type { SharkscopeAlertRow } from "@/lib/types";
+import type { AlertSortKey } from "@/hooks/sharkscope/alerts/use-alerts-page-client";
+import type { ColumnSortState } from "@/lib/types/dataTable";
+import type { NumberFilterValue } from "@/lib/number-filter";
 
 const AlertsListSection = memo(function AlertsListSection({
+  hasActiveView,
   canAcknowledge,
   filteredLength,
   visibleSelectedIds,
@@ -24,7 +28,26 @@ const AlertsListSection = memo(function AlertsListSection({
   headerChecked,
   toggleSelectCurrentPage,
   acknowledge,
+  sort,
+  toggleSort,
+  filterSeverity,
+  filterType,
+  filterAck,
+  filterPlayer,
+  filterValor,
+  filterLimite,
+  filterData,
+  setFilterSeverity,
+  setFilterType,
+  setFilterAck,
+  setFilterPlayer,
+  setFilterValor,
+  setFilterLimite,
+  setFilterData,
+  playerOptions,
+  dataOptions,
 }: {
+  hasActiveView: boolean;
   canAcknowledge: boolean;
   filteredLength: number;
   visibleSelectedIds: Set<string>;
@@ -40,6 +63,24 @@ const AlertsListSection = memo(function AlertsListSection({
   headerChecked: boolean | "indeterminate";
   toggleSelectCurrentPage: (checked: boolean) => void;
   acknowledge: (id: string) => void;
+  sort: ColumnSortState<AlertSortKey>;
+  toggleSort: (key: AlertSortKey, kind: "string" | "date" | "number") => void;
+  filterSeverity: Set<string> | null;
+  filterType: Set<string> | null;
+  filterAck: Set<string> | null;
+  filterPlayer: Set<string> | null;
+  filterValor: NumberFilterValue | null;
+  filterLimite: NumberFilterValue | null;
+  filterData: Set<string> | null;
+  setFilterSeverity: (v: Set<string> | null) => void;
+  setFilterType: (v: Set<string> | null) => void;
+  setFilterAck: (v: Set<string> | null) => void;
+  setFilterPlayer: (v: Set<string> | null) => void;
+  setFilterValor: (v: NumberFilterValue | null) => void;
+  setFilterLimite: (v: NumberFilterValue | null) => void;
+  setFilterData: (v: Set<string> | null) => void;
+  playerOptions: { value: string; label: string }[];
+  dataOptions: { value: string; label: string }[];
 }) {
   const onToggleRowSelect = useCallback(
     (id: string, selected: boolean) => {
@@ -76,6 +117,7 @@ const AlertsListSection = memo(function AlertsListSection({
         pageSizeOptions={[...SHARKSCOPE_ALERTS_PAGE_SIZE_OPTIONS]}
       />
       <AlertsTable
+        hasActiveView={hasActiveView}
         canAcknowledge={canAcknowledge}
         paginatedRows={paginatedRows}
         selectedIds={selectedIds}
@@ -84,6 +126,24 @@ const AlertsListSection = memo(function AlertsListSection({
         onToggleSelectCurrentPage={toggleSelectCurrentPage}
         isPending={isPending}
         onAcknowledge={acknowledge}
+        sort={sort}
+        toggleSort={toggleSort}
+        filterSeverity={filterSeverity}
+        filterType={filterType}
+        filterAck={filterAck}
+        filterPlayer={filterPlayer}
+        filterValor={filterValor}
+        filterLimite={filterLimite}
+        filterData={filterData}
+        setFilterSeverity={setFilterSeverity}
+        setFilterType={setFilterType}
+        setFilterAck={setFilterAck}
+        setFilterPlayer={setFilterPlayer}
+        setFilterValor={setFilterValor}
+        setFilterLimite={setFilterLimite}
+        setFilterData={setFilterData}
+        playerOptions={playerOptions}
+        dataOptions={dataOptions}
       />
     </div>
   );

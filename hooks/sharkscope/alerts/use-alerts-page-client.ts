@@ -9,6 +9,13 @@ import {
 } from "@/lib/constants/sharkscope/alerts";
 import type { SharkscopeAlertRow } from "@/lib/types";
 import { useAlertsDashboard } from "@/hooks/sharkscope/alerts/use-alerts-dashboard";
+import { nextSortState, compareString, compareDate } from "@/lib/table-sort";
+import type { ColumnSortState } from "@/lib/types/dataTable";
+import type { NumberFilterValue } from "@/lib/number-filter";
+
+export type AlertSortKey = "severity" | "player" | "alertType" | "triggeredAt";
+
+const SEVERITY_ORDER: Record<string, number> = { red: 0, yellow: 1, green: 2 };
 
 export function useAlertsPageClient(initialAlerts: SharkscopeAlertRow[]) {
   const {
@@ -19,6 +26,14 @@ export function useAlertsPageClient(initialAlerts: SharkscopeAlertRow[]) {
     setFilterType: setFilterTypeInner,
     filterAck,
     setFilterAck: setFilterAckInner,
+    filterPlayer,
+    setFilterPlayer: setFilterPlayerInner,
+    filterData,
+    setFilterData: setFilterDataInner,
+    filterValor,
+    setFilterValor: setFilterValorInner,
+    filterLimite,
+    setFilterLimite: setFilterLimiteInner,
     filtered,
     unackedCount,
     isPending,
@@ -27,6 +42,7 @@ export function useAlertsPageClient(initialAlerts: SharkscopeAlertRow[]) {
     deleteAlerts,
   } = useAlertsDashboard(initialAlerts);
 
+  const [sort, setSort] = useState<ColumnSortState<AlertSortKey>>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -100,34 +116,87 @@ export function useAlertsPageClient(initialAlerts: SharkscopeAlertRow[]) {
     }
   }, [selectedIds, storageHydrated]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const toggleSort = useCallback((key: AlertSortKey, kind: "string" | "date" | "number") => {
+    setPage(1);
+    setSort((prev) => nextSortState(prev, key, kind));
+  }, []);
+
+  const sortedFiltered = useMemo(() => {
+    if (!sort) return filtered;
+    return [...filtered].sort((a, b) => {
+      switch (sort.key) {
+        case "severity": {
+          const diff = (SEVERITY_ORDER[a.severity] ?? 9) - (SEVERITY_ORDER[b.severity] ?? 9);
+          return sort.dir === "asc" ? diff : -diff;
+        }
+        case "player":
+          return compareString(a.player.name, b.player.name, sort.dir);
+        case "alertType":
+          return compareString(a.alertType, b.alertType, sort.dir);
+        case "triggeredAt":
+          return compareDate(a.triggeredAt, b.triggeredAt, sort.dir);
+        default:
+          return 0;
+      }
+    });
+  }, [filtered, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedFiltered.length / pageSize));
   const safePage = Math.min(Math.max(1, page), totalPages);
 
   const paginatedRows = useMemo(() => {
     const start = (safePage - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, safePage, pageSize]);
+    return sortedFiltered.slice(start, start + pageSize);
+  }, [sortedFiltered, safePage, pageSize]);
 
   const setFilterSeverity = useCallback(
-    (v: string) => {
+    (v: Set<string> | null) => {
       setPage(1);
       setFilterSeverityInner(v);
     },
     [setFilterSeverityInner]
   );
   const setFilterType = useCallback(
-    (v: string) => {
+    (v: Set<string> | null) => {
       setPage(1);
       setFilterTypeInner(v);
     },
     [setFilterTypeInner]
   );
   const setFilterAck = useCallback(
-    (v: string) => {
+    (v: Set<string> | null) => {
       setPage(1);
       setFilterAckInner(v);
     },
     [setFilterAckInner]
+  );
+  const setFilterPlayer = useCallback(
+    (v: Set<string> | null) => {
+      setPage(1);
+      setFilterPlayerInner(v);
+    },
+    [setFilterPlayerInner]
+  );
+  const setFilterData = useCallback(
+    (v: Set<string> | null) => {
+      setPage(1);
+      setFilterDataInner(v);
+    },
+    [setFilterDataInner]
+  );
+  const setFilterValor = useCallback(
+    (v: NumberFilterValue | null) => {
+      setPage(1);
+      setFilterValorInner(v);
+    },
+    [setFilterValorInner]
+  );
+  const setFilterLimite = useCallback(
+    (v: NumberFilterValue | null) => {
+      setPage(1);
+      setFilterLimiteInner(v);
+    },
+    [setFilterLimiteInner]
   );
 
   const filteredIdSet = useMemo(() => new Set(filtered.map((a) => a.id)), [filtered]);
@@ -167,10 +236,23 @@ export function useAlertsPageClient(initialAlerts: SharkscopeAlertRow[]) {
 
   const resetAlertFilters = useCallback(() => {
     setPage(1);
-    setFilterSeverityInner("all");
-    setFilterTypeInner("all");
-    setFilterAckInner("unacknowledged");
-  }, [setFilterSeverityInner, setFilterTypeInner, setFilterAckInner]);
+    setSort(null);
+    setFilterSeverityInner(null);
+    setFilterTypeInner(null);
+    setFilterPlayerInner(null);
+    setFilterDataInner(null);
+    setFilterValorInner(null);
+    setFilterLimiteInner(null);
+    setFilterAckInner(new Set(["unacknowledged"]));
+  }, [
+    setFilterSeverityInner,
+    setFilterTypeInner,
+    setFilterPlayerInner,
+    setFilterDataInner,
+    setFilterValorInner,
+    setFilterLimiteInner,
+    setFilterAckInner,
+  ]);
 
   const confirmBulkDelete = useCallback(() => {
     const ids = [...visibleSelectedIds];
@@ -190,7 +272,17 @@ export function useAlertsPageClient(initialAlerts: SharkscopeAlertRow[]) {
     setFilterType,
     filterAck,
     setFilterAck,
+    filterPlayer,
+    setFilterPlayer,
+    filterData,
+    setFilterData,
+    filterValor,
+    setFilterValor,
+    filterLimite,
+    setFilterLimite,
     resetAlertFilters,
+    sort,
+    toggleSort,
     filtered,
     unackedCount,
     isPending,

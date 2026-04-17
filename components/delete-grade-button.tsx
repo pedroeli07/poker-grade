@@ -25,10 +25,12 @@ export function DeleteGradeButton({
   gradeId,
   gradeName,
   className,
+  trigger,
 }: {
   gradeId: string;
   gradeName: string;
   className?: string;
+  trigger?: React.ReactNode;
 }) {
   const invalidateGrades = useInvalidate("grades");
   const [open, setOpen] = useState(false);
@@ -63,18 +65,20 @@ export function DeleteGradeButton({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          type="button"
-          title="Excluir grade"
-          className={cn(
-            "h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity",
-            className
-          )}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        {trigger || (
+          <Button
+            variant="ghost"
+            size="icon"
+            type="button"
+            title="Excluir grade"
+            className={cn(
+              "h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity",
+              className
+            )}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent size="default" className="sm:max-w-md">
         <AlertDialogHeader>

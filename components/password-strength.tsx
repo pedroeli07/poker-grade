@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { getPasswordStrength, PASSWORD_MIN_LENGTH } from "@/lib/auth/password-policy";
+import { getPasswordStrength } from "@/lib/auth/password-policy";
+import { PASSWORD_MIN_LENGTH } from "@/lib/constants/password";
 import { barColor, cn, labelColor } from "@/lib/utils";
 import { PasswordStrengthProps } from "@/lib/types";
 import { LEVEL_LABEL } from "@/lib/constants";

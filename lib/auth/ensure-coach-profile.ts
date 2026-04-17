@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { createLogger } from "@/lib/logger";
+import { UserRole } from "@prisma/client";
 
 const log = createLogger("auth.ensure-coach-profile");
 
@@ -19,7 +20,7 @@ export async function ensureCoachProfileLinked(userId: string): Promise<string |
         displayName: true,
       },
     });
-    if (!u || u.role !== "COACH") return u?.coachId ?? null;
+    if (!u || u.role !== UserRole.COACH) return u?.coachId ?? null;
     if (u.coachId) return u.coachId;
 
     let coach = await tx.coach.findUnique({ where: { email: u.email } });
@@ -53,7 +54,7 @@ export async function ensureCoachProfileLinked(userId: string): Promise<string |
 /** Vincula contas COACH sem `coachId` a uma linha em `coaches` (ex.: cadastro antigo). */
 export async function syncOrphanCoachProfiles(): Promise<void> {
   const orphans = await prisma.authUser.findMany({
-    where: { role: "COACH", coachId: null },
+    where: { role: UserRole.COACH, coachId: null },
     select: { id: true },
   });
   if (orphans.length === 0) return;

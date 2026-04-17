@@ -1,4 +1,4 @@
-import type { AppSession } from "@/lib/auth/session";
+import type { AppSession } from "@/lib/types";
 import { countUnreadNotificationsForUser } from "@/lib/queries/db/notification-unread-server";
 import { DashboardShellProps } from "@/lib/types";
 

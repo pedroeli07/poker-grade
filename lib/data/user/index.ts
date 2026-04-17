@@ -1,9 +1,8 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import type { AppSession } from "@/lib/auth/session";
 import { getCachedAuthUserProfileRow } from "@/lib/auth/cached-auth-user";
 import { prisma } from "@/lib/prisma";
-import type { ProfileData, UserDirectoryRow } from "@/lib/types";
+import { ProfileData, UserDirectoryRow, AppSession } from "@/lib/types";
 
 export async function loadProfilePageData(session: AppSession): Promise<ProfileData | null> {
   const user = await getCachedAuthUserProfileRow(session.userId);

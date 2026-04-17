@@ -2,7 +2,6 @@
 
 import { prisma } from "@/lib/prisma";
 import type { TargetType, LimitAction } from "@prisma/client";
-import type { AppSession } from "@/lib/auth/session";
 import { assertCanWrite } from "@/lib/auth/rbac";
 import { sanitizeText, sanitizeOptional } from "@/lib/utils";
 import { dashboardQueryRead } from "@/lib/queries/db/query-pipeline";
@@ -12,7 +11,7 @@ import { coachPlayerFilter } from "../shared";
 import { targetMutations, targetsQueriesLog } from "@/lib/constants/queries-mutations";
 import { revalidateTargets } from "@/lib/constants/revalidate-app";
 import { TargetStatus, UserRole } from "@prisma/client";
-import { ErrorTypes } from "@/lib/types";
+import { ErrorTypes, AppSession } from "@/lib/types";
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 

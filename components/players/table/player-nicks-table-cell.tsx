@@ -39,6 +39,7 @@ const PlayerNickItem = memo(({ nick, network }: PlayerNickItemProps) => {
                 height={16}
                 className="rounded-[2px] object-contain"
                 sizes="16px"
+                style={{ height: "auto" }}
               />
             )}
             <span className="font-semibold text-[13px]">{net?.label || network}</span>

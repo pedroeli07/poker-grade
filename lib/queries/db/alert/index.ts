@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { AppSession } from "@/lib/auth/session";
+import type { AppSession } from "@/lib/types";
 import { coachNestedPlayerWhere } from "../shared";
 
 export async function getAlertLogsForSharkscopeDashboard(session: AppSession) {

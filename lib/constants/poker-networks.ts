@@ -27,6 +27,7 @@ export const LOBBYZE_TO_SHARKSCOPE: Record<number, string> = {
   406: "coinpoker",
   1: "pokerstars",
   5: "888",
+  12: "chico",
 };
 
 export const POKER_NETWORKS = Object.fromEntries(
@@ -44,6 +45,9 @@ export const POKER_NETWORKS = Object.fromEntries(
   readonly coinpoker: { label: string; sharkscopeCode: string };
   readonly chico: { label: string; sharkscopeCode: string };
 };
+
+/** Chaves de rede da app — `sharkscopeNetworkToAppKey` e mapeamentos CT. */
+export const POKER_NETWORK_KEYS_SET = new Set(Object.keys(POKER_NETWORKS));
 
 export const NETWORK_OPTS = Object.entries(POKER_NETWORKS).map(([k, v]) => ({
   value: k as keyof typeof POKER_NETWORKS,

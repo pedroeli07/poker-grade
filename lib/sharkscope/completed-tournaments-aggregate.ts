@@ -1,49 +1,20 @@
-import { POKER_NETWORKS } from "@/lib/constants/poker-networks";
+import { POKER_NETWORK_KEYS_SET } from "@/lib/constants/poker-networks";
+import { SHARKSCOPE_BOUNTY_TYPE_CODES } from "@/lib/constants/sharkscope-tournament-classify";
+import type {
+  GroupSiteBreakdownPayload,
+  GroupSiteBreakdownPayloadV3,
+  NetworkAggBucket,
+  TournamentRow,
+} from "@/lib/types/sharkscope/completed-tournaments";
 
-/** Agregação por rede (time ou jogador): lucro, investimento total (buy-in+rake), volume e contadores ITM/FP/FT. */
-export type NetworkAggBucket = {
-  profit: number;
-  /** Soma de buy-in por linha (incl. rake); denominador do ROI. */
-  stake: number;
-  entries: number;
-  itmHits: number;
-  earlyHits: number;
-  lateHits: number;
-};
+export type {
+  GroupSiteBreakdownPayload,
+  GroupSiteBreakdownPayloadV3,
+  NetworkAggBucket,
+  TournamentRow,
+} from "@/lib/types/sharkscope/completed-tournaments";
 
-/** Torneio individual extraído de completedTournaments — suficiente para agregar qualquer janela localmente. */
-export type TournamentRow = {
-  /** Unix timestamp em segundos (vem de `@date`). */
-  date: number;
-  network: string;
-  /** Chave normalizada do app (gg, pokerstars, …) — null se rede desconhecida. */
-  networkKey: string | null;
-  stake: number;
-  rake: number;
-  /** Buy-in total por linha (stake+rake ou nível entrada); usado no denominador do ROI. */
-  investment: number;
-  /** Lucro líquido da linha (preferir `@profit` na API quando existir). */
-  prize: number;
-  position: number;
-  entrants: number;
-  playerName: string;
-  /** Flags brutas: "B,SAT,ME" etc. */
-  flags: string;
-  /** Classificação derivada de `@flags`: bounty | satellite | vanilla. */
-  tournamentType: "bounty" | "satellite" | "vanilla";
-  gameClass: string;
-  tournamentId: string;
-};
-
-/** Códigos SharkScope `Type` / PrizeStructure para “família bounty” (alinhado ao site: B + MB + Jackpot/Progressive, etc.). */
-const BOUNTY_TYPE_CODES = new Set([
-  "B",
-  "MB",
-  "PB",
-  "JB",
-  "PSB",
-  "YBB",
-]);
+const BOUNTY_TYPE_CODES = new Set<string>(SHARKSCOPE_BOUNTY_TYPE_CODES);
 
 function normalizeFlagTokens(flags: string): string[] {
   return flags
@@ -88,34 +59,9 @@ export function classifyTournamentType(flags: string): TournamentRow["tournament
   return "vanilla";
 }
 
-/** Payload v3 inclui `tournaments` (array de `TournamentRow`) para filtragem local. */
-export type GroupSiteBreakdownPayloadV3 = {
-  v: 3;
-  groupName: string;
-  filterBody: string;
-  pagesFetched: number;
-  tournamentRows: number;
-  byNetwork: Record<string, NetworkAggBucket>;
-  byPlayerNick?: Record<string, Record<string, NetworkAggBucket>>;
-  tournaments: TournamentRow[];
-};
-
 export function emptyNetworkAggBucket(): NetworkAggBucket {
   return { profit: 0, stake: 0, entries: 0, itmHits: 0, earlyHits: 0, lateHits: 0 };
 }
-
-/** Payload gravado em `SharkScopeCache.rawData` para `group_site_breakdown_*`. */
-export type GroupSiteBreakdownPayload =
-  | {
-      v: 1 | 2;
-      groupName: string;
-      filterBody: string;
-      pagesFetched: number;
-      tournamentRows: number;
-      byNetwork: Record<string, NetworkAggBucket>;
-      byPlayerNick?: Record<string, Record<string, NetworkAggBucket>>;
-    }
-  | GroupSiteBreakdownPayloadV3;
 
 function parseNum(v: unknown): number {
   if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -223,8 +169,6 @@ export function parseGroupSiteBreakdownPayload(raw: unknown): GroupSiteBreakdown
   };
 }
 
-const APP_NETWORK_KEYS = new Set(Object.keys(POKER_NETWORKS));
-
 export function sharkscopeNetworkToAppKey(networkRaw: string): string | null {
   const n = networkRaw.trim();
   if (!n) return null;
@@ -244,7 +188,7 @@ export function sharkscopeNetworkToAppKey(networkRaw: string): string | null {
   if (noSpace === "coinpoker" || noSpace.startsWith("coinpoker")) return "coinpoker";
   if (lower.includes("chico")) return "chico";
 
-  if (APP_NETWORK_KEYS.has(lower)) return lower;
+  if (POKER_NETWORK_KEYS_SET.has(lower)) return lower;
 
   return null;
 }

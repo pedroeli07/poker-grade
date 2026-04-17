@@ -60,10 +60,6 @@ export function useGradesListPage(initialRows: GradeListRow[]) {
         value: String(r.rulesCount),
         label: `${r.rulesCount} regra${r.rulesCount !== 1 ? "s" : ""}`,
       })),
-      players: distinctOptions(rows, (r) => ({
-        value: String(r.assignmentsCount),
-        label: `${r.assignmentsCount} jogador${r.assignmentsCount !== 1 ? "es" : ""}`,
-      })),
     }),
     [rows]
   );
@@ -76,11 +72,6 @@ export function useGradesListPage(initialRows: GradeListRow[]) {
         if (filters.description && !filters.description.has(descVal))
           return false;
         if (filters.rules && !filters.rules.has(String(r.rulesCount)))
-          return false;
-        if (
-          filters.players &&
-          !filters.players.has(String(r.assignmentsCount))
-        )
           return false;
         return true;
       }),

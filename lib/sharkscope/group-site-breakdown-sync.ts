@@ -6,10 +6,13 @@ import {
   filterTournamentRows,
   mergeNetworkAggMaps,
   mergePlayerNetworkMaps,
-  type GroupSiteBreakdownPayloadV3,
-  type NetworkAggBucket,
-  type TournamentRow,
 } from "@/lib/sharkscope/completed-tournaments-aggregate";
+import type {
+  GroupSiteBreakdownPayloadV3,
+  NetworkAggBucket,
+  TournamentRow,
+} from "@/lib/types/sharkscope/completed-tournaments";
+import type { SharkScopeGetFn } from "@/lib/types/sharkscope/group-sync";
 import {
   SHARKSCOPE_COMPLETED_TOURNAMENTS_EXPAND_MULTI,
   SHARKSCOPE_GROUP_SITE_BREAKDOWN_30D,
@@ -22,8 +25,6 @@ import type { Prisma } from "@prisma/client";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("sharkscope.group-site-breakdown");
-
-export type SharkScopeGetFn = typeof sharkScopeGet;
 
 function throwIfAborted(signal: AbortSignal | undefined) {
   if (signal?.aborted) {

@@ -19,11 +19,13 @@ const EditGradeDialog = memo(function EditGradeDialog({
   initialName,
   initialDescription,
   className,
+  trigger,
 }: {
   gradeId: string;
   initialName: string;
   initialDescription: string | null;
   className?: string;
+  trigger?: React.ReactNode;
 }) {
   const {
     open,
@@ -39,18 +41,20 @@ const EditGradeDialog = memo(function EditGradeDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          type="button"
-          title="Editar título e descrição"
-          className={cn(
-            "h-8 w-8 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity",
-            className
-          )}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
+        {trigger || (
+          <Button
+            variant="ghost"
+            size="icon"
+            type="button"
+            title="Editar título e descrição"
+            className={cn(
+              "h-8 w-8 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity",
+              className
+            )}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
       </DialogTrigger>
       <ModalDialogContent size="md">
         <ModalGradientHeader

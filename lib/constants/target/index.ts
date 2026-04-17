@@ -1,6 +1,6 @@
 import { type ComponentType } from "react";
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
-import { StrengthLevel } from "@/lib/auth/password-policy";
+import type { StrengthLevel } from "@/lib/types/password-policy";
 import type { ColKey } from "@/lib/types";
 
 // ─── target-status ───────────────────────────────────────────────────────────

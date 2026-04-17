@@ -24,7 +24,11 @@ function buildGradesFilterSummaryLines(
   for (const key of Object.keys(labels) as GradesColumnKey[]) {
     const applied = filters[key];
     if (applied !== null) {
-      lines.push(`${labels[key]}: ${labelsFromSet(applied, options[key] ?? [])}`);
+      const opts = options[key] ?? [];
+      const excluded = opts.filter((o) => !applied.has(o.value));
+      if (excluded.length === 0) continue;
+      const excludedSet = new Set(excluded.map((x) => x.value));
+      lines.push(`${labels[key]}: ${labelsFromSet(excludedSet, opts)}`);
     }
   }
   return lines;

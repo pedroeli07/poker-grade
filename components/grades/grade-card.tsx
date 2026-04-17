@@ -10,9 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { GradeCardProps } from "@/lib/types";
 import { cardClassName } from "@/lib/constants";
-import GradePlayersHover from "./grade-players-hover";
 import { DeleteGradeButton } from "@/components/delete-grade-button";
 import EditGradeDialog from "@/components/modals/edit-grade-modal";
+import { GradeDescriptionTooltip } from "@/components/grades/grade-description-tooltip";
 import { memo } from "react";
 
 const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardProps) {
@@ -41,9 +41,17 @@ const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardProps) {
             )}
           </div>
         </div>
-        <CardDescription className="text-sm leading-relaxed line-clamp-3 min-h-[3.75rem]">
-          {grade.description?.trim() || "Sem descrição."}
-        </CardDescription>
+        {grade.description?.trim() ? (
+          <GradeDescriptionTooltip description={grade.description}>
+            <CardDescription className="text-sm leading-relaxed line-clamp-3 min-h-[3.75rem]">
+              {grade.description}
+            </CardDescription>
+          </GradeDescriptionTooltip>
+        ) : (
+          <CardDescription className="text-sm leading-relaxed line-clamp-3 min-h-[3.75rem]">
+            Sem descrição.
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground border-t border-border pt-4">
@@ -56,12 +64,6 @@ const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardProps) {
               regras
             </span>
           </div>
-          <GradePlayersHover
-            count={grade.assignmentsCount}
-            players={grade.assignedPlayers}
-            gradeName={grade.name}
-            variant="card"
-          />
         </div>
         <div className="mt-4 flex justify-end">
           <Button

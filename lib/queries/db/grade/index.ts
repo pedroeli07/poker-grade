@@ -2,8 +2,8 @@
 
 import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireSession, type AppSession } from "@/lib/auth/session";
-import { assertCanManageGrades, canEditGradeCoachNote, canManageGrades, sanitizeOptional, sanitizeText } from "@/lib/utils";
+import { requireSession } from "@/lib/auth/session";
+import { assertCanManageGrades, canEditGradeCoachNote, canManageGrades, sanitizeOptional, sanitizeText, sanitizeUserHtml } from "@/lib/utils";
 import {
   deleteGradeRuleSchema, deleteGradeSchema, gradeIdParamSchema,
   importGradeFormSchema, updateGradeCoachNoteSchema, updateGradeProfileSchema, updateGradeRuleSchema,
@@ -15,7 +15,7 @@ import { limitGradesMutation } from "@/lib/rate-limit";
 import { gradesQueryRead } from "@/lib/queries/db/query-pipeline";
 import { parseLobbyzeFilters } from "@/lib/grade-matcher";
 import { mapPrismaRuleToCard, toPrismaJson, toPrismaJsonOptional } from "@/lib/utils";
-import { type Err, type GradeListRow, type GradeDetailQueryData, type UpdateGradeRuleInput, type Ok, ErrorTypes } from "@/lib/types";
+import { Err, GradeListRow, GradeDetailQueryData, UpdateGradeRuleInput, Ok, ErrorTypes, AppSession } from "@/lib/types";
 import { fail, sanitizeLobbyzeItems } from "@/lib/constants";
 import { gradesQueriesLog } from "@/lib/constants/queries-mutations";
 import { revalidateGrades } from "@/lib/constants/revalidate-app";
@@ -56,6 +56,25 @@ export async function getGradesForSession(session: AppSession) {
 
   return ids.length
     ? prisma.gradeProfile.findMany({ where: { id: { in: ids } }, include, orderBy: { createdAt: "desc" } })
+    : [];
+}
+
+/**
+ * Lightweight version for dropdowns/selects — only fetches id + name, no counts.
+ * Use this instead of getGradesForSession when you don't need rulesCount/assignmentsCount.
+ */
+export async function getGradeIdsAndNamesForSession(session: AppSession) {
+  const select = { id: true, name: true } as const;
+  if (session.role !== UserRole.PLAYER)
+    return prisma.gradeProfile.findMany({ select, orderBy: { createdAt: "desc" } });
+
+  if (!session.playerId) return [];
+  const ids = await prisma.playerGradeAssignment
+    .findMany({ where: { playerId: session.playerId, isActive: true }, select: { gradeId: true } })
+    .then(a => a.map(x => x.gradeId));
+
+  return ids.length
+    ? prisma.gradeProfile.findMany({ where: { id: { in: ids } }, select, orderBy: { createdAt: "desc" } })
     : [];
 }
 
@@ -187,9 +206,11 @@ export async function updateGradeCoachNote(
     async () => {
       const exists = await prisma.gradeProfile.findUnique({ where: { id: parsed.data.gradeId }, select: { id: true } });
       if (!exists) throw new Error(ErrorTypes.NOT_FOUND);
+      const rawHtml = parsed.data.description || null;
+      const sanitized = rawHtml ? sanitizeUserHtml(rawHtml) : null;
       await prisma.gradeProfile.update({
         where: { id: parsed.data.gradeId },
-        data: { description: sanitizeOptional(parsed.data.description || null, 2000) },
+        data: { description: sanitized || null },
       });
       gradesQueriesLog.info("Nota do coach atualizada", { gradeId: parsed.data.gradeId });
       return [`/dashboard/grades/${parsed.data.gradeId}`];

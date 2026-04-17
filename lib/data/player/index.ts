@@ -1,12 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import type { AppSession } from "@/lib/auth/session";
-import { getGradesForSession } from "@/lib/queries/db/grade";
+import { getGradesForSession, getGradeIdsAndNamesForSession } from "@/lib/queries/db/grade";
 import { getPlayersForSession } from "@/lib/queries/db/player";
 import { ABI_ALVO_TARGET_NAME } from "@/lib/constants";
 import { buildAbiByPlayer, isAbiAlvoTargetName, toTableRows } from "@/lib/utils";
 import { SHARKSCOPE_STATS_FILTER_10D } from "@/lib/constants/sharkscope-type-filters";
 import { extractStat, extractRoiTenDayForPlayerTable } from "@/lib/sharkscope-parse";
-import type { PlayersTablePayload } from "@/lib/types";
+import { PlayersTablePayload, AppSession } from "@/lib/types";
 import { UserRole } from "@prisma/client";
 
 /** Coaches com conta de login ativa. */
@@ -189,7 +188,7 @@ export async function getPlayersTablePayloadForSession(
           orderBy: { name: "asc" },
         })
       : getCoachesWithActiveLogin(),
-    getGradesForSession(session),
+    getGradeIdsAndNamesForSession(session),
   ]);
 
   const grades = gradeProfiles.map((g) => ({ id: g.id, name: g.name }));

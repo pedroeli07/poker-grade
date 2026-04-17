@@ -50,6 +50,7 @@ next-env.d.ts
 /lib/generated/prisma
 
 .agent
+.claude/
 
 # MCP / ferramentas locais
 .playwright-mcp/
@@ -60,3 +61,5 @@ scratch/*-sample.json
 player-group-data/*
 
 scripts/*
+
+andrej-karpathy-skills/

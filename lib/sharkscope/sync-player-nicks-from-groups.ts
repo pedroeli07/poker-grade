@@ -7,9 +7,9 @@ import {
   mergeNetworkAggMaps,
   mergePlayerNetworkMaps,
   parseGroupSiteBreakdownPayload,
-  type GroupSiteBreakdownPayload,
-  type NetworkAggBucket,
 } from "@/lib/sharkscope/completed-tournaments-aggregate";
+import type { GroupSiteBreakdownPayload, NetworkAggBucket } from "@/lib/types/sharkscope/completed-tournaments";
+import type { NickUpsertPlan, PlayerLite } from "@/lib/types/sharkscope/group-sync";
 import {
   SHARKSCOPE_COMPLETED_TOURNAMENTS_EXPAND_MULTI,
   SHARKSCOPE_GROUP_SITE_BREAKDOWN_30D,
@@ -20,7 +20,7 @@ import { createLogger } from "@/lib/logger";
 
 const log = createLogger("sharkscope.sync-nicks");
 
-export type PlayerLite = { id: string; name: string; nickname: string | null };
+export type { NickUpsertPlan, PlayerLite };
 
 // ─── Score helpers ────────────────────────────────────────────────────────────
 
@@ -240,14 +240,6 @@ export async function getOrFetchGroupBreakdown30d(
 }
 
 // ─── Upsert plan builder ──────────────────────────────────────────────────────
-
-export type NickUpsertPlan = {
-  playerId: string;
-  playerName: string;
-  sharkKey: string;
-  network: string;
-  nick: string;
-};
 
 export function buildNickUpsertPlans(
   players: PlayerLite[],
