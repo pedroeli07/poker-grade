@@ -10,10 +10,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { GradeCardProps } from "@/lib/types";
 import { cardClassName } from "@/lib/constants";
-import { DeleteGradeButton } from "@/components/delete-grade-button";
+import { DeleteGradeButton } from "@/components/grades/delete-grade-button";
 import EditGradeDialog from "@/components/modals/edit-grade-modal";
 import { GradeDescriptionTooltip } from "@/components/grades/grade-description-tooltip";
 import { memo } from "react";
+import { htmlToPlainText } from "@/lib/utils";
 
 const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardProps) {
   return (
@@ -44,7 +45,7 @@ const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardProps) {
         {grade.description?.trim() ? (
           <GradeDescriptionTooltip description={grade.description}>
             <CardDescription className="text-sm leading-relaxed line-clamp-3 min-h-[3.75rem]">
-              {grade.description}
+              {htmlToPlainText(grade.description)}
             </CardDescription>
           </GradeDescriptionTooltip>
         ) : (

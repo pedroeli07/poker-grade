@@ -5,7 +5,17 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { PlayerDataRowProps } from "@/lib/types";
 import { playersTableCol, playerTableBadgeClassName } from "@/lib/constants/classes";
-import { PlayerAbiTableCell, PlayerCoachTableCell, PlayerGradeTableCell, PlayerFpTenDayCell, PlayerFtTenDayCell, PlayerGroupTableCell, PlayerNicksTableCell, PlayerRoiCell, PlayerStatusTableCell, PlayerTableRowActions } from "./table";
+import {
+  PlayerAbiTableCell,
+  PlayerCoachTableCell, 
+  PlayerGradeTableCell, 
+  PlayerFpTenDayCell, 
+  PlayerFtTenDayCell, 
+  PlayerGroupTableCell, 
+  PlayerNicksTableCell, 
+  PlayerRoiCell, 
+  PlayerStatusTableCell, 
+  PlayerTableRowActions } from "./table";
 import { cn } from "@/lib/utils"; 
 
 const PlayerTableRow = memo(function PlayerTableRow({
@@ -20,8 +30,24 @@ const PlayerTableRow = memo(function PlayerTableRow({
         title={player.name}
       >
         <div className="flex min-h-[1.5rem] w-full min-w-0 items-center justify-center">
-          <Badge variant="outline" className={playerTableBadgeClassName}>
-            {player.name}
+          <Badge
+            variant="outline"
+            className={cn(playerTableBadgeClassName, "gap-1.5 pl-1 pr-2")}
+          >
+            <div className="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-[9px] font-semibold leading-none transition-transform duration-300 hover:scale-[4] hover:z-50 hover:shadow-xl hover:border-primary/30">
+              {player.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={player.avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                player.name
+                  .split(" ")
+                  .slice(0, 2)
+                  .map((w) => w[0] ?? "")
+                  .join("")
+                  .toUpperCase()
+              )}
+            </div>
+            <span className="min-w-0 truncate font-medium">{player.name}</span>
           </Badge>
         </div>
       </TableCell>

@@ -15,7 +15,7 @@ import Link from "next/link";
 import { POKER_NETWORKS_UI } from "@/lib/constants";
 import { Users, AtSign, DollarSign } from "lucide-react";
 import ModalFormFooter from "@/components/modals/primitives/modal-form-footer";
-import { Grid3X3, User, Mail } from "lucide-react";
+import { Grid3X3 } from "lucide-react";
 
 const EditPlayerModalInner = memo(function EditPlayerModalInner({
     player,
@@ -35,10 +35,6 @@ const EditPlayerModalInner = memo(function EditPlayerModalInner({
     onClose: () => void;
   }) {
     const {
-      name,
-      setName,
-      email,
-      setEmail,
       playerGroup,
       setPlayerGroup,
       nicks,
@@ -89,42 +85,6 @@ const EditPlayerModalInner = memo(function EditPlayerModalInner({
             <div className="grid md:grid-cols-2 gap-8">
               {/* Left Column */}
               <div className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-name" className="text-[15px] font-medium">
-                    Nome completo <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                    <Input
-                      id="edit-name"
-                      name="name"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60"
-                      disabled={formDisabled}
-                    />
-                  </div>
-                </div>
-  
-                <div className="space-y-2">
-                  <Label htmlFor="edit-email" className="text-[15px] font-medium">
-                    E-mail
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                    <Input
-                      id="edit-email"
-                      name="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-12 text-[15px] bg-muted/40 border-border/60"
-                      disabled={formDisabled}
-                    />
-                  </div>
-                </div>
-  
             {allowCoachSelect ? (
               <div className="space-y-2">
                 <Label className="text-[15px] font-medium">

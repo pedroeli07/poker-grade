@@ -13,6 +13,7 @@ import {
 import { createLogger } from "@/lib/logger";
 import { createAuthSession, applySessionCookie } from "@/lib/auth/issue-session";
 import { ensureCoachProfileLinked } from "@/lib/auth/ensure-coach-profile";
+import { ensurePlayerProfileLinked } from "@/lib/auth/ensure-player-profile";
 import { LOCKOUT_MINUTES, MAX_LOGIN_ATTEMPTS } from "@/lib/constants";
 import { ErrorTypes } from "@/lib/types";
 
@@ -131,11 +132,12 @@ export async function POST(request: Request) {
   });
 
   const linkedCoachId = await ensureCoachProfileLinked(user.id);
+  const linkedPlayerId = await ensurePlayerProfileLinked(user.id);
 
   const { token, sessionId } = await createAuthSession({
     id: user.id,
     role: user.role,
-    playerId: user.playerId,
+    playerId: linkedPlayerId ?? user.playerId,
     coachId: linkedCoachId ?? user.coachId,
     displayName: user.displayName,
     email: user.email,

@@ -69,6 +69,10 @@ export const deleteGradeRuleSchema = z.object({
   ruleId: cuid,
 });
 
+export const createGradeRuleSchema = z.object({
+  gradeProfileId: cuid,
+});
+
 export const gradeIdParamSchema = z.object({
   id: cuid,
 });

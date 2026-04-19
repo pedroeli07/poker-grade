@@ -13,11 +13,24 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DestructiveAlertDivider,
+  DestructiveAlertIconHeader,
+  DestructiveAlertWarningNote,
+} from "@/components/modals/primitives/destructive-alert-dialog";
 import { deleteGrade } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { useInvalidate } from "@/hooks/use-invalidate";
+import { 
+  destructiveAlertDialogContentClassName, 
+  destructiveAlertHeaderClassName, 
+  destructiveAlertTitleClassName, 
+  destructiveAlertDescriptionWrapClassName, 
+  destructiveAlertFooterClassName, 
+  destructiveAlertCancelButtonClassName, 
+  destructiveAlertConfirmButtonClassName } from "@/lib/constants";
 
 const log = createLogger("grades.ui");
 
@@ -40,7 +53,7 @@ export function DeleteGradeButton({
     if (pending) return;
     setPending(true);
     try {
-      log.info("UsuÃ¡rio confirmou exclusÃ£o de grade", {
+      log.info("Usuário confirmou exclusão de grade", {
         id: gradeId,
         name: gradeName,
       });
@@ -56,7 +69,7 @@ export function DeleteGradeButton({
       log.error("Falha ao excluir grade no cliente", undefined, {
         id: gradeId,
       });
-      toast.error("NÃ£o foi possÃ­vel remover a grade");
+      toast.error("Não foi possível remover a grade");
     } finally {
       setPending(false);
     }
@@ -80,26 +93,33 @@ export function DeleteGradeButton({
           </Button>
         )}
       </AlertDialogTrigger>
-      <AlertDialogContent size="default" className="sm:max-w-md">
-        <AlertDialogHeader>
-          <AlertDialogTitle>Excluir grade?</AlertDialogTitle>
-          <AlertDialogDescription>
-            A grade{" "}
-            <span className="font-semibold text-foreground">{gradeName}</span>{" "}
-            serÃ¡ removida com todas as regras. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+      <AlertDialogContent size="default" className={destructiveAlertDialogContentClassName}>
+        <DestructiveAlertIconHeader />
+        <AlertDialogHeader className={destructiveAlertHeaderClassName}>
+          <AlertDialogTitle className={destructiveAlertTitleClassName}>Excluir grade?</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className={destructiveAlertDescriptionWrapClassName}>
+              <p>
+                A grade{" "}
+                <span className="font-semibold text-foreground">{gradeName}</span> será removida com todas
+                as regras.
+              </p>
+              <DestructiveAlertWarningNote>Esta ação não pode ser desfeita.</DestructiveAlertWarningNote>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel type="button" disabled={pending}>
+        <DestructiveAlertDivider />
+        <AlertDialogFooter className={destructiveAlertFooterClassName}>
+          <AlertDialogCancel type="button" disabled={pending} className={destructiveAlertCancelButtonClassName}>
             Cancelar
           </AlertDialogCancel>
           <Button
             type="button"
-            variant="destructive"
             disabled={pending}
             onClick={handleConfirm}
+            className={destructiveAlertConfirmButtonClassName}
           >
-            {pending ? "Excluindoâ€¦" : "Excluir"}
+            {pending ? "Excluindo…" : "Excluir"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

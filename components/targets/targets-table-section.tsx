@@ -85,17 +85,9 @@ const TargetsTableSection = memo(function TargetsTableSection({
                 {TARGETS_TABLE_HEAD_COLUMNS.map(([w, id, col, label]) => (
                   <TableHead
                     key={id}
-                    className={cn(
-                      `${w} h-12 align-bottom text-center`,
-                      col === "status" && "pr-4 text-right"
-                    )}
+                    className={cn(`${w} h-14 align-middle text-center`)}
                   >
-                    <div
-                      className={cn(
-                        "flex items-center gap-0.5",
-                        col === "status" ? "justify-end" : "justify-center"
-                      )}
-                    >
+                    <div className="flex items-center justify-center gap-0.5 py-1">
                       <SortButton
                         columnKey={col}
                         sort={sort}

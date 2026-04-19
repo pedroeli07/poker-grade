@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useMemo } from "react";
-import { Edit2 } from "lucide-react";
+import { Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -11,16 +11,29 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DestructiveAlertDivider,
+  DestructiveAlertIconHeader,
+  DestructiveAlertWarningNote,
+} from "@/components/modals/primitives/destructive-alert-dialog";
 import { Dialog } from "@/components/ui/dialog";
 import ModalDialogContent from "@/components/modals/primitives/modal-dialog-content";
 import ModalGradientHeader from "@/components/modals/primitives/modal-gradient-header";
 import { GradeRuleCardRule } from "@/lib/types";
-import { cardClassName } from "@/lib/constants";
 import { useEditableRule } from "@/hooks/grades/use-editable-rule";
 import RuleDisplay from "@/components/grades/rules/rule-display";
-import {
+import { cn, mergeOptions } from "@/lib/utils";
+import RuleEditor from "./rules/rule-editor";
+import { 
+  destructiveAlertDialogContentClassName, 
+  destructiveAlertHeaderClassName, 
+  destructiveAlertTitleClassName, 
+  destructiveAlertDescriptionWrapClassName, 
+  destructiveAlertFooterClassName, 
+  destructiveAlertCancelButtonClassName, 
+  destructiveAlertConfirmButtonClassName,
+  cardClassName,
   SPEED_PRESETS,
   TOURNAMENT_TYPE_PRESETS,
   VARIANT_PRESETS,
@@ -28,9 +41,7 @@ import {
   PLAYER_COUNT_PRESETS,
   WEEKDAY_PRESETS,
   SITES_PRESETS,
-} from "@/lib/constants";
-import { mergeOptions } from "@/lib/utils";
-import RuleEditor from "./rules/rule-editor";
+   } from "@/lib/constants";
 
 const GradeRuleCard = memo(function GradeRuleCard({
   rule,
@@ -56,7 +67,7 @@ const GradeRuleCard = memo(function GradeRuleCard({
   return (
     <>
       <div
-        className={`rounded-xl border border-blue-500/20 bg-card shadow-sm transition-colors duration-200 hover:border-blue-500/35 hover:shadow-md ${cardClassName}`}
+        className={`flex h-full flex-col rounded-xl border border-blue-500/20 bg-card shadow-sm transition-colors duration-200 hover:border-blue-500/35 hover:shadow-blue-200 hover:shadow-xl ${cardClassName}`}
       >
         <div className="flex items-center justify-between gap-2 border-b border-blue-500/10 bg-blue-500/[0.05] px-2.5 py-2 sm:px-3">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -68,26 +79,39 @@ const GradeRuleCard = memo(function GradeRuleCard({
             </h3>
           </div>
           {manage && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => actions.setEditing(true)}
-              className="h-7 shrink-0 px-2 text-xs text-blue-600 hover:bg-blue-500/10 hover:text-blue-700"
-            >
-              <Edit2 className="mr-1 h-3.5 w-3.5" />
-              Editar
-            </Button>
+            <div className="flex shrink-0 items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => actions.setEditing(true)}
+                className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-500/10 hover:text-blue-700"
+              >
+                <Edit2 className="mr-1 h-3.5 w-3.5" />
+                Editar
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => actions.setDeleteOpen(true)}
+                className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                aria-label="Excluir regra"
+              >
+                <Trash2 className="mr-1 h-3.5 w-3.5" />
+                Excluir
+              </Button>
+            </div>
           )}
         </div>
 
-        <div className="p-2.5 sm:p-3">
+        <div className="flex flex-1 flex-col p-2.5 sm:p-3">
            <RuleDisplay rule={rule} />
         </div>
       </div>
 
       <Dialog open={isEditing} onOpenChange={(val) => !val && actions.cancelEdit()}>
-        <ModalDialogContent size="lg" className="sm:max-w-5xl overflow-hidden p-0 border-0 flex flex-col max-h-[90vh]">
+        <ModalDialogContent size="lg" className="sm:max-w-[1000px] overflow-hidden p-0 border-0 flex flex-col max-h-[90vh]">
           <ModalGradientHeader
             icon={Edit2}
             title="Editar Regra"
@@ -96,12 +120,15 @@ const GradeRuleCard = memo(function GradeRuleCard({
           />
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
             <div className="space-y-2">
-              <label className="text-[13px] font-semibold text-foreground/90">Nome da restrição</label>
+              <label className="text-[13px] font-semibold text-foreground/90 p-4 ">Nome da restrição</label>
               <input
                 type="text"
                 value={form.filterName || ""}
                 onChange={(e) => set("filterName", e.target.value)}
-                className="bg-muted/40 px-3 py-1.5 h-10 border border-border/80 focus-visible:ring-2 focus-visible:ring-blue-500/20 outline-none w-full max-w-[400px] text-[14px] font-medium"
+                className={cn(
+                  "bg-muted/40 px-3 py-1.5 h-10 border border-border/80 focus-visible:ring-2 focus-visible:ring-blue-500/20 outline-none w-full max-w-[400px] text-[14px] font-medium",
+                  "placeholder:text-muted-foreground/35 dark:placeholder:text-muted-foreground/45"
+                )}
                 placeholder="Nome da restrição"
               />
             </div>
@@ -119,35 +146,15 @@ const GradeRuleCard = memo(function GradeRuleCard({
             />
 
             <div className="flex flex-wrap items-center justify-between gap-4 pt-6 mt-4 border-t border-border">
-              <AlertDialog open={meta.deleteOpen} onOpenChange={actions.setDeleteOpen}>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="outline" className="text-destructive border-transparent hover:border-destructive/30 hover:bg-destructive/10">
-                    Excluir filtro
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent size="default" className="sm:max-w-md">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Excluir este filtro?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      A regra <span className="font-semibold text-foreground">{rule.filterName}</span> será removida desta grade. 
-                      Jogadores que usam esta grade deixarão de considerar este filtro.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel type="button" disabled={meta.deleting}>
-                      Cancelar
-                    </AlertDialogCancel>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      disabled={meta.deleting}
-                      onClick={actions.handleDelete}
-                    >
-                      {meta.deleting ? "Excluindo…" : "Excluir filtro"}
-                    </Button>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => actions.setDeleteOpen(true)}
+                className="text-destructive border-transparent hover:border-destructive/30 hover:bg-destructive/10 bg-red-500/10 hover:bg-red-500/20 hover:text-red-600"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Excluir Regra</span>
+              </Button>
 
               <div className="flex items-center gap-2">
                 <Button
@@ -172,6 +179,46 @@ const GradeRuleCard = memo(function GradeRuleCard({
           </div>
         </ModalDialogContent>
       </Dialog>
+
+      <AlertDialog open={meta.deleteOpen} onOpenChange={actions.setDeleteOpen}>
+        <AlertDialogContent size="default" className={destructiveAlertDialogContentClassName}>
+          <DestructiveAlertIconHeader />
+          <AlertDialogHeader className={destructiveAlertHeaderClassName}>
+            <AlertDialogTitle className={destructiveAlertTitleClassName}>
+              Excluir este filtro?
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className={destructiveAlertDescriptionWrapClassName}>
+                <p>
+                  A regra{" "}
+                  <span className="font-semibold text-foreground">{rule.filterName}</span> será
+                  removida desta grade. Jogadores que usam esta grade deixarão de considerar este
+                  filtro.
+                </p>
+                <DestructiveAlertWarningNote>Esta ação não pode ser desfeita.</DestructiveAlertWarningNote>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <DestructiveAlertDivider />
+          <AlertDialogFooter className={destructiveAlertFooterClassName}>
+            <AlertDialogCancel
+              type="button"
+              disabled={meta.deleting}
+              className={destructiveAlertCancelButtonClassName}
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              disabled={meta.deleting}
+              onClick={actions.handleDelete}
+              className={destructiveAlertConfirmButtonClassName}
+            >
+              {meta.deleting ? "Excluindo…" : "Excluir filtro"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 });

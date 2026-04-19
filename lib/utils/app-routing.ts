@@ -14,6 +14,27 @@ export function getAppBaseUrl(): string {
   return vercel ? `https://${vercel}` : "";
 }
 
+/**
+ * URL de produção usada em conteúdos que saem do servidor (ex.: e-mails, webhooks).
+ * Nunca retorna localhost — prioriza `PRODUCTION_APP_URL`, depois `VERCEL_URL`,
+ * e só em último caso `NEXT_PUBLIC_APP_URL` se não for localhost.
+ */
+export function getProductionBaseUrl(): string {
+  const prod = globalThis.process?.env?.["PRODUCTION_APP_URL"]?.replace(/\/$/, "");
+  if (prod) return prod;
+  const vercelRaw = globalThis.process?.env?.["VERCEL_URL"]?.replace(/\/$/, "");
+  if (vercelRaw) return vercelRaw.startsWith("http") ? vercelRaw : `https://${vercelRaw}`;
+  const pub = globalThis.process?.env?.["NEXT_PUBLIC_APP_URL"]?.replace(/\/$/, "");
+  if (pub && !/^https?:\/\/(localhost|127\.0\.0\.1)/i.test(pub)) return pub;
+  return "";
+}
+
+/** URL absoluta da página de registo em produção (usada em e-mails de convite). */
+export function getRegisterAbsoluteUrl(): string {
+  const base = getProductionBaseUrl();
+  return base ? `${base}/register` : "";
+}
+
 export function buildNetworkOptions(): PokerNetworkOption[] {
   return Object.entries(POKER_NETWORKS).map(([value, v]) => ({ value, label: v.label }));
 }

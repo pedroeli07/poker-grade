@@ -9,8 +9,25 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { ListFilter } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { filterListScrollClass } from "@/lib/constants";
+import {
+  COLUMN_FILTER_ARIA_PREFIX,
+  COLUMN_FILTER_BTN_APPLY,
+  COLUMN_FILTER_BTN_CANCEL,
+  COLUMN_FILTER_BTN_CLEAR,
+  COLUMN_FILTER_BTN_DESELECT_ALL,
+  COLUMN_FILTER_BTN_SELECT_ALL,
+  COLUMN_FILTER_EMPTY_MESSAGE,
+  COLUMN_FILTER_SEARCH_PLACEHOLDER,
+  filterListScrollClass,
+} from "@/lib/constants";
+import {
+  cn,
+  columnFilterValueKeys,
+  commitColumnFilterSelection,
+  filterColumnOptionsBySearch,
+  initialColumnFilterPending,
+  resolveColumnFilterAriaLabel,
+} from "@/lib/utils";
 import FilterOptionRow from "./filter-row-option";
 
 const ColumnFilter = memo(function ColumnFilter({
@@ -39,41 +56,24 @@ const ColumnFilter = memo(function ColumnFilter({
   const [search, setSearch] = useState("");
   const [pending, setPending] = useState<Set<string>>(new Set());
 
-  const allKeys = useMemo(
-    () => new Set(options.map((o) => o.value)),
-    [options]
-  );
+  const allKeys = useMemo(() => columnFilterValueKeys(options), [options]);
 
   const initPending = useCallback(() => {
-    setPending(applied === null ? new Set(allKeys) : new Set(applied));
+    setPending(initialColumnFilterPending(applied, allKeys));
     setSearch("");
   }, [applied, allKeys]);
 
-  const filteredOptions = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return options;
-    return options.filter(
-      (o) =>
-        o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q)
-    );
-  }, [options, search]);
+  const filteredOptions = useMemo(
+    () => filterColumnOptionsBySearch(options, search),
+    [options, search]
+  );
 
   const active = applied !== null;
 
-  const filterAria =
-    ariaLabel ??
-    (typeof label === "string" || typeof label === "number" ? String(label) : columnId);
+  const filterAria = resolveColumnFilterAriaLabel(columnId, label, ariaLabel);
 
   function applyFromPending(next: Set<string>) {
-    if (next.size === 0) {
-      onApply(new Set());
-      return;
-    }
-    if (next.size === allKeys.size) {
-      onApply(null);
-      return;
-    }
-    onApply(next);
+    commitColumnFilterSelection(next, allKeys, onApply);
   }
 
   function toggle(value: string, checked: boolean) {
@@ -109,7 +109,7 @@ const ColumnFilter = memo(function ColumnFilter({
                 ),
             triggerClassName
           )}
-          aria-label={`Filtrar ${filterAria}`}
+          aria-label={`${COLUMN_FILTER_ARIA_PREFIX} ${filterAria}`}
         >
           <span>{label}</span>
           <ListFilter
@@ -124,7 +124,7 @@ const ColumnFilter = memo(function ColumnFilter({
       <PopoverContent className="w-80 p-0 sm:w-[22rem]" align="start">
         <div className="p-2 border-b border-border space-y-2">
           <Input
-            placeholder="Buscar…"
+            placeholder={COLUMN_FILTER_SEARCH_PLACEHOLDER}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-9 text-sm"
@@ -137,7 +137,7 @@ const ColumnFilter = memo(function ColumnFilter({
               className="h-8 text-xs"
               onClick={() => setPending(new Set(allKeys))}
             >
-              Marcar todos
+              {COLUMN_FILTER_BTN_SELECT_ALL}
             </Button>
             <Button
               type="button"
@@ -146,7 +146,7 @@ const ColumnFilter = memo(function ColumnFilter({
               className="h-8 text-xs"
               onClick={() => setPending(new Set())}
             >
-              Desmarcar todos
+              {COLUMN_FILTER_BTN_DESELECT_ALL}
             </Button>
             <Button
               type="button"
@@ -158,14 +158,14 @@ const ColumnFilter = memo(function ColumnFilter({
                 setOpen(false);
               }}
             >
-              Limpar filtro
+              {COLUMN_FILTER_BTN_CLEAR}
             </Button>
           </div>
         </div>
         <div className={filterListScrollClass}>
           {filteredOptions.length === 0 ? (
             <p className="text-sm text-muted-foreground px-2 py-4 text-center">
-              Nenhum valor
+              {COLUMN_FILTER_EMPTY_MESSAGE}
             </p>
           ) : (
             filteredOptions.map((opt) => (
@@ -185,7 +185,7 @@ const ColumnFilter = memo(function ColumnFilter({
             size="sm"
             onClick={() => setOpen(false)}
           >
-            Cancelar
+            {COLUMN_FILTER_BTN_CANCEL}
           </Button>
           <Button
             type="button"
@@ -195,7 +195,7 @@ const ColumnFilter = memo(function ColumnFilter({
               setOpen(false);
             }}
           >
-            Aplicar
+            {COLUMN_FILTER_BTN_APPLY}
           </Button>
         </div>
       </PopoverContent>

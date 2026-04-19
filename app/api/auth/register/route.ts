@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { UserRole } from "@prisma/client";
+import { PlayerStatus, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { registerBodySchema } from "@/lib/schemas";
@@ -108,17 +108,24 @@ export async function POST(request: Request) {
   try {
     const result = await prisma.$transaction(async (tx) => {
       let coachId: string | null = null;
+      let playerId: string | null = null;
+
       if (role === UserRole.COACH) {
-        const coachName =
-          displayName?.trim() || email.split("@")[0] || "Coach";
-        const coach = await tx.coach.create({
-          data: { name: coachName, email },
-        });
+        const coachName = displayName?.trim() || email.split("@")[0] || "Coach";
+        const coach = await tx.coach.create({ data: { name: coachName, email } });
         coachId = coach.id;
       }
 
+      if (role === UserRole.PLAYER) {
+        const playerName = displayName?.trim() || email.split("@")[0] || "Jogador";
+        const player = await tx.player.create({
+          data: { name: playerName, email, status: PlayerStatus.ACTIVE },
+        });
+        playerId = player.id;
+      }
+
       const user = await tx.authUser.create({
-        data: { email, displayName, passwordHash, role, coachId },
+        data: { email, displayName, passwordHash, role, coachId, playerId },
         select: { id: true, playerId: true, coachId: true },
       });
       if (!isSuperAdminEmail(email)) {

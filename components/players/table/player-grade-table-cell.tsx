@@ -7,7 +7,6 @@ import {
 import { playersTableCol } from "@/lib/constants/classes";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
-
 import type { PlayerGradeTableCellProps } from "@/lib/types/player";
 
 const PlayerGradeTableCell = memo(function PlayerGradeTableCell({

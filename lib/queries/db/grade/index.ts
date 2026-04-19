@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { assertCanManageGrades, canEditGradeCoachNote, canManageGrades, sanitizeOptional, sanitizeText, sanitizeUserHtml } from "@/lib/utils";
 import {
-  deleteGradeRuleSchema, deleteGradeSchema, gradeIdParamSchema,
+  createGradeRuleSchema, deleteGradeRuleSchema, deleteGradeSchema, gradeIdParamSchema,
   importGradeFormSchema, updateGradeCoachNoteSchema, updateGradeProfileSchema, updateGradeRuleSchema,
 } from "@/lib/schemas";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
@@ -166,6 +166,7 @@ export async function importGradeFromJson(formData: FormData) {
         },
       },
     });
+
     void notifyGradeCreated(name, grade.id);
     gradesQueriesLog.success("Grade importada via JSON", { name, rules: gradeRules.length });
   });
@@ -176,6 +177,7 @@ export async function createGradeProfile(formData: FormData): Promise<{ ok: true
   const description = sanitizeOptional(
     formData.get("description") ? String(formData.get("description")) : null, 2000
   );
+
   if (!name || name.length < 2) return fail("Nome deve ter pelo menos 2 caracteres");
 
   const session = await requireSession();
@@ -183,16 +185,22 @@ export async function createGradeProfile(formData: FormData): Promise<{ ok: true
   const rl = await limitGradesMutation(session.userId);
   if (!rl.ok) return fail(`Muitas alterações. Aguarde ${rl.retryAfterSec}s.`);
 
+  let gradeId: string;
   try {
     const grade = await prisma.gradeProfile.create({ data: { name, description, isTemplate: false } });
-    void notifyGradeCreated(name, grade.id);
-    gradesQueriesLog.success("Grade criada manualmente", { name, id: grade.id });
-    revalidateGrades();
-    return { ok: true, id: grade.id };
+    gradeId = grade.id;
+    gradesQueriesLog.success("Grade criada", { name, id: grade.id });
   } catch (e) {
     if (isRedirectError(e)) throw e;
-    return fail("Operação falhou.");
+    gradesQueriesLog.error("Falha ao criar grade", e instanceof Error ? e : undefined);
+    return fail(e instanceof Error ? e.message : "Operação falhou.");
   }
+
+  notifyGradeCreated(name, gradeId).catch((e) =>
+    gradesQueriesLog.error("notifyGradeCreated falhou (ignorado)", e instanceof Error ? e : undefined)
+  );
+  try { revalidateGrades(); } catch { /* noop */ }
+  return { ok: true, id: gradeId };
 }
 
 export async function updateGradeCoachNote(
@@ -299,6 +307,40 @@ export async function updateGradeRule(
     gradesQueriesLog.info("Regra de grade atualizada", { ruleId: parsed.data.ruleId });
     return [`/dashboard/grades/${rule.gradeProfileId}`];
   });
+}
+
+export async function createGradeRule(
+  gradeProfileId: string
+): Promise<{ ok: true; id: string } | Err> {
+  const parsed = createGradeRuleSchema.safeParse({ gradeProfileId });
+  if (!parsed.success) return fail(ErrorTypes.INVALID_DATA);
+
+  const session = await requireSession();
+  assertCanManageGrades(session);
+  const rl = await limitGradesMutation(session.userId);
+  if (!rl.ok) return fail(`Muitas alterações. Aguarde ${rl.retryAfterSec}s e tente novamente.`);
+
+  try {
+    const grade = await prisma.gradeProfile.findUnique({
+      where: { id: parsed.data.gradeProfileId }, select: { id: true },
+    });
+    if (!grade) return fail(ErrorTypes.NOT_FOUND);
+
+    const rule = await prisma.gradeRule.create({
+      data: {
+        gradeProfileId: parsed.data.gradeProfileId,
+        filterName: "Nova regra",
+        sites: toPrismaJson([]),
+      },
+      select: { id: true },
+    });
+    gradesQueriesLog.success("Regra de grade criada", { ruleId: rule.id, gradeProfileId: parsed.data.gradeProfileId });
+    revalidateGrades(`/dashboard/grades/${parsed.data.gradeProfileId}`);
+    return { ok: true, id: rule.id };
+  } catch (e) {
+    gradesQueriesLog.error("Falha ao criar regra", e instanceof Error ? e : undefined);
+    return fail(e instanceof Error ? e.message : ErrorTypes.OPERATION_FAILED);
+  }
 }
 
 export async function deleteGradeRule(ruleId: string): Promise<Ok | Err> {

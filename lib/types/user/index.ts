@@ -1,11 +1,12 @@
 import type { UserRole } from "@prisma/client";
 import type { BaseEntity, FilterMap, ModalProps } from "../primitives";
 
-type BaseUserRow = BaseEntity & { 
-  email: string; 
-  role: UserRole; 
+type BaseUserRow = BaseEntity & {
+  email: string;
+  role: UserRole;
   whatsapp: string | null;
   discord: string | null;
+  avatarUrl: string | null;
 };
 
 export type UserDirectoryRow =
@@ -19,6 +20,7 @@ export interface ProfileData {
   discord: string | null;
   role: string;
   createdAt: string;
+  avatarUrl: string | null;
 }
 
 export type UserClientProps = { initialRows: UserDirectoryRow[] };

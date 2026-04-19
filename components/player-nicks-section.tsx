@@ -22,10 +22,58 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DestructiveAlertDivider,
+  DestructiveAlertIconHeader,
+  DestructiveAlertWarningNote,
+} from "@/components/modals/primitives/destructive-alert-dialog";
 import { Plus, Pencil, Trash2, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { getPokerstarsMainNickFromRows, POKER_NETWORKS, NETWORK_OPTS } from "@/lib/constants";
+import {
+  getPokerstarsMainNickFromRows,
+  NETWORK_OPTS,
+  POKER_NETWORKS,
+  shouldPrefillPokerstarsMainNick,
+  destructiveAlertDialogContentClassName,
+  destructiveAlertHeaderClassName,
+  destructiveAlertTitleClassName,
+  destructiveAlertDescriptionWrapClassName,
+  destructiveAlertFooterClassName,
+  destructiveAlertCancelButtonClassName,
+  destructiveAlertConfirmButtonClassName,
+} from "@/lib/constants";
+import {
+  PLAYER_NICKS_DELETE_CACHE_WARNING,
+  PLAYER_NICKS_DELETE_CONFIRM,
+  PLAYER_NICKS_DELETE_TITLE,
+  PLAYER_NICKS_EDIT_CANCEL,
+  PLAYER_NICKS_EDIT_SAVE,
+  PLAYER_NICKS_EMPTY_MESSAGE,
+  PLAYER_NICKS_FORM_CANCEL,
+  PLAYER_NICKS_FORM_LABEL_NETWORK,
+  PLAYER_NICKS_FORM_LABEL_NICK,
+  PLAYER_NICKS_FORM_PLACEHOLDER_NICK,
+  PLAYER_NICKS_FORM_SUBMIT,
+  PLAYER_NICKS_FORM_TITLE,
+  PLAYER_NICKS_STATUS_ACTIVE,
+  PLAYER_NICKS_STATUS_INACTIVE,
+  PLAYER_NICKS_STATUS_TITLE_ACTIVE,
+  PLAYER_NICKS_STATUS_TITLE_INACTIVE,
+  PLAYER_NICKS_TABLE_COL_NETWORK,
+  PLAYER_NICKS_TABLE_COL_NICK,
+  PLAYER_NICKS_TABLE_COL_STATUS,
+  PLAYER_NICKS_TOAST_ADD_FAIL,
+  PLAYER_NICKS_TOAST_ADD_SUCCESS_TITLE,
+  PLAYER_NICKS_TOAST_ERROR_TITLE,
+  PLAYER_NICKS_TOAST_REMOVE_FAIL,
+  PLAYER_NICKS_TOAST_REMOVE_SUCCESS,
+  PLAYER_NICKS_TOAST_UPDATE_FAIL,
+  PLAYER_NICKS_TOAST_UPDATE_SUCCESS,
+  PLAYER_NICKS_BTN_ADD,
+} from "@/lib/constants/player-nicks-ui";
+import { cn, formatPlayerNickAddedToastDescription, playerNickItemPath, playerNicksCollectionPath } from "@/lib/utils";
 import { PokerNetworkKey, Nick, PlayerNicksSectionProps } from "@/lib/types";
+
 
 
 export function PlayerNicksSection({ playerId, initialNicks, canManage }: PlayerNicksSectionProps) {
@@ -42,21 +90,24 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
   async function handleAdd() {
     if (!newNick.trim()) return;
     startTransition(async () => {
-      const res = await fetch(`/api/players/${playerId}/nicks`, {
+      const res = await fetch(playerNicksCollectionPath(playerId), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nick: newNick.trim(), network: newNetwork }),
       });
       const json = await res.json();
       if (!res.ok) {
-        toast.error("Erro", json.error ?? "Não foi possível adicionar o nick.");
+        toast.error(PLAYER_NICKS_TOAST_ERROR_TITLE, json.error ?? PLAYER_NICKS_TOAST_ADD_FAIL);
         return;
       }
       setNicks((prev) => [...prev, json.nick as Nick]);
       setNewNick("");
       setNewNetwork("gg");
       setShowAdd(false);
-      toast.success("Nick adicionado", `${json.nick.nick} (${POKER_NETWORKS[json.nick.network as PokerNetworkKey]?.label ?? json.nick.network}) cadastrado com sucesso.`);
+      toast.success(
+        PLAYER_NICKS_TOAST_ADD_SUCCESS_TITLE,
+        formatPlayerNickAddedToastDescription(json.nick.nick, json.nick.network as string)
+      );
     });
   }
 
@@ -68,34 +119,34 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
 
   async function handleUpdate(id: string) {
     startTransition(async () => {
-      const res = await fetch(`/api/players/${playerId}/nicks/${id}`, {
+      const res = await fetch(playerNickItemPath(playerId, id), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nick: editNick.trim(), network: editNetwork }),
       });
       const json = await res.json();
       if (!res.ok) {
-        toast.error("Erro", json.error ?? "Não foi possível atualizar.");
+        toast.error(PLAYER_NICKS_TOAST_ERROR_TITLE, json.error ?? PLAYER_NICKS_TOAST_UPDATE_FAIL);
         return;
       }
       setNicks((prev) =>
         prev.map((n) => (n.id === id ? (json.nick as Nick) : n))
       );
       setEditingId(null);
-      toast.success("Nick atualizado");
+      toast.success(PLAYER_NICKS_TOAST_UPDATE_SUCCESS);
     });
   }
 
   async function handleToggleActive(nick: Nick) {
     startTransition(async () => {
-      const res = await fetch(`/api/players/${playerId}/nicks/${nick.id}`, {
+      const res = await fetch(playerNickItemPath(playerId, nick.id), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !nick.isActive }),
       });
       const json = await res.json();
       if (!res.ok) {
-        toast.error("Erro", json.error ?? "Não foi possível atualizar.");
+        toast.error(PLAYER_NICKS_TOAST_ERROR_TITLE, json.error ?? PLAYER_NICKS_TOAST_UPDATE_FAIL);
         return;
       }
       setNicks((prev) =>
@@ -104,19 +155,21 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
     });
   }
 
+  const nickPendingDelete = deleteId ? nicks.find((n) => n.id === deleteId) : null;
+
   async function handleDelete(id: string) {
     startTransition(async () => {
-      const res = await fetch(`/api/players/${playerId}/nicks/${id}`, {
+      const res = await fetch(playerNickItemPath(playerId, id), {
         method: "DELETE",
       });
       if (!res.ok) {
         const json = await res.json();
-        toast.error("Erro", json.error ?? "Não foi possível remover.");
+        toast.error(PLAYER_NICKS_TOAST_ERROR_TITLE, json.error ?? PLAYER_NICKS_TOAST_REMOVE_FAIL);
         return;
       }
       setNicks((prev) => prev.filter((n) => n.id !== id));
       setDeleteId(null);
-      toast.success("Nick removido");
+      toast.success(PLAYER_NICKS_TOAST_REMOVE_SUCCESS);
     });
   }
 
@@ -124,7 +177,7 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
     <div className="space-y-3">
       {nicks.length === 0 && !showAdd && (
         <div className="rounded-xl border border-dashed border-border/60 p-6 text-center text-muted-foreground bg-blue-500/10">
-          <p className="text-sm">Nenhum nick cadastrado.</p>
+          <p className="text-sm">{PLAYER_NICKS_EMPTY_MESSAGE}</p>
           {canManage && (
             <Button
               size="sm"
@@ -133,7 +186,7 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
               onClick={() => setShowAdd(true)}
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Adicionar nick
+              {PLAYER_NICKS_BTN_ADD}
             </Button>
           )}
         </div>
@@ -144,9 +197,9 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
           <table className="w-full text-sm">
             <thead className="bg-blue-500/20 hover:bg-blue-500/20 border-b border-border/60">
               <tr>
-                <th className="text-left px-3 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">Nick</th>
-                <th className="text-left px-3 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">Rede</th>
-                <th className="text-left px-3 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">Status</th>
+                <th className="text-left px-3 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">{PLAYER_NICKS_TABLE_COL_NICK}</th>
+                <th className="text-left px-3 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">{PLAYER_NICKS_TABLE_COL_NETWORK}</th>
+                <th className="text-left px-3 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">{PLAYER_NICKS_TABLE_COL_STATUS}</th>
                 {canManage && <th className="px-3 py-2.5 w-24" />}
               </tr>
             </thead>
@@ -168,7 +221,7 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
                         onValueChange={(v) => {
                           const next = v as PokerNetworkKey;
                           setEditNetwork(next);
-                          if ((next === "pokerstars_fr" || next === "pokerstars_es") && !editNick.trim()) {
+                          if (shouldPrefillPokerstarsMainNick(next) && !editNick.trim()) {
                             const main = getPokerstarsMainNickFromRows(nicks);
                             if (main) setEditNick(main);
                           }
@@ -196,7 +249,7 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
                           disabled={isPending}
                           onClick={() => handleUpdate(nick.id)}
                         >
-                          {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Salvar"}
+                          {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : PLAYER_NICKS_EDIT_SAVE}
                         </Button>
                         <Button
                           size="sm"
@@ -205,7 +258,7 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
                           disabled={isPending}
                           onClick={() => setEditingId(null)}
                         >
-                          Cancelar
+                          {PLAYER_NICKS_EDIT_CANCEL}
                         </Button>
                       </div>
                     </td>
@@ -222,18 +275,18 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
                           onClick={() => handleToggleActive(nick)}
                           disabled={isPending}
                           className="cursor-pointer"
-                          title={nick.isActive ? "Clique para desativar" : "Clique para ativar"}
+                          title={nick.isActive ? PLAYER_NICKS_STATUS_TITLE_ACTIVE : PLAYER_NICKS_STATUS_TITLE_INACTIVE}
                         >
                           {nick.isActive ? (
-                            <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">Ativo</Badge>
+                            <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">{PLAYER_NICKS_STATUS_ACTIVE}</Badge>
                           ) : (
-                            <Badge variant="secondary" className="text-xs">Inativo</Badge>
+                            <Badge variant="secondary" className="text-xs">{PLAYER_NICKS_STATUS_INACTIVE}</Badge>
                           )}
                         </button>
                       ) : nick.isActive ? (
-                        <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">Ativo</Badge>
+                        <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">{PLAYER_NICKS_STATUS_ACTIVE}</Badge>
                       ) : (
-                        <Badge variant="secondary" className="text-xs">Inativo</Badge>
+                        <Badge variant="secondary" className="text-xs">{PLAYER_NICKS_STATUS_INACTIVE}</Badge>
                       )}
                     </td>
                     {canManage && (
@@ -270,27 +323,27 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
 
       {showAdd && canManage && (
         <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-3">
-          <p className="text-sm font-medium">Adicionar Nick</p>
+          <p className="text-sm font-medium">{PLAYER_NICKS_FORM_TITLE}</p>
           <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
             <div className="space-y-1.5">
-              <Label className="text-xs">Nick</Label>
+              <Label className="text-xs">{PLAYER_NICKS_FORM_LABEL_NICK}</Label>
               <Input
                 value={newNick}
                 onChange={(e) => setNewNick(e.target.value)}
-                placeholder="JohnDoe99"
+                placeholder={PLAYER_NICKS_FORM_PLACEHOLDER_NICK}
                 className="h-9 text-sm"
                 disabled={isPending}
                 onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Rede</Label>
+              <Label className="text-xs">{PLAYER_NICKS_FORM_LABEL_NETWORK}</Label>
               <Select
                 value={newNetwork}
                 onValueChange={(v) => {
                   const next = v as PokerNetworkKey;
                   setNewNetwork(next);
-                  if ((next === "pokerstars_fr" || next === "pokerstars_es") && !newNick.trim()) {
+                  if (shouldPrefillPokerstarsMainNick(next) && !newNick.trim()) {
                     const main = getPokerstarsMainNickFromRows(nicks);
                     if (main) setNewNick(main);
                   }
@@ -317,7 +370,7 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
               onClick={handleAdd}
             >
               {isPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="mr-1.5 h-3.5 w-3.5" />}
-              Adicionar
+              {PLAYER_NICKS_FORM_SUBMIT}
             </Button>
             <Button
               size="sm"
@@ -326,7 +379,7 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
               onClick={() => { setShowAdd(false); setNewNick(""); setNewNetwork("gg"); }}
             >
               <XCircle className="mr-1.5 h-3.5 w-3.5" />
-              Cancelar
+              {PLAYER_NICKS_FORM_CANCEL}
             </Button>
           </div>
         </div>
@@ -340,26 +393,47 @@ export function PlayerNicksSection({ playerId, initialNicks, canManage }: Player
           disabled={isPending}
         >
           <Plus className="mr-1.5 h-3.5 w-3.5" />
-          Adicionar nick
+          {PLAYER_NICKS_BTN_ADD}
         </Button>
       )}
 
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remover nick?</AlertDialogTitle>
-            <AlertDialogDescription>
-              O cache SharkScope associado a este nick também será removido. Esta ação não pode ser desfeita.
+        <AlertDialogContent className={destructiveAlertDialogContentClassName}>
+          <DestructiveAlertIconHeader />
+          <AlertDialogHeader className={destructiveAlertHeaderClassName}>
+            <AlertDialogTitle className={destructiveAlertTitleClassName}>{PLAYER_NICKS_DELETE_TITLE}</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className={destructiveAlertDescriptionWrapClassName}>
+                {nickPendingDelete ? (
+                  <p>
+                    <span className="font-mono text-sm text-foreground">{nickPendingDelete.nick}</span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      ·{" "}
+                      {POKER_NETWORKS[nickPendingDelete.network as PokerNetworkKey]?.label ??
+                        nickPendingDelete.network}
+                    </span>
+                  </p>
+                ) : null}
+                <p>{PLAYER_NICKS_DELETE_CACHE_WARNING}</p>
+                <DestructiveAlertWarningNote>Esta ação não pode ser desfeita.</DestructiveAlertWarningNote>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+          <DestructiveAlertDivider />
+          <AlertDialogFooter className={destructiveAlertFooterClassName}>
+            <AlertDialogCancel disabled={isPending} className={destructiveAlertCancelButtonClassName}>
+              {PLAYER_NICKS_EDIT_CANCEL}
+            </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className={cn(
+                destructiveAlertConfirmButtonClassName,
+                "inline-flex items-center justify-center gap-2"
+              )}
               disabled={isPending}
               onClick={() => deleteId && handleDelete(deleteId)}
             >
-              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Remover"}
+              {isPending ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" /> : PLAYER_NICKS_DELETE_CONFIRM}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

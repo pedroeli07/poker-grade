@@ -1,6 +1,7 @@
 /** Core — UI, auth, parsing, SharkScope, logging, performance. */
 export * from "./cn";
 export * from "./text-sanitize";
+export * from "./html-to-plain-text";
 export * from "./auth-permissions";
 export * from "./auth-session";
 export * from "./severity-thresholds";
@@ -17,6 +18,18 @@ export * from "./modal-gradient-header-classes";
 export * from "./parse-forms";
 export * from "./perf";
 export * from "./sanitize-user-html";
+export * from "./email-format";
+export * from "./register-form";
+export * from "./grade-rule-display";
+export * from "./avatar-file";
+export * from "./data-table-pagination";
+export * from "./sidebar-nav";
+export * from "./column-filter";
+export * from "./notification-sheet";
+export * from "./player-nicks-api";
+export * from "./player-nicks";
+export * from "./topbar-datetime";
+export * from "./user-display";
 
 /** Domínio — tabelas, filtros, SharkScope UI. */
 export * from "./player";

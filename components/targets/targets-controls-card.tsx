@@ -57,7 +57,7 @@ const TargetsControlsCard = memo(function TargetsControlsCard({
 
         {view === "cards" && (
           <div className="mt-4 flex min-w-0 flex-col gap-2 sm:mr-0 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
-            <span className="shrink-0 text-xs font-medium text-muted-foreground sm:mr-1">Filtros</span>
+           
             <div className="flex flex-wrap items-center gap-2">
               <TargetsColFilters compact options={options} filters={filters} setCol={setCol} />
             </div>

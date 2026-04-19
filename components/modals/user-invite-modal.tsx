@@ -34,7 +34,7 @@ const UserInviteModal = memo(function UserInviteModal({ open, onOpenChange }: Us
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <ModalDialogContent size="md">
+      <ModalDialogContent size="sm">
         <ModalGradientHeader
           icon={Mail}
           title={USER_INVITE_MODAL_TITLE}
@@ -43,9 +43,14 @@ const UserInviteModal = memo(function UserInviteModal({ open, onOpenChange }: Us
         />
         <Separator />
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4 px-6 py-5">
+          <div className="space-y-5 px-6 py-6">
             <div className="space-y-2">
-              <Label htmlFor={USER_INVITE_EMAIL_INPUT_ID}>{USER_INVITE_EMAIL_LABEL}</Label>
+              <Label
+                htmlFor={USER_INVITE_EMAIL_INPUT_ID}
+                className="text-[15px] font-medium text-foreground"
+              >
+                {USER_INVITE_EMAIL_LABEL}
+              </Label>
               <Input
                 id={USER_INVITE_EMAIL_INPUT_ID}
                 type="email"
@@ -55,17 +60,17 @@ const UserInviteModal = memo(function UserInviteModal({ open, onOpenChange }: Us
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={USER_INVITE_EMAIL_PLACEHOLDER}
                 maxLength={USER_INVITE_EMAIL_MAX_LENGTH}
-                className="bg-background"
+                className="h-11 bg-muted/40 border-border/60 text-[15px] shadow-sm"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>{USER_INVITE_ROLE_LABEL}</Label>
+              <Label className="text-[15px] font-medium text-foreground">{USER_INVITE_ROLE_LABEL}</Label>
               <Select
                 value={role}
                 onValueChange={(v) => setRole(v as UserRole)}
               >
-                <SelectTrigger className="w-full bg-background">
+                <SelectTrigger className="h-11 w-full bg-muted/40 border-border/60 text-[15px] shadow-sm">
                   <SelectValue placeholder={USER_INVITE_ROLE_SELECT_PLACEHOLDER} />
                 </SelectTrigger>
                 <SelectContent>
@@ -79,19 +84,19 @@ const UserInviteModal = memo(function UserInviteModal({ open, onOpenChange }: Us
             </div>
           </div>
 
-          <ModalFormFooter className="!flex-row flex-wrap gap-2 border-t border-border/40 px-6 py-4 sm:justify-stretch [&>button]:min-w-0 [&>button]:flex-1">
+          <ModalFormFooter className="flex flex-row flex-wrap gap-3 border-t border-border/50 bg-muted/30 px-6 pt-5 pb-6 dark:bg-muted/10 sm:justify-stretch [&>button]:min-h-11 [&>button]:min-w-0 [&>button]:flex-1">
             <Button
               type="button"
               variant="outline"
               onClick={() => handleOpenChange(false)}
               disabled={pending}
-              className="border-border/60"
+              className="rounded-xl border-border/60"
             >
               {USER_INVITE_CANCEL}
             </Button>
             <Button
               type="submit"
-              className="flex items-center justify-center gap-2 glow-primary"
+              className="flex items-center justify-center gap-2 rounded-xl font-semibold glow-primary"
               disabled={pending || !email.trim()}
             >
               {pending ? (

@@ -17,6 +17,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DestructiveAlertDivider,
+  DestructiveAlertIconHeader,
+  DestructiveAlertWarningNote,
+} from "@/components/modals/primitives/destructive-alert-dialog";
+import { 
+  destructiveAlertDialogContentClassName, 
+  destructiveAlertHeaderClassName, 
+  destructiveAlertTitleClassName, 
+  destructiveAlertDescriptionWrapClassName, 
+  destructiveAlertFooterClassName, 
+  destructiveAlertCancelButtonClassName, 
+  destructiveAlertConfirmButtonClassName } from "@/lib/constants";
 
 export function DeleteImportButton({ importId, iconOnly = false }: { importId: string; iconOnly?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -29,7 +42,7 @@ export function DeleteImportButton({ importId, iconOnly = false }: { importId: s
       const res = await deleteImports([importId]);
       setOpen(false);
       if (res.success) {
-        toast.success("ImportaÃ§Ã£o excluÃ­da");
+        toast.success("Importação excluída");
         invalidate();
         if (iconOnly) router.refresh();
         else router.push("/dashboard/imports");
@@ -51,24 +64,36 @@ export function DeleteImportButton({ importId, iconOnly = false }: { importId: s
           }
         >
           <Trash2 className="h-4 w-4" />
-          {!iconOnly && (isPending ? "Excluindo..." : "Excluir importaÃ§Ã£o")}
+          {!iconOnly && (isPending ? "Excluindo…" : "Excluir importação")}
         </button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Excluir importaÃ§Ã£o?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Isso removerÃ¡ esta importaÃ§Ã£o, todos os torneios contidos nela e as revisÃµes associadas. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+      <AlertDialogContent className={destructiveAlertDialogContentClassName}>
+        <DestructiveAlertIconHeader />
+        <AlertDialogHeader className={destructiveAlertHeaderClassName}>
+          <AlertDialogTitle className={destructiveAlertTitleClassName}>Excluir importação?</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className={destructiveAlertDescriptionWrapClassName}>
+              <p>
+                Isso removerá esta importação, todos os torneios contidos nela e as revisões associadas.
+              </p>
+              <DestructiveAlertWarningNote>Esta ação não pode ser desfeita.</DestructiveAlertWarningNote>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+        <DestructiveAlertDivider />
+        <AlertDialogFooter className={destructiveAlertFooterClassName}>
+          <AlertDialogCancel disabled={isPending} className={destructiveAlertCancelButtonClassName}>
+            Cancelar
+          </AlertDialogCancel>
           <AlertDialogAction
-            onClick={(e) => { e.preventDefault(); handleDelete(); }}
+            onClick={(e) => {
+              e.preventDefault();
+              handleDelete();
+            }}
             disabled={isPending}
-            className="bg-red-500 text-white hover:bg-red-500/90"
+            className={destructiveAlertConfirmButtonClassName}
           >
-            {isPending ? "Excluindo..." : "Excluir"}
+            {isPending ? "Excluindo…" : "Excluir"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

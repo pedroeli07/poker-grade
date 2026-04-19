@@ -16,6 +16,7 @@ export async function loadProfilePageData(session: AppSession): Promise<ProfileD
     discord: user.discord,
     role: user.role,
     createdAt: format(user.createdAt, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }),
+    avatarUrl: user.avatarUrl,
   };
 }
 
@@ -34,6 +35,7 @@ export async function getUserDirectoryRows(): Promise<UserDirectoryRow[]> {
         createdAt: true,
         whatsapp: true,
         discord: true,
+        avatarUrl: true,
       },
     }),
   ]);
@@ -45,6 +47,7 @@ export async function getUserDirectoryRows(): Promise<UserDirectoryRow[]> {
     role: r.role,
     whatsapp: null,
     discord: null,
+    avatarUrl: null,
     createdAt: r.createdAt.toISOString(),
     isRegistered: false,
   }));
@@ -56,6 +59,7 @@ export async function getUserDirectoryRows(): Promise<UserDirectoryRow[]> {
     role: r.role,
     whatsapp: r.whatsapp,
     discord: r.discord,
+    avatarUrl: r.avatarUrl,
     createdAt: r.createdAt.toISOString(),
     isRegistered: true,
   }));

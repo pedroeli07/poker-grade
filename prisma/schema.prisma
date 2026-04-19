@@ -94,6 +94,7 @@ model AuthUser {
   lastFailedAt   DateTime?
   whatsapp       String?
   discord        String?
+  avatarUrl      String?
   sessions       AuthSession[]
   invitesCreated AllowedEmail[] @relation("AllowedEmailAddedBy")
   notifications  Notification[]

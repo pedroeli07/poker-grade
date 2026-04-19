@@ -15,6 +15,14 @@ import { Info, Pencil, Loader2 } from "lucide-react";
 import { updateGradeCoachNote } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
+import {
+  GRADE_COACH_NOTE_EMPTY_HINT,
+  GRADE_COACH_NOTE_MAX_LENGTH,
+  GRADE_COACH_NOTE_SAVING_LABEL,
+  GRADE_COACH_NOTE_TEXTAREA_PLACEHOLDER,
+  GRADE_COACH_NOTE_TOAST_ERROR,
+  GRADE_COACH_NOTE_TOAST_SUCCESS,
+} from "@/lib/constants";
 
 export function GradeCoachNoteSection({
   gradeId,
@@ -44,10 +52,10 @@ export function GradeCoachNoteSection({
     startTransition(async () => {
       const res = await updateGradeCoachNote(gradeId, text.trim() === "" ? null : text);
       if (!res.ok) {
-        toast.error("NÃ£o foi possÃ­vel salvar", res.error);
+        toast.error(GRADE_COACH_NOTE_TOAST_ERROR, res.error);
         return;
       }
-      toast.success("Nota do coach atualizada");
+      toast.success(GRADE_COACH_NOTE_TOAST_SUCCESS);
       setOpen(false);
       void qc.invalidateQueries({ queryKey: gradeKeys.detail(gradeId) });
       void qc.invalidateQueries({ queryKey: gradeKeys.list() });
@@ -73,7 +81,7 @@ export function GradeCoachNoteSection({
               </p>
             ) : canEdit ? (
               <p className="text-[15px] text-blue-600/60 italic">
-                Nenhuma nota ainda. Use Editar para adicionar.
+                {GRADE_COACH_NOTE_EMPTY_HINT}
               </p>
             ) : null}
           </div>
@@ -100,13 +108,13 @@ export function GradeCoachNoteSection({
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="OrientaÃ§Ãµes sobre a grade, exceÃ§Ãµes, contexto para o jogadorâ€¦"
+            placeholder={GRADE_COACH_NOTE_TEXTAREA_PLACEHOLDER}
             className="min-h-[160px] text-sm resize-y"
-            maxLength={2000}
+            maxLength={GRADE_COACH_NOTE_MAX_LENGTH}
             disabled={pending}
           />
           <p className="text-xs text-muted-foreground text-right tabular-nums">
-            {text.length}/2000
+            {text.length}/{GRADE_COACH_NOTE_MAX_LENGTH}
           </p>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
@@ -121,7 +129,7 @@ export function GradeCoachNoteSection({
               {pending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Salvandoâ€¦
+                  {GRADE_COACH_NOTE_SAVING_LABEL}
                 </>
               ) : (
                 "Salvar"

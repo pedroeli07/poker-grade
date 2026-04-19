@@ -4,6 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { updateGradeProfile } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
+import { htmlToPlainText } from "@/lib/utils";
+
+function descriptionForEdit(raw: string | null | undefined): string {
+  return htmlToPlainText(raw?.trim() ?? "");
+}
 
 export function useEditGradeDialog({
   gradeId,
@@ -17,13 +22,13 @@ export function useEditGradeDialog({
   const invalidateGrades = useInvalidate("grades");
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(initialName);
-  const [description, setDescription] = useState(initialDescription?.trim() ?? "");
+  const [description, setDescription] = useState(() => descriptionForEdit(initialDescription));
   const [pending, setPending] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setName(initialName);
-    setDescription(initialDescription?.trim() ?? "");
+    setDescription(descriptionForEdit(initialDescription));
   }, [open, initialName, initialDescription]);
 
   const handleSave = useCallback(async () => {
@@ -43,7 +48,7 @@ export function useEditGradeDialog({
       setOpen(false);
       invalidateGrades();
     } catch {
-      toast.error("NÃ£o foi possÃ­vel salvar");
+      toast.error("Não foi possível salvar");
     } finally {
       setPending(false);
     }

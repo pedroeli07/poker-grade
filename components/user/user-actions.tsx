@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Check, X, Edit2, Trash2, Loader2 } from "lucide-react";
+import { memo } from "react";
 
-export function UserActions({
+const UserActions = memo(function UserActions({
   editing,
   disabled,
   onSave,
@@ -63,4 +64,8 @@ export function UserActions({
       </Button>
     </div>
   );
-}
+});
+
+UserActions.displayName = "UserActions";
+
+export default UserActions;

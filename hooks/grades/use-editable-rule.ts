@@ -26,8 +26,13 @@ export function useEditableRule(rule: GradeRuleCardRule, manage: boolean, gradeP
     deleteOpen: false,
   });
 
-  // ðŸ”¥ sync server â†’ form
-  useEffect(() => setForm(rule), [rule]);
+  // Só aplica dados do servidor quando o modal de edição está fechado. Caso contrário,
+  // um refetch (React Query) sobrescrevia o rascunho — ex.: GTD máx voltava a null e salvava ∞.
+  useEffect(() => {
+    if (!meta.editing) {
+      setForm({ ...rule });
+    }
+  }, [rule, meta.editing]);
 
   useEffect(() => {
     if (!manage) setMeta((s) => ({ ...s, editing: false }));
@@ -53,9 +58,14 @@ export function useEditableRule(rule: GradeRuleCardRule, manage: boolean, gradeP
       const val = form[key as keyof GradeRuleCardRule];
 
       if (cfg.type === "float" || cfg.type === "int") {
-        const parsed = parseValue(cfg.type, val);
-        if (Number.isNaN(parsed)) errors.push(`${key} invÃ¡lido`);
-        payload[key] = parsed || null;
+        const parsed = parseValue(cfg.type, val) as number | null | undefined;
+        if (parsed !== null && parsed !== undefined && Number.isNaN(parsed)) {
+          errors.push(`${key} inválido`);
+        }
+        payload[key] =
+          parsed === null || parsed === undefined || Number.isNaN(parsed as number)
+            ? null
+            : parsed;
       }
 
       else if (cfg.type === "array") {
@@ -72,7 +82,7 @@ export function useEditableRule(rule: GradeRuleCardRule, manage: boolean, gradeP
     }
 
     if (errors.length) {
-      toast.error("ValidaÃ§Ã£o", errors.join(". "));
+      toast.error("Validação", errors.join(". "));
       setMeta((s) => ({ ...s, saving: false }));
       return;
     }
@@ -98,7 +108,7 @@ export function useEditableRule(rule: GradeRuleCardRule, manage: boolean, gradeP
 
     if (!res.ok) toast.error("Erro ao excluir", res.error);
     else {
-      toast.success("ExcluÃ­do");
+      toast.success("Excluído");
       setMeta((s) => ({ ...s, deleteOpen: false }));
       invalidate();
     }

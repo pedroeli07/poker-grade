@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { TargetCard } from "@/components/targets/target-card";
-import { TargetsEmptyState } from "@/components/targets/targets-view-components";
+import TargetsEmptyState from "@/components/targets/targets-view-components";
 import type { TargetListRow } from "@/lib/types";
 import { useTargetsCardsSection } from "@/hooks/targets/use-targets-cards-section";
 

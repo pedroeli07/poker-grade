@@ -10,7 +10,7 @@ const GradesListBody = lazy(() => import("@/components/grades/grades-list-body")
 const GradesListToolbar = lazy(() => import("@/components/grades/grades-list-toolbar"));
 const GradesPageHeader = lazy(() => import("@/components/grades/grades-page-header"));
 
-const GradesPageClient = memo(function GradesPageClient({ rows: initialRows, manage }: GradesListPageProps) {
+const GradesPageClient = memo(function GradesPageClient({ rows: initialRows, manage }: Omit<GradesListPageProps, "players">) {
   const {
     rows,
     view,

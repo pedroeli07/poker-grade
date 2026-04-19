@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition, useCallback, memo } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useNotificationStore } from "@/lib/stores/use-notification-store";
-import { cn, timeAgo } from "@/lib/utils";
+import { cn, countUnreadNotifications, getNotificationFilterLabel, timeAgo } from "@/lib/utils";
 import {
   getNotificationsPage,
   markNotificationRead,
@@ -26,18 +26,18 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { NotificationFilterType } from "@/lib/types";
-import { STALE_TIME, TYPE_CONFIG, TYPE_LABELS } from "@/lib/constants";
+import { NOTIFICATION_PAGE_SIZE, NOTIFICATION_SHEET_TOAST_ERROR_TITLE, STALE_TIME, TYPE_CONFIG, TYPE_LABELS } from "@/lib/constants";
 
 const NotificationSheet = memo(() => {
   const { open, setOpen, setUnreadCount } = useNotificationStore();
   const invalidateNotifications = useInvalidate("notifications");
 
   const [page, setPage] = useState(1);
-  const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
+  const [filter, setFilter] = useState<NotificationFilterType>(NotificationFilterType.ALL);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
 
-  const setFilterAndReset = useCallback((f: "all" | "unread" | "read") => {
+  const setFilterAndReset = useCallback((f: NotificationFilterType) => {
     setFilter(f);
     setPage(1);
     setSelected(new Set());
@@ -53,9 +53,9 @@ const NotificationSheet = memo(() => {
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const { data, isLoading } = useQuery({
-    queryKey: notificationKeys.list(page, filter as NotificationFilterType),
+    queryKey: notificationKeys.list(page, filter, NOTIFICATION_PAGE_SIZE),
     queryFn: async () => {
-      const res = await getNotificationsPage(page, filter as NotificationFilterType);
+      const res = await getNotificationsPage(page, filter, NOTIFICATION_PAGE_SIZE);
       if (!res.ok) throw new Error(res.error);
       return res;
     },
@@ -67,7 +67,7 @@ const NotificationSheet = memo(() => {
   const total = data?.total || 0;
   const totalPages = data?.totalPages || 1;
   const loading = isLoading || isPending;
-  const unreadInPage = items.filter((n) => !n.read).length;
+  const unreadInPage = countUnreadNotifications(items);
 
   // Sync unread count to global store for the topbar bell icon
   useEffect(() => {
@@ -92,7 +92,7 @@ const NotificationSheet = memo(() => {
   function runAction(action: () => Promise<{ ok?: boolean; error?: string }>, onSuccess?: () => void) {
     startTransition(async () => {
       const r = await action();
-      if (!r.ok) toast.error("Erro", r.error);
+      if (!r.ok) toast.error(NOTIFICATION_SHEET_TOAST_ERROR_TITLE, r.error);
       else {
         invalidateNotifications();
         onSuccess?.();
@@ -140,7 +140,7 @@ const NotificationSheet = memo(() => {
 
         <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-muted/30">
           <span className="text-sm text-muted-foreground">
-            {filter === "all" ? "Todas" : filter === "unread" ? "NÃ£o lidas" : "Lidas"} <span className="text-foreground font-semibold">({total})</span>
+            {getNotificationFilterLabel(filter)} <span className="text-foreground font-semibold">({total})</span>
           </span>
           <div className="flex items-center gap-2">
             {selected.size > 0 && (
@@ -157,9 +157,15 @@ const NotificationSheet = memo(() => {
         </div>
 
         <div className="flex items-center gap-1 px-6 py-2.5 border-b border-border">
-          {(["all", "unread", "read"] as const).map((f) => (
+          {(
+            [
+              NotificationFilterType.ALL,
+              NotificationFilterType.UNREAD,
+              NotificationFilterType.READ,
+            ] as const
+          ).map((f) => (
             <button key={f} type="button" onClick={() => setFilterAndReset(f)} className={cn("px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer", filter === f ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted")}>
-              {f === "all" ? "Todas" : f === "unread" ? "NÃ£o lidas" : "Lidas"}
+              {getNotificationFilterLabel(f)}
             </button>
           ))}
           <div className="ml-auto flex items-center gap-2">
@@ -188,7 +194,14 @@ const NotificationSheet = memo(() => {
                 const isSelected = selected.has(notif.id);
 
                 return (
-                  <div key={notif.id} className={cn("flex items-start gap-3 px-5 py-4 transition-colors group", !notif.read && "bg-primary/[0.03]", isSelected && "bg-primary/5")}>
+                  <div
+                    key={notif.id}
+                    className={cn(
+                      "flex items-start gap-3 px-5 py-4 transition-colors group",
+                      !notif.read && !isSelected && "bg-slate-200",
+                      isSelected && "bg-primary/5"
+                    )}
+                  >
                     <button type="button" onClick={() => toggleSelect(notif.id)} className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors cursor-pointer", isSelected ? "bg-primary border-primary" : "border-border hover:border-primary/60")}>
                       {isSelected && <Check className="h-3 w-3 text-white" />}
                     </button>

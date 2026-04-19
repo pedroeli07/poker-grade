@@ -19,7 +19,7 @@ const ReviewPlayerGroupCard = memo(function ReviewPlayerGroupCard({
   const { player, reviews } = group;
 
   return (
-    <div className={`${cardClassName} overflow-hidden`}>
+    <div className={`${cardClassName} rounded-2xl overflow-hidden`}>
       <div className="flex items-center gap-4 border-b border-border/60 bg-primary/10 px-5 py-4">
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${avatarColor()}`}

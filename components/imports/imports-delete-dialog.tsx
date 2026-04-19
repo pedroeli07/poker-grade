@@ -1,3 +1,5 @@
+"use client";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,6 +12,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { memo } from "react";
+import { cn } from "@/lib/utils";
+import {
+  DestructiveAlertDivider,
+  DestructiveAlertIconHeader,
+  DestructiveAlertWarningNote,
+} from "@/components/modals/primitives/destructive-alert-dialog";
+import { 
+  destructiveAlertDialogContentClassName, 
+  destructiveAlertHeaderClassName, 
+  destructiveAlertTitleClassName, 
+  destructiveAlertDescriptionWrapClassName, 
+  destructiveAlertFooterClassName, 
+  destructiveAlertCancelButtonClassName, 
+  destructiveAlertConfirmButtonClassName } from "@/lib/constants";
 
 const ImportsDeleteDialog = memo(function ImportsDeleteDialog({
   isOpen,
@@ -28,37 +44,46 @@ const ImportsDeleteDialog = memo(function ImportsDeleteDialog({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="sm:max-w-md">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-            <AlertTriangle className="h-5 w-5" />
+      <AlertDialogContent className={destructiveAlertDialogContentClassName}>
+        <DestructiveAlertIconHeader icon={AlertTriangle} iconClassName="text-amber-600" />
+        <AlertDialogHeader className={destructiveAlertHeaderClassName}>
+          <AlertDialogTitle className={destructiveAlertTitleClassName}>
             Excluir {count === 1 ? "importação" : "importações"}?
           </AlertDialogTitle>
-          <AlertDialogDescription>
-            {count === 1 ? (
-              "Tem certeza que deseja excluir esta importação? Esta ação não pode ser desfeita."
-            ) : (
-              <>
-                Tem certeza que deseja excluir <strong>{count}</strong> importações? Esta ação não pode
-                ser desfeita e removerá os registros selecionados.
-              </>
-            )}
+          <AlertDialogDescription asChild>
+            <div className={destructiveAlertDescriptionWrapClassName}>
+              {count === 1 ? (
+                <p>Tem certeza de que deseja excluir esta importação?</p>
+              ) : (
+                <p>
+                  Tem certeza de que deseja excluir <strong className="text-foreground">{count}</strong>{" "}
+                  importações? Os registros selecionados serão removidos.
+                </p>
+              )}
+              <DestructiveAlertWarningNote>Esta ação não pode ser desfeita.</DestructiveAlertWarningNote>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+        <DestructiveAlertDivider />
+        <AlertDialogFooter className={destructiveAlertFooterClassName}>
+          <AlertDialogCancel disabled={isPending} className={destructiveAlertCancelButtonClassName}>
+            Cancelar
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault();
               onConfirm();
             }}
             disabled={isPending}
-            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground focus:ring-destructive"
+            className={cn(
+              destructiveAlertConfirmButtonClassName,
+              "inline-flex items-center justify-center gap-2"
+            )}
           >
             {isPending ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Excluindo...
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                Excluindo…
               </>
             ) : (
               "Sim, excluir"

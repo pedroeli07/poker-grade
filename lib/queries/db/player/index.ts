@@ -27,6 +27,7 @@ export async function getPlayersForSession(session: AppSession) {
         include: { gradeProfile: true },
       },
       nicks: true,
+      authAccount: { select: { avatarUrl: true } },
     },
     orderBy: { name: "asc" as const },
   };
@@ -112,7 +113,7 @@ export async function createPlayer(formData: FormData) {
       const mainGradeId = mainGradeRaw === "none" || mainGradeRaw === "" ? null : mainGradeRaw;
       
       try {
-        await setPlayerMainGrade(player.id, mainGradeId as string | null);
+        await setPlayerMainGrade(player.id, mainGradeId as string | null, { performedBy: session.userId });
       } catch (e) {
         if (e instanceof Error && e.message === ErrorTypes.GRADE_NOT_FOUND) {
           await prisma.player.delete({ where: { id: player.id } });
@@ -130,7 +131,7 @@ export async function createPlayer(formData: FormData) {
 
     void notifyPlayerCreated(name, player.id);
     playerQueriesLog.success("Jogador criado", { name });
-  }, (extra) => revalidatePlayers(...(extra ?? [])));
+  }, (extra) => revalidatePlayers("/dashboard/history", ...(extra ?? [])));
 }
 
 export async function updatePlayer(formData: FormData) {
@@ -139,7 +140,6 @@ export async function updatePlayer(formData: FormData) {
       id: formData.get("id"),
       name: formData.get("name"),
       nickname: formData.get("nickname") || null,
-      email: formData.get("email") || "",
       coachId: formData.get("coachId") || "none",
       mainGradeId: formData.get("mainGradeId") || "none",
       abiAlvoValue: String(formData.get("abiAlvoValue") ?? ""),
@@ -179,9 +179,6 @@ export async function updatePlayer(formData: FormData) {
     const name = sanitizeText(parsed.data.name, 200);
     const nickname = sanitizeOptional(parsed.data.nickname, 120);
     const playerGroup = sanitizeOptional(parsed.data.playerGroup, 120);
-    let email = parsed.data.email;
-    if (email === "") email = undefined;
-    if (email) email = sanitizeText(email, 320);
 
     let parsedNicks: { network: string; nick: string }[] | null = null;
     if (parsed.data.nicksData !== undefined && parsed.data.nicksData !== null) {
@@ -210,7 +207,7 @@ export async function updatePlayer(formData: FormData) {
     try {
       await prisma.player.update({
         where: { id: parsed.data.id },
-        data: { name, nickname, email: email ?? null, coachId, status: parsed.data.status, playerGroup },
+        data: { name, nickname, coachId, status: parsed.data.status, playerGroup },
       });
 
       if (parsedNicks !== null) {
@@ -240,7 +237,7 @@ export async function updatePlayer(formData: FormData) {
       const mainGradeRaw = parsed.data.mainGradeId;
       const mainGradeId = mainGradeRaw === "none" || mainGradeRaw === "" ? null : mainGradeRaw;
       try {
-        await setPlayerMainGrade(parsed.data.id, mainGradeId as string | null);
+        await setPlayerMainGrade(parsed.data.id, mainGradeId as string | null, { performedBy: session.userId });
       } catch (e) {
         if (e instanceof Error && e.message === ErrorTypes.GRADE_NOT_FOUND) throw new Error(ErrorTypes.GRADE_NOT_FOUND);
         throw e;
@@ -257,7 +254,7 @@ export async function updatePlayer(formData: FormData) {
 
     playerQueriesLog.success("Jogador atualizado", { id: parsed.data.id });
     return [`/dashboard/players/${parsed.data.id}`];
-  }, (extra) => revalidatePlayers(...(extra ?? [])));
+  }, (extra) => revalidatePlayers("/dashboard/history", ...(extra ?? [])));
 }
 
 export async function deletePlayer(formData: FormData) {

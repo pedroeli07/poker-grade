@@ -3,6 +3,7 @@ import { updateGradeRuleSchema } from "@/lib/schemas";
 import type { BaseEntity, EntityRef, WithId } from "../primitives";
 import type { GradesColumnKey } from "../columnKeys";
 import type { LobbyzeFilterItem } from "../lobbyzeTypes";
+import type { PlayerSelectOption } from "../imports";
 
 type BaseGradeRule = {
   filterName: string;
@@ -48,7 +49,8 @@ export type UpdateGradeRuleInput = Omit<z.infer<typeof updateGradeRuleSchema>, "
 export type GradesSetCol = (col: GradesColumnKey) => (next: Set<string> | null) => void;
 
 
-export type GradesListPageProps = { rows: GradeListRow[]; manage: boolean };
+export type GradesListPageProps = { rows: GradeListRow[]; manage: boolean; players: PlayerSelectOption[] };
+export type { PlayerSelectOption };
 export type GradeDetailClientProps = { gradeId: string; initialData: GradeDetailQueryData };
 
 export interface GradeViewProps {

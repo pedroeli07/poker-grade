@@ -25,7 +25,7 @@ const GradesEmptyState = memo(function GradesEmptyState({
     <div className="col-span-full py-16 text-center rounded-xl border border-dashed border-border bg-muted/20 text-muted-foreground">
       <Archive className="h-10 w-10 mx-auto mb-3 opacity-40 text-primary" />
       <p className="text-foreground/80 font-medium">
-        Nenhuma grade neste filtro.
+        Nenhuma grade com a seleção atual.
       </p>
       {anyFilter && (
         <Button
@@ -35,7 +35,7 @@ const GradesEmptyState = memo(function GradesEmptyState({
           className="mt-2 text-primary"
           onClick={clearFilters}
         >
-          Limpar filtros
+          Limpar
         </Button>
       )}
     </div>

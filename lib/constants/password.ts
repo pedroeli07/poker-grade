@@ -8,6 +8,32 @@ export const PASSWORD_STRENGTH_STYLES: Record<StrengthLevel, { bar: string; labe
   strong: { bar: "bg-emerald-500", label: "text-emerald-400" },
 };
 
+/** Barra de progresso no tema claro (`PasswordStrength` sem `compact`). */
+export const PASSWORD_STRENGTH_BAR_BG_MUTED: Record<StrengthLevel, string> = {
+  empty: "bg-muted-foreground/30",
+  weak: "bg-destructive/80",
+  fair: "bg-amber-500",
+  good: "bg-emerald-500/80",
+  strong: "bg-emerald-500",
+};
+
+export const PASSWORD_STRENGTH_LABEL = "Força da senha";
+
+export const PASSWORD_STRENGTH_HINT_COMPACT =
+  "Maiúsculas, minúsculas, números e símbolos";
+
+export const PASSWORD_STRENGTH_TRIVIAL_HINT_COMPACT =
+  'Evite senhas óbvias como "password" ou "123456".';
+
+export const PASSWORD_STRENGTH_TRIVIAL_HINT_DEFAULT =
+  'Evite senhas óbvias como "password" ou sequências comuns.';
+
+export const PASSWORD_STRENGTH_MISSING_PREFIX = "faltam";
+
+export function passwordPolicyTypesHintLine(minLen: number): string {
+  return `${PASSWORD_STRENGTH_HINT_COMPACT} (${minLen}+)`;
+}
+
 export const PASSWORD_MIN_LENGTH = 12;
 export const PASSWORD_MAX_LENGTH = 128;
 

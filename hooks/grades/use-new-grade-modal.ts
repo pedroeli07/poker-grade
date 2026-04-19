@@ -19,7 +19,11 @@ export function useNewGradeModal() {
     (value: boolean) => {
       if (isPending) return;
       setOpen(value);
-      if (!value) setTimeout(() => formRef.current?.reset(), MODAL_DIALOG_CLOSE_RESET_MS);
+      if (!value) {
+        setTimeout(() => {
+          formRef.current?.reset();
+        }, MODAL_DIALOG_CLOSE_RESET_MS);
+      }
     },
     [isPending]
   );
@@ -32,9 +36,10 @@ export function useNewGradeModal() {
         try {
           const result = await createGradeProfile(formData);
           if (!result.ok) throw new Error(result.error);
-          toast.success("Grade criada!", "Importe um JSON Lobbyze para adicionar regras.");
+          toast.success("Grade criada!", "Atribua a um jogador pela página Jogadores.");
           handleOpenChange(false);
           invalidateGrades();
+          router.refresh();
           router.push(`/dashboard/grades/${result.id}`);
         } catch (err) {
           if (isNextRedirectError(err)) throw err;

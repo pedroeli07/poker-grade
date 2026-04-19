@@ -8,14 +8,13 @@ import AlertsPageHeader from "@/components/sharkscope/alerts/alerts-page-header"
 import AlertsSelectionHint from "@/components/sharkscope/alerts/alerts-selection-hint";
 import { useAlertsPageClient } from "@/hooks/sharkscope/alerts/use-alerts-page-client";
 import type { SharkscopeAlertRow } from "@/lib/types";
-import { alertsHasActiveView, buildAlertsFilterSummaryLines } from "@/lib/utils/sharkscope/alerts";
-
-const SORT_KEY_LABEL: Record<string, string> = {
-  severity: "Severidade",
-  player: "Jogador",
-  alertType: "Tipo",
-  triggeredAt: "Data",
-};
+import {
+  alertsHasActiveView,
+  buildAlertDateFilterOptions,
+  buildAlertPlayerFilterOptions,
+  buildAlertsFilterSummaryLines,
+  formatAlertsSortSummary,
+} from "@/lib/utils/sharkscope/alerts";
 
 const AlertsClient = memo(function AlertsClient({
   initialAlerts,
@@ -63,47 +62,34 @@ const AlertsClient = memo(function AlertsClient({
     confirmBulkDelete,
   } = useAlertsPageClient(initialAlerts);
 
-  const alertsToolbarActive = useMemo(
-    () =>
-      alertsHasActiveView({
-        severity: filterSeverity,
-        alertType: filterType,
-        ack: filterAck,
-        player: filterPlayer,
-        data: filterData,
-        valor: filterValor,
-        limite: filterLimite,
-      }) || sort !== null,
-    [filterSeverity, filterType, filterAck, filterPlayer, filterData, filterValor, filterLimite, sort]
-  );
-
-  const alertsFilterLines = useMemo(
-    () =>
-      buildAlertsFilterSummaryLines({
-        severity: filterSeverity,
-        alertType: filterType,
-        ack: filterAck,
-        player: filterPlayer,
-        data: filterData,
-        valor: filterValor,
-        limite: filterLimite,
-      }),
+  const alertFilters = useMemo(
+    () => ({
+      severity: filterSeverity,
+      alertType: filterType,
+      ack: filterAck,
+      player: filterPlayer,
+      data: filterData,
+      valor: filterValor,
+      limite: filterLimite,
+    }),
     [filterSeverity, filterType, filterAck, filterPlayer, filterData, filterValor, filterLimite]
   );
 
-  const playerOptions = useMemo(
-    () => Array.from(new Set(alerts.map((a) => a.player.name))).map((p) => ({ value: p, label: p })),
-    [alerts]
+  const alertsToolbarActive = useMemo(
+    () => alertsHasActiveView(alertFilters) || sort !== null,
+    [alertFilters, sort]
   );
 
-  const dataOptions = useMemo(
-    () => Array.from(new Set(alerts.map((a) => a.triggeredAt.split("T")[0]))).map((d) => {
-      // simple formatting for the label (matches YYYY-MM-DD or similar ISO prefix)
-      const dObj = new Date(d);
-      return { value: d, label: isNaN(dObj.getTime()) ? d : dObj.toLocaleDateString("pt-BR") };
-    }),
-    [alerts]
+  const alertsFilterLines = useMemo(
+    () => buildAlertsFilterSummaryLines(alertFilters),
+    [alertFilters]
   );
+
+  const sortSummary = useMemo(() => formatAlertsSortSummary(sort), [sort]);
+
+  const playerOptions = useMemo(() => buildAlertPlayerFilterOptions(alerts), [alerts]);
+
+  const dataOptions = useMemo(() => buildAlertDateFilterOptions(alerts), [alerts]);
 
   return (
     <div className="space-y-6">
@@ -127,16 +113,8 @@ const AlertsClient = memo(function AlertsClient({
         totalCount={alerts.length}
         entityLabels={["alerta", "alertas"]}
         hasActiveView={alertsToolbarActive}
-        anyFilter={alertsHasActiveView({
-          severity: filterSeverity,
-          alertType: filterType,
-          ack: filterAck,
-          player: filterPlayer,
-          data: filterData,
-          valor: filterValor,
-          limite: filterLimite,
-        })}
-        sortSummary={sort ? `${SORT_KEY_LABEL[sort.key] ?? sort.key} (${sort.dir === "asc" ? "A→Z" : "Z→A"})` : null}
+        anyFilter={alertsHasActiveView(alertFilters)}
+        sortSummary={sortSummary}
         filterSummaryLines={alertsFilterLines}
         onClear={resetAlertFilters}
       />

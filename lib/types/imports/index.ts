@@ -60,10 +60,13 @@ interface ExcelTournamentRow {
 }
 
 
+export type PlayerSelectOption = { id: string; name: string };
+
 type ImportsListPageProps = {
   imports: ImportListRow[];
   canDelete: boolean;
   canImport: boolean;
+  players: PlayerSelectOption[];
 };
 
 interface ImportsTableRowProps {

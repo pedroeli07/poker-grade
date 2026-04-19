@@ -6,12 +6,19 @@ import { useGradeDetailPage } from "@/hooks/grades/use-grade-detail-page";
 import type { GradeDetailQueryData } from "@/lib/types";
 import { cardClassName } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import { memo, lazy, Suspense } from "react";
+import { memo, lazy, Suspense, useTransition } from "react";
 import { useEditableGradeNote } from "@/hooks/grades/use-editable-grade-note";
+import { useQueryClient } from "@tanstack/react-query";
+import { createGradeRule } from "@/lib/queries/db/grade";
+import { gradeKeys } from "@/lib/queries/grade-query-keys";
+import { toast } from "@/lib/toast";
+import { useGradeRulesList } from "@/hooks/grades/use-grade-rules-list";
 
 // Lazy-loaded: only shown when grade has a description, or user opens edit mode
 const GradeDetailHeroDescription = lazy(() => import("@/components/grades/grade-detail-hero-description"));
 const GradeRuleCard = lazy(() => import("@/components/grades/grade-rule-card"));
+const GradeRulesToolbar = lazy(() => import("@/components/grades/rules/grade-rules-toolbar"));
+const GradeRulesTable = lazy(() => import("@/components/grades/rules/grade-rules-table"));
 // Lazy-loaded: heavy WYSIWYG editor (Tiptap/Quill bundle)
 const RichTextEditor = lazy(() => import("@/components/grades/rich-text-editor"));
 
@@ -24,7 +31,33 @@ const GradeDetailClient = memo(({
   initialData: GradeDetailQueryData;
 }) => {
   const { data } = useGradeDetailPage(gradeId, initialData);
-  
+  const qc = useQueryClient();
+  const [creatingRule, startCreateRule] = useTransition();
+
+  const handleAddRule = () => {
+    startCreateRule(async () => {
+      const res = await createGradeRule(gradeId);
+      if (!res.ok) {
+        toast.error("Erro ao criar regra", res.error);
+        return;
+      }
+      toast.success("Regra criada");
+      qc.invalidateQueries({ queryKey: gradeKeys.detail(gradeId) });
+      qc.invalidateQueries({ queryKey: gradeKeys.list() });
+    });
+  };
+
+  const {
+    view,
+    setView,
+    filters,
+    setCol,
+    clearFilters,
+    anyFilter,
+    options,
+    filtered,
+  } = useGradeRulesList(data.rules);
+
   const {
     isEditing,
     editContent,
@@ -47,12 +80,24 @@ const GradeDetailClient = memo(({
                 Voltar
               </Link>
             </Button>
-            <h1 className="min-w-0 flex-1 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+            <h1 className="min-w-0 flex-1 text-xl font-bold tracking-tight text-primary sm:text-2xl">
               <span className="block [overflow-wrap:anywhere] sm:truncate">{data.name}</span>
             </h1>
             <span className="inline-flex h-7 w-fit shrink-0 items-center rounded-full border border-primary/25 bg-primary/[0.08] px-3 text-xs font-semibold text-primary sm:ml-auto">
               {data.rules.length} regra{data.rules.length !== 1 ? "s" : ""} nesta grade
             </span>
+            {data.manageRules && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleAddRule}
+                disabled={creatingRule}
+                className="glow-primary h-8 shrink-0 gap-1.5 bg-primary px-3 text-xs text-primary-foreground hover:bg-primary/90"
+              >
+                {creatingRule ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                Nova regra
+              </Button>
+            )}
           </div>
 
           {showDescriptionSection && (
@@ -127,21 +172,70 @@ const GradeDetailClient = memo(({
         </div>
       </div>
 
-      <div className="grid auto-rows-fr gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+      <div className="space-y-4 pt-2">
+        {data.rules.length > 0 && (
+          <Suspense fallback={<div className="h-10 w-full animate-pulse rounded-md bg-muted/40" />}>
+            <GradeRulesToolbar
+              view={view}
+              setView={setView}
+              options={options}
+              filters={filters}
+              setCol={setCol}
+              filteredCount={filtered.length}
+              totalCount={data.rules.length}
+              anyFilter={anyFilter}
+              clearFilters={clearFilters}
+            />
+          </Suspense>
+        )}
+
         {data.rules.length === 0 ? (
-          <div className={`${cardClassName} col-span-full py-8 text-center text-muted-foreground text-sm`}>
-            Nenhuma regra nesta grade.
+          <div className={`${cardClassName} rounded-xl w-full flex flex-col items-center gap-3 py-8 text-center text-sm text-muted-foreground`}>
+            <span>Nenhuma regra nesta grade.</span>
+            {data.manageRules && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleAddRule}
+                disabled={creatingRule}
+                className="glow-primary h-9 gap-1.5 bg-primary px-4 text-primary-foreground hover:bg-primary/90"
+              >
+                {creatingRule ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                Adicionar primeira regra
+              </Button>
+            )}
+          </div>
+        ) : view === "cards" ? (
+          <div className="grid auto-rows-fr gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+            {filtered.length === 0 ? (
+              <div className="col-span-full py-8 text-center text-sm text-muted-foreground">
+                Nenhuma regra encontrada com os filtros atuais.
+              </div>
+            ) : (
+              filtered.map((rule, idx) => (
+                <Suspense key={rule.id} fallback={<div className="h-40 animate-pulse rounded-xl bg-muted/30" />}>
+                  <GradeRuleCard
+                    rule={rule}
+                    idx={data.rules.findIndex((r) => r.id === rule.id)}
+                    manage={data.manageRules}
+                    gradeProfileId={gradeId}
+                  />
+                </Suspense>
+              ))
+            )}
           </div>
         ) : (
-          data.rules.map((rule, idx) => (
-            <GradeRuleCard
-              key={rule.id}
-              rule={rule}
-              idx={idx}
+          <Suspense fallback={<div className="h-64 w-full animate-pulse rounded-xl bg-muted/30" />}>
+            <GradeRulesTable
+              rules={filtered}
               manage={data.manageRules}
-              gradeProfileId={gradeId}
+              gradeId={gradeId}
+              options={options}
+              filters={filters}
+              setCol={setCol}
+              anyFilter={anyFilter}
             />
-          ))
+          </Suspense>
         )}
       </div>
     </div>

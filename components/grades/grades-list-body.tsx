@@ -147,7 +147,7 @@ const GradesListBody = memo(function GradesListBody({
               {sortedTableRows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
-                    Nenhuma grade com os filtros atuais.
+                    Nenhuma grade com a seleção atual.
                   </TableCell>
                 </TableRow>
               ) : (

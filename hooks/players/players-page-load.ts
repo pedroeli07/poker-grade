@@ -1,6 +1,7 @@
 import type { AppSession } from "@/lib/types";
 import { syncOrphanCoachProfiles } from "@/lib/auth/ensure-coach-profile";
-import { canCreate, canEditPlayers } from "@/lib/constants";
+import { syncOrphanPlayerProfiles } from "@/lib/auth/ensure-player-profile";
+import { canEditPlayers } from "@/lib/constants";
 import { getPlayersTablePayloadForSession } from "@/lib/data/player";
 import type { PlayersListPageProps } from "@/lib/types";
 
@@ -8,11 +9,10 @@ import type { PlayersListPageProps } from "@/lib/types";
 export async function loadPlayersListPageProps(
   session: AppSession
 ): Promise<PlayersListPageProps> {
-  await syncOrphanCoachProfiles();
+  await Promise.all([syncOrphanCoachProfiles(), syncOrphanPlayerProfiles()]);
   const tablePayload = await getPlayersTablePayloadForSession(session);
   return {
     tablePayload,
     canEditPlayers: canEditPlayers(session),
-    canCreatePlayer: canCreate(session),
   };
 }

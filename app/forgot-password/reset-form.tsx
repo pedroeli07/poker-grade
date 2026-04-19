@@ -1,108 +1,42 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { PasswordStrength } from "@/components/password-strength";
 import { PasswordInput } from "@/components/auth/password-input";
-import {
-  getPasswordPolicyGaps,
-  passwordMeetsPolicy,
-} from "@/lib/auth/password-policy";
-import { toast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { AUTH_INPUT_CLASS } from "@/lib/constants";
+import { AUTH_INPUT_CLASS, FORGOT_PASSWORD_OTP_INPUT_PATTERN } from "@/lib/constants";
+import { useForgotPasswordResetForm } from "@/hooks/use-forgot-password-reset-form";
+import { cn } from "@/lib/utils";
 
 export function ResetForm() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [step, setStep] = useState<"EMAIL" | "OTP_NEW_PASSWORD">("EMAIL");
-  const [code, setCode] = useState("");
-
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  const policyOk = passwordMeetsPolicy(password);
-  const policyGaps = getPasswordPolicyGaps(password);
-
-  async function onSendCode(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!emailOk) {
-      toast.error("Informe um e-mail válido.");
-      return;
-    }
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/auth/send-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), type: "RESET" }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast.error(data.error || "Houve um problema. Tente novamente.");
-        return;
-      }
-      toast.success("Se a conta existir, um código foi enviado para " + email);
-      setStep("OTP_NEW_PASSWORD");
-    } catch {
-      toast.error("Erro ao enviar código.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function onCompleteReset(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (code.length !== 6) {
-      toast.error("Preencha o código de 6 dígitos.");
-      return;
-    }
-    if (!policyOk) {
-      toast.error("A senha não atende os requisitos mínimos.");
-      return;
-    }
-    
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/auth/reset", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim(),
-          code,
-          newPassword: password,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      
-      if (!res.ok) {
-        toast.error(data.error || "Não foi possível redefinir a senha.");
-        return;
-      }
-      toast.success("Senha redefinida com sucesso!");
-      router.push("/login");
-      router.refresh();
-    } catch {
-      toast.error("Erro de rede. Tente novamente.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const {
+    loading,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    step,
+    code,
+    setCode,
+    emailOk,
+    policyOk,
+    policyGaps,
+    sendCode,
+    completeReset,
+    goBackToEmailStep,
+    otpLength,
+  } = useForgotPasswordResetForm();
 
   return (
     <div className="space-y-6">
       {step === "EMAIL" ? (
-        <form onSubmit={onSendCode} noValidate className="space-y-5">
+        <form onSubmit={sendCode} noValidate className="space-y-5">
           <div className="text-center space-y-1 mb-4">
             <p className="text-sm text-muted-foreground">
               Vamos enviar um código para o seu e-mail para validar a alteração de senha.
             </p>
           </div>
-          
+
           <div className="space-y-2">
             <label
               htmlFor="reset-email"
@@ -133,18 +67,23 @@ export function ResetForm() {
           </button>
         </form>
       ) : (
-        <form onSubmit={onCompleteReset} className="space-y-6">
+        <form onSubmit={completeReset} className="space-y-6">
           <div className="text-center space-y-1">
             <h3 className="font-semibold text-foreground">Verifique seu E-mail</h3>
             <p className="text-sm text-muted-foreground">
               Código enviado para <strong className="text-foreground">{email}</strong>
             </p>
           </div>
-          
+
           <div className="flex justify-center py-2">
-            <InputOTP maxLength={6} value={code} onChange={setCode} pattern="^[0-9]+$">
+            <InputOTP
+              maxLength={otpLength}
+              value={code}
+              onChange={setCode}
+              pattern={FORGOT_PASSWORD_OTP_INPUT_PATTERN}
+            >
               <InputOTPGroup>
-                {Array.from({ length: 6 }).map((_, i) => (
+                {Array.from({ length: otpLength }).map((_, i) => (
                   <InputOTPSlot key={i} index={i} className="w-11 h-12 text-lg bg-card border-border/80" />
                 ))}
               </InputOTPGroup>
@@ -177,7 +116,7 @@ export function ResetForm() {
           <div className="flex flex-col gap-3">
             <button
               type="submit"
-              disabled={loading || code.length !== 6 || !policyOk}
+              disabled={loading || code.length !== otpLength || !policyOk}
               className={cn(
                 "cursor-pointer h-12 w-full rounded-xl bg-primary font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
               )}
@@ -187,7 +126,7 @@ export function ResetForm() {
             <button
               type="button"
               disabled={loading}
-              onClick={() => setStep("EMAIL")}
+              onClick={goBackToEmailStep}
               className="text-sm text-muted-foreground hover:text-foreground cursor-pointer"
             >
               Lembrar outra conta (Voltar)

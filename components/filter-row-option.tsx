@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { FILTER_OPTION_ROW_HOVER_CARD_CONTENT_CLASS } from "@/lib/constants/classes";
 import { cn, filterOptionPreviewText, filterOptionNeedsHoverPreview } from "@/lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,11 +32,7 @@ const FilterOptionRow = memo(function FilterOptionRow({
           align="start"
           sideOffset={10}
           collisionPadding={16}
-          className={cn(
-            "z-[100] w-[min(92vw,36rem)] max-h-[min(72vh,28rem)] overflow-y-auto overflow-x-hidden p-4 text-sm leading-relaxed bg-blue-500/10 backdrop-blur-md border border-blue-500/20 shadow-2xl shadow-blue-500/20",
-            "[scrollbar-width:thin] [scrollbar-color:color-mix(in_oklab,var(--muted-foreground)_45%,transparent)_color-mix(in_oklab,var(--muted)_80%,transparent)]",
-            "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/35"
-          )}
+          className={FILTER_OPTION_ROW_HOVER_CARD_CONTENT_CLASS}
         >
           <p className="whitespace-pre-wrap break-words text-foreground">
             {preview}

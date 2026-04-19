@@ -6,7 +6,7 @@ import { useEditableUser } from "@/hooks/user/use-editable-user";
 import { useUserPermissions } from "@/hooks/user/use-user-permissions";
 import UserDeleteDialog from "./user-delete-dialog";
 import { UserRowContent } from "./user-row-content";
-import { UserActions } from "./user-actions";
+import UserActions from "./user-actions";
 import { cardClassName } from "@/lib/constants";
 import { UserCardProps } from "@/lib/types/index";
 
@@ -40,8 +40,13 @@ export const UserCard = memo(function UserCard({
         onAction={onAction}
       />
       <div className="flex gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xs font-semibold">
-          {getInitials(row.email)}
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xs font-semibold overflow-hidden">
+          {row.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={row.avatarUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            getInitials(row.email)
+          )}
         </div>
         
         <UserRowContent

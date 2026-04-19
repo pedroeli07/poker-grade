@@ -205,6 +205,7 @@ function toTableRows(
       fpTenDay: null,
       ftTenDay: null,
       nicks: player.nicks ?? [],
+      avatarUrl: player.authAccount?.avatarUrl ?? null,
     };
   });
 }

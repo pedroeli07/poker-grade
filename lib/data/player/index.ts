@@ -5,8 +5,10 @@ import { ABI_ALVO_TARGET_NAME } from "@/lib/constants";
 import { buildAbiByPlayer, isAbiAlvoTargetName, toTableRows } from "@/lib/utils";
 import { SHARKSCOPE_STATS_FILTER_10D } from "@/lib/constants/sharkscope-type-filters";
 import { extractStat, extractRoiTenDayForPlayerTable } from "@/lib/sharkscope-parse";
+import { notifyLimitChanged } from "@/lib/queries/db/notification";
 import { PlayersTablePayload, AppSession } from "@/lib/types";
-import { UserRole } from "@prisma/client";
+import { GradeType, TargetStatus, TargetType, UserRole } from "@prisma/client";
+import { GradeChangeAction, GradeChangeActionType } from "@/lib/types/history";
 
 /** Coaches com conta de login ativa. */
 export async function getCoachesWithActiveLogin() {
@@ -16,12 +18,58 @@ export async function getCoachesWithActiveLogin() {
   });
 }
 
+/**
+ * Extrai o nível numérico de um nome de grade.
+ * Suporta padrões como "(+1)", "(-2)", "(0)", "+1", "-1", etc.
+ * Retorna null se não encontrar um padrão reconhecível.
+ */
+function parseGradeLevel(name: string): number | null {
+  // Procura padrões como (+1), (-2), (0) no nome
+  const parenMatch = name.match(/\(([+-]?\d+)\)/);
+  if (parenMatch) return parseInt(parenMatch[1], 10);
+
+  // Procura sufixo +N ou -N no final do nome
+  const suffixMatch = name.match(/([+-]\d+)\s*$/);
+  if (suffixMatch) return parseInt(suffixMatch[1], 10);
+
+  return null;
+}
+
+/**
+ * Determina a ação de mudança de grade comparando os nomes da grade anterior e nova.
+ * Usa o nível numérico extraído dos nomes (ex: "(+1)" > "(0)" = UPGRADE).
+ * Quando não consegue extrair nível de ambas, retorna MAINTAIN.
+ */
+function determineGradeAction(
+  fromName: string,
+  toName: string
+): GradeChangeActionType {
+  const fromLevel = parseGradeLevel(fromName);
+  const toLevel = parseGradeLevel(toName);
+
+  if (fromLevel !== null && toLevel !== null) {
+    if (toLevel > fromLevel) return GradeChangeAction.UPGRADE;
+    if (toLevel < fromLevel) return GradeChangeAction.DOWNGRADE;
+    return GradeChangeAction.MAINTAIN;
+  } 
+
+  // Se os nomes são diferentes mas não têm nível, registra como MAINTAIN
+  return GradeChangeAction.MAINTAIN;
+}
+
+export type SetGradeContext = {
+  performedBy?: string;
+  reason?: string;
+};
+
 export async function setPlayerMainGrade(
   playerId: string,
-  gradeProfileId: string | null
+  gradeProfileId: string | null,
+  context?: SetGradeContext
 ): Promise<void> {
   const active = await prisma.playerGradeAssignment.findFirst({
-    where: { playerId, gradeType: "MAIN", isActive: true },
+    where: { playerId, gradeType: GradeType.MAIN, isActive: true },
+    include: { gradeProfile: { select: { name: true } } },
   });
 
   const none =
@@ -29,34 +77,75 @@ export async function setPlayerMainGrade(
 
   if (none) {
     if (active) {
+      // Removendo grade — registra como DOWNGRADE com "Sem grade" como destino
       await prisma.playerGradeAssignment.update({
         where: { id: active.id },
         data: { isActive: false, removedAt: new Date() },
       });
+
+      if (context?.performedBy) {
+        const fromName = active.gradeProfile.name;
+        await prisma.limitChangeHistory.create({
+          data: {
+            playerId,
+            action: GradeChangeAction.DOWNGRADE,
+            fromGrade: fromName,
+            toGrade: "Sem grade",
+            reason: context.reason ?? "Grade removida",
+            decidedBy: context.performedBy,
+          },
+        });
+        void notifyLimitChanged(playerId, GradeChangeAction.DOWNGRADE, fromName, "Sem grade");
+      }
     }
     return;
   }
 
   const grade = await prisma.gradeProfile.findUnique({
     where: { id: gradeProfileId },
-    select: { id: true },
+    select: { id: true, name: true },
   });
-  if (!grade) throw new Error("GRADE_NOT_FOUND");
+  if (!grade) throw new Error("Grade não encontrada");
 
   if (active) {
-    if (active.gradeId === gradeProfileId) return;
+    if (active.gradeId === gradeProfileId) return; // Mesma grade, nada a fazer
+
+    const fromName = active.gradeProfile.name;
+    const toName = grade.name;
+    const action = determineGradeAction(fromName, toName);
+
     await prisma.playerGradeAssignment.update({
       where: { id: active.id },
       data: { gradeId: gradeProfileId },
     });
+
+    // Registrar histórico de mudança de grade
+    if (context?.performedBy) {
+      await prisma.limitChangeHistory.create({
+        data: {
+          playerId,
+          action,
+          fromGrade: fromName,
+          toGrade: toName,
+          reason: context.reason ?? null,
+          decidedBy: context.performedBy,
+        },
+      });
+      void notifyLimitChanged(playerId, action, fromName, toName);
+    }
     return;
   }
 
   const inactive = await prisma.playerGradeAssignment.findFirst({
-    where: { playerId, gradeType: "MAIN", isActive: false },
+    where: { playerId, gradeType: GradeType.MAIN, isActive: false },
+    include: { gradeProfile: { select: { name: true } } },
   });
 
   if (inactive) {
+    const fromName = inactive.gradeProfile.name;
+    const toName = grade.name;
+    const action = fromName !== toName ? determineGradeAction(fromName, toName) : GradeChangeAction.MAINTAIN;
+
     await prisma.playerGradeAssignment.update({
       where: { id: inactive.id },
       data: {
@@ -66,18 +155,48 @@ export async function setPlayerMainGrade(
         assignedAt: new Date(),
       },
     });
+
+    // Registrar se a grade mudou
+    if (context?.performedBy && fromName !== toName) {
+      await prisma.limitChangeHistory.create({
+        data: {
+          playerId,
+          action,
+          fromGrade: fromName,
+          toGrade: toName,
+          reason: context.reason ?? null,
+          decidedBy: context.performedBy,
+        },
+      });
+      void notifyLimitChanged(playerId, action, fromName, toName);
+    }
     return;
   }
 
+  // Primeira atribuição de grade — registrar como UPGRADE (promoção inicial)
   await prisma.playerGradeAssignment.create({
     data: {
       playerId,
       gradeId: gradeProfileId,
-      gradeType: "MAIN",
+      gradeType: GradeType.MAIN,
       isActive: true,
       notes: "Grade principal definida no cadastro do jogador.",
     },
   });
+
+  if (context?.performedBy) {
+    await prisma.limitChangeHistory.create({
+      data: {
+        playerId,
+        action: GradeChangeAction.UPGRADE,
+        fromGrade: null,
+        toGrade: grade.name,
+        reason: context.reason ?? "Primeira grade atribuída",
+        decidedBy: context.performedBy,
+      },
+    });
+    void notifyLimitChanged(playerId, GradeChangeAction.UPGRADE, "Sem grade", grade.name);
+  }
 }
 
 export async function syncPlayerAbiAlvoTarget(
@@ -108,7 +227,7 @@ export async function syncPlayerAbiAlvoTarget(
       data: {
         name: ABI_ALVO_TARGET_NAME,
         category: "performance",
-        targetType: "NUMERIC",
+        targetType: TargetType.NUMERIC,
         numericValue: value,
         unit: unit ?? null,
         numericCurrent:
@@ -130,11 +249,11 @@ export async function syncPlayerAbiAlvoTarget(
       playerId,
       name: ABI_ALVO_TARGET_NAME,
       category: "performance",
-      targetType: "NUMERIC",
+      targetType: TargetType.NUMERIC,
       numericValue: value,
       numericCurrent: value,
       unit: unit ?? null,
-      status: "ATTENTION",
+      status: TargetStatus.ATTENTION,
       isActive: true,
     },
   });
@@ -200,7 +319,7 @@ export async function getPlayersTablePayloadForSession(
           where: {
             playerId: { in: playerIds },
             isActive: true,
-            targetType: "NUMERIC",
+            targetType: TargetType.NUMERIC,
             numericValue: { not: null },
           },
           select: {

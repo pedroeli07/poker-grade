@@ -11,12 +11,21 @@ export const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
 export const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 export const gmailUser = process.env.GMAIL_USER;
 export const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+/** Resend API key (re_...). Se definido, o mailer usa Resend em vez de Gmail. */
+export const resendApiKey = process.env.RESEND_API_KEY;
+/**
+ * Remetente no formato `Nome <email@domínio>`.
+ * Com domínio verificado no Resend. Default: onboarding@resend.dev (só para testes iniciais).
+ */
+export const resendFrom =
+  process.env.RESEND_FROM?.trim() || "Gestão Poker Team <onboarding@resend.dev>";
 export const databaseUrl = process.env.DATABASE_URL;
 export const googleClientId = process.env.GOOGLE_CLIENT_ID;
 export const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 export const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL;
 export const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 export const vercelUrl = process.env.VERCEL_URL;
+export const productionAppUrl = process.env.PRODUCTION_APP_URL;
 export const cronSecret = process.env.CRON_SECRET;
 export const authSecret = process.env.AUTH_SECRET;
 export const superAdminEmail = process.env.SUPER_ADMIN_EMAIL;

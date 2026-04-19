@@ -34,7 +34,7 @@ const ProfilePersonalPanel = memo(function ProfilePersonalPanel({
     <div className="border-r border-border bg-card/20 p-8 space-y-6">
       <div className="section-label text-[15px] tracking-[0.18em]">Informações Pessoais</div>
 
-      <ProfileAvatarBadge initials={initials} />
+      <ProfileAvatarBadge initials={initials} avatarUrl={profile.avatarUrl} />
 
       <div>
         <FieldLabel>Email (Não Editável)</FieldLabel>

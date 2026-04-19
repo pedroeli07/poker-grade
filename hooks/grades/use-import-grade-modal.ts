@@ -82,10 +82,12 @@ export function useImportGradeModal() {
           log.info("Iniciando import JSON da grade", { fileName: file.name });
           const text = await file.text();
           formData.append("jsonContent", text);
-          await importGradeFromJson(formData);
+          const result = await importGradeFromJson(formData);
+          if (!result.ok) throw new Error(result.error);
           toast.success("Grade importada!", "Filtros Lobbyze convertidos em regras.");
           handleOpenChange(false);
           invalidateGrades();
+          router.refresh();
           router.push("/dashboard/grades");
         } catch (err) {
           if (isNextRedirectError(err)) throw err;

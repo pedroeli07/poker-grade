@@ -1,7 +1,8 @@
 import { Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { memo } from "react";
 
-export function TargetsEmptyState({
+const TargetsEmptyState = memo(function TargetsEmptyState({
   anyFilter,
   clearFilters,
 }: {
@@ -28,4 +29,8 @@ export function TargetsEmptyState({
       )}
     </div>
   );
-}
+});
+
+TargetsEmptyState.displayName = "TargetsEmptyState";
+
+export default TargetsEmptyState;

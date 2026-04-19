@@ -8,11 +8,13 @@ import {
   Binoculars,
   Bug,
   FlaskConical,
+  Grid2x2Check,
   Grid3X3,
   History,
   Home,
   Layers,
   LineChart,
+  ListOrdered,
   Target,
   Upload,
   UserCircle,
@@ -28,13 +30,19 @@ type PrimaryNavRow = { title: string; href: string; icon: LucideIcon; exact?: tr
 const PRIMARY_NAV: PrimaryNavRow[] = [
   { title: "Dashboard", href: "/dashboard", icon: Home, exact: true },
   { title: "Minha Grade", href: "/dashboard/minha-grade", icon: Layers },
+  { title: "Meus Torneios", href: "/dashboard/minha-grade/torneios", icon: ListOrdered },
   { title: "Jogadores", href: "/dashboard/players", icon: Users },
-  { title: "Grades", href: "/dashboard/grades", icon: Grid3X3 },
+  { title: "Usuários", href: "/dashboard/users", icon: UserRoundCog },
+];
+
+const GRADES_GROUP_ICON: LucideIcon = Grid3X3;
+
+const GRADES_ITEMS = [
+  { title: "Perfis", href: "/dashboard/grades", icon: Grid2x2Check },
   { title: "Importações", href: "/dashboard/imports", icon: Upload },
   { title: "Revisão", href: "/dashboard/review", icon: AlertTriangle },
   { title: "Targets", href: "/dashboard/targets", icon: Target },
   { title: "Histórico", href: "/dashboard/history", icon: History },
-  { title: "Usuários", href: "/dashboard/users", icon: UserRoundCog },
 ];
 
 const SHARKSCOPE_ITEMS = [
@@ -60,6 +68,12 @@ export const SIDEBAR_NAV_ITEMS: SidebarNavEntry[] = [
   })),
   {
     kind: "group" as const,
+    title: "Grades",
+    icon: GRADES_GROUP_ICON,
+    items: [...GRADES_ITEMS],
+  },
+  {
+    kind: "group" as const,
     title: "SharkScope",
     icon: SharkIcon,
     items: [...SHARKSCOPE_ITEMS],
@@ -69,6 +83,13 @@ export const SIDEBAR_NAV_ITEMS: SidebarNavEntry[] = [
 export const SIDEBAR_SECONDARY_ITEMS = [
   { title: "Notificações", href: "/dashboard/notifications", icon: Bell },
   { title: "Meu Perfil", href: "/dashboard/profile", icon: UserCircle },
+] as const;
+
+/** Rotas `kind: "link"` mostradas a PLAYER (entradas em grupo não entram nesta lista). */
+export const SIDEBAR_PLAYER_LINK_HREFS = [
+  "/dashboard/minha-grade",
+  "/dashboard/minha-grade/torneios",
+  "/dashboard/history",
 ] as const;
 
 function collectSidebarHrefs(entries: SidebarNavEntry[]): string[] {

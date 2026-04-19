@@ -4,6 +4,7 @@
 export const MODAL_DIALOG_CONTENT_BASE = "p-0 gap-0 overflow-hidden";
 
 export const MODAL_DIALOG_SIZES = {
+  sm: "sm:max-w-sm",
   md: "sm:max-w-md",
   lg: "sm:max-w-lg",
   xl: "sm:max-w-3xl",
@@ -12,9 +13,9 @@ export const MODAL_DIALOG_SIZES = {
     "sm:max-w-[540px] font-sans border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl rounded-2xl",
 } as const;
 
-/** Footer padrão de modais com formulário */
+/** Footer padrão de modais com formulário (`DialogContent` usa `p-0`; neutraliza `-mx/-mb` do `DialogFooter`). */
 export const MODAL_FORM_FOOTER_BASE =
-  "px-7 py-5 border-t-0 bg-muted/20 rounded-none";
+  "!mx-0 !mb-0 px-7 pt-5 pb-6 border-t-0 bg-muted/20 rounded-b-xl rounded-t-none";
 
 /** Linha decorativa sob o header do modal de importação */
 export const MODAL_IMPORT_HEADER_RULE =

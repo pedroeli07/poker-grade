@@ -6,6 +6,7 @@ import ModalFormFooter from "@/components/modals/primitives/modal-form-footer";
 import ModalGradientHeader from "./primitives/modal-gradient-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { FileJson, ChevronRight, Loader2, Upload, X } from "lucide-react";
@@ -13,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { useImportGradeModal } from "@/hooks/grades/use-import-grade-modal";
 import { memo } from "react";
 
-const ImportGradeModal = memo(function ImportGradeModal () {
+const ImportGradeModal = memo(function ImportGradeModal() {
   const {
     open,
     isPending,
@@ -44,7 +45,9 @@ const ImportGradeModal = memo(function ImportGradeModal () {
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <ModalDialogContent>
+        <ModalDialogContent
+          style={{ maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+        >
           <ModalGradientHeader
             icon={FileJson}
             title="Importar Grade (Lobbyze)"
@@ -53,8 +56,8 @@ const ImportGradeModal = memo(function ImportGradeModal () {
 
           <Separator />
 
-          <form ref={formRef} onSubmit={handleSubmit}>
-            <div className="px-7 py-6 space-y-6">
+          <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+            <div className="px-7 py-6 space-y-6 flex-1 overflow-y-auto">
               <div className="space-y-2">
                 <Label htmlFor="import-grade-name" className="text-[15px] font-medium">
                   Nome da Grade <span className="text-destructive">*</span>
@@ -73,11 +76,13 @@ const ImportGradeModal = memo(function ImportGradeModal () {
                 <Label htmlFor="import-grade-desc" className="text-[15px] font-medium">
                   Descrição
                 </Label>
-                <Input
+                <Textarea
                   id="import-grade-desc"
                   name="description"
-                  placeholder="Ex: Grade principal para alunos do ABI 20"
-                  className="h-12 text-[15px] bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors"
+                  placeholder="Cole regras gerais, limites de reentrada, formatos permitidos, etc."
+                  rows={6}
+                  maxLength={2000}
+                  className="min-h-[120px] max-h-[40vh] bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 transition-colors resize-y text-[15px] leading-relaxed"
                   disabled={isPending}
                 />
               </div>

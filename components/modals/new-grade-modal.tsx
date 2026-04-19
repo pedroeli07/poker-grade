@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 const NewGradeModal = memo(function NewGradeModal() {
     const { open, isPending, formRef, handleOpenChange, handleSubmit, openModal } =
       useNewGradeModal();
-  
+
     return (
       <>
         <Button
@@ -24,19 +24,21 @@ const NewGradeModal = memo(function NewGradeModal() {
           <Plus className="mr-2 h-5 w-5" />
           Nova Grade
         </Button>
-  
+
         <Dialog open={open} onOpenChange={handleOpenChange}>
-          <ModalDialogContent>
+          <ModalDialogContent
+            style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
+          >
             <ModalGradientHeader
               icon={Grid3X3}
               title="Nova Grade"
-              description="Crie um perfil de grade. Regras podem ser importadas via JSON."
+              description="Crie um perfil de grade. Depois atribua a jogadores pela página Jogadores."
             />
-  
+
             <Separator />
-  
-            <form ref={formRef} onSubmit={handleSubmit}>
-              <div className="px-7 py-6 space-y-6">
+
+            <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+              <div className="px-7 py-6 space-y-6 flex-1 overflow-y-auto">
                 <div className="space-y-2">
                   <Label htmlFor="new-grade-name" className="text-[15px] font-medium">
                     Nome da Grade <span className="text-destructive">*</span>
@@ -61,9 +63,9 @@ const NewGradeModal = memo(function NewGradeModal() {
                     id="new-grade-desc"
                     name="description"
                     placeholder="Descreva os torneios desta grade, limites de buy-in, formatos..."
-                    rows={4}
+                    rows={6}
                     maxLength={2000}
-                    className="bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 resize-none text-[15px]"
+                    className="min-h-[120px] max-h-[40vh] bg-muted/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/20 resize-y text-[15px] leading-relaxed"
                     disabled={isPending}
                   />
                 </div>

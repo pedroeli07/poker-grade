@@ -29,9 +29,19 @@ const GradesListToolbar = memo(function GradesListToolbar({
   clearFilters: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
+    <div
+      className={cn(
+        "flex w-full gap-3",
+        view === "cards"
+          ? "flex-col lg:flex-row lg:items-center"
+          : "flex-col lg:flex-row lg:flex-wrap lg:items-center lg:justify-between"
+      )}
+    >
       <div
-        className="inline-flex shrink-0 rounded-lg border border-border p-0.5 bg-muted/30"
+        className={cn(
+          "inline-flex shrink-0 rounded-lg border border-border p-0.5 bg-muted/30",
+          view === "cards" && "mx-auto lg:mx-0"
+        )}
         role="group"
         aria-label="Modo de visualização"
       >
@@ -58,9 +68,8 @@ const GradesListToolbar = memo(function GradesListToolbar({
       </div>
 
       {view === "cards" && (
-        <div className="flex flex-1 flex-col gap-2 min-w-0 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
-          <span className="text-xs font-medium text-muted-foreground shrink-0 sm:mr-1">Filtros</span>
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="flex min-w-0 flex-1 justify-center">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             <GradesListColFilters
               compact
               options={options}
@@ -72,7 +81,7 @@ const GradesListToolbar = memo(function GradesListToolbar({
       )}
 
       {view === "cards" && (
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground shrink-0">
+        <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground lg:justify-end">
           <span>
             <span className="font-medium text-foreground">{filteredCount}</span>
             {" / "}
@@ -87,7 +96,7 @@ const GradesListToolbar = memo(function GradesListToolbar({
               className="h-8 text-xs text-primary"
               onClick={clearFilters}
             >
-              Limpar filtros
+              Limpar
             </Button>
           )}
         </div>

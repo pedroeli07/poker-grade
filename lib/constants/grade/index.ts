@@ -180,3 +180,19 @@ export const GRADES_TABLE_COLUMN_LABELS: Record<GradesColumnKey, string> = {
 };
 
 export const GRADES_FILTER_SUMMARY_EMPTY_SELECTION = "(nenhum valor selecionado)";
+
+/** Tooltip “Descrição completa” na listagem de grades — fundo alinhado ao azul primário. */
+export const GRADE_DESCRIPTION_TOOLTIP_CONTENT_CLASS =
+  "max-w-[min(550px,calc(100vw-2rem))] min-w-0 px-3 py-2 bg-primary text-primary-foreground border border-primary/35 shadow-md";
+
+export const GRADE_DESCRIPTION_TOOLTIP_ARROW_CLASS = "bg-primary fill-primary";
+
+// ─── grade-coach-note ───────────────────────────────────────────────────────────
+
+export const GRADE_COACH_NOTE_MAX_LENGTH = 2000;
+export const GRADE_COACH_NOTE_TOAST_ERROR = "Não foi possível salvar";
+export const GRADE_COACH_NOTE_TOAST_SUCCESS = "Nota do coach atualizada";
+export const GRADE_COACH_NOTE_EMPTY_HINT = "Nenhuma nota ainda. Use Editar para adicionar.";
+export const GRADE_COACH_NOTE_TEXTAREA_PLACEHOLDER =
+  "Orientações sobre a grade, exceções, contexto para o jogador…";
+export const GRADE_COACH_NOTE_SAVING_LABEL = "Salvando…";

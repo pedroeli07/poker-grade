@@ -27,7 +27,7 @@ const ReviewToolbarCard = memo(function ReviewToolbarCard({
   totalFilteredPending: number;
 }) {
   return (
-    <div className={`${cardClassName} flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:justify-between`}>
+    <div className={`flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:justify-between`}>
       <div className="flex w-full flex-col flex-wrap items-stretch gap-4 sm:flex-row sm:items-center lg:min-w-0 lg:flex-1">
         <ReviewCoachSelect coachOptions={coachOptions} coachId={filterCoachId} />
         <ReviewPlayerSelect

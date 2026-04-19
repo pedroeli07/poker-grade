@@ -9,6 +9,7 @@ import { cardClassName, GRADE_TYPE_LABEL, gradeOrder } from "@/lib/constants";
 import type { PlayerProfileRecord } from "@/lib/types";
 import type { GradeType } from "@prisma/client";
 import { memo } from "react";
+import { htmlToPlainText } from "@/lib/utils";
 
 const PlayerProfileGradeAssignments = memo(function PlayerProfileGradeAssignments({
   assignmentsByType,
@@ -65,7 +66,9 @@ const PlayerProfileGradeAssignments = memo(function PlayerProfileGradeAssignment
               </div>
               <CardTitle className="text-base mt-2">{grade.name}</CardTitle>
               {grade.description && (
-                <CardDescription className="text-xs line-clamp-2">{grade.description}</CardDescription>
+                <CardDescription className="text-xs line-clamp-2">
+                  {htmlToPlainText(grade.description)}
+                </CardDescription>
               )}
             </CardHeader>
             <CardContent className="pt-0">

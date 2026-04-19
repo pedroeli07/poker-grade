@@ -10,6 +10,7 @@ export const PLAYER_PATHS = [
   "/dashboard/players",
   "/dashboard/grades",
   "/dashboard/targets",
+  "/dashboard/notifications",
   "/dashboard",
 ] as const;
 

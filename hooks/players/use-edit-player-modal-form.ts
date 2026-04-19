@@ -41,7 +41,6 @@ export function useEditPlayerModalForm({
   onClose: () => void;
 }) {
   const [name, setName] = useState(player.name);
-  const [email, setEmail] = useState(player.email ?? "");
   const [playerGroup, setPlayerGroup] = useState(player.playerGroup ?? "");
   const [nicks, setNicks] = useState<PlayerNickFormRow[]>(() =>
     (player.nicks ?? []).filter((n) => n.network !== "PlayerGroup")
@@ -78,7 +77,6 @@ export function useEditPlayerModalForm({
       const payload: Record<string, string> = {
         id: player.id,
         name: name.trim(),
-        email: email.trim(),
         coachId,
         mainGradeId,
         abiAlvoValue,
@@ -115,7 +113,6 @@ export function useEditPlayerModalForm({
     [
       player.id,
       name,
-      email,
       coachId,
       mainGradeId,
       abiAlvoValue,
@@ -150,8 +147,6 @@ export function useEditPlayerModalForm({
     gradeOptions,
     name,
     setName,
-    email,
-    setEmail,
     playerGroup,
     setPlayerGroup,
     nicks,

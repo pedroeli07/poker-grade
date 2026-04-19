@@ -1,8 +1,14 @@
 import { HOVER_PREVIEW_MIN_CHARS } from "@/lib/constants";
+import { htmlToPlainText } from "./html-to-plain-text";
 
 export function filterOptionPreviewText(opt: { value: string; label: string }): string {
-  if (opt.label.endsWith("…") || opt.label.endsWith("...")) return opt.value;
-  return opt.value.length > opt.label.length ? opt.value : opt.label;
+  const raw =
+    opt.label.endsWith("…") || opt.label.endsWith("...")
+      ? opt.value
+      : opt.value.length > opt.label.length
+        ? opt.value
+        : opt.label;
+  return htmlToPlainText(raw);
 }
 
 export const filterOptionNeedsHoverPreview = (opt: { value: string; label: string }) =>

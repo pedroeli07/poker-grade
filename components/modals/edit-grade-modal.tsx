@@ -56,7 +56,10 @@ const EditGradeDialog = memo(function EditGradeDialog({
           </Button>
         )}
       </DialogTrigger>
-      <ModalDialogContent size="md">
+      <ModalDialogContent
+        size="md"
+        style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
+      >
         <ModalGradientHeader
           icon={Pencil}
           title="Editar grade"
@@ -64,7 +67,7 @@ const EditGradeDialog = memo(function EditGradeDialog({
           density="compact"
         />
         <Separator />
-        <div className="space-y-4 px-6 py-5">
+        <div className="space-y-4 px-6 py-5 flex-1 overflow-y-auto custom-scrollbar">
           <div className="space-y-2">
             <Label htmlFor={`grade-name-${gradeId}`} className="text-[15px] font-medium">
               Título
@@ -88,7 +91,7 @@ const EditGradeDialog = memo(function EditGradeDialog({
               onChange={(e) => setDescription(e.target.value)}
               maxLength={2000}
               rows={4}
-              className="min-h-[100px] resize-y bg-muted/40 border-border/60 text-[15px]"
+              className="min-h-[100px] max-h-[40vh] resize-y bg-muted/40 border-border/60 text-[15px]"
             />
           </div>
         </div>

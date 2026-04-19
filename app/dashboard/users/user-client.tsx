@@ -112,7 +112,7 @@ const UserClient = memo(function UserClient({ initialRows }: UserClientProps) {
             className={cn("h-8 gap-2 text-xs", viewMode === "grid" && "bg-primary/12 text-primary")}
             onClick={() => setViewMode("grid")}
           >
-            <LayoutGrid className="h-3.5 w-3.5" /> Grid
+            <LayoutGrid className="h-3.5 w-3.5" /> Cards
           </Button>
           <Button
             variant={viewMode === "table" ? "secondary" : "ghost"}

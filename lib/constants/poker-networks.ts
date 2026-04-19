@@ -18,6 +18,38 @@ const NETWORK_ROWS = [
 
 export const POKER_NETWORKS_UI = NETWORK_ROWS.map(([value, label, icon]) => ({ value, label, icon }));
 
+/**
+ * Texto de site vindos de import/Lobby (ex.: "PartyPoker", "888poker") → chave de rede da app.
+ * Mesma lógica usada no histórico de torneios do jogador.
+ */
+const SITE_LABEL_MATCHERS: ReadonlyArray<{ readonly match: RegExp; readonly key: (typeof NETWORK_ROWS)[number][0] }> = [
+  { match: /ggpoker|gg\s*network|^gg$|ggnetwork/i, key: "gg" },
+  { match: /pokerstars\s*fr/i, key: "pokerstars_fr" },
+  { match: /pokerstars\s*es/i, key: "pokerstars_es" },
+  { match: /pokerstars\s*pt/i, key: "pokerstars_pt" },
+  { match: /pokerstars|pstars/i, key: "pokerstars" },
+  { match: /888/i, key: "888" },
+  { match: /partypoker|party\s*poker/i, key: "partypoker" },
+  { match: /ipoker/i, key: "ipoker" },
+  { match: /wpt/i, key: "wpt" },
+  { match: /coinpoker|coin\s*poker/i, key: "coinpoker" },
+  { match: /chico/i, key: "chico" },
+];
+
+export function pokerNetworkKeyFromSiteLabel(site: string): string | null {
+  for (const row of SITE_LABEL_MATCHERS) {
+    if (row.match.test(site)) return row.key;
+  }
+  return null;
+}
+
+/** Ícone em `/public` para o texto de site, ou null se não houver logo conhecido. */
+export function pokerSiteIconFromSiteLabel(site: string): string | null {
+  const key = pokerNetworkKeyFromSiteLabel(site);
+  if (!key) return null;
+  return POKER_NETWORKS_UI.find((n) => n.value === key)?.icon ?? null;
+}
+
 export const LOBBYZE_TO_SHARKSCOPE: Record<number, string> = {
   2: "gg",
   3: "partypoker",
@@ -69,6 +101,11 @@ export function getPokerstarsMainNickFromRows(
 ): string | undefined {
   const row = nicks.find((n) => n.network === "pokerstars" && n.nick.trim());
   return row?.nick.trim();
+}
+
+/** FR/ES partilham o mesmo nick que a linha `pokerstars` quando o campo está vazio. */
+export function shouldPrefillPokerstarsMainNick(network: string): boolean {
+  return network === "pokerstars_fr" || network === "pokerstars_es";
 }
 
 export const ABI_ALVO_TARGET_NAME = "ABI alvo";

@@ -61,8 +61,13 @@ function buildImportDetailTabs(
     }));
   }
   
-export { 
-    buildImportsFilterSummaryLines, 
-    formatImportsSortSummary,
-    buildImportDetailTabs, 
+export {
+  importsListColumnSortKind,
+  sortImportListRows,
+} from "./imports-list-table";
+
+export {
+  buildImportsFilterSummaryLines,
+  formatImportsSortSummary,
+  buildImportDetailTabs,
 };

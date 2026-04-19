@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation";
 import { UserRole } from "@prisma/client";
 import { addAllowedInvite } from "@/lib/queries/db/user";
 import { toast } from "@/lib/toast";
-import { USER_INVITE_TOAST_SUCCESS } from "@/lib/constants";
+import {
+  USER_INVITE_TOAST_EMAIL_FAILED_DESC,
+  USER_INVITE_TOAST_EMAIL_FAILED_TITLE,
+  USER_INVITE_TOAST_EMAIL_SENT_DESC,
+  USER_INVITE_TOAST_EMAIL_SENT_TITLE,
+  USER_INVITE_TOAST_NO_MAILER_DESC,
+  USER_INVITE_TOAST_NO_MAILER_TITLE,
+} from "@/lib/constants";
 
 export function useUserInviteModal(onOpenChange: (open: boolean) => void) {
   const router = useRouter();
@@ -39,7 +46,13 @@ export function useUserInviteModal(onOpenChange: (open: boolean) => void) {
           toast.error(res.error);
           return;
         }
-        toast.success(USER_INVITE_TOAST_SUCCESS);
+        if (res.emailDelivery === "sent") {
+          toast.success(USER_INVITE_TOAST_EMAIL_SENT_TITLE, USER_INVITE_TOAST_EMAIL_SENT_DESC);
+        } else if (res.emailDelivery === "failed") {
+          toast.warning(USER_INVITE_TOAST_EMAIL_FAILED_TITLE, USER_INVITE_TOAST_EMAIL_FAILED_DESC);
+        } else {
+          toast.success(USER_INVITE_TOAST_NO_MAILER_TITLE, USER_INVITE_TOAST_NO_MAILER_DESC);
+        }
         reset();
         onOpenChange(false);
         router.refresh();

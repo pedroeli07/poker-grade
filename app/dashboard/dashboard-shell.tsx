@@ -9,11 +9,12 @@ import type { DashboardShellProps } from "@/lib/types";
 import { useDashboardShellLayout } from "@/hooks/dashboard/use-dashboard-shell";
 import { cn } from "@/lib/utils";
 
-const DashboardShell = memo(({  
+const DashboardShell = memo(({
   children,
   userRole,
   displayName,
   email,
+  avatarUrl,
   initialUnreadCount,
 }: DashboardShellProps & { children: ReactNode }) => {
   const { mainClassName } = useDashboardShellLayout();
@@ -27,6 +28,7 @@ const DashboardShell = memo(({
           <Topbar
             displayName={displayName}
             email={email}
+            avatarUrl={avatarUrl}
             initialUnreadCount={initialUnreadCount}
           />
           <div className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 bg-pattern animate-fade-in">

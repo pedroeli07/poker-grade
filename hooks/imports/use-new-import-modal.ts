@@ -23,6 +23,7 @@ export function useNewImportModal() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<UploadResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const invalidateImports = useInvalidate("imports");
@@ -34,6 +35,7 @@ export function useNewImportModal() {
     setError(null);
     setResult(null);
     setDragOver(false);
+    setSelectedPlayerId("");
     if (inputRef.current) inputRef.current.value = "";
   }, []);
 
@@ -75,10 +77,11 @@ export function useNewImportModal() {
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      if (!file) return;
+      if (!file || !selectedPlayerId) return;
 
       setError(null);
       const formData = new FormData(e.currentTarget);
+      formData.set("playerId", selectedPlayerId);
 
       startTransition(async () => {
         try {
@@ -109,7 +112,7 @@ export function useNewImportModal() {
         }
       });
     },
-    [file, startTransition, invalidateImports, router]
+    [file, selectedPlayerId, startTransition, invalidateImports, router]
   );
 
   const openModal = useCallback(() => setOpen(true), []);
@@ -129,6 +132,8 @@ export function useNewImportModal() {
     result,
     dragOver,
     inputRef,
+    selectedPlayerId,
+    setSelectedPlayerId,
     handleOpenChange,
     handleFileChange,
     handleDrop,

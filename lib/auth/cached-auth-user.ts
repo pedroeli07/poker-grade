@@ -10,6 +10,7 @@ const authUserProfileSelect = {
   createdAt: true,
   whatsapp: true,
   discord: true,
+  avatarUrl: true,
 } satisfies Prisma.AuthUserSelect;
 
 export type CachedAuthUserProfileRow = Prisma.AuthUserGetPayload<{

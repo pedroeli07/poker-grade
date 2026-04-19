@@ -4,7 +4,6 @@ import { AlertTriangle, Copy, Check } from "lucide-react";
 import { memo, useCallback } from "react";
 import { AppTooltip } from "@/components/ui/app-tooltip";
 import { useCopyFeedback } from "@/hooks/use-copy-feedback";
-
 import type { PlayerGroupTableCellProps } from "@/lib/types/player";
 
 const PlayerGroupTableCell = memo(function PlayerGroupTableCell({

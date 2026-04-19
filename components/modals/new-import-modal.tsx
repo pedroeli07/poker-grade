@@ -6,12 +6,15 @@ import ModalFormFooter from "@/components/modals/primitives/modal-form-footer";
 import ModalGradientHeader from "@/components/modals/primitives/modal-gradient-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, FileSpreadsheet, Loader2, CheckCircle2, ChevronRight, X, RotateCcw, AlertCircle, UploadCloud } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Upload, FileSpreadsheet, Loader2, CheckCircle2, ChevronRight, X, RotateCcw, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNewImportModal } from "@/hooks/imports/use-new-import-modal";
 import { memo } from "react";
+import type { PlayerSelectOption } from "@/lib/types";
 
-const NewImportModal = memo(function NewImportModal() {
+const NewImportModal = memo(function NewImportModal({ players }: { players: PlayerSelectOption[] }) {
   const {
     open,
     loading,
@@ -20,6 +23,8 @@ const NewImportModal = memo(function NewImportModal() {
     result,
     dragOver,
     inputRef,
+    selectedPlayerId,
+    setSelectedPlayerId,
     handleOpenChange,
     handleFileChange,
     handleDrop,
@@ -94,12 +99,32 @@ const NewImportModal = memo(function NewImportModal() {
           ) : (
             <form onSubmit={handleSubmit}>
               <div className="px-8 py-6 space-y-6">
-                <div className="flex items-start gap-4 p-5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-600 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent pointer-events-none" />
-                  <AlertCircle className="w-6 h-6 text-orange-500 mt-0 shrink-0" />
-                  <p className="text-[15px] font-medium leading-relaxed">
-                    O nome da aba (Sheet) <strong className="text-orange-700 font-bold px-2 py-0.5 bg-orange-500/20 rounded-md mx-1">deve ser igual</strong> ao Nickname ou Nome do jogador cadastrado para que funcione corretamente.
-                  </p>
+                <div className="space-y-2">
+                  <Label className="text-[15px] font-medium">
+                    Jogador <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    value={selectedPlayerId}
+                    onValueChange={setSelectedPlayerId}
+                    disabled={loading}
+                  >
+                    <SelectTrigger className="h-11 w-full bg-muted/40 border-border/60 text-[15px]">
+                      <SelectValue placeholder="Selecione o jogador..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {players.length === 0 ? (
+                        <SelectItem value="__none__" disabled>
+                          Nenhum jogador com conta cadastrado
+                        </SelectItem>
+                      ) : (
+                        players.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div
@@ -172,19 +197,19 @@ const NewImportModal = memo(function NewImportModal() {
                 )}
               </div>
 
-              <ModalFormFooter className="px-8 py-5 border-t border-border/50 bg-muted/30 dark:bg-muted/10 gap-3 sm:gap-0">
+              <ModalFormFooter className="px-8 py-5 border-t border-border/50 bg-muted/30 dark:bg-muted/10 gap-3 sm:gap-6">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => handleOpenChange(false)}
                   disabled={loading}
-                  className="rounded-xl border-border/60 hover:bg-accent text-muted-foreground hover:text-foreground font-medium h-11"
+                  className="rounded-xl border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500/80 hover:text-red-600 font-medium h-11"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
-                  disabled={!file || loading}
+                  disabled={!file || !selectedPlayerId || loading}
                   className="rounded-xl glow-primary bg-primary text-primary-foreground hover:bg-primary/90 h-11 font-semibold min-w-[180px] shadow-xl"
                 >
                   {loading ? (

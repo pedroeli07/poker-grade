@@ -6,6 +6,8 @@ import MultiToggleRow from "./multi-toggle-row";
 import type { GradeRuleCardRule, LobbyzeFilterItem } from "@/lib/types";
 import { memo } from "react";
 import LabeledTextRow from "./labeled-text-row";
+import { cn } from "@/lib/utils";
+import { phSubtle } from "@/lib/constants";
 
 const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
   form,
@@ -116,7 +118,7 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
               value={form.buyInMin ?? ""}
               onChange={(e) => set("buyInMin", e.target.value)}
               placeholder="Ex: 10.50"
-              className="bg-background h-8 font-mono text-sm"
+              className={cn("bg-background h-8 font-mono text-sm", phSubtle)}
             />
           </LabeledTextRow>
           <LabeledTextRow
@@ -130,7 +132,7 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
               value={form.buyInMax ?? ""}
               onChange={(e) => set("buyInMax", e.target.value)}
               placeholder="Ex: 55.00"
-              className="bg-background h-8 font-mono text-sm"
+              className={cn("bg-background h-8 font-mono text-sm", phSubtle)}
             />
           </LabeledTextRow>
 
@@ -145,7 +147,10 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
               value={form.prizePoolMin ?? ""}
               onChange={(e) => set("prizePoolMin", e.target.value)}
               placeholder="Ex: 1000"
-              className="bg-background h-8 font-mono text-sm border-blue-500/30 focus-visible:ring-blue-500/20"
+              className={cn(
+                "bg-background h-8 font-mono text-sm border-blue-500/30 focus-visible:ring-blue-500/20",
+                phSubtle
+              )}
             />
           </LabeledTextRow>
           <LabeledTextRow
@@ -159,7 +164,10 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
               value={form.prizePoolMax ?? ""}
               onChange={(e) => set("prizePoolMax", e.target.value)}
               placeholder="Ex: 50000"
-              className="bg-background h-8 font-mono text-sm border-blue-500/30 focus-visible:ring-blue-500/20"
+              className={cn(
+                "bg-background h-8 font-mono text-sm border-blue-500/30 focus-visible:ring-blue-500/20",
+                phSubtle
+              )}
             />
           </LabeledTextRow>
         </div>
@@ -207,7 +215,10 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
               value={form.excludePattern ?? ""}
               onChange={(e) => set("excludePattern", e.target.value)}
               placeholder="Digite palavras ou expressões separadas por | (pipe)..."
-              className="min-h-[80px] bg-background resize-none text-sm leading-relaxed border-border/80 focus-visible:ring-blue-500/20"
+              className={cn(
+                "min-h-[80px] bg-background resize-none text-sm leading-relaxed border-border/80 focus-visible:ring-blue-500/20",
+                phSubtle
+              )}
             />
           </LabeledTextRow>
         </div>
@@ -225,7 +236,7 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
                   value={form.minParticipants ?? ""}
                   onChange={(e) => set("minParticipants", e.target.value)}
                   placeholder="Ex: 100"
-                  className="bg-background h-8 font-mono text-sm border-blue-500/30"
+                  className={cn("bg-background h-8 font-mono text-sm border-blue-500/30", phSubtle)}
                 />
               </LabeledTextRow>
               <LabeledTextRow
@@ -238,8 +249,8 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
                   <Input
                     value={form.timezone ?? ""}
                     onChange={(e) => set("timezone", e.target.value)}
-                    placeholder="-3"
-                    className="bg-background h-8 font-mono text-sm border-blue-500/30"
+                    placeholder="Ex: -3"
+                    className={cn("bg-background h-8 font-mono text-sm border-blue-500/30", phSubtle)}
                   />
                </LabeledTextRow>
            </div>
@@ -254,9 +265,9 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
                 <Input
                   value={form.fromTime ?? ""}
                   onChange={(e) => set("fromTime", e.target.value)}
-                  placeholder="08:00"
+                  placeholder="Ex: 08:00"
                   maxLength={5}
-                  className="bg-background h-8 font-mono text-sm border-blue-500/30"
+                  className={cn("bg-background h-8 font-mono text-sm border-blue-500/30", phSubtle)}
                 />
               </LabeledTextRow>
               <LabeledTextRow
@@ -269,9 +280,9 @@ const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
                   <Input
                     value={form.toTime ?? ""}
                     onChange={(e) => set("toTime", e.target.value)}
-                    placeholder="23:00"
+                    placeholder="Ex: 23:00"
                     maxLength={5}
-                    className="bg-background h-8 font-mono text-sm border-blue-500/30"
+                    className={cn("bg-background h-8 font-mono text-sm border-blue-500/30", phSubtle)}
                   />
                </LabeledTextRow>
            </div>

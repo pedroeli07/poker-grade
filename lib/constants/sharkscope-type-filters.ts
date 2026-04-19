@@ -1,3 +1,5 @@
+import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
+
 /** Query suffix stored as SharkScopeCache.filterKey — must match cron + analytics. */
 export const SHARKSCOPE_STATS_FILTER_10D = "?filter=Date:10D" as const;
 export const SHARKSCOPE_STATS_FILTER_30D = "?filter=Date:30D" as const;
@@ -30,3 +32,9 @@ export const SHARKSCOPE_TYPE_BREAKDOWN_KEYS_90D = [
   { type: "Satellite" as const, filterKey: SHARKSCOPE_TYPE_FILTER_KEY.satellite90 },
   { type: "Vanilla" as const, filterKey: SHARKSCOPE_TYPE_FILTER_KEY.vanilla90 },
 ];
+
+export const ACTION_STYLE = {
+  UPGRADE: { label: "Subida", icon: TrendingUp, color: "text-primary" },
+  MAINTAIN: { label: "Manutenção", icon: ArrowRight, color: "text-muted-foreground" },
+  DOWNGRADE: { label: "Descida", icon: TrendingDown, color: "text-primary" },
+} as const;

@@ -7,8 +7,8 @@ import { memo } from "react";
 const TargetTableRow = memo(function TargetTableRow({ vm }: { vm: TargetListViewModel }) {
   return (
     <TableRow className="hover:bg-muted/30 transition-colors">
-      <TableCell className="font-medium align-top py-4">
-        <div className="space-y-1">
+      <TableCell className="font-medium align-middle py-4 text-center">
+        <div className="flex flex-col items-center gap-1">
           <span className="block leading-tight">{vm.name}</span>
           <Badge
             variant="outline"
@@ -17,24 +17,24 @@ const TargetTableRow = memo(function TargetTableRow({ vm }: { vm: TargetListView
             {vm.category}
           </Badge>
           {vm.hasLimitAction && (
-            <span className={`text-[11px] block mt-1 ${vm.limitActionColor}`}>
+            <span className={`text-[11px] text-center mt-0.5 ${vm.limitActionColor}`}>
               Gatilho: {vm.limitActionLabel}
             </span>
           )}
         </div>
       </TableCell>
-      <TableCell className="align-top py-4">
+      <TableCell className="align-middle py-4 text-center">
         <Link
           href={`/dashboard/players/${vm.playerId}`}
-          className="hover:text-primary font-medium transition-colors"
+          className="inline-block hover:text-primary font-medium transition-colors"
         >
           {vm.playerName}
         </Link>
       </TableCell>
-      <TableCell className="align-top py-4">
+      <TableCell className="align-middle py-4 text-center">
         {vm.isNumeric ? (
-          <div className="space-y-1.5 max-w-[200px]">
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+          <div className="mx-auto flex w-full max-w-[200px] flex-col items-center gap-1.5">
+            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
               {vm.showTableProgressBar && (
                 <div
                   className={`h-full rounded-full ${vm.progressColor}`}
@@ -42,7 +42,7 @@ const TargetTableRow = memo(function TargetTableRow({ vm }: { vm: TargetListView
                 />
               )}
             </div>
-            <div className="flex items-center justify-between text-xs tabular-nums">
+            <div className="flex items-center justify-center gap-2 text-xs tabular-nums">
               <span className="font-bold text-foreground">
                 {vm.progressCurrent}
               </span>
@@ -53,17 +53,19 @@ const TargetTableRow = memo(function TargetTableRow({ vm }: { vm: TargetListView
             </div>
           </div>
         ) : (
-          <span className="text-sm text-muted-foreground tabular-nums">
+          <span className="inline-block text-sm text-muted-foreground tabular-nums">
             {vm.textCurrent ?? "—"} / {vm.textValue ?? "—"}
           </span>
         )}
       </TableCell>
-      <TableCell className="align-top py-4 text-right pr-4">
-        <div
-          className={`inline-flex items-center justify-end gap-1.5 border ${vm.statusConfig.bg} px-2.5 py-1 rounded-lg shrink-0`}
-        >
-          <vm.statusConfig.icon className="h-4 w-4" />
-          <span className="text-xs font-semibold">{vm.statusConfig.label}</span>
+      <TableCell className="align-middle py-4 text-center">
+        <div className="flex justify-center">
+          <div
+            className={`inline-flex items-center justify-center gap-1.5 border ${vm.statusConfig.bg} px-2.5 py-1 rounded-lg shrink-0`}
+          >
+            <vm.statusConfig.icon className="h-4 w-4" />
+            <span className="text-xs font-semibold">{vm.statusConfig.label}</span>
+          </div>
         </div>
       </TableCell>
     </TableRow>

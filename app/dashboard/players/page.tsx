@@ -1,10 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
-import NewPlayerModal from "@/components/modals/new-player-modal";
 import dynamicImport from "next/dynamic";
 import { loadPlayersListPageProps } from "../../../hooks/players/players-page-load";
 import { SyncSharkScopeButton } from "@/components/sharkscope/sync-button";
 import { playersPageMetadata } from "@/lib/constants/metadata";
+import { canCreate } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +21,7 @@ const PlayersTableClient = dynamicImport(() => import("./players-table-client"),
 
 export default async function PlayersPage() {
   const session = await requireSession();
-  const { tablePayload, canEditPlayers, canCreatePlayer } =
-    await loadPlayersListPageProps(session);
+  const { tablePayload, canEditPlayers } = await loadPlayersListPageProps(session);
 
   return (
     <div className="space-y-6">
@@ -35,13 +34,9 @@ export default async function PlayersPage() {
             {playersPageMetadata.description}
           </p>
         </div>
-        {canCreatePlayer ? (
-          <div className="shrink-0 self-start sm:self-center flex items-center gap-2">
+        {canCreate(session) ? (
+          <div className="shrink-0 self-start sm:self-center">
             <SyncSharkScopeButton syncMode="players" />
-            <NewPlayerModal
-              coaches={tablePayload.coaches}
-              grades={tablePayload.grades}
-            />
           </div>
         ) : null}
       </div>
@@ -50,7 +45,7 @@ export default async function PlayersPage() {
         <CardContent className="min-w-0 max-w-full px-0">
           {tablePayload.rows.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground border border-dashed border-border rounded-lg">
-              Nenhum jogador cadastrado ainda.
+              Nenhum jogador cadastrado. Jogadores aparecem aqui quando criam conta no app com o papel de Jogador.
             </div>
           ) : (
             <PlayersTableClient

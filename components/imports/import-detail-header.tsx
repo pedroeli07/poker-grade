@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar } from "lucide-react";
-import { DeleteImportButton } from "@/components/delete-import-button";
+import { DeleteImportButton } from "@/components/imports/delete-import-button";
 import type { ImportDetailRecord } from "@/lib/types";
 import { memo } from "react";
 

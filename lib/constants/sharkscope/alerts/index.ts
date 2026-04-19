@@ -67,6 +67,27 @@ const ACK_LABEL: Record<string, string> = {
     acknowledged: "Reconhecidos",
   };
 
+/** Rótulos da ordenação na toolbar (chave → texto). */
+const ALERTS_SORT_KEY_LABEL: Record<string, string> = {
+  severity: "Severidade",
+  player: "Jogador",
+  alertType: "Tipo",
+  triggeredAt: "Data",
+};
+
+const ALERT_SEVERITY_FILTER_OPTIONS = Object.entries(SEVERITY_LABEL).map(([value, label]) => ({
+  value,
+  label,
+}));
+const ALERT_TYPE_FILTER_OPTIONS = Object.entries(ALERT_TYPE_LABEL).map(([value, label]) => ({
+  value,
+  label,
+}));
+const ALERT_ACK_FILTER_OPTIONS = Object.entries(ACK_LABEL).map(([value, label]) => ({
+  value,
+  label,
+}));
+
 const SHARKSCOPE_ALERTS_LS_PAGE_SIZE = "gestao-grades:sharkscope-alerts:pageSize";
 const SHARKSCOPE_ALERTS_LS_PAGE = "gestao-grades:sharkscope-alerts:page";
 const SHARKSCOPE_ALERTS_LS_SELECTED = "gestao-grades:sharkscope-alerts:selectedIds";
@@ -74,21 +95,25 @@ const SHARKSCOPE_ALERTS_LS_SELECTED = "gestao-grades:sharkscope-alerts:selectedI
 const SHARKSCOPE_ALERTS_PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 300] as const;
 const SHARKSCOPE_ALERTS_ALLOWED_PAGE_SIZE = new Set<number>(SHARKSCOPE_ALERTS_PAGE_SIZE_OPTIONS);
 
-export { 
+export {
   ALERT_TRIGGERED_AT_DATE_FORMAT,
-  ALERT_METRIC_BADGE_BASE_CLASS, 
-  ALERT_METRIC_BADGE_AMBER_OUTLINE_CLASS, 
-  ALERT_ROI_DROP_CRITICAL_MAX, 
-  ALERT_LATE_FINISH_CRITICAL_MARGIN, 
-  INVITE_ONLY_MSG, 
-  ALERT_TYPE_LABEL, 
-  SEVERITY_UI, 
-  SEVERITY_LABEL, 
+  ALERT_METRIC_BADGE_BASE_CLASS,
+  ALERT_METRIC_BADGE_AMBER_OUTLINE_CLASS,
+  ALERT_ROI_DROP_CRITICAL_MAX,
+  ALERT_LATE_FINISH_CRITICAL_MARGIN,
+  INVITE_ONLY_MSG,
+  ALERT_TYPE_LABEL,
+  SEVERITY_UI,
+  SEVERITY_LABEL,
   ACK_LABEL,
+  ALERTS_SORT_KEY_LABEL,
+  ALERT_SEVERITY_FILTER_OPTIONS,
+  ALERT_TYPE_FILTER_OPTIONS,
+  ALERT_ACK_FILTER_OPTIONS,
   isSharkscopeAlertPercentMetric,
   SHARKSCOPE_ALERTS_LS_PAGE_SIZE,
   SHARKSCOPE_ALERTS_LS_PAGE,
   SHARKSCOPE_ALERTS_LS_SELECTED,
   SHARKSCOPE_ALERTS_PAGE_SIZE_OPTIONS,
-  SHARKSCOPE_ALERTS_ALLOWED_PAGE_SIZE
+  SHARKSCOPE_ALERTS_ALLOWED_PAGE_SIZE,
 };

@@ -23,6 +23,7 @@ export async function getUserPermissions() {
   }
 }
 import { prisma } from "@/lib/prisma";
+import { PlayerStatus } from "@prisma/client";
 import { requireRoles } from "@/lib/auth/session";
 import {
   allowedInviteFormSchema,
@@ -31,6 +32,9 @@ import {
   updatePendingInviteFormSchema,
 } from "@/lib/schemas";
 import { isSuperAdminEmail } from "@/lib/utils";
+import { getRegisterAbsoluteUrl } from "@/lib/utils/app-routing";
+import { isMailerConfigured, sendInviteEmail } from "@/lib/mailer";
+import { ROLE_OPTIONS } from "@/lib/constants";
 import { USERS_MANAGE_ROLES, userQueriesLog } from "@/lib/constants/queries-mutations";
 import { ErrorTypes } from "@/lib/types";
 
@@ -69,7 +73,25 @@ export async function addAllowedInvite(formData: FormData) {
     await prisma.allowedEmail.create({ data: { email, role, addedById: session.userId } });
     userQueriesLog.info("Convite adicionado", { email, role, by: session.userId });
     revalidatePath("/dashboard/users");
-    return { success: true as const };
+
+    let emailDelivery: "sent" | "skipped_no_mailer" | "failed" = "skipped_no_mailer";
+    if (isMailerConfigured()) {
+      const roleLabel = ROLE_OPTIONS.find((r) => r.value === role)?.label ?? role;
+      const registerUrl = getRegisterAbsoluteUrl();
+      try {
+        await sendInviteEmail(email, { roleLabel, registerUrl });
+        emailDelivery = "sent";
+      } catch (e) {
+        userQueriesLog.error(
+          "sendInviteEmail",
+          e instanceof Error ? e : undefined,
+          { email }
+        );
+        emailDelivery = "failed";
+      }
+    }
+
+    return { success: true as const, emailDelivery };
   } catch (e) {
     userQueriesLog.error("addAllowedInvite", e instanceof Error ? e : undefined);
     return { error: "Erro ao salvar o convite." };
@@ -139,9 +161,49 @@ export async function updateAuthAccount(formData: FormData) {
   if (emailTaken) return { error: "Este e-mail já está em uso." };
 
   try {
-    await prisma.authUser.update({ where: { id }, data: { email, role } });
+    await prisma.$transaction(async (tx) => {
+      const before = await tx.authUser.findUniqueOrThrow({
+        where: { id },
+        select: { role: true, playerId: true, coachId: true, displayName: true },
+      });
+
+      await tx.authUser.update({ where: { id }, data: { email, role } });
+
+      if (before.role !== role) {
+        if (before.role === UserRole.PLAYER && before.playerId) {
+          await tx.authUser.update({ where: { id }, data: { playerId: null } });
+          await tx.player.delete({ where: { id: before.playerId } });
+        }
+        if (before.role === UserRole.COACH && before.coachId) {
+          await tx.authUser.update({ where: { id }, data: { coachId: null } });
+          await tx.coach.delete({ where: { id: before.coachId } });
+        }
+
+        if (role === UserRole.PLAYER) {
+          const name = before.displayName?.trim() || email.split("@")[0] || "Jogador";
+          let player = await tx.player.findUnique({ where: { email } });
+          if (!player) {
+            player = await tx.player.create({
+              data: { name, email, status: PlayerStatus.ACTIVE },
+            });
+          }
+          await tx.authUser.update({ where: { id }, data: { playerId: player.id } });
+        }
+        if (role === UserRole.COACH) {
+          const name = before.displayName?.trim() || email.split("@")[0] || "Coach";
+          let coach = await tx.coach.findUnique({ where: { email } });
+          if (!coach) {
+            coach = await tx.coach.create({ data: { name, email } });
+          }
+          await tx.authUser.update({ where: { id }, data: { coachId: coach.id } });
+        }
+      }
+    });
+
     userQueriesLog.info("Conta atualizada", { id, email, role });
     revalidatePath("/dashboard/users");
+    revalidatePath("/dashboard/players");
+    revalidatePath("/dashboard");
     return { success: true as const };
   } catch (e) {
     userQueriesLog.error("updateAuthAccount", e instanceof Error ? e : undefined);
@@ -173,7 +235,7 @@ export async function deleteAuthAccount(formData: FormData) {
 
   const target = await prisma.authUser.findUnique({
     where: { id: parsed.data.id },
-    select: { email: true, role: true, coachId: true },
+    select: { email: true, role: true, coachId: true, playerId: true },
   });
   if (!target) return { error: ErrorTypes.NOT_FOUND };
 
@@ -186,15 +248,22 @@ export async function deleteAuthAccount(formData: FormData) {
   }
 
   const coachId = target.coachId;
+  const playerId = target.playerId;
 
   try {
     await prisma.$transaction(async (tx) => {
       await tx.authUser.delete({ where: { id: parsed.data.id } });
       if (coachId) await tx.coach.delete({ where: { id: coachId } });
+      if (playerId) await tx.player.delete({ where: { id: playerId } });
     });
-    userQueriesLog.info("Conta removida", { id: parsed.data.id, coachRemoved: Boolean(coachId) });
+    userQueriesLog.info("Conta removida", {
+      id: parsed.data.id,
+      coachRemoved: Boolean(coachId),
+      playerRemoved: Boolean(playerId),
+    });
     revalidatePath("/dashboard/users");
     revalidatePath("/dashboard/players");
+    revalidatePath("/dashboard");
     return { success: true as const };
   } catch (e) {
     userQueriesLog.error("deleteAuthAccount", e instanceof Error ? e : undefined);
@@ -226,5 +295,35 @@ export async function updateProfile(data: {
   } catch (e) {
     userQueriesLog.error("updateProfile", e instanceof Error ? e : undefined);
     return { error: "Falha ao atualizar o perfil." };
+  }
+}
+
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+const ALLOWED_AVATAR_MIME = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
+
+export async function updateAvatar(dataUrl: string | null) {
+  const { getSession } = await import("@/lib/auth/session");
+  const session = await getSession();
+  if (!session) return { error: ErrorTypes.FORBIDDEN };
+
+  if (dataUrl !== null) {
+    const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
+    if (!match) return { error: "Imagem inválida." };
+    const mime = match[1].toLowerCase();
+    if (!ALLOWED_AVATAR_MIME.has(mime)) return { error: "Formato não suportado (use PNG, JPEG, WebP ou GIF)." };
+    const approxBytes = Math.floor((match[2].length * 3) / 4);
+    if (approxBytes > MAX_AVATAR_BYTES) return { error: "Imagem muito grande (máx. 2MB)." };
+  }
+
+  try {
+    await prisma.authUser.update({
+      where: { id: session.userId },
+      data: { avatarUrl: dataUrl },
+    });
+    revalidatePath("/dashboard/profile");
+    return { success: true as const };
+  } catch (e) {
+    userQueriesLog.error("updateAvatar", e instanceof Error ? e : undefined);
+    return { error: "Falha ao atualizar o avatar." };
   }
 }

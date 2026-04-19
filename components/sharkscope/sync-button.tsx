@@ -151,7 +151,7 @@ export function SyncSharkScopeButton({ syncMode = "full" }: { syncMode?: SharkSc
         variant="outline"
         onClick={onSync}
         disabled={isPending}
-        className="gap-2 bg-blue-500/10 hover:bg-blue-500/20 hover:scale-105 transition-all duration-200"
+        className="gap-2 bg-blue-500/10 hover:bg-blue-500/20 transition-all duration-200"
       >
         <RefreshCw className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
         {isPending ? "Sincronizando..." : "Sincronizar SharkScope"}

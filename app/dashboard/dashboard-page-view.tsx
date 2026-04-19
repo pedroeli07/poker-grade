@@ -14,18 +14,14 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
-import { DeleteImportButton } from "@/components/delete-import-button";
+import { DeleteImportButton } from "@/components/imports/delete-import-button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cardClassName } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { DashboardPageData } from "@/hooks/dashboard/dashboard-page-load";
+import { ACTION_STYLE } from "@/lib/constants/sharkscope-type-filters";
 
-const ACTION_STYLE = {
-  UPGRADE: { label: "Subida", icon: TrendingUp, color: "text-primary" },
-  MAINTAIN: { label: "Manutenção", icon: ArrowRight, color: "text-muted-foreground" },
-  DOWNGRADE: { label: "Descida", icon: TrendingDown, color: "text-primary" },
-} as const;
 
 export function DashboardPageView(data: DashboardPageData) {
   const {

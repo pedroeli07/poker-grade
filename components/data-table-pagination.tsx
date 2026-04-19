@@ -9,7 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import {
+  DATA_TABLE_DEFAULT_PAGE_SIZE_OPTIONS,
+  DATA_TABLE_PAGINATION_NEXT_ARIA,
+  DATA_TABLE_PAGINATION_NONE_ITEMS,
+  DATA_TABLE_PAGINATION_PREV_ARIA,
+  DATA_TABLE_PAGINATION_RANGE_OF,
+  DATA_TABLE_PAGINATION_ROWS_LABEL,
+} from "@/lib/constants";
+import { cn, getDataTablePaginationState } from "@/lib/utils";
 
 export type DataTablePaginationProps = {
   page: number;
@@ -17,11 +25,9 @@ export type DataTablePaginationProps = {
   totalItems: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
-  pageSizeOptions?: number[];
+  pageSizeOptions?: readonly number[];
   className?: string;
 };
-
-const DEFAULT_PAGE_SIZES = [10, 25, 50, 100];
 
 export function DataTablePagination({
   page,
@@ -29,13 +35,14 @@ export function DataTablePagination({
   totalItems,
   onPageChange,
   onPageSizeChange,
-  pageSizeOptions = DEFAULT_PAGE_SIZES,
+  pageSizeOptions = DATA_TABLE_DEFAULT_PAGE_SIZE_OPTIONS,
   className,
 }: DataTablePaginationProps) {
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  const currentPage = Math.min(Math.max(1, page), totalPages);
-  const from = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const to = Math.min(currentPage * pageSize, totalItems);
+  const { totalPages, currentPage, from, to } = getDataTablePaginationState(
+    page,
+    pageSize,
+    totalItems
+  );
 
   return (
     <div
@@ -45,7 +52,7 @@ export function DataTablePagination({
       )}
     >
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-        <span className="whitespace-nowrap">Linhas por página</span>
+        <span className="whitespace-nowrap">{DATA_TABLE_PAGINATION_ROWS_LABEL}</span>
         <Select
           value={String(pageSize)}
           onValueChange={(v) => {
@@ -53,7 +60,7 @@ export function DataTablePagination({
             onPageChange(1);
           }}
         >
-          <SelectTrigger className="h-8 w-[4.75rem]" aria-label="Linhas por página">
+          <SelectTrigger className="h-8 w-[4.75rem]" aria-label={DATA_TABLE_PAGINATION_ROWS_LABEL}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -66,13 +73,13 @@ export function DataTablePagination({
         </Select>
         <span className="text-xs sm:text-sm">
           {totalItems === 0 ? (
-            "Nenhum item"
+            DATA_TABLE_PAGINATION_NONE_ITEMS
           ) : (
             <>
               <span className="font-medium text-foreground">{from}</span>
               <span className="mx-0.5">–</span>
               <span className="font-medium text-foreground">{to}</span>
-              <span className="mx-1">de</span>
+              <span className="mx-1">{DATA_TABLE_PAGINATION_RANGE_OF}</span>
               <span className="font-medium text-foreground">{totalItems}</span>
             </>
           )}
@@ -86,7 +93,7 @@ export function DataTablePagination({
           className="h-8 px-2"
           disabled={currentPage <= 1 || totalItems === 0}
           onClick={() => onPageChange(currentPage - 1)}
-          aria-label="Página anterior"
+          aria-label={DATA_TABLE_PAGINATION_PREV_ARIA}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -100,7 +107,7 @@ export function DataTablePagination({
           className="h-8 px-2"
           disabled={currentPage >= totalPages || totalItems === 0}
           onClick={() => onPageChange(currentPage + 1)}
-          aria-label="Próxima página"
+          aria-label={DATA_TABLE_PAGINATION_NEXT_ARIA}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>

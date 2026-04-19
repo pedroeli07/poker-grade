@@ -15,6 +15,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  DestructiveAlertDivider,
+  DestructiveAlertIconHeader,
+  DestructiveAlertWarningNote,
+} from "@/components/modals/primitives/destructive-alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -22,14 +27,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TableCell } from "@/components/ui/table";
-import { MoreVertical, Pencil, Settings2, Trash } from "lucide-react";
+import { MoreHorizontal, Pencil, Settings2, Trash } from "lucide-react";
 import { deletePlayer } from "@/lib/queries/db/player";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import { playersTableCol } from "@/lib/constants/classes";
-import type { PlayerTableRowActionsProps } from "@/lib/types/player";
-import { deletePlayerActionErrorMessage } from "@/lib/utils/player";
-import { cn } from "@/lib/utils";
+import type { PlayerTableRowActionsProps } from "@/lib/types";
+import { deletePlayerActionErrorMessage, cn } from "@/lib/utils";
+import { 
+  destructiveAlertDialogContentClassName, 
+  destructiveAlertHeaderClassName, 
+  destructiveAlertTitleClassName, 
+  destructiveAlertDescriptionWrapClassName, 
+  destructiveAlertFooterClassName, 
+  destructiveAlertCancelButtonClassName, 
+  destructiveAlertConfirmButtonClassName,
+  playersTableCol } from "@/lib/constants";
 
 const PlayerTableRowActions = memo(function PlayerTableRowActions({
   player,
@@ -49,7 +61,7 @@ const PlayerTableRowActions = memo(function PlayerTableRowActions({
         try {
           await deletePlayer(fd);
           toast.success(
-            "Jogador excluÃ­do",
+            "Jogador excluído",
             `${player.name} e dados vinculados foram removidos.`
           );
           setDeleteOpen(false);
@@ -71,16 +83,27 @@ const PlayerTableRowActions = memo(function PlayerTableRowActions({
           setDeleteOpen(o);
         }}
       >
-        <AlertDialogContent className="sm:max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir jogador?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Isso remove {player.name} do sistema, incluindo grades, targets, importaÃ§Ãµes de torneios e revisÃµes. Se
-              existir conta de login vinculada, ela serÃ¡ desvinculada. NÃ£o dÃ¡ para desfazer.
+        <AlertDialogContent className={destructiveAlertDialogContentClassName}>
+          <DestructiveAlertIconHeader />
+          <AlertDialogHeader className={destructiveAlertHeaderClassName}>
+            <AlertDialogTitle className={destructiveAlertTitleClassName}>Excluir jogador?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className={destructiveAlertDescriptionWrapClassName}>
+                <p>
+                  Isso remove{" "}
+                  <span className="font-semibold text-foreground">{player.name}</span> do sistema, incluindo
+                  grades, targets, importações de torneios e revisões.
+                </p>
+                <p>Se existir conta de login vinculada, ela será desvinculada.</p>
+                <DestructiveAlertWarningNote>Esta ação não pode ser desfeita.</DestructiveAlertWarningNote>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+          <DestructiveAlertDivider />
+          <AlertDialogFooter className={destructiveAlertFooterClassName}>
+            <AlertDialogCancel disabled={isPending} className={destructiveAlertCancelButtonClassName}>
+              Cancelar
+            </AlertDialogCancel>
             <AlertDialogAction
               type="button"
               onClick={(e) => {
@@ -88,9 +111,9 @@ const PlayerTableRowActions = memo(function PlayerTableRowActions({
                 handleDeleteConfirm();
               }}
               disabled={isPending}
-              className="bg-red-600 text-white hover:bg-red-600/90"
+              className={destructiveAlertConfirmButtonClassName}
             >
-              {isPending ? "Excluindo..." : "Excluir"}
+              {isPending ? "Excluindo…" : "Excluir"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -98,8 +121,8 @@ const PlayerTableRowActions = memo(function PlayerTableRowActions({
       <div className="flex min-h-[1.5rem] items-center justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button type="button" variant="ghost" size="icon" title="AÃ§Ãµes">
-              <MoreVertical className="h-4 w-4 text-muted-foreground" />
+            <Button type="button" variant="ghost" size="icon" title="Ações">
+              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">

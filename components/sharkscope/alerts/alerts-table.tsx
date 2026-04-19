@@ -18,11 +18,11 @@ import type { SharkscopeAlertRow } from "@/lib/types";
 import type { AlertSortKey } from "@/hooks/sharkscope/alerts/use-alerts-page-client";
 import type { ColumnSortState } from "@/lib/types/dataTable";
 import { isFilterActive, type NumberFilterValue } from "@/lib/number-filter";
-import { ALERT_TYPE_LABEL, SEVERITY_LABEL, ACK_LABEL } from "@/lib/constants/sharkscope/alerts";
-
-const severityOptions = Object.entries(SEVERITY_LABEL).map(([value, label]) => ({ value, label }));
-const typeOptions = Object.entries(ALERT_TYPE_LABEL).map(([value, label]) => ({ value, label }));
-const ackOptions = Object.entries(ACK_LABEL).map(([value, label]) => ({ value, label }));
+import {
+  ALERT_ACK_FILTER_OPTIONS,
+  ALERT_SEVERITY_FILTER_OPTIONS,
+  ALERT_TYPE_FILTER_OPTIONS,
+} from "@/lib/constants/sharkscope/alerts";
 
 const AlertsTable = memo(function AlertsTable({
   hasActiveView,
@@ -117,7 +117,7 @@ const AlertsTable = memo(function AlertsTable({
                     label={
                       <FilteredColumnTitle active={filterSeverity !== null}>Severidade</FilteredColumnTitle>
                     }
-                    options={severityOptions}
+                    options={ALERT_SEVERITY_FILTER_OPTIONS}
                     applied={filterSeverity}
                     onApply={setFilterSeverity}
                   />
@@ -145,7 +145,7 @@ const AlertsTable = memo(function AlertsTable({
                     columnId="alertType"
                     ariaLabel="Tipo"
                     label={<FilteredColumnTitle active={filterType !== null}>Tipo</FilteredColumnTitle>}
-                    options={typeOptions}
+                    options={ALERT_TYPE_FILTER_OPTIONS}
                     applied={filterType}
                     onApply={setFilterType}
                   />
@@ -195,7 +195,7 @@ const AlertsTable = memo(function AlertsTable({
                       columnId="ack"
                       ariaLabel="Estado"
                       label={<FilteredColumnTitle active={filterAck !== null}>Ação</FilteredColumnTitle>}
-                      options={ackOptions}
+                      options={ALERT_ACK_FILTER_OPTIONS}
                       applied={filterAck}
                       onApply={setFilterAck}
                     />

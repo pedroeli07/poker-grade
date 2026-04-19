@@ -10,15 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getInitials } from "@/lib/utils";
-import { cardClassName, ROLE_OPTIONS } from "@/lib/constants";
+import { cn, getInitials } from "@/lib/utils";
+import { ROLE_OPTIONS } from "@/lib/constants";
 import { useEditableUser } from "@/hooks/user/use-editable-user";
 import { useUserPermissions } from "@/hooks/user/use-user-permissions";
 import { RoleBadge, StatusBadge } from "./user-badges";
 import UserDeleteDialog from "./user-delete-dialog";
-import { UserActions } from "./user-actions";
+import UserActions from "./user-actions";
 import { UserRole } from "@prisma/client";
 import type { UserTableRowProps } from "@/lib/types";
+import { userTableRowClassName } from "@/lib/constants";
 
 export const UserTableRow = memo(function UserTableRow({
   row,
@@ -41,20 +42,24 @@ export const UserTableRow = memo(function UserTableRow({
   } = useEditableUser(row, onAction);
 
   return (
-    <TableRow className={`group ${cardClassName}`}>
-      <UserDeleteDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        row={row}
-        disabled={disabled}
-        onAction={onAction}
-      />
-      
-      {/* Coluna Membro */}
+    <TableRow className={userTableRowClassName}>
+      {/* Coluna Membro — diálogo dentro de <td> (filho direto de <tr> só pode ser célula) */}
       <TableCell className="text-center">
+        <UserDeleteDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          row={row}
+          disabled={disabled}
+          onAction={onAction}
+        />
         <div className="flex min-w-0 items-center justify-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xs font-semibold">
-            {getInitials(row.email)}
+          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/50 bg-muted text-xs font-semibold overflow-hidden transition-transform duration-300 hover:scale-[3] hover:z-50 hover:shadow-xl hover:ring-2 hover:ring-primary/20">
+            {row.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={row.avatarUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              getInitials(row.email)
+            )}
           </div>
           {editing ? (
             <Input

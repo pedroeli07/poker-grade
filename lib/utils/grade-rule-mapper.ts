@@ -1,6 +1,7 @@
 import { EMPTY_DESC, STATUS_CONFIG } from "@/lib/constants";
 import type { GradeListRow, GradeRuleCardRule, LobbyzeFilterItem, TargetListRow } from "@/lib/types";
 import { parseJson } from "./parse-forms";
+import { htmlToPlainText } from "./html-to-plain-text";
 
 export function mapPrismaRuleToCard(rule: {
   id: string;
@@ -52,9 +53,10 @@ export function mapPrismaRuleToCard(rule: {
 
 export function descriptionPick(r: GradeListRow) {
   const raw = r.description?.trim() ?? "";
+  const plain = raw ? htmlToPlainText(raw) : "";
   return {
     value: raw || EMPTY_DESC,
-    label: raw ? (raw.length > 80 ? `${raw.slice(0, 80)}…` : raw) : "(sem descrição)",
+    label: plain ? (plain.length > 80 ? `${plain.slice(0, 80)}…` : plain) : "(sem descrição)",
   };
 }
 

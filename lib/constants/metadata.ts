@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 const PAGES: Record<string, { title: string; desc: string }> = {
   gradeDetail: { title: "Grade | Gestão de Grades", desc: "Regras e filtros da grade." },
-  grades: { title: "Perfis de Grades", desc: "Gerencie os perfis de grades e filtros da Lobbyze." },
+  grades: { title: "Perfis de Grades", desc: "Gerencie os perfis de grades da Lobbyze." },
   importDetail: { title: "Detalhes de uma Importação", desc: "Visualize os detalhes de uma importação da Lobbyze." },
   notifications: { title: "Notificações", desc: "Visualize suas notificações e marque como lidas." },
   sharkscopeAlerts: { title: "Alertas SharkScope", desc: "Alertas de performance do SharkScope para os jogadores do time." },
@@ -29,12 +29,15 @@ const PAGES: Record<string, { title: string; desc: string }> = {
   login: { title: "Login | Gestão de Grades", desc: "Acesse sua conta" },
   register: { title: "Cadastro | Gestão de Grades", desc: "Crie sua conta" },
   error: { title: "Erro", desc: "Algo deu errado. Tente novamente." },
+  notFound: { title: "Página não encontrada | Gestão de Grades", desc: "A página que você tentou acessar não existe." },
 };
 
 const KEYS = {
   GRADES_LS_VIEW: "gestao-grades:grades:view",
   NOTIFICATIONS_LS_FILTER: "gestao-grades:notifications:filter",
   NOTIFICATIONS_LS_PAGE: "gestao-grades:notifications:page",
+  NOTIFICATIONS_LS_PAGE_SIZE: "gestao-grades:notifications:pageSize",
+  NOTIFICATIONS_LS_VIEW_MODE: "gestao-grades:notifications:viewMode",
   SHARKSCOPE_ANALYTICS_LS_PERIOD: "gestao-grades:sharkscope-analytics:period",
   SHARKSCOPE_ANALYTICS_LS_TAB: "gestao-grades:sharkscope-analytics:tab",
   SHARKSCOPE_SCOUTING_LS_NICK: "gestao-grades:sharkscope-scouting:nick",
@@ -69,6 +72,7 @@ export const forgotPasswordPageMetadata = toMetadata(PAGES.forgotPassword);
 export const loginPageMetadata = toMetadata(PAGES.login);
 export const registerPageMetadata = toMetadata(PAGES.register);
 export const errorPageMetadata = toMetadata(PAGES.error);
+export const notFoundPageMetadata = toMetadata(PAGES.notFound);
 export const defaultMetadata = { title: "Gestão de Grades", description: "Gestão de Grades" } satisfies Metadata;
 
-export const { GRADES_LS_VIEW, NOTIFICATIONS_LS_FILTER, NOTIFICATIONS_LS_PAGE, SHARKSCOPE_ANALYTICS_LS_PERIOD, SHARKSCOPE_ANALYTICS_LS_TAB, SHARKSCOPE_SCOUTING_LS_NICK, SHARKSCOPE_SCOUTING_LS_NETWORK, SHARKSCOPE_SCOUTING_LS_NOTES, SHARKSCOPE_SCOUTING_LS_NLQ, SHARKSCOPE_SCOUTING_LS_EXPANDED, TARGETS_LS_VIEW } = KEYS;
+export const { GRADES_LS_VIEW, NOTIFICATIONS_LS_FILTER, NOTIFICATIONS_LS_PAGE, NOTIFICATIONS_LS_PAGE_SIZE, NOTIFICATIONS_LS_VIEW_MODE, SHARKSCOPE_ANALYTICS_LS_PERIOD, SHARKSCOPE_ANALYTICS_LS_TAB, SHARKSCOPE_SCOUTING_LS_NICK, SHARKSCOPE_SCOUTING_LS_NETWORK, SHARKSCOPE_SCOUTING_LS_NOTES, SHARKSCOPE_SCOUTING_LS_NLQ, SHARKSCOPE_SCOUTING_LS_EXPANDED, TARGETS_LS_VIEW } = KEYS;

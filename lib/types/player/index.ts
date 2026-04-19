@@ -88,6 +88,7 @@ export type PlayerTableRow = PlayerBase &
   PlayerMetrics & {
     sharkGroupNotFound?: boolean;
     nicks: PlayerNick[];
+    avatarUrl: string | null;
   };
 
 export type PlayersTablePayload = {
@@ -106,6 +107,7 @@ export type PlayerRowInput = PlayerBase & {
   coach: { name: string } | null;
   gradeAssignments: Array<{ gradeProfile: EntityRef }>;
   nicks: PlayerNick[];
+  authAccount?: { avatarUrl: string | null } | null;
 };
 
 export type PlayerProfileRecord = Prisma.PlayerGetPayload<{
@@ -227,7 +229,6 @@ export type PlayersTableClientProps = {
 export type PlayersListPageProps = {
   tablePayload: PlayersTablePayload;
   canEditPlayers: boolean;
-  canCreatePlayer: boolean;
 };
 
 /* =========================================================

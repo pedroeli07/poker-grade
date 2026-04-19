@@ -17,6 +17,7 @@ export type DashboardShellProps = {
   userRole: UserRole;
   displayName: string | null;
   email: string;
+  avatarUrl: string | null;
   initialUnreadCount: number;
 };
 

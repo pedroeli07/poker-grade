@@ -25,6 +25,14 @@ export const IMPORTS_COLUMN_IDS = Object.fromEntries(
 
 // ─── imports-list-ui ───────────────────────────────────────────────────────────
 
+/** `colSpan` da tabela: 7 colunas de dados, ou +2 com checkbox de seleção e ações. */
+const IMPORTS_LIST_TABLE_COLSPAN_BASE = 7;
+const IMPORTS_LIST_TABLE_COLSPAN_WITH_DELETE = 9;
+
+const IMPORTS_LIST_EMPTY_MESSAGE = "Nenhuma importação realizada ainda.";
+const IMPORTS_LIST_EMPTY_FILTERED_MESSAGE =
+  "Nenhuma importação com os filtros atuais.";
+
 /** Padrão `date-fns` para data/hora na listagem de importações. */
 const IMPORT_LIST_ROW_DATE_FORMAT = "dd/MM/yyyy • HH:mm";
 
@@ -85,11 +93,15 @@ const IMPORT_DETAIL_TAB_DEFS: ImportDetailTabDef[] = [
 const IMPORT_DETAIL_CARD_INACTIVE_CLS =
   "border-border bg-white hover:border-blue-300";
 
-export { 
-  IMPORTS_TABLE_COLUMN_ORDER, 
-  IMPORTS_COLUMN_LABELS,  
-  IMPORT_LIST_ROW_DATE_FORMAT, 
-  IMPORTS_FILTER_SUMMARY_EMPTY_SELECTION, 
-  IMPORT_DETAIL_TAB_DEFS, 
-  IMPORT_DETAIL_CARD_INACTIVE_CLS 
+export {
+  IMPORTS_TABLE_COLUMN_ORDER,
+  IMPORTS_COLUMN_LABELS,
+  IMPORT_LIST_ROW_DATE_FORMAT,
+  IMPORTS_FILTER_SUMMARY_EMPTY_SELECTION,
+  IMPORT_DETAIL_TAB_DEFS,
+  IMPORT_DETAIL_CARD_INACTIVE_CLS,
+  IMPORTS_LIST_TABLE_COLSPAN_BASE,
+  IMPORTS_LIST_TABLE_COLSPAN_WITH_DELETE,
+  IMPORTS_LIST_EMPTY_MESSAGE,
+  IMPORTS_LIST_EMPTY_FILTERED_MESSAGE,
 };

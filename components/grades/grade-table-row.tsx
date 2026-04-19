@@ -3,10 +3,15 @@ import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GradeTableRowProps } from "@/lib/types";
+import {
+  GRADE_DESCRIPTION_TOOLTIP_ARROW_CLASS,
+  GRADE_DESCRIPTION_TOOLTIP_CONTENT_CLASS,
+} from "@/lib/constants/grade";
 import { playerTableBadgeClassName, playerTableBadgeEmptyClassName } from "@/lib/constants/classes";
-import { DeleteGradeButton } from "@/components/delete-grade-button";
+import { DeleteGradeButton } from "@/components/grades/delete-grade-button";
 import EditGradeModal from "@/components/modals/edit-grade-modal";
-import { memo } from "react";
+import { memo, useMemo } from "react";
+import { htmlToPlainText } from "@/lib/utils";
 import { Copy, Check, MoreHorizontal, FileText, Pencil, Trash2 } from "lucide-react";
 import { AppTooltip } from "@/components/ui/app-tooltip";
 import { useCopyFeedback } from "@/hooks/use-copy-feedback";
@@ -22,30 +27,33 @@ const GradeDescriptionBadge = memo(function GradeDescriptionBadge({
 }: {
   description: string;
 }) {
+  const plain = useMemo(() => htmlToPlainText(description), [description]);
   const { copied, copy } = useCopyFeedback({
     successTitle: "Descrição copiada!",
-    getDescription: () => description,
+    getDescription: () => plain,
   });
 
   return (
     <AppTooltip
+      className={GRADE_DESCRIPTION_TOOLTIP_CONTENT_CLASS}
+      arrowClassName={GRADE_DESCRIPTION_TOOLTIP_ARROW_CLASS}
       content={
         <div
-          className="flex flex-col gap-2 p-1.5 cursor-pointer max-w-[550px]"
-          onClick={(e) => copy(description, e)}
+          className="flex flex-col gap-2 p-1.5 cursor-pointer w-full max-w-[min(550px,calc(100vw-2rem))]"
+          onClick={(e) => copy(plain, e)}
         >
-          <div className="flex items-center justify-between gap-4 border-b border-foreground/10 pb-1.5">
-            <span className="font-semibold text-zinc-100 text-[13px]">Descrição Completa</span>
+          <div className="flex items-center justify-between gap-4 border-b border-primary-foreground/20 pb-1.5">
+            <span className="font-semibold text-primary-foreground text-[13px]">Descrição Completa</span>
             {copied ? (
-              <Check className="h-3.5 w-3.5 text-emerald-400" />
+              <Check className="h-3.5 w-3.5 text-emerald-300" />
             ) : (
-              <Copy className="cursor-pointer h-3.5 w-3.5 opacity-50 text-zinc-100" />
+              <Copy className="cursor-pointer h-3.5 w-3.5 opacity-70 text-primary-foreground" />
             )}
           </div>
-          <div className="text-[13px] whitespace-pre-wrap text-zinc-200 break-words">
-            {description}
+          <div className="text-[13px] whitespace-pre-wrap text-primary-foreground/95 break-words">
+            {plain}
           </div>
-          <p className="text-[11px] text-blue-400 mt-1 italic text-right">
+          <p className="text-[11px] text-primary-foreground/80 mt-1 italic text-right">
             Clique para copiar
           </p>
         </div>
@@ -54,12 +62,12 @@ const GradeDescriptionBadge = memo(function GradeDescriptionBadge({
       <div
         role="button"
         tabIndex={0}
-        onClick={(e) => copy(description, e)}
-        onKeyDown={(e) => e.key === "Enter" && copy(description, e)}
+        onClick={(e) => copy(plain, e)}
+        onKeyDown={(e) => e.key === "Enter" && copy(plain, e)}
         className="flex items-center justify-center cursor-copy w-full min-w-0"
       >
         <Badge variant="outline" className={`${playerTableBadgeClassName} max-w-full min-w-0 group/badge`}>
-          <span className="line-clamp-2 break-words text-left flex-1">{description}</span>
+          <span className="line-clamp-2 break-words text-left flex-1">{plain}</span>
           {copied ? (
             <Check className="ml-1.5 h-3 w-3 text-emerald-500 shrink-0" />
           ) : (
@@ -98,9 +106,13 @@ const GradeTableRow = memo(function GradeTableRow({
         </div>
       </TableCell>
       <TableCell className="align-middle py-3 text-center">
-        <span className="tabular-nums font-medium text-foreground">
+        <Link
+          href={`/dashboard/grades/${grade.id}`}
+          className="tabular-nums font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          aria-label={`Abrir grade ${grade.name} — ${grade.rulesCount} regras`}
+        >
           {grade.rulesCount}
-        </span>
+        </Link>
       </TableCell>
       <TableCell className="text-center align-middle py-3">
         <DropdownMenu>
@@ -134,7 +146,11 @@ const GradeTableRow = memo(function GradeTableRow({
                   gradeId={grade.id}
                   gradeName={grade.name}
                   trigger={
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive cursor-pointer">
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      variant="destructive"
+                      className="cursor-pointer"
+                    >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Excluir
                     </DropdownMenuItem>

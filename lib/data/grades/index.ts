@@ -39,7 +39,7 @@ export async function loadGradesListPageProps(
 ): Promise<GradesListPageProps> {
   const manage = canManageGrades(session);
   const rows = await getGradesListRowsForSession(session);
-  return { rows, manage };
+  return { rows, manage, players: [] };
 }
 
 export async function getGradesPageProps() {
@@ -73,7 +73,7 @@ export async function getGradeDetailPageProps(id: string) {
   return loadGradeDetailClientProps(session, id);
 }
 
-export const MINHA_GRADE_ORDER = ["ABOVE", "MAIN", "BELOW"] as const;
+export const MINHA_GRADE_ORDER = ["MAIN"] as const;
 export type MinhaGradeTier = (typeof MINHA_GRADE_ORDER)[number];
 
 export async function getPlayerTournamentStats(playerId: string) {

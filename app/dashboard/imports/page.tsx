@@ -19,11 +19,11 @@ const ImportsClient = dynamicImport(() => import("./imports-client"), {
 
 export default async function ImportsPage() {
   const session = await requireSession();
-  const { imports, canDelete, canImport } = await loadImportsListPageProps(session);
+  const { imports, canDelete, canImport, players } = await loadImportsListPageProps(session);
 
   return (
     <div className="space-y-6">
-      <ImportsPageHeader canImport={canImport} />
+      <ImportsPageHeader canImport={canImport} players={players} />
       <ImportsClient imports={imports} canDelete={canDelete} />
     </div>
   );

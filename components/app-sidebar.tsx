@@ -3,48 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Spade, ChevronLeft, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, filterSidebarNavForRole, isSidebarNavItemActive } from "@/lib/utils";
 import { useSidebarStore } from "@/lib/stores/use-sidebar-store";
 import { memo, useEffect, useMemo, useState } from "react";
 import {
   SIDEBAR_NAV_ITEMS,
   SIDEBAR_SECONDARY_ITEMS,
 } from "@/lib/constants";
-import type { SidebarIcon, SidebarNavEntry, SidebarNavGroup } from "@/lib/types";
+import type { SidebarIcon, SidebarNavGroup } from "@/lib/types";
 import type { UserRole } from "@prisma/client";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-
-function isItemActive(pathname: string, href: string, exact?: boolean): boolean {
-  if (exact) return pathname === href;
-  return pathname === href || pathname.startsWith(href + "/");
-}
-
-function filterNavForRole(
-  items: SidebarNavEntry[],
-  userRole: UserRole
-): SidebarNavEntry[] {
-  if (userRole === "PLAYER") {
-    return items.filter(
-      (item): item is Extract<SidebarNavEntry, { kind: "link" }> =>
-        item.kind === "link" &&
-        ["/dashboard/minha-grade", "/dashboard/history"].includes(item.href)
-    );
-  }
-  return items.filter((item) => {
-    if (item.kind === "link") {
-      if (item.href === "/dashboard/minha-grade") return false;
-      if (item.href === "/dashboard/users") {
-        return ["ADMIN", "MANAGER", "COACH"].includes(userRole);
-      }
-      return true;
-    }
-    return true;
-  });
-}
 
 function NavItem({
   href,
@@ -63,7 +35,7 @@ function NavItem({
   pathname: string;
   nested?: boolean;
 }) {
-  const active = isItemActive(pathname, href, exact);
+  const active = isSidebarNavItemActive(pathname, href, exact);
 
   return (
     <Link
@@ -132,7 +104,7 @@ function SharkScopeNavGroup({
   isOpen: boolean;
   pathname: string;
 }) {
-  const anyChildActive = group.items.some((i) => isItemActive(pathname, i.href));
+  const anyChildActive = group.items.some((i) => isSidebarNavItemActive(pathname, i.href));
   const [expanded, setExpanded] = useState(anyChildActive);
 
   /* eslint-disable react-hooks/set-state-in-effect -- expandir grupo quando uma rota filha fica ativa */
@@ -197,7 +169,7 @@ function SharkScopeNavGroup({
             </span>
             <ChevronDown
               className={cn(
-                "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
+                "ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
                 expanded && "rotate-180"
               )}
             />
@@ -226,7 +198,7 @@ function AppSidebar({ userRole }: { userRole: UserRole }) {
   const { isOpen, toggle } = useSidebarStore();
 
   const navItems = useMemo(
-    () => filterNavForRole(SIDEBAR_NAV_ITEMS, userRole),
+    () => filterSidebarNavForRole(SIDEBAR_NAV_ITEMS, userRole),
     [userRole]
   );
 

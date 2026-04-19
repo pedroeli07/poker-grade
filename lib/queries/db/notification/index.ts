@@ -1,6 +1,6 @@
 "use server";
 
-import type { Notification as DbNotification, LimitAction, NotificationType, ReviewStatus } from "@prisma/client";
+import type { Notification as DbNotification, LimitAction, NotificationType, Prisma, ReviewStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
@@ -29,10 +29,22 @@ function toNotificationItem(row: DbNotification): NotificationItem {
   };
 }
 
+function utcDayStart(iso: string): Date {
+  return new Date(`${iso}T00:00:00.000Z`);
+}
+
+function utcDayEnd(iso: string): Date {
+  return new Date(`${iso}T23:59:59.999Z`);
+}
 
 export async function getNotificationsPage(
   page = 1,
-  filter: NotificationFilterType = NotificationFilterType.ALL as NotificationFilterType
+  filter: NotificationFilterType = NotificationFilterType.ALL as NotificationFilterType,
+  pageSize = NOTIFICATION_PAGE_SIZE,
+  types: NotificationType[] = [],
+  search?: string | null,
+  dateFrom?: string | null,
+  dateTo?: string | null
 ): Promise<NotificationsPageResult> {
   const session = await requireSession();
   const rl = await limitDashboardRead(session.userId);
@@ -43,22 +55,52 @@ export async function getNotificationsPage(
     };
   }
 
-  const parsed = notificationsPageParamsSchema.safeParse({ page, filter });
+  const parsed = notificationsPageParamsSchema.safeParse({
+    page,
+    filter,
+    pageSize,
+    types,
+    search: search ?? undefined,
+    dateFrom: dateFrom ?? undefined,
+    dateTo: dateTo ?? undefined,
+  });
   if (!parsed.success) return { ok: false, error: "Parâmetros inválidos." };
 
-  const { page: p, filter: f } = parsed.data;
+  const { page: p, filter: f, pageSize: ps, types: t, search: sq, dateFrom: df, dateTo: dt } = parsed.data;
 
-  const where = {
+  const where: Prisma.NotificationWhereInput = {
     userId: session.userId,
     ...(f === NotificationFilterType.UNREAD ? { read: false } : f === NotificationFilterType.READ ? { read: true } : {}),
+    ...(t && t.length > 0 ? { type: { in: t } } : {}),
   };
+
+  const andClauses: Prisma.NotificationWhereInput[] = [];
+  if (sq) {
+    andClauses.push({
+      OR: [
+        { title: { contains: sq, mode: "insensitive" } },
+        { message: { contains: sq, mode: "insensitive" } },
+      ],
+    });
+  }
+  if (df || dt) {
+    andClauses.push({
+      createdAt: {
+        ...(df ? { gte: utcDayStart(df) } : {}),
+        ...(dt ? { lte: utcDayEnd(dt) } : {}),
+      },
+    });
+  }
+  if (andClauses.length) {
+    where.AND = andClauses;
+  }
 
   const [items, total, unreadCount] = await Promise.all([
     prisma.notification.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      skip: (p - 1) * NOTIFICATION_PAGE_SIZE,
-      take: NOTIFICATION_PAGE_SIZE,
+      skip: (p - 1) * ps,
+      take: ps,
     }),
     prisma.notification.count({ where }),
     getCachedUnreadNotificationCountDb(session.userId),
@@ -70,8 +112,8 @@ export async function getNotificationsPage(
     total,
     unreadCount,
     page: p,
-    pageSize: NOTIFICATION_PAGE_SIZE,
-    totalPages: Math.max(1, Math.ceil(total / NOTIFICATION_PAGE_SIZE)),
+    pageSize: ps,
+    totalPages: Math.max(1, Math.ceil(total / ps)),
   };
 }
 
@@ -332,31 +374,53 @@ export async function notifyLimitChanged(
   fromGrade: string,
   toGrade: string
 ): Promise<void> {
-  const playerAuth = await prisma.authUser.findFirst({
-    where: { playerId },
-    select: { id: true },
-  });
-  if (!playerAuth) return;
+  const [player, playerAuth, staffIds] = await Promise.all([
+    prisma.player.findUnique({ where: { id: playerId }, select: { name: true } }),
+    prisma.authUser.findFirst({ where: { playerId }, select: { id: true } }),
+    getStaffUserIds(),
+  ]);
 
   const titles = {
     UPGRADE: "🎉 Promoção de limite!",
     DOWNGRADE: "Ajuste de limite",
     MAINTAIN: "Limite mantido",
-  };
+  } as const;
 
-  const messages = {
+  const playerMessages = {
     UPGRADE: `Parabéns! Você subiu de "${fromGrade}" para "${toGrade}". Continue assim!`,
     DOWNGRADE: `Sua grade foi ajustada de "${fromGrade}" para "${toGrade}".`,
     MAINTAIN: `Seu limite foi avaliado e mantido em "${toGrade}".`,
-  };
+  } as const;
 
-  await insertNotification({
-    userId: playerAuth.id,
-    type: "LIMIT_CHANGED",
-    title: titles[action],
-    message: messages[action],
-    link: `/dashboard/minha-grade`,
-  });
+  const staffTitles = {
+    UPGRADE: "Subida de grade",
+    DOWNGRADE: "Descida de grade",
+    MAINTAIN: "Manutenção de grade",
+  } as const;
+
+  const playerName = player?.name ?? "Jogador";
+  const staffMessage = `${playerName}: "${fromGrade}" → "${toGrade}".`;
+  const staffLink = `/dashboard/players/${playerId}`;
+
+  const notifications: CreateNotificationInput[] = staffIds.map((userId) => ({
+    userId,
+    type: "LIMIT_CHANGED" as NotificationType,
+    title: staffTitles[action],
+    message: staffMessage,
+    link: staffLink,
+  }));
+
+  if (playerAuth) {
+    notifications.push({
+      userId: playerAuth.id,
+      type: "LIMIT_CHANGED",
+      title: titles[action],
+      message: playerMessages[action],
+      link: `/dashboard/minha-grade`,
+    });
+  }
+
+  await insertNotificationsMany(notifications);
 }
 
 export { insertNotification as createNotification, insertNotificationsMany as createNotifications };
