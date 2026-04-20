@@ -20,7 +20,7 @@ const ImportDetailTabNav = memo(function ImportDetailTabNav({
         return (
           <Link
             key={tab.id}
-            href={`/dashboard/imports/${importId}?tab=${tab.id}`}
+            href={`/admin/grades/importacoes/${importId}?tab=${tab.id}`}
             className={`flex items-center gap-2 px-5 py-3 text-[15px] font-medium border-b-2 transition-colors whitespace-nowrap ${
               isActive
                 ? tab.activeCls

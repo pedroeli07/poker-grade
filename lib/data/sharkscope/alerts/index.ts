@@ -18,6 +18,6 @@ export async function loadAlertsClientProps(session: AppSession): Promise<Alerts
 
 export async function getAlertsPageProps() {
   const session = await requireSession();
-  if (!canWriteOperations(session)) redirect("/dashboard");
+  if (!canWriteOperations(session)) redirect("/admin/dashboard");
   return loadAlertsClientProps(session);
 }

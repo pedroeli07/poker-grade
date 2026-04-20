@@ -12,7 +12,7 @@ const PAGES: Record<string, { title: string; desc: string }> = {
     desc: "Sincroniza e visualiza métricas de um jogador para comparar com o site.",
   },
   sharkscopeScouting: {
-    title: "Scouting SharkScope",
+    title: "Avaliação SharkScope",
     desc: "Pesquise jogadores avulsos para avaliação de contratação.",
   },
   targets: { title: "Targets e Metas", desc: "Acompanhe ABI, ROI, Volume e gatilhos de subida/descida de limite." },

@@ -60,7 +60,9 @@ export function parseExcelBuffer(buffer: ArrayBuffer): ExcelParseResult[] {
         const buyInUsd = parseFloat(String(row[4] || "0").replace(/[^0-9.,]/g, "").replace(",", "."));
         const tournamentName = String(row[5] || "").trim();
         const scheduling = String(row[6] || "").trim();
-        const rebuy = row[7] === 1 || row[7] === "1" || row[7] === true;
+        const rebuyVal = row[7];
+        const rebuys = typeof rebuyVal === "number" ? Math.max(0, rebuyVal) : (parseInt(String(rebuyVal || "0"), 10) || 0);
+        const rebuy = rebuys > 0 || String(rebuyVal).toLowerCase() === "true";
         const speed = String(row[8] || "").trim();
         const sharkId = String(row[9] || "").trim();
         const priority = String(row[10] || "None").trim();
@@ -79,6 +81,7 @@ export function parseExcelBuffer(buffer: ArrayBuffer): ExcelParseResult[] {
           tournamentName,
           scheduling,
           rebuy,
+          rebuys,
           speed,
           sharkId,
           priority,

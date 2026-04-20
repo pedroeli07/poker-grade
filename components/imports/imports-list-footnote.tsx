@@ -14,8 +14,11 @@ const ImportsListFootnote = memo(function ImportsListFootnote({
   if (importsLength === 0) return null;
 
   return (
-    <p className="text-xs text-muted-foreground px-1">
-      {filteredLength} visível{filteredLength !== 1 ? "is" : ""}
+    <p
+      className="px-1 font-medium leading-normal text-muted-foreground"
+      style={{ fontSize: "0.8rem" }}
+    >
+      {filteredLength} {filteredLength === 1 ? "visível" : "visíveis"}
       {anyFilter && ` (de ${importsLength} no total)`}
       {selectedSize > 0 && ` · ${selectedSize} selecionada${selectedSize > 1 ? "s" : ""}`}
     </p>

@@ -29,23 +29,30 @@ const PlayerTableRow = memo(function PlayerTableRow({
         className={cn(playersTableCol.name, "py-3 align-middle font-medium text-[15px]")}
         title={player.name}
       >
-        <div className="flex min-h-[1.5rem] w-full min-w-0 items-center justify-center">
+        <div
+          className={cn(
+            "flex min-h-[1.5rem] w-full min-w-0 items-center justify-center",
+            "[&:has(.player-table-avatar-wrap:hover)]:relative [&:has(.player-table-avatar-wrap:hover)]:z-[80]",
+          )}
+        >
           <Badge
             variant="outline"
-            className={cn(playerTableBadgeClassName, "gap-1.5 pl-1 pr-2")}
+            className={cn(playerTableBadgeClassName, "gap-1.5 overflow-visible pl-1 pr-2")}
           >
-            <div className="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-[9px] font-semibold leading-none transition-transform duration-300 hover:scale-[4] hover:z-50 hover:shadow-xl hover:border-primary/30">
-              {player.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={player.avatarUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                player.name
-                  .split(" ")
-                  .slice(0, 2)
-                  .map((w) => w[0] ?? "")
-                  .join("")
-                  .toUpperCase()
-              )}
+            <div className="group/ava player-table-avatar-wrap relative z-10 h-6 w-6 shrink-0 origin-left transition-transform duration-300 ease-out hover:z-[90] hover:scale-[4.5] hover:shadow-xl">
+              <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-[9px] font-semibold leading-none transition-colors group-hover/ava:border-primary/40">
+                {player.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={player.avatarUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  player.name
+                    .split(" ")
+                    .slice(0, 2)
+                    .map((w) => w[0] ?? "")
+                    .join("")
+                    .toUpperCase()
+                )}
+              </div>
             </div>
             <span className="min-w-0 truncate font-medium">{player.name}</span>
           </Badge>

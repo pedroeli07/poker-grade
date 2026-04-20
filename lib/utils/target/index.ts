@@ -1,5 +1,6 @@
 import { LIMIT_ACTION_LABEL } from "@/lib/constants/grade";
 import {
+  CATEGORIES,
   TARGET_DISPLAY_PLACEHOLDER,
   TARGET_PROGRESS_TRACK_COLOR_CLASS,
   TARGET_STATUS_CONFIG,
@@ -8,6 +9,7 @@ import {
   type TargetStatusConfig,
   type TargetStatusKey,
 } from "@/lib/constants/target";
+import { timeAgo } from "@/lib/utils/app-routing";
 import type {
   TargetsColKey,
   TargetListRow,
@@ -47,6 +49,19 @@ export const getTargetProgressPercent = (
     : Math.min(100, Math.round((current / total) * 100));
 
 const P = TARGET_DISPLAY_PLACEHOLDER;
+
+/**
+ * "Volume (sessões, torneios)" → { title: "Volume", parenthetical: "(sessões, torneios)" }.
+ * If there is no trailing "(…)" segment, returns the full string as `title`.
+ */
+export function splitCategoryLabelForDisplay(label: string): {
+  title: string;
+  parenthetical?: string;
+} {
+  const m = label.match(/^(.+?)\s+(\([^)]+\))\s*$/);
+  if (!m) return { title: label };
+  return { title: m[1].trim(), parenthetical: m[2] };
+}
 
 export const formatProgressDisplay = (
   current: string | number | null | undefined,
@@ -136,6 +151,17 @@ export const buildTargetListViewModel = (
       target.numericCurrent != null &&
       target.numericValue != null &&
       target.numericValue > 0,
+
+    categoryLabel:
+      CATEGORIES.find((c) => c.value === target.category)?.label ?? target.category,
+    coachNotes: target.coachNotes,
+    coachNotesPreview: target.coachNotes
+      ? target.coachNotes.length > 60
+        ? `${target.coachNotes.slice(0, 60)}…`
+        : target.coachNotes
+      : "",
+    updatedAtLabel: timeAgo(target.updatedAt),
+    updatedAtIso: new Date(target.updatedAt).toISOString(),
   };
 };
 
@@ -211,11 +237,13 @@ function labelsFromSet(set: Set<string>, map: Map<string, string>) {
 
 export function buildTargetsFilterSummaryLines(
   filters: TargetsFilters,
-  options: TargetsColumnOptions
+  options: TargetsColumnOptions,
+  opts?: { omitPlayer?: boolean }
 ): string[] {
   const lines: string[] = [];
 
   for (const key of Object.keys(COL_LABEL) as TargetsColKey[]) {
+    if (opts?.omitPlayer && key === "player") continue;
     const applied = filters[key];
 
     if (applied !== null) {

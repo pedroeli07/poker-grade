@@ -4,19 +4,40 @@ import { useCallback, useMemo, useState, useTransition } from "react";
 import { toast } from "@/lib/toast";
 import type { SharkscopeAlertRow } from "@/lib/types";
 import { countUnacknowledgedAlerts, filterSharkscopeAlerts } from "@/lib/utils";
+import { usePersistentState } from "@/hooks/use-persistent-state";
 
 import type { NumberFilterValue } from "@/lib/number-filter";
 
 export function useAlertsDashboard(initialAlerts: SharkscopeAlertRow[]) {
   const [alerts, setAlerts] = useState<SharkscopeAlertRow[]>(initialAlerts);
-  const [filterSeverity, setFilterSeverity] = useState<Set<string> | null>(null);
-  const [filterType, setFilterType] = useState<Set<string> | null>(null);
-  // Default to only unacknowledged to match original behavior where "unacknowledged" was the default string
-  const [filterAck, setFilterAck] = useState<Set<string> | null>(() => new Set(["unacknowledged"]));
-  const [filterPlayer, setFilterPlayer] = useState<Set<string> | null>(null);
-  const [filterData, setFilterData] = useState<Set<string> | null>(null);
-  const [filterValor, setFilterValor] = useState<NumberFilterValue | null>(null);
-  const [filterLimite, setFilterLimite] = useState<NumberFilterValue | null>(null);
+  const [filterSeverity, setFilterSeverity] = usePersistentState<Set<string> | null>(
+    "gestao-grades:alerts:severity",
+    null
+  );
+  const [filterType, setFilterType] = usePersistentState<Set<string> | null>(
+    "gestao-grades:alerts:type",
+    null
+  );
+  const [filterAck, setFilterAck] = usePersistentState<Set<string> | null>(
+    "gestao-grades:alerts:ack",
+    new Set(["unacknowledged"])
+  );
+  const [filterPlayer, setFilterPlayer] = usePersistentState<Set<string> | null>(
+    "gestao-grades:alerts:player",
+    null
+  );
+  const [filterData, setFilterData] = usePersistentState<Set<string> | null>(
+    "gestao-grades:alerts:data",
+    null
+  );
+  const [filterValor, setFilterValor] = usePersistentState<NumberFilterValue | null>(
+    "gestao-grades:alerts:valor",
+    null
+  );
+  const [filterLimite, setFilterLimite] = usePersistentState<NumberFilterValue | null>(
+    "gestao-grades:alerts:limite",
+    null
+  );
   const [isPending, startTransition] = useTransition();
 
   const filtered = useMemo(

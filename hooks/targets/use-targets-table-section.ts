@@ -20,6 +20,10 @@ export function useTargetsTableSection(filtered: TargetListRow[]) {
 
   const sorted = useMemo(() => sortTargetsTableRows(filtered, sort), [filtered, sort]);
   const viewModels = useTargetListViewModels(sorted);
+  const rows = useMemo(
+    () => sorted.map((row, i) => ({ row, vm: viewModels[i]! })),
+    [sorted, viewModels],
+  );
 
-  return { sort, toggleSort, resetSort, viewModels };
+  return { sort, toggleSort, resetSort, viewModels, rows };
 }

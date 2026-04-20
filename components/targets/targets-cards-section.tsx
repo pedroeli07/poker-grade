@@ -1,6 +1,8 @@
 "use client";
 
 import { memo } from "react";
+import { Target as TargetWatermarkIcon } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { TargetCard } from "@/components/targets/target-card";
 import TargetsEmptyState from "@/components/targets/targets-view-components";
 import type { TargetListRow } from "@/lib/types";
@@ -10,10 +12,12 @@ const TargetsCardsSection = memo(function TargetsCardsSection({
   filtered,
   anyFilter,
   onClearFilters,
+  hidePlayerLine = false,
 }: {
   filtered: TargetListRow[];
   anyFilter: boolean;
   onClearFilters: () => void;
+  hidePlayerLine?: boolean;
 }) {
   const viewModels = useTargetsCardsSection(filtered);
 
@@ -21,12 +25,17 @@ const TargetsCardsSection = memo(function TargetsCardsSection({
     <div className="p-6">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {viewModels.map((vm) => (
-          <div
+          <Card
             key={vm.id}
-            className="rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+            className="relative overflow-hidden border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-blue-500/10 shadow-lg shadow-blue-500/5 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/40 hover:from-blue-500/10 hover:to-blue-500/20 hover:shadow-blue-500/20 group"
           >
-            <TargetCard vm={vm} />
-          </div>
+            <div className="absolute -right-6 -top-6 opacity-10 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
+              <TargetWatermarkIcon className="h-32 w-32 text-blue-500" />
+            </div>
+            <CardContent className="p-5 relative z-10">
+              <TargetCard vm={vm} hidePlayerLine={hidePlayerLine} />
+            </CardContent>
+          </Card>
         ))}
         {viewModels.length === 0 && (
           <TargetsEmptyState anyFilter={anyFilter} clearFilters={onClearFilters} />

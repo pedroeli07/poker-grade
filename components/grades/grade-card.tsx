@@ -73,7 +73,7 @@ const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardProps) {
             asChild
             className="text-xs border-primary/20"
           >
-            <Link href={`/dashboard/grades/${grade.id}`}>Ver regras</Link>
+            <Link href={`/admin/grades/perfis/${grade.id}`}>Ver regras</Link>
           </Button>
         </div>
       </CardContent>

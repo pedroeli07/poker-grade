@@ -29,7 +29,7 @@ const ReviewPlayerGroupCard = memo(function ReviewPlayerGroupCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href={`/dashboard/players/${player.id}`}
+              href={`/admin/jogadores/${player.id}`}
               className="flex items-center gap-1.5 text-lg font-semibold text-foreground transition-colors hover:text-primary"
             >
               {player.name}

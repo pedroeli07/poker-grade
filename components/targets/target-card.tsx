@@ -1,8 +1,17 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import type { TargetListViewModel } from "@/lib/utils/target";
+import { splitCategoryLabelForDisplay, type TargetListViewModel } from "@/lib/utils/target";
 
-export function TargetCard({ vm }: { vm: TargetListViewModel }) {
+export function TargetCard({
+  vm,
+  hidePlayerLine = false,
+}: {
+  vm: TargetListViewModel;
+  /** Visão jogador: não exibir linha com nome (só há um jogador). */
+  hidePlayerLine?: boolean;
+}) {
+  const categoryParts = splitCategoryLabelForDisplay(vm.categoryLabel);
+
   return (
     <div className="flex items-start justify-between gap-2">
       <div className="min-w-0 space-y-1.5 flex-1">
@@ -10,9 +19,12 @@ export function TargetCard({ vm }: { vm: TargetListViewModel }) {
           <span className="font-semibold text-sm leading-tight">{vm.name}</span>
           <Badge
             variant="outline"
-            className="text-[10px] px-1.5 py-0 border-border/50 shrink-0"
+            className="flex h-auto shrink-0 flex-col items-center gap-0.5 rounded-md border-border/50 px-2 py-1 text-center text-[10px] font-medium leading-tight"
           >
-            {vm.category}
+            <span className="block">{categoryParts.title}</span>
+            {categoryParts.parenthetical != null ? (
+              <span className="block">{categoryParts.parenthetical}</span>
+            ) : null}
           </Badge>
         </div>
         {vm.hasLimitAction && (
@@ -20,15 +32,17 @@ export function TargetCard({ vm }: { vm: TargetListViewModel }) {
             Gatilho: {vm.limitActionLabel}
           </span>
         )}
-        <p className="text-xs text-muted-foreground">
-          Jogador:{" "}
-          <Link
-            href={`/dashboard/players/${vm.playerId}`}
-            className="hover:text-primary font-medium text-foreground"
-          >
-            {vm.playerName}
-          </Link>
-        </p>
+        {!hidePlayerLine ? (
+          <p className="text-xs text-muted-foreground">
+            Jogador:{" "}
+            <Link
+              href={`/admin/jogadores/${vm.playerId}`}
+              className="hover:text-primary font-medium text-foreground"
+            >
+              {vm.playerName}
+            </Link>
+          </p>
+        ) : null}
         {vm.isNumeric ? (
           <div className="flex items-center gap-2 pt-0.5">
             <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden min-w-0">

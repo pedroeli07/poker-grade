@@ -175,8 +175,8 @@ export async function notifyImportBatchExternal(
   payload: ImportBatchNotifyPayload
 ): Promise<void> {
   const base = getAppBaseUrl();
-  const reviewPath = "/dashboard/review";
-  const importsPath = "/dashboard/imports";
+  const reviewPath = "/admin/grades/revisao";
+  const importsPath = "/admin/grades/importacoes";
   const reviewUrl = base ? `${base}${reviewPath}` : reviewPath;
   const importsUrl = base ? `${base}${importsPath}` : importsPath;
 

@@ -54,18 +54,23 @@ const NotificationsToolbar = memo(function NotificationsToolbar({
     <div className="flex flex-wrap items-center justify-between gap-4 py-3 border-y border-border">
       {/* Esquerda */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onToggleAll}
-            className={cn(
-              "flex h-5 w-5 items-center justify-center rounded border transition-colors cursor-pointer",
-              allSelected ? "bg-primary border-primary" : "border-border hover:border-primary/60"
-            )}
-          >
-            {allSelected && <Check className="h-3 w-3 text-white" />}
-          </button>
-        </div>
+        {viewMode === "cards" && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleAll}
+              className={cn(
+                "flex h-5 w-5 cursor-pointer items-center justify-center rounded border transition-colors",
+                allSelected ? "border-primary bg-primary" : "border-border hover:border-primary/60"
+              )}
+              aria-label={
+                allSelected ? "Desmarcar todas nesta página" : "Selecionar todas nesta página"
+              }
+            >
+              {allSelected && <Check className="h-3 w-3 text-white" />}
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center gap-1">
           {(["all", "unread", "read"] as const).map((f) => (

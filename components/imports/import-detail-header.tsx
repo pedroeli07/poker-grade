@@ -21,7 +21,7 @@ const ImportDetailHeader = memo(function ImportDetailHeader({
   return (
     <div className="flex items-center gap-3">
       <Button variant="ghost" size="icon" asChild>
-        <Link href="/dashboard/imports">
+        <Link href="/admin/grades/importacoes">
           <ArrowLeft className="h-4 w-4" />
         </Link>
       </Button>

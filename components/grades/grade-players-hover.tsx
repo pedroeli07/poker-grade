@@ -63,7 +63,7 @@ const GradePlayersHover = memo(function GradePlayersHover({
               {players.map((p) => (
                 <li key={p.id}>
                   <Link
-                    href={`/dashboard/players/${p.id}`}
+                    href={`/admin/jogadores/${p.id}`}
                     className="block rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-primary/8 transition-colors"
                   >
                     {p.name}

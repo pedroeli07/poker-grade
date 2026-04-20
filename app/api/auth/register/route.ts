@@ -157,7 +157,7 @@ export async function POST(request: Request) {
   const { token, sessionId } = await createAuthSession(newUser);
   log.info("Sessão criada após registro", { userId: newUserId, sessionId });
 
-  const res = NextResponse.json({ ok: true, redirect: "/dashboard" });
+  const res = NextResponse.json({ ok: true, redirect: "/admin/dashboard" });
   applySessionCookie(res, token);
   return res;
 }

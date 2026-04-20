@@ -9,6 +9,8 @@ import { memo, useEffect, useMemo, useState } from "react";
 import {
   SIDEBAR_NAV_ITEMS,
   SIDEBAR_SECONDARY_ITEMS,
+  accountNotificationsHref,
+  accountProfileHref,
 } from "@/lib/constants";
 import type { SidebarIcon, SidebarNavGroup } from "@/lib/types";
 import type { UserRole } from "@prisma/client";
@@ -296,16 +298,22 @@ function AppSidebar({ userRole }: { userRole: UserRole }) {
           </div>
         )}
 
-        {SIDEBAR_SECONDARY_ITEMS.map((item) => (
-          <NavItem
-            key={item.href}
-            href={item.href}
-            title={item.title}
-            icon={item.icon}
-            isOpen={isOpen}
-            pathname={pathname}
-          />
-        ))}
+        {SIDEBAR_SECONDARY_ITEMS.map((item) => {
+          const href =
+            item.title === "Notificações"
+              ? accountNotificationsHref(userRole)
+              : accountProfileHref(userRole);
+          return (
+            <NavItem
+              key={item.title}
+              href={href}
+              title={item.title}
+              icon={item.icon}
+              isOpen={isOpen}
+              pathname={pathname}
+            />
+          );
+        })}
       </nav>
     </aside>
   );

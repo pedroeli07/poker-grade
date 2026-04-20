@@ -15,6 +15,11 @@ import {
 import { logPerf } from "@/lib/utils/perf";
 import { CreateNotificationInput, ErrorTypes, NotificationFilterType, NotificationItem, NotificationsPageResult } from "@/lib/types";
 import { UserRole } from "@prisma/client";
+import {
+  sendLimitChangeEmails,
+  sendTargetCreatedEmails,
+  type TargetCreatedEmailPayload,
+} from "@/lib/email/app-events";
 
 
 function toNotificationItem(row: DbNotification): NotificationItem {
@@ -152,7 +157,7 @@ export async function markNotificationRead(
     where: { id: parsed.data, userId: session.userId },
     data: { read: true, readAt: new Date() },
   });
-  revalidatePath("/dashboard/notifications");
+  revalidatePath("/admin/notificacoes");
   return { ok: true };
 }
 
@@ -166,7 +171,7 @@ export async function markAllNotificationsRead(): Promise<{ ok: true } | { ok: f
     data: { read: true, readAt: new Date() },
   });
   notificationsQueriesLog.info("Todas marcadas como lidas", { userId: session.userId });
-  revalidatePath("/dashboard/notifications");
+  revalidatePath("/admin/notificacoes");
   return { ok: true };
 }
 
@@ -183,7 +188,7 @@ export async function deleteNotification(
   await prisma.notification.deleteMany({
     where: { id: parsed.data, userId: session.userId },
   });
-  revalidatePath("/dashboard/notifications");
+  revalidatePath("/admin/notificacoes");
   return { ok: true };
 }
 
@@ -202,7 +207,7 @@ export async function deleteSelectedNotifications(
     where: { id: { in: parsed.data }, userId: session.userId },
   });
   notificationsQueriesLog.info("Excluídas", { count: parsed.data.length });
-  revalidatePath("/dashboard/notifications");
+  revalidatePath("/admin/notificacoes");
   return { ok: true };
 }
 
@@ -257,7 +262,7 @@ export async function notifyPlayerCreated(
       type: "PLAYER_CREATED" as NotificationType,
       title: "Novo jogador adicionado",
       message: `${playerName} foi cadastrado no sistema.`,
-      link: `/dashboard/players/${playerId}`,
+      link: `/admin/jogadores/${playerId}`,
     }))
   );
 }
@@ -273,7 +278,7 @@ export async function notifyGradeCreated(
       type: "GRADE_CREATED" as NotificationType,
       title: "Nova grade criada",
       message: `Grade "${gradeName}" foi adicionada ao sistema.`,
-      link: `/dashboard/grades/${gradeId}`,
+      link: `/admin/grades/perfis/${gradeId}`,
     }))
   );
 }
@@ -293,7 +298,7 @@ export async function notifyGradeAssigned(
     type: "GRADE_ASSIGNED",
     title: "Grade atualizada",
     message: `Sua grade "${gradeName}" foi atribuída. Acesse para ver os filtros e explicações do seu coach.`,
-    link: `/dashboard/minha-grade`,
+    link: `/jogador/minha-grade`,
   });
 }
 
@@ -305,7 +310,7 @@ export async function notifyImportDone(
 ): Promise<void> {
   const staffIds = await getStaffUserIds();
   const reviewLink =
-    extraPlayCount > 0 ? "/dashboard/review" : `/dashboard/imports/${importId}`;
+    extraPlayCount > 0 ? "/admin/grades/revisao" : `/admin/grades/importacoes/${importId}`;
   const staffMessage =
     extraPlayCount > 0
       ? `${extraPlayCount} extra play${extraPlayCount > 1 ? "s" : ""} — abra Conferência de Torneios para revisar. (Importação: ${playerName})`
@@ -335,7 +340,7 @@ export async function notifyImportDone(
         type: "EXTRA_PLAY",
         title: "Extra plays detectados",
         message: `${extraPlayCount} torneio${extraPlayCount > 1 ? "s" : ""} fora da sua grade foi${extraPlayCount > 1 ? "ram" : ""} detectado${extraPlayCount > 1 ? "s" : ""} na última importação.`,
-        link: `/dashboard/imports/${importId}`,
+        link: `/admin/grades/importacoes/${importId}`,
       });
     }
   }
@@ -364,7 +369,7 @@ export async function notifyReviewDecision(
     type: "REVIEW_DECISION",
     title: "Revisão concluída",
     message: messages[decision],
-    link: `/dashboard/players/${playerId}`,
+    link: `/admin/jogadores/${playerId}`,
   });
 }
 
@@ -400,7 +405,7 @@ export async function notifyLimitChanged(
 
   const playerName = player?.name ?? "Jogador";
   const staffMessage = `${playerName}: "${fromGrade}" → "${toGrade}".`;
-  const staffLink = `/dashboard/players/${playerId}`;
+  const staffLink = `/admin/jogadores/${playerId}`;
 
   const notifications: CreateNotificationInput[] = staffIds.map((userId) => ({
     userId,
@@ -416,10 +421,293 @@ export async function notifyLimitChanged(
       type: "LIMIT_CHANGED",
       title: titles[action],
       message: playerMessages[action],
-      link: `/dashboard/minha-grade`,
+      link: `/jogador/minha-grade`,
     });
   }
 
+  await insertNotificationsMany(notifications);
+
+  void sendLimitChangeEmails({
+    playerId,
+    playerName,
+    action,
+    fromGrade,
+    toGrade,
+  });
+}
+
+export async function notifyTargetCreated(
+  playerId: string,
+  targetName: string,
+  detail: TargetCreatedEmailPayload,
+): Promise<void> {
+  const [player, playerAuth, staffIds] = await Promise.all([
+    prisma.player.findUnique({ where: { id: playerId }, select: { name: true } }),
+    prisma.authUser.findFirst({ where: { playerId }, select: { id: true } }),
+    getStaffUserIds(),
+  ]);
+
+  const playerName = player?.name ?? "Jogador";
+  const staffLink = `/admin/grades/metas`;
+
+  const notifications: CreateNotificationInput[] = staffIds.map((userId) => ({
+    userId,
+    type: "TARGET_CREATED" as NotificationType,
+    title: "Nova meta criada",
+    message: `Meta "${targetName}" adicionada para ${playerName}.`,
+    link: staffLink,
+  }));
+
+  if (playerAuth) {
+    notifications.push({
+      userId: playerAuth.id,
+      type: "TARGET_CREATED",
+      title: "Nova meta para você",
+      message: `Seu coach definiu a meta "${targetName}". Acesse para conferir.`,
+      link: `/jogador/metas`,
+    });
+  }
+
+  await insertNotificationsMany(notifications);
+
+  void sendTargetCreatedEmails(playerId, playerName, detail);
+}
+
+async function getPlayerAuthUserId(playerId: string): Promise<string | null> {
+  const row = await prisma.authUser.findFirst({ where: { playerId }, select: { id: true } });
+  return row?.id ?? null;
+}
+
+export async function notifyTargetUpdated(
+  playerId: string,
+  targetName: string,
+): Promise<void> {
+  const [player, playerAuthId, staffIds] = await Promise.all([
+    prisma.player.findUnique({ where: { id: playerId }, select: { name: true } }),
+    getPlayerAuthUserId(playerId),
+    getStaffUserIds(),
+  ]);
+  const playerName = player?.name ?? "Jogador";
+  const notifications: CreateNotificationInput[] = staffIds.map((userId) => ({
+    userId,
+    type: "TARGET_UPDATED" as NotificationType,
+    title: "Meta atualizada",
+    message: `Meta "${targetName}" de ${playerName} foi editada.`,
+    link: `/admin/grades/metas`,
+  }));
+  if (playerAuthId) {
+    notifications.push({
+      userId: playerAuthId,
+      type: "TARGET_UPDATED",
+      title: "Sua meta foi atualizada",
+      message: `A meta "${targetName}" foi editada pelo seu coach.`,
+      link: `/jogador/metas`,
+    });
+  }
+  await insertNotificationsMany(notifications);
+}
+
+export async function notifyTargetDeleted(
+  playerId: string,
+  targetName: string,
+): Promise<void> {
+  const [player, playerAuthId, staffIds] = await Promise.all([
+    prisma.player.findUnique({ where: { id: playerId }, select: { name: true } }),
+    getPlayerAuthUserId(playerId),
+    getStaffUserIds(),
+  ]);
+  const playerName = player?.name ?? "Jogador";
+  const notifications: CreateNotificationInput[] = staffIds.map((userId) => ({
+    userId,
+    type: "TARGET_DELETED" as NotificationType,
+    title: "Meta excluída",
+    message: `Meta "${targetName}" de ${playerName} foi removida.`,
+    link: `/admin/grades/metas`,
+  }));
+  if (playerAuthId) {
+    notifications.push({
+      userId: playerAuthId,
+      type: "TARGET_DELETED",
+      title: "Meta removida",
+      message: `A meta "${targetName}" foi removida pelo seu coach.`,
+      link: `/jogador/metas`,
+    });
+  }
+  await insertNotificationsMany(notifications);
+}
+
+export async function notifyTargetsDeletedBatch(
+  items: { playerId: string; targetName: string }[],
+): Promise<void> {
+  if (!items.length) return;
+  if (items.length === 1) {
+    await notifyTargetDeleted(items[0]!.playerId, items[0]!.targetName);
+    return;
+  }
+  const staffIds = await getStaffUserIds();
+  const count = items.length;
+  const notifications: CreateNotificationInput[] = staffIds.map((userId) => ({
+    userId,
+    type: "TARGET_DELETED" as NotificationType,
+    title: "Metas excluídas",
+    message: `${count} metas foram removidas.`,
+    link: `/admin/grades/metas`,
+  }));
+  const byPlayer = new Map<string, string[]>();
+  for (const it of items) {
+    const arr = byPlayer.get(it.playerId) ?? [];
+    arr.push(it.targetName);
+    byPlayer.set(it.playerId, arr);
+  }
+  const playerAuthIds = await prisma.authUser.findMany({
+    where: { playerId: { in: Array.from(byPlayer.keys()) } },
+    select: { id: true, playerId: true },
+  });
+  for (const au of playerAuthIds) {
+    const names = byPlayer.get(au.playerId!) ?? [];
+    notifications.push({
+      userId: au.id,
+      type: "TARGET_DELETED",
+      title: names.length > 1 ? "Metas removidas" : "Meta removida",
+      message:
+        names.length > 1
+          ? `${names.length} metas suas foram removidas.`
+          : `A meta "${names[0]}" foi removida pelo seu coach.`,
+      link: `/jogador/metas`,
+    });
+  }
+  await insertNotificationsMany(notifications);
+}
+
+export async function notifyPlayerUpdated(
+  playerId: string,
+  playerName: string,
+): Promise<void> {
+  const staffIds = await getStaffUserIds();
+  await insertNotificationsMany(
+    staffIds.map((userId) => ({
+      userId,
+      type: "PLAYER_UPDATED" as NotificationType,
+      title: "Jogador atualizado",
+      message: `${playerName} teve seus dados atualizados.`,
+      link: `/admin/jogadores/${playerId}`,
+    })),
+  );
+}
+
+export async function notifyPlayerDeleted(playerName: string): Promise<void> {
+  const staffIds = await getStaffUserIds();
+  await insertNotificationsMany(
+    staffIds.map((userId) => ({
+      userId,
+      type: "PLAYER_DELETED" as NotificationType,
+      title: "Jogador excluído",
+      message: `${playerName} foi removido do sistema.`,
+      link: `/admin/jogadores`,
+    })),
+  );
+}
+
+export async function notifyUserUpdated(
+  targetEmail: string,
+  role: UserRole,
+): Promise<void> {
+  const adminIds = await getAdminUserIds();
+  await insertNotificationsMany(
+    adminIds.map((userId) => ({
+      userId,
+      type: "USER_UPDATED" as NotificationType,
+      title: "Usuário atualizado",
+      message: `A conta ${targetEmail} foi atualizada (${role}).`,
+      link: `/admin/usuarios`,
+    })),
+  );
+}
+
+export async function notifyUserDeleted(targetEmail: string): Promise<void> {
+  const adminIds = await getAdminUserIds();
+  await insertNotificationsMany(
+    adminIds.map((userId) => ({
+      userId,
+      type: "USER_DELETED" as NotificationType,
+      title: "Usuário excluído",
+      message: `A conta ${targetEmail} foi removida.`,
+      link: `/admin/usuarios`,
+    })),
+  );
+}
+
+export async function notifyImportDeleted(
+  imports: { playerId: string | null; playerName: string | null; count: number }[],
+): Promise<void> {
+  if (!imports.length) return;
+  const staffIds = await getStaffUserIds();
+  const total = imports.reduce((a, b) => a + b.count, 0);
+  const notifications: CreateNotificationInput[] = staffIds.map((userId) => ({
+    userId,
+    type: "IMPORT_DELETED" as NotificationType,
+    title: total > 1 ? "Importações excluídas" : "Importação excluída",
+    message:
+      total > 1
+        ? `${total} importações foram removidas.`
+        : `Importação de ${imports[0]!.playerName ?? "jogador"} foi removida.`,
+    link: `/admin/grades/importacoes`,
+  }));
+  const playerIds = imports.map((i) => i.playerId).filter((p): p is string => !!p);
+  if (playerIds.length) {
+    const auths = await prisma.authUser.findMany({
+      where: { playerId: { in: playerIds } },
+      select: { id: true, playerId: true },
+    });
+    for (const au of auths) {
+      notifications.push({
+        userId: au.id,
+        type: "IMPORT_DELETED",
+        title: "Importação removida",
+        message: `Uma importação com seus torneios foi removida.`,
+        link: `/jogador/meus-torneios`,
+      });
+    }
+  }
+  await insertNotificationsMany(notifications);
+}
+
+export async function notifyHistoryDeleted(
+  items: { playerId: string; playerName: string }[],
+): Promise<void> {
+  if (!items.length) return;
+  const staffIds = await getStaffUserIds();
+  const count = items.length;
+  const notifications: CreateNotificationInput[] = staffIds.map((userId) => ({
+    userId,
+    type: "HISTORY_DELETED" as NotificationType,
+    title: count > 1 ? "Registros de histórico excluídos" : "Registro de histórico excluído",
+    message:
+      count > 1
+        ? `${count} registros de mudança de limite foram removidos.`
+        : `Registro de mudança de limite de ${items[0]!.playerName} foi removido.`,
+    link: `/admin/grades/historico`,
+  }));
+  const uniquePlayerIds = Array.from(new Set(items.map((i) => i.playerId)));
+  const auths = await prisma.authUser.findMany({
+    where: { playerId: { in: uniquePlayerIds } },
+    select: { id: true, playerId: true },
+  });
+  const countByPlayer = new Map<string, number>();
+  for (const it of items) countByPlayer.set(it.playerId, (countByPlayer.get(it.playerId) ?? 0) + 1);
+  for (const au of auths) {
+    const n = countByPlayer.get(au.playerId!) ?? 1;
+    notifications.push({
+      userId: au.id,
+      type: "HISTORY_DELETED",
+      title: n > 1 ? "Registros de histórico removidos" : "Registro de histórico removido",
+      message:
+        n > 1
+          ? `${n} dos seus registros de mudança de limite foram removidos.`
+          : `Um registro de mudança de limite seu foi removido.`,
+      link: `/jogador/historico`,
+    });
+  }
   await insertNotificationsMany(notifications);
 }
 

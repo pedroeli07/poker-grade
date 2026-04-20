@@ -10,7 +10,11 @@ import {
 } from "@/lib/data/player";
 import { createPlayerFormSchema, updatePlayerFormSchema, idParamSchema } from "@/lib/schemas";
 import { sanitizeOptional, sanitizeText } from "@/lib/utils";
-import { notifyPlayerCreated } from "@/lib/queries/db/notification";
+import {
+  notifyPlayerCreated,
+  notifyPlayerDeleted,
+  notifyPlayerUpdated,
+} from "@/lib/queries/db/notification";
 import { parseAbiAlvoInput } from "@/lib/utils";
 import { coachPlayerFilter } from "../shared";
 import { playerMutations, playerQueriesLog } from "@/lib/constants/queries-mutations";
@@ -131,7 +135,7 @@ export async function createPlayer(formData: FormData) {
 
     void notifyPlayerCreated(name, player.id);
     playerQueriesLog.success("Jogador criado", { name });
-  }, (extra) => revalidatePlayers("/dashboard/history", ...(extra ?? [])));
+  }, (extra) => revalidatePlayers("/admin/grades/historico", ...(extra ?? [])));
 }
 
 export async function updatePlayer(formData: FormData) {
@@ -252,9 +256,11 @@ export async function updatePlayer(formData: FormData) {
       throw new Error("Não foi possível atualizar o jogador.");
     }
 
+    await notifyPlayerUpdated(parsed.data.id, name);
+
     playerQueriesLog.success("Jogador atualizado", { id: parsed.data.id });
-    return [`/dashboard/players/${parsed.data.id}`];
-  }, (extra) => revalidatePlayers("/dashboard/history", ...(extra ?? [])));
+    return [`/admin/jogadores/${parsed.data.id}`];
+  }, (extra) => revalidatePlayers("/admin/grades/historico", ...(extra ?? [])));
 }
 
 export async function deletePlayer(formData: FormData) {
@@ -282,6 +288,8 @@ export async function deletePlayer(formData: FormData) {
       playerQueriesLog.error("deletePlayer falhou", e instanceof Error ? e : undefined, { id: parsed.data.id });
       throw new Error("Não foi possível excluir o jogador.");
     }
+
+    await notifyPlayerDeleted(existing.name);
 
     playerQueriesLog.success("Jogador excluído", { id: parsed.data.id, name: existing.name });
   }, (extra) => revalidatePlayers(...(extra ?? [])));

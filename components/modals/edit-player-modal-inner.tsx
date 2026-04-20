@@ -155,7 +155,7 @@ const EditPlayerModalInner = memo(function EditPlayerModalInner({
               <p className="text-xs text-muted-foreground">
                 Lista igual à página{" "}
                 <Link
-                  href="/dashboard/grades"
+                  href="/admin/grades/perfis"
                   className="text-primary underline-offset-2 hover:underline"
                 >
                   Grades
@@ -200,7 +200,7 @@ const EditPlayerModalInner = memo(function EditPlayerModalInner({
               <p className="text-xs text-muted-foreground">
                 Deixe vazio para remover o target de ABI. Sincroniza com{" "}
                 <Link
-                  href="/dashboard/targets"
+                  href="/admin/grades/metas"
                   className="text-primary underline-offset-2 hover:underline"
                 >
                   Targets

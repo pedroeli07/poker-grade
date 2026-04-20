@@ -99,8 +99,8 @@ const NewImportModal = memo(function NewImportModal({ players }: { players: Play
           ) : (
             <form onSubmit={handleSubmit}>
               <div className="px-8 py-6 space-y-6">
-                <div className="space-y-2">
-                  <Label className="text-[15px] font-medium">
+                <div className="space-y-2 text-center mx-auto">
+                  <Label className="text-[15px] font-medium justify-center">
                     Jogador <span className="text-destructive">*</span>
                   </Label>
                   <Select
@@ -108,7 +108,7 @@ const NewImportModal = memo(function NewImportModal({ players }: { players: Play
                     onValueChange={setSelectedPlayerId}
                     disabled={loading}
                   >
-                    <SelectTrigger className="h-11 w-full bg-muted/40 border-border/60 text-[15px]">
+                    <SelectTrigger className="mx-auto h-11 w-1/2 max-w-[400px] bg-muted/40 border-border/60 text-[15px]">
                       <SelectValue placeholder="Selecione o jogador..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -203,7 +203,7 @@ const NewImportModal = memo(function NewImportModal({ players }: { players: Play
                   variant="outline"
                   onClick={() => handleOpenChange(false)}
                   disabled={loading}
-                  className="rounded-xl border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500/80 hover:text-red-600 font-medium h-11"
+                  className="rounded-xl border-border/60  hover:bg-blue-500/10 text-muted-foreground hover:text-foreground font-medium h-11"
                 >
                   Cancelar
                 </Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import ColumnFilter from "@/components/column-filter";
 import { TARGETS_CARD_FILTER_COLUMNS } from "@/lib/constants/target";
 import type { ColKey, Filters, TargetsColumnOptions } from "@/lib/types";
@@ -10,15 +10,25 @@ const TargetsColFilters = memo(function TargetsColFilters({
   options,
   filters,
   setCol,
+  hidePlayerFilter = false,
 }: {
   compact?: boolean;
   options: TargetsColumnOptions;
   filters: Filters;
   setCol: (col: ColKey) => (next: Set<string> | null) => void;
+  hidePlayerFilter?: boolean;
 }) {
+  const columns = useMemo(
+    () =>
+      hidePlayerFilter
+        ? TARGETS_CARD_FILTER_COLUMNS.filter(([, col]) => col !== "player")
+        : TARGETS_CARD_FILTER_COLUMNS,
+    [hidePlayerFilter]
+  );
+
   return (
     <>
-      {TARGETS_CARD_FILTER_COLUMNS.map(([id, col, label]) => (
+      {columns.map(([id, col, label]) => (
         <ColumnFilter
           key={id}
           columnId={id}

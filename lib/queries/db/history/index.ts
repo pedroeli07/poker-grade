@@ -9,6 +9,7 @@ import {
   loadHistoryPageData,
   type HistoryPageData,
 } from "@/lib/data/history";
+import { notifyHistoryDeleted } from "@/lib/queries/db/notification";
 import { ErrorTypes } from "@/lib/types";
 
 export async function getHistoryPage(
@@ -53,8 +54,17 @@ export async function deleteHistoryItem(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const check = await assertCanDelete([id]);
   if (!check.ok) return check;
+  const row = await prisma.limitChangeHistory.findUnique({
+    where: { id },
+    select: { playerId: true, player: { select: { name: true } } },
+  });
   await prisma.limitChangeHistory.delete({ where: { id } });
-  revalidatePath("/dashboard/history");
+  if (row) {
+    await notifyHistoryDeleted([
+      { playerId: row.playerId, playerName: row.player?.name ?? "Jogador" },
+    ]);
+  }
+  revalidatePath("/admin/grades/historico");
   return { ok: true };
 }
 
@@ -63,9 +73,16 @@ export async function deleteHistoryItems(
 ): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
   const check = await assertCanDelete(ids);
   if (!check.ok) return check;
+  const rows = await prisma.limitChangeHistory.findMany({
+    where: { id: { in: check.ids } },
+    select: { playerId: true, player: { select: { name: true } } },
+  });
   const { count } = await prisma.limitChangeHistory.deleteMany({
     where: { id: { in: check.ids } },
   });
-  revalidatePath("/dashboard/history");
+  await notifyHistoryDeleted(
+    rows.map((r) => ({ playerId: r.playerId, playerName: r.player?.name ?? "Jogador" })),
+  );
+  revalidatePath("/admin/grades/historico");
   return { ok: true, count };
 }

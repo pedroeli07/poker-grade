@@ -46,7 +46,7 @@ const ImportsTableRow = memo(function ImportsTableRow({
       <TableCell className="text-center font-medium">
         <AppTooltip content={<span className="max-w-sm break-all">{item.fileName}</span>}>
           <Link
-            href={`/dashboard/imports/${item.id}`}
+            href={`/admin/grades/importacoes/${item.id}`}
             className="inline-flex max-w-full items-center justify-center gap-2 hover:text-primary transition-colors"
           >
             <FileSpreadsheet className="h-4 w-4 text-emerald-500 shrink-0" />

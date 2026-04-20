@@ -3,7 +3,7 @@ import { Resend } from "resend";
 import { gmailUser, gmailAppPassword, resendApiKey, resendFrom, USER_INVITE_EMAIL_SUBJECT } from "./constants";
 import { createLogger } from "./logger";
 
-function escapeHtml(text: string): string {
+export function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -75,6 +75,39 @@ async function deliverMail({ to, subject, html, context }: MailPayload) {
     fallbackFromResend: Boolean(resendError),
   });
   return info;
+}
+
+/**
+ * E-mail transacional genérico: não propaga erro; regista falhas no log.
+ * Ignora destinatários duplicados (case-insensitive).
+ */
+export async function sendTransactionalEmailSafe(
+  recipients: string[],
+  subject: string,
+  html: string,
+  context: string
+): Promise<void> {
+  if (!isMailerConfigured()) {
+    log.warn(`Mailer não configurado; e-mails omitidos (${context})`);
+    return;
+  }
+  const seen = new Set<string>();
+  for (const raw of recipients) {
+    const to = raw.trim();
+    if (!to) continue;
+    const key = to.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    try {
+      await deliverMail({ to, subject, html, context: `${context}:${key}` });
+    } catch (e) {
+      log.error(
+        `Falha ao enviar e-mail (${context})`,
+        e instanceof Error ? e : undefined,
+        { to: key }
+      );
+    }
+  }
 }
 
 /**

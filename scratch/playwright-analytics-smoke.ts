@@ -19,10 +19,10 @@ async function main() {
     await page.fill("#login-email", email);
     await page.fill("#login-password", password);
     await Promise.all([
-      page.waitForURL(/\/dashboard/, { timeout: 30_000 }),
+      page.waitForURL(/\/(admin|jogador)\//, { timeout: 30_000 }),
       page.click('button[type="submit"]'),
     ]);
-    await page.goto(`${BASE}/dashboard/sharkscope/analytics`, {
+    await page.goto(`${BASE}/admin/sharkscope/analises`, {
       waitUntil: "networkidle",
       timeout: 30_000,
     });

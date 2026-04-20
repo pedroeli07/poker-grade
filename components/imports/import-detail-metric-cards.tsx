@@ -20,7 +20,7 @@ const ImportDetailMetricCards = memo(function ImportDetailMetricCards({
         return (
           <Link
             key={tab.id}
-            href={`/dashboard/imports/${importId}?tab=${tab.id}`}
+            href={`/admin/grades/importacoes/${importId}?tab=${tab.id}`}
             className={`group rounded-xl border p-5 transition-all hover:scale-[1.02] ${
               isActive ? tab.cardActiveClass : IMPORT_DETAIL_CARD_INACTIVE_CLS
             }`}

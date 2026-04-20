@@ -70,7 +70,16 @@ enum NotificationType {
   EXTRA_PLAY
   REVIEW_DECISION
   PLAYER_CREATED
+  PLAYER_UPDATED
+  PLAYER_DELETED
   LIMIT_CHANGED
+  TARGET_CREATED
+  TARGET_UPDATED
+  TARGET_DELETED
+  USER_UPDATED
+  USER_DELETED
+  IMPORT_DELETED
+  HISTORY_DELETED
   SYSTEM
 }
 
@@ -386,6 +395,7 @@ model PlayedTournament {
   tournamentName String
   scheduling     String?       // "Played", "Extra play"
   rebuy          Boolean @default(false)
+  rebuys         Int @default(0)
   speed          String?       // Regular, Turbo, Slow
   sharkId        String?       // Shark scope ID
   priority       String?       // HIGH, MEDIUM, None

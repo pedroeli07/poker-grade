@@ -13,7 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TARGETS_TABLE_HEAD_COLUMNS } from "@/lib/constants/target";
+import {
+  TARGETS_TABLE_HEAD_COLUMNS,
+  TARGETS_TABLE_STATIC_COLUMNS,
+} from "@/lib/constants/target";
 import {
   dataTableHeaderRowActiveRingClass,
   dataTableHeaderRowClass,
@@ -27,6 +30,15 @@ import {
 } from "@/lib/utils/target";
 import TargetTableRow from "@/components/targets/target-table-row";
 import SortButton from "@/components/sort-button";
+import { Check } from "lucide-react";
+
+/** Colunas de dados: 9 com Jogador, 8 sem (visão jogador). */
+function targetsTableDataColSpan(hidePlayerColumn: boolean) {
+  return hidePlayerColumn ? 8 : 9;
+}
+function targetsTableDataColSpanWithBulk(hidePlayerColumn: boolean) {
+  return hidePlayerColumn ? 9 : 10;
+}
 
 const TargetsTableSection = memo(function TargetsTableSection({
   filtered,
@@ -36,6 +48,11 @@ const TargetsTableSection = memo(function TargetsTableSection({
   totalCount,
   anyFilter,
   clearFilters,
+  canWrite,
+  selected,
+  isBulkDeletePending,
+  onToggleTargetSelection,
+  hidePlayerFilter = false,
 }: {
   filtered: TargetListRow[];
   options: TargetsColumnOptions;
@@ -44,13 +61,24 @@ const TargetsTableSection = memo(function TargetsTableSection({
   totalCount: number;
   anyFilter: boolean;
   clearFilters: () => void;
+  hidePlayerFilter?: boolean;
+  canWrite: boolean;
+  selected: Set<string>;
+  isBulkDeletePending: boolean;
+  onToggleTargetSelection: (ids: string[], force?: boolean) => void;
 }) {
-  const { sort, toggleSort, resetSort, viewModels } = useTargetsTableSection(filtered);
+  const { sort, toggleSort, resetSort, rows } = useTargetsTableSection(filtered);
+
+  const allSelected =
+    rows.length > 0 && rows.every(({ row }) => selected.has(row.id));
 
   const hasActiveView = anyFilter || sort !== null;
   const filterSummaryLines = useMemo(
-    () => buildTargetsFilterSummaryLines(filters, options),
-    [filters, options]
+    () =>
+      buildTargetsFilterSummaryLines(filters, options, {
+        omitPlayer: hidePlayerFilter,
+      }),
+    [filters, options, hidePlayerFilter]
   );
   const sortSummary = useMemo(() => formatTargetsSortSummary(sort), [sort]);
 
@@ -58,6 +86,15 @@ const TargetsTableSection = memo(function TargetsTableSection({
     clearFilters();
     resetSort();
   }, [clearFilters, resetSort]);
+
+  const tableHeadColumns = useMemo(
+    () =>
+      hidePlayerFilter
+        ? TARGETS_TABLE_HEAD_COLUMNS.filter(([, , col]) => col !== "player")
+        : TARGETS_TABLE_HEAD_COLUMNS,
+    [hidePlayerFilter]
+  );
+  const emptyColSpan = targetsTableDataColSpanWithBulk(!!hidePlayerFilter);
 
   return (
     <div className="space-y-3">
@@ -73,7 +110,7 @@ const TargetsTableSection = memo(function TargetsTableSection({
       />
       <DataTableShell hasActiveView={hasActiveView}>
         <div className="relative w-full overflow-x-auto">
-          <Table className="min-w-[720px] w-full table-fixed">
+          <Table className="min-w-[1100px] w-full table-fixed">
             <TableHeader>
               <TableRow
                 className={cn(
@@ -82,12 +119,37 @@ const TargetsTableSection = memo(function TargetsTableSection({
                   hasActiveView && dataTableHeaderRowActiveRingClass
                 )}
               >
-                {TARGETS_TABLE_HEAD_COLUMNS.map(([w, id, col, label]) => (
+                {canWrite && (
+                  <TableHead className="w-12 pl-4">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onToggleTargetSelection(
+                          rows.map(({ row }) => row.id),
+                          !allSelected
+                        )
+                      }
+                      disabled={rows.length === 0 || isBulkDeletePending}
+                      className={cn(
+                        "flex h-5 w-5 cursor-pointer items-center justify-center rounded border transition-colors",
+                        allSelected
+                          ? "border-blue-500 bg-blue-500"
+                          : "border-blue-300 bg-white hover:border-blue-400",
+                        (rows.length === 0 || isBulkDeletePending) &&
+                          "cursor-not-allowed opacity-40"
+                      )}
+                      aria-label={allSelected ? "Desmarcar todos" : "Selecionar todos visíveis"}
+                    >
+                      {allSelected && <Check className="h-3 w-3 text-white" />}
+                    </button>
+                  </TableHead>
+                )}
+                {tableHeadColumns.map(([w, id, col, label]) => (
                   <TableHead
                     key={id}
                     className={cn(`${w} h-14 align-middle text-center`)}
                   >
-                    <div className="flex items-center justify-center gap-0.5 py-1">
+                    <div className="flex items-center justify-center gap-1 py-1">
                       <SortButton
                         columnKey={col}
                         sort={sort}
@@ -110,17 +172,51 @@ const TargetsTableSection = memo(function TargetsTableSection({
                     </div>
                   </TableHead>
                 ))}
+                {TARGETS_TABLE_STATIC_COLUMNS.map(([w, id, label]) => (
+                  <TableHead
+                    key={id}
+                    className={cn(`${w} h-14 align-middle text-center`)}
+                  >
+                    <div className="flex items-center justify-center py-1 font-semibold text-foreground">
+                      {label}
+                    </div>
+                  </TableHead>
+                ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {viewModels.length === 0 ? (
+              {rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="py-12 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={
+                      canWrite
+                        ? emptyColSpan
+                        : targetsTableDataColSpan(!!hidePlayerFilter)
+                    }
+                    className="py-12 text-center text-muted-foreground"
+                  >
                     Nenhum target com os filtros atuais.
                   </TableCell>
                 </TableRow>
               ) : (
-                viewModels.map((vm) => <TargetTableRow key={vm.id} vm={vm} />)
+                rows.map(({ row, vm }) => (
+                  <TargetTableRow
+                    key={vm.id}
+                    vm={vm}
+                    row={row}
+                    hidePlayerColumn={!!hidePlayerFilter}
+                    canWrite={canWrite}
+                    bulkSelect={
+                      canWrite
+                        ? {
+                            isSelected: selected.has(row.id),
+                            isPending: isBulkDeletePending,
+                            onToggle: () => onToggleTargetSelection([row.id]),
+                          }
+                        : null
+                    }
+                  />
+                ))
               )}
             </TableBody>
           </Table>

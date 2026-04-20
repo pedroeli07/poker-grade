@@ -17,3 +17,24 @@ function groupByPlayer(reviews: ReviewItem[]) {
 }
 
 export { importRowDateLabel, groupByPlayer };
+
+/**
+ * Normaliza links de notificações legados que foram gravados com rotas antigas.
+ * Deve ser aplicado em todo lugar que renderiza notif.link antes de passar ao <Link>.
+ */
+const LEGACY_LINK_MAP: [RegExp, string][] = [
+  // /dashboard/players/:id  →  /admin/jogadores/:id
+  [/^\/dashboard\/players\/([^/]+)$/, "/admin/jogadores/$1"],
+  // /dashboard/grades/:id  →  /admin/grades/perfis/:id
+  [/^\/dashboard\/grades\/([^/]+)$/, "/admin/grades/perfis/$1"],
+];
+
+export function normalizeNotificationLink(link: string | null | undefined): string | null {
+  if (!link) return null;
+  for (const [pattern, replacement] of LEGACY_LINK_MAP) {
+    if (pattern.test(link)) {
+      return link.replace(pattern, replacement);
+    }
+  }
+  return link;
+}

@@ -3,9 +3,14 @@ import {
   AlertTriangle,
   Check,
   Grid3X3,
+  History,
   Info,
+  PencilLine,
+  Target,
+  Trash2,
   TrendingUp,
   Upload,
+  UserCog,
   Users,
 } from "lucide-react";
 import z from "zod";
@@ -13,15 +18,44 @@ import type { NotificationStyle } from "@/lib/types/notification";
 
 // ─── notifications-config ──────────────────────────────────────────────────────
 
+const BASE = {
+  grade: ["text-primary", "bg-primary/10", "Grade"],
+  import: ["text-emerald-500", "bg-emerald-500/10", "Importação"],
+  extra: ["text-red-500", "bg-red-500/10", "Extra Play"],
+  review: ["text-violet-500", "bg-violet-500/10", "Revisão"],
+  player: ["text-blue-500", "bg-blue-500/10", "Jogador"],
+  limit: ["text-violet-500", "bg-violet-500/10", "Limite"],
+  target: ["text-fuchsia-500", "bg-fuchsia-500/10", "Meta"],
+  user: ["text-sky-500", "bg-sky-500/10", "Usuário"],
+  danger: ["text-red-500", "bg-red-500/10"],
+  system: ["text-muted-foreground", "bg-muted", "Sistema"],
+} as const;
+
 const TYPE_ROWS = [
-  [NotificationType.GRADE_ASSIGNED, Grid3X3, "text-primary", "bg-primary/10", "Grade"],
+  [NotificationType.GRADE_ASSIGNED, Grid3X3, ...BASE.grade],
   [NotificationType.GRADE_CREATED, Grid3X3, "text-blue-500", "bg-blue-500/10", "Grade"],
-  [NotificationType.IMPORT_DONE, Upload, "text-emerald-500", "bg-emerald-500/10", "Importação"],
-  [NotificationType.EXTRA_PLAY, AlertTriangle, "text-amber-500", "bg-amber-500/10", "Extra Play"],
-  [NotificationType.REVIEW_DECISION, Check, "text-violet-500", "bg-violet-500/10", "Revisão"],
-  [NotificationType.PLAYER_CREATED, Users, "text-blue-500", "bg-blue-500/10", "Jogador"],
-  [NotificationType.LIMIT_CHANGED, TrendingUp, "text-violet-500", "bg-violet-500/10", "Limite"],
-  [NotificationType.SYSTEM, Info, "text-muted-foreground", "bg-muted", "Sistema"],
+
+  [NotificationType.IMPORT_DONE, Upload, ...BASE.import],
+  [NotificationType.EXTRA_PLAY, AlertTriangle, ...BASE.extra],
+  [NotificationType.REVIEW_DECISION, Check, ...BASE.review],
+
+  [NotificationType.PLAYER_CREATED, Users, ...BASE.player],
+  [NotificationType.PLAYER_UPDATED, PencilLine, ...BASE.player],
+  [NotificationType.PLAYER_DELETED, Trash2, ...BASE.danger, "Jogador"],
+
+  [NotificationType.LIMIT_CHANGED, TrendingUp, ...BASE.limit],
+
+  [NotificationType.TARGET_CREATED, Target, ...BASE.target],
+  [NotificationType.TARGET_UPDATED, PencilLine, ...BASE.target],
+  [NotificationType.TARGET_DELETED, Trash2, ...BASE.danger, "Meta"],
+
+  [NotificationType.USER_UPDATED, UserCog, ...BASE.user],
+  [NotificationType.USER_DELETED, Trash2, ...BASE.danger, "Usuário"],
+
+  [NotificationType.IMPORT_DELETED, Trash2, ...BASE.danger, "Importação"],
+  [NotificationType.HISTORY_DELETED, History, ...BASE.danger, "Histórico"],
+
+  [NotificationType.SYSTEM, Info, ...BASE.system],
 ] as const satisfies readonly (readonly [NotificationType, NotificationStyle["icon"], string, string, string])[];
 
 export const TYPE_CONFIG = Object.fromEntries(

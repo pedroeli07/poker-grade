@@ -73,12 +73,21 @@ export const TARGETS_CARD_FILTER_COLUMNS: [string, ColKey, string][] = [
   ["t-status", "status", "Status"],
 ];
 
-/** Cabeçalho da tabela: [largura Tailwind, id DOM, chave de filtro, rótulo]. */
+/** Cabeçalho da tabela (colunas com filtro/sort): [largura Tailwind, id DOM, chave de filtro, rótulo]. */
 export const TARGETS_TABLE_HEAD_COLUMNS: [string, string, ColKey, string][] = [
-  ["w-[30%]", "t-name-t", "name", "Meta"],
-  ["w-[25%]", "t-player-t", "player", "Jogador"],
-  ["w-[25%]", "t-progr-t", "targetType", "Progresso"],
-  ["w-[20%]", "t-status-t", "status", "Status"],
+  ["w-[13%]", "t-player-t", "player", "Jogador"],
+  ["w-[18%]", "t-name-t", "name", "Meta"],
+  ["w-[12%]", "t-cat-t", "category", "Categoria"],
+  ["w-[15%]", "t-progr-t", "targetType", "Progresso"],
+  ["w-[11%]", "t-status-t", "status", "Status"],
+  ["w-[10%]", "t-limit-t", "limitAction", "Gatilho"],
+];
+
+/** Colunas estáticas (sem filtro/sort): [largura, id DOM, rótulo]. Renderizadas após as filtráveis. */
+export const TARGETS_TABLE_STATIC_COLUMNS: [string, string, string][] = [
+  ["w-[13%]", "t-notes-t", "Nota do coach"],
+  ["w-[6%]", "t-upd-t", "Atualizado"],
+  ["w-[2%]", "t-act-t", ""],
 ];
 
 // ─── target-forms ────────────────────────────────────────────────────────────

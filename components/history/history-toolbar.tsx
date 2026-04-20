@@ -3,7 +3,7 @@
 import { Check, Trash2 } from "lucide-react";
 import PaginationToolbarControls from "@/components/data-table/pagination-toolbar-controls";
 import { cn } from "@/lib/utils";
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
 
 const HistoryToolbar = memo(function HistoryToolbar({
   page,
@@ -17,6 +17,7 @@ const HistoryToolbar = memo(function HistoryToolbar({
   onChangePageSize,
   onDeleteSelected,
   hasItems,
+  centerContent,
 }: {
   page: number;
   pageSize: number;
@@ -29,28 +30,34 @@ const HistoryToolbar = memo(function HistoryToolbar({
   onChangePageSize: (s: number) => void;
   onDeleteSelected: () => void;
   hasItems: boolean;
+  /** Filtros centralizados (ex.: admin); omitir em visão jogador. */
+  centerContent?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 py-3 border-y border-border">
-      {/* Esquerda */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onToggleAll}
-            disabled={!hasItems}
-            className={cn(
-              "flex h-5 w-5 items-center justify-center rounded border transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed",
-              allSelected ? "bg-primary border-primary" : "border-border hover:border-primary/60"
-            )}
-          >
-            {allSelected && <Check className="h-3 w-3 text-white" />}
-          </button>
-        </div>
+    <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-3 rounded-lg border border-border/50 bg-muted/20 p-2 sm:p-3">
+      <div className="flex shrink-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={onToggleAll}
+          disabled={!hasItems}
+          className={cn(
+            "flex h-5 w-5 items-center justify-center rounded border transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed",
+            allSelected
+              ? "border-red-500 bg-red-500"
+              : "border-border hover:border-red-500/50"
+          )}
+        >
+          {allSelected && <Check className="h-3 w-3 text-white" />}
+        </button>
       </div>
 
-      {/* Direita */}
-      <div className="flex items-center gap-4 ml-auto">
+      {centerContent != null && (
+        <div className="flex min-w-0 flex-1 basis-[min(100%,280px)] flex-wrap items-center justify-center gap-2">
+          {centerContent}
+        </div>
+      )}
+
+      <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-3 sm:gap-4">
         {selectedSize > 0 && (
           <button
             type="button"

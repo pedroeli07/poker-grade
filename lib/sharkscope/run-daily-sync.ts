@@ -30,8 +30,82 @@ import {
   DAILY_SYNC_MODE_FLAGS,
   SHARKSCOPE_CT_TYPE_BREAKDOWN,
 } from "@/lib/constants/sharkscope-daily-sync";
+import { sendSharkAlertPlayerEmails, sendSharkAlertStaffDigest } from "@/lib/email/app-events";
 
 const log = createLogger("cron.daily-sync");
+
+const TEAM_METRIC_EPS = 0.05;
+
+function mean(nums: number[]): number {
+  if (!nums.length) return 0;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+type GroupTenDMetric = {
+  groupName: string;
+  memberIds: string[];
+  roi: number | null;
+  fp: number | null;
+  ft: number | null;
+};
+
+/**
+ * Compara métricas 10d do grupo SharkScope com a média de todos os grupos sincronizados nesta corrida.
+ * ROI abaixo da média = alerta; FP/FT acima da média = pior que o time (alerta).
+ */
+function buildTeamRelativeAlerts(groups: GroupTenDMetric[]): Prisma.AlertLogCreateManyInput[] {
+  const out: Prisma.AlertLogCreateManyInput[] = [];
+  const roiVals = groups.map((g) => g.roi).filter((v): v is number => v != null);
+  const fpVals = groups.map((g) => g.fp).filter((v): v is number => v != null);
+  const ftVals = groups.map((g) => g.ft).filter((v): v is number => v != null);
+  const avgRoi = roiVals.length >= 2 ? mean(roiVals) : null;
+  const avgFp = fpVals.length >= 2 ? mean(fpVals) : null;
+  const avgFt = ftVals.length >= 2 ? mean(ftVals) : null;
+
+  for (const g of groups) {
+    const ctxBase = { groupName: g.groupName, period: "10d" };
+    if (avgRoi != null && g.roi != null && g.roi < avgRoi - TEAM_METRIC_EPS) {
+      const severity = g.roi < avgRoi - 15 ? "red" : "yellow";
+      for (const playerId of g.memberIds) {
+        out.push({
+          playerId,
+          alertType: "team_roi_below_avg",
+          severity,
+          metricValue: g.roi,
+          threshold: avgRoi,
+          context: { ...ctxBase, avgRoi, metric: "TotalROI" } as Prisma.InputJsonValue,
+        });
+      }
+    }
+    if (avgFp != null && g.fp != null && g.fp > avgFp + TEAM_METRIC_EPS) {
+      const severity = g.fp > avgFp + 5 ? "red" : "yellow";
+      for (const playerId of g.memberIds) {
+        out.push({
+          playerId,
+          alertType: "team_fp_above_avg",
+          severity,
+          metricValue: g.fp,
+          threshold: avgFp,
+          context: { ...ctxBase, avgFp, metric: "EarlyFinish" } as Prisma.InputJsonValue,
+        });
+      }
+    }
+    if (avgFt != null && g.ft != null && g.ft > avgFt + TEAM_METRIC_EPS) {
+      const severity = g.ft > avgFt + 5 ? "red" : "yellow";
+      for (const playerId of g.memberIds) {
+        out.push({
+          playerId,
+          alertType: "team_ft_above_avg",
+          severity,
+          metricValue: g.ft,
+          threshold: avgFt,
+          context: { ...ctxBase, avgFt, metric: "LateFinish" } as Prisma.InputJsonValue,
+        });
+      }
+    }
+  }
+  return out;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -108,6 +182,10 @@ export async function runDailySyncSharkScope(
     where: { status: "ACTIVE", playerGroup: { not: null } },
     select: { id: true, name: true, playerGroup: true },
   });
+
+  const playerNameById = new Map(players.map((p) => [p.id, p.name]));
+  const groupTenDMetrics: GroupTenDMetric[] = [];
+  const allAlertsThisRun: Prisma.AlertLogCreateManyInput[] = [];
 
   log.info(`Processando ${players.length} jogadores ativos (playerGroup), agrupados por nome de grupo`);
 
@@ -261,6 +339,8 @@ export async function runDailySyncSharkScope(
         await prisma.alertLog.deleteMany({ where: { playerId: { in: memberIds }, alertType: "group_not_found" } });
         if (alertsToCreate.length > 0) {
           await prisma.alertLog.createMany({ data: alertsToCreate });
+          allAlertsThisRun.push(...alertsToCreate);
+          void sendSharkAlertPlayerEmails(alertsToCreate, playerNameById);
         }
 
         // ── Log alertas ativos (1 por grupo, via primary player) ──────────────
@@ -280,6 +360,16 @@ export async function runDailySyncSharkScope(
           ft10d:  lateFinish10d?.toFixed(1) ?? null,
         });
 
+        if (need10) {
+          groupTenDMetrics.push({
+            groupName,
+            memberIds: members.map((m) => m.id),
+            roi: roi10d,
+            fp: earlyFinish10d,
+            ft: lateFinish10d,
+          });
+        }
+
         processed += members.length;
       } catch (err) {
         if (isAbortError(err)) throw err;
@@ -289,19 +379,33 @@ export async function runDailySyncSharkScope(
         if (isSharkScopePlayerGroupUnavailableMessage(errMsg)) {
           const ids = members.map((p) => p.id);
           await prisma.alertLog.deleteMany({ where: { playerId: { in: ids }, alertType: "group_not_found" } });
-          await prisma.alertLog.createMany({
-            data: ids.map((playerId) => ({
-              playerId, alertType: "group_not_found", severity: "red",
-              metricValue: 0, threshold: 0,
-              context: { groupName, message: ErrorTypes.SHARK_GROUP_NOT_FOUND },
-            })),
-          });
+          const groupNotFoundAlerts = ids.map((playerId) => ({
+            playerId,
+            alertType: "group_not_found",
+            severity: "red",
+            metricValue: 0,
+            threshold: 0,
+            context: { groupName, message: ErrorTypes.SHARK_GROUP_NOT_FOUND },
+          }));
+          await prisma.alertLog.createMany({ data: groupNotFoundAlerts });
+          allAlertsThisRun.push(...groupNotFoundAlerts);
+          void sendSharkAlertPlayerEmails(groupNotFoundAlerts, playerNameById);
           log.warn("SharkScope: grupo não encontrado ou indisponível", { groupName, sharkscope: errMsg });
         } else {
           log.error(`Erro ao processar grupo ${groupName}`, err instanceof Error ? err : undefined, { groupName });
         }
       }
     }
+
+    if (need10 && groupTenDMetrics.length >= 2) {
+      const teamAlerts = buildTeamRelativeAlerts(groupTenDMetrics);
+      if (teamAlerts.length > 0) {
+        await prisma.alertLog.createMany({ data: teamAlerts });
+        allAlertsThisRun.push(...teamAlerts);
+        void sendSharkAlertPlayerEmails(teamAlerts, playerNameById);
+      }
+    }
+    void sendSharkAlertStaffDigest(allAlertsThisRun, playerNameById);
 
     // ── Sync por nick×rede ────────────────────────────────────────────────────
     const siteNetworks   = Object.keys(POKER_NETWORKS);

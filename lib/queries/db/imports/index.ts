@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { parseExcelBuffer, parseLobbyzeDate } from "@/lib/excel-parser";
 import { matchTournamentToGrade } from "@/lib/grade-matcher";
 import { canDeleteImports, IMPORT_ROLES } from "@/lib/auth/rbac";
-import { notifyImportDone } from "@/lib/queries/db/notification";
+import { notifyImportDeleted, notifyImportDone } from "@/lib/queries/db/notification";
 import { notifyImportBatchExternal } from "@/lib/notify-import-external";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { limitImportsDelete, limitImportsUpload } from "@/lib/rate-limit";
@@ -144,8 +144,29 @@ export async function deleteImports(ids: string[]): Promise<{ success: boolean; 
         throw new Error("Uma ou mais importações não existem ou você não tem permissão para removê-las.");
       }
 
+      const importsMeta = await prisma.tournamentImport.findMany({
+        where: { id: { in: allowed } },
+        select: { id: true, playerName: true },
+      });
+      const playerNames = importsMeta
+        .map((m) => m.playerName)
+        .filter((n): n is string => !!n);
+      const players = playerNames.length
+        ? await prisma.player.findMany({
+            where: { name: { in: Array.from(new Set(playerNames)) } },
+            select: { id: true, name: true },
+          })
+        : [];
+      const nameToId = new Map(players.map((p) => [p.name, p.id]));
       await prisma.playedTournament.deleteMany({ where: { importId: { in: allowed } } });
       await prisma.tournamentImport.deleteMany({ where: { id: { in: allowed } } });
+      await notifyImportDeleted(
+        importsMeta.map((m) => ({
+          playerId: m.playerName ? nameToId.get(m.playerName) ?? null : null,
+          playerName: m.playerName,
+          count: 1,
+        })),
+      );
       importsQueriesLog.success("Importações excluídas", { count: allowed.length });
     }
   );
@@ -238,7 +259,7 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
     const tournamentRows: Array<{
       id: string; playerId: string; importId: string; date: Date;
       site: string; buyInCurrency: string; buyInValue: number; buyInUsd: number;
-      tournamentName: string; scheduling: string; rebuy: boolean; speed: string;
+      tournamentName: string; scheduling: string; rebuy: boolean; rebuys: number; speed: string;
       sharkId: string | null; priority: string; matchStatus: MatchResult; matchedRuleId: string | null;
     }> = [];
 
@@ -275,7 +296,7 @@ export async function uploadTournaments(formData: FormData): Promise<UploadResul
         date: dateObj, site: t.site, buyInCurrency: t.buyInCurrency,
         buyInValue: buyInNumeric, buyInUsd: Number(t.buyInUsd) || buyInNumeric,
         tournamentName: t.tournamentName, scheduling: t.scheduling ?? "",
-        rebuy: t.rebuy, speed: t.speed, sharkId: t.sharkId || null,
+        rebuy: t.rebuy, rebuys: t.rebuys ?? 0, speed: t.speed, sharkId: t.sharkId || null,
         priority: t.priority, matchStatus, matchedRuleId,
       });
 

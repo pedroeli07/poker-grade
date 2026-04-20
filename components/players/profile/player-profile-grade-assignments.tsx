@@ -24,7 +24,7 @@ const PlayerProfileGradeAssignments = memo(function PlayerProfileGradeAssignment
         <h3 className="text-lg font-semibold">Grades Atribuídas</h3>
         {canManage && (
           <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/grades">
+            <Link href="/admin/grades/perfis">
               <Grid3X3 className="mr-1.5 h-3.5 w-3.5" />
               Gerenciar
             </Link>
@@ -61,7 +61,7 @@ const PlayerProfileGradeAssignments = memo(function PlayerProfileGradeAssignment
                   </Badge>
                 </div>
                 <Button variant="ghost" size="sm" asChild className="h-7 text-xs -mr-1">
-                  <Link href={`/dashboard/grades/${grade.id}`}>Ver regras</Link>
+                  <Link href={`/admin/grades/perfis/${grade.id}`}>Ver regras</Link>
                 </Button>
               </div>
               <CardTitle className="text-base mt-2">{grade.name}</CardTitle>

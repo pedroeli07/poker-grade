@@ -29,6 +29,12 @@ export type TargetListRow = WithIdAndStatus<TargetStatus> & {
 
   unit: string | null;
   coachNotes: string | null;
+
+  greenThreshold: number | null;
+  yellowThreshold: number | null;
+
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type TargetsPagePlayerOption = PlayerRef;
@@ -66,6 +72,12 @@ export type TargetListViewModel = {
 
   /** Barra no layout tabela */
   showTableProgressBar: boolean;
+
+  categoryLabel: string;
+  coachNotes: string | null;
+  coachNotesPreview: string;
+  updatedAtLabel: string;
+  updatedAtIso: string;
 };
 
 export type TargetSummaryCardData = {
@@ -96,10 +108,18 @@ export type TargetsPageProps = {
   players: TargetsPagePlayerOption[];
   canCreate: boolean;
   summary: { onTrack: number; attention: number; offTrack: number };
+  /** Jogador só vê os próprios targets — sem filtro por jogador. */
+  isPlayer: boolean;
 };
 
 export interface NewTargetModalProps {
   players: PlayerRef[];
+}
+
+export interface EditTargetModalProps {
+  target: TargetListRow;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export type { TargetsColKey, TargetsFilters, TargetsColumnOptions } from "../columnKeys";

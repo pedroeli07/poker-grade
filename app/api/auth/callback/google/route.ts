@@ -149,7 +149,7 @@ export async function GET(request: Request) {
 
     const { token, sessionId } = await createAuthSession(authUser);
     log.info("Sessão Google OK", { userId: authUser.id, sessionId });
-    const res = NextResponse.redirect(new URL("/dashboard", baseUrl));
+    const res = NextResponse.redirect(new URL("/admin/dashboard", baseUrl));
     applySessionCookie(res, token);
     return res;
   } catch (e) {

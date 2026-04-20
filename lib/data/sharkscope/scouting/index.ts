@@ -31,6 +31,6 @@ export async function loadScoutingClientProps(): Promise<ScoutingClientProps> {
 
 export async function getScoutingPageProps() {
   const session = await requireSession();
-  if (!canManageGrades(session)) redirect("/dashboard");
+  if (!canManageGrades(session)) redirect("/admin/dashboard");
   return loadScoutingClientProps();
 }

@@ -54,6 +54,7 @@ interface ExcelTournamentRow {
   tournamentName: string;
   scheduling: string;
   rebuy: boolean;
+  rebuys: number;
   speed: string;
   sharkId: string;
   priority: string;

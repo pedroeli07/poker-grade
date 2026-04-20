@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePersistentState } from "@/hooks/use-persistent-state";
 import { distinctOptions } from "@/lib/utils";
 import type { PlayerTableRow, PlayersTableColumnKey, PlayersTableSortKey } from "@/lib/types";
 import type { PlayersTablePayload } from "@/lib/types";
@@ -48,8 +49,13 @@ export function usePlayersTablePage(initialPayload: PlayersTablePayload) {
   const { rows, coaches, grades, allowCoachSelect } = payload;
 
   const [editRow, setEditRow] = useState<PlayerTableRow | null>(null);
-  const [numFilters, setNumFilters] = useState<Record<string, NumberFilterValue | null>>({});
-  const [sort, setSort] = useState<{ key: PlayersTableSortKey; dir: SortDir } | null>(null);
+  const [numFilters, setNumFilters] = usePersistentState<
+    Record<string, NumberFilterValue | null>
+  >("gestao-grades:players:num-filters", {});
+  const [sort, setSort] = usePersistentState<{
+    key: PlayersTableSortKey;
+    dir: SortDir;
+  } | null>("gestao-grades:players:sort", null);
 
   const { filters, setColumnFilter, clearFilters: clearColumnFilters, hasAnyFilter } =
     usePlayersStore();
@@ -216,12 +222,15 @@ export function usePlayersTablePage(initialPayload: PlayersTablePayload) {
     (col: string) => (v: NumberFilterValue | null) => {
       setNumFilters((prev) => ({ ...prev, [col]: v }));
     },
-    []
+    [setNumFilters]
   );
 
-  const toggleSort = useCallback((key: PlayersTableSortKey, kind: ColumnSortKind) => {
-    setSort((prev) => nextSortState(prev, key, kind));
-  }, []);
+  const toggleSort = useCallback(
+    (key: PlayersTableSortKey, kind: ColumnSortKind) => {
+      setSort((prev) => nextSortState(prev, key, kind));
+    },
+    [setSort]
+  );
 
   const hasNumFilter = Object.values(numFilters).some(Boolean);
   const anyFilter = hasAnyFilter || hasNumFilter;
@@ -230,7 +239,7 @@ export function usePlayersTablePage(initialPayload: PlayersTablePayload) {
     clearColumnFilters();
     setNumFilters({});
     setSort(null);
-  }, [clearColumnFilters]);
+  }, [clearColumnFilters, setNumFilters, setSort]);
 
   const onEditPlayer = useCallback((p: PlayerTableRow) => setEditRow(p), []);
 

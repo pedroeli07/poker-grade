@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect, useLayoutEffect } from "react";
+import { useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { descriptionPick, distinctOptions } from "@/lib/utils";
 import { EMPTY_DESC, STALE_TIME } from "@/lib/constants";
@@ -9,6 +9,7 @@ import type { GradeListRow, ColumnKey } from "@/lib/types";
 import { getGradesListRowsAction } from "@/lib/queries/db/grade";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
 import { useGradesListStore } from "@/lib/stores/use-grades-list-store";
+import { usePersistentState } from "@/hooks/use-persistent-state";
 
 export function useGradesListPage(initialRows: GradeListRow[]) {
   const { data: rows = initialRows } = useQuery({
@@ -22,28 +23,10 @@ export function useGradesListPage(initialRows: GradeListRow[]) {
     staleTime: STALE_TIME,
   });
 
-  const [view, setView] = useState<"cards" | "table">("cards");
-  const [storageHydrated, setStorageHydrated] = useState(false);
-
-  useLayoutEffect(() => {
-    try {
-      const raw = localStorage.getItem(GRADES_LS_VIEW);
-      if (raw === "cards" || raw === "table") setView(raw);
-    } catch {
-      /* ignore */
-    } finally {
-      setStorageHydrated(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!storageHydrated) return;
-    try {
-      localStorage.setItem(GRADES_LS_VIEW, view);
-    } catch {
-      /* ignore */
-    }
-  }, [view, storageHydrated]);
+  const [view, setView, viewHydrated] = usePersistentState<"cards" | "table">(
+    GRADES_LS_VIEW,
+    "cards"
+  );
   const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
     useGradesListStore();
   const setCol = useCallback(
@@ -82,6 +65,7 @@ export function useGradesListPage(initialRows: GradeListRow[]) {
     rows,
     view,
     setView,
+    viewHydrated,
     filters,
     options,
     filtered,

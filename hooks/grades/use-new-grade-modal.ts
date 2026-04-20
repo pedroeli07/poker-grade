@@ -40,7 +40,7 @@ export function useNewGradeModal() {
           handleOpenChange(false);
           invalidateGrades();
           router.refresh();
-          router.push(`/dashboard/grades/${result.id}`);
+          router.push(`/admin/grades/perfis/${result.id}`);
         } catch (err) {
           if (isNextRedirectError(err)) throw err;
           toast.error(

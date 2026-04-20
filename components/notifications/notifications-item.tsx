@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { TYPE_CONFIG } from "@/lib/constants";
 import type { NotificationItem } from "@/lib/types";
 import { memo } from "react";
+import { normalizeNotificationLink } from "@/lib/utils/notification";
 
 const NotificationsItem = memo(function NotificationsItem({
   notif,
@@ -22,13 +23,15 @@ const NotificationsItem = memo(function NotificationsItem({
 }) {
   const cfg = TYPE_CONFIG[notif.type];
   const Icon = cfg.icon;
+  const resolvedLink = normalizeNotificationLink(notif.link);
 
   return (
     <div
       className={cn(
         "flex flex-col gap-4 p-5 rounded-xl border shadow-sm transition-all group hover:shadow-md relative",
         notif.read ? "bg-white border-border" : "bg-slate-200 border-primary/30",
-        isSelected && "ring-2 ring-primary bg-primary/5"
+        isSelected &&
+          "border-destructive/35 bg-red-50 ring-2 ring-destructive/25 dark:bg-destructive/15 dark:border-destructive/40"
       )}
     >
       <div className="flex items-start justify-between gap-2">
@@ -52,9 +55,9 @@ const NotificationsItem = memo(function NotificationsItem({
         </div>
 
         <div className="flex items-center gap-1 shrink-0 bg-muted/30 rounded-lg p-1">
-          {notif.link && (
+          {resolvedLink && (
             <Link
-              href={notif.link}
+              href={resolvedLink}
               title="Abrir"
               className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
             >

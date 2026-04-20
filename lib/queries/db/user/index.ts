@@ -36,6 +36,7 @@ import { getRegisterAbsoluteUrl } from "@/lib/utils/app-routing";
 import { isMailerConfigured, sendInviteEmail } from "@/lib/mailer";
 import { ROLE_OPTIONS } from "@/lib/constants";
 import { USERS_MANAGE_ROLES, userQueriesLog } from "@/lib/constants/queries-mutations";
+import { notifyUserDeleted, notifyUserUpdated } from "@/lib/queries/db/notification";
 import { ErrorTypes } from "@/lib/types";
 
 async function assertLastAdminGuard(userId: string, nextRole: UserRole): Promise<string | null> {
@@ -72,7 +73,7 @@ export async function addAllowedInvite(formData: FormData) {
   try {
     await prisma.allowedEmail.create({ data: { email, role, addedById: session.userId } });
     userQueriesLog.info("Convite adicionado", { email, role, by: session.userId });
-    revalidatePath("/dashboard/users");
+    revalidatePath("/admin/usuarios");
 
     let emailDelivery: "sent" | "skipped_no_mailer" | "failed" = "skipped_no_mailer";
     if (isMailerConfigured()) {
@@ -126,7 +127,7 @@ export async function updatePendingInvite(formData: FormData) {
 
   try {
     await prisma.allowedEmail.update({ where: { id }, data: { email, role } });
-    revalidatePath("/dashboard/users");
+    revalidatePath("/admin/usuarios");
     return { success: true as const };
   } catch (e) {
     userQueriesLog.error("updatePendingInvite", e instanceof Error ? e : undefined);
@@ -201,9 +202,10 @@ export async function updateAuthAccount(formData: FormData) {
     });
 
     userQueriesLog.info("Conta atualizada", { id, email, role });
-    revalidatePath("/dashboard/users");
-    revalidatePath("/dashboard/players");
-    revalidatePath("/dashboard");
+    await notifyUserUpdated(email, role);
+    revalidatePath("/admin/usuarios");
+    revalidatePath("/admin/jogadores");
+    revalidatePath("/admin/dashboard");
     return { success: true as const };
   } catch (e) {
     userQueriesLog.error("updateAuthAccount", e instanceof Error ? e : undefined);
@@ -219,7 +221,7 @@ export async function deletePendingInvite(formData: FormData) {
 
   try {
     await prisma.allowedEmail.deleteMany({ where: { id: parsed.data.id } });
-    revalidatePath("/dashboard/users");
+    revalidatePath("/admin/usuarios");
     return { success: true as const };
   } catch (e) {
     userQueriesLog.error("deletePendingInvite", e instanceof Error ? e : undefined);
@@ -261,9 +263,10 @@ export async function deleteAuthAccount(formData: FormData) {
       coachRemoved: Boolean(coachId),
       playerRemoved: Boolean(playerId),
     });
-    revalidatePath("/dashboard/users");
-    revalidatePath("/dashboard/players");
-    revalidatePath("/dashboard");
+    await notifyUserDeleted(target.email);
+    revalidatePath("/admin/usuarios");
+    revalidatePath("/admin/jogadores");
+    revalidatePath("/admin/dashboard");
     return { success: true as const };
   } catch (e) {
     userQueriesLog.error("deleteAuthAccount", e instanceof Error ? e : undefined);
@@ -289,8 +292,8 @@ export async function updateProfile(data: {
         discord: data.discord,
       },
     });
-    revalidatePath("/dashboard/profile");
-    revalidatePath("/dashboard/users");
+    revalidatePath("/admin/meu-perfil");
+    revalidatePath("/admin/usuarios");
     return { success: true as const };
   } catch (e) {
     userQueriesLog.error("updateProfile", e instanceof Error ? e : undefined);
@@ -320,7 +323,7 @@ export async function updateAvatar(dataUrl: string | null) {
       where: { id: session.userId },
       data: { avatarUrl: dataUrl },
     });
-    revalidatePath("/dashboard/profile");
+    revalidatePath("/admin/meu-perfil");
     return { success: true as const };
   } catch (e) {
     userQueriesLog.error("updateAvatar", e instanceof Error ? e : undefined);

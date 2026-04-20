@@ -27,8 +27,10 @@ import {
 } from "lucide-react";
 import { NotificationFilterType } from "@/lib/types";
 import { NOTIFICATION_PAGE_SIZE, NOTIFICATION_SHEET_TOAST_ERROR_TITLE, STALE_TIME, TYPE_CONFIG, TYPE_LABELS } from "@/lib/constants";
+import { accountNotificationsHref } from "@/lib/constants/navigation";
+import type { UserRole } from "@prisma/client";
 
-const NotificationSheet = memo(() => {
+const NotificationSheet = memo(function NotificationSheet({ userRole }: { userRole: UserRole }) {
   const { open, setOpen, setUnreadCount } = useNotificationStore();
   const invalidateNotifications = useInvalidate("notifications");
 
@@ -170,7 +172,14 @@ const NotificationSheet = memo(() => {
           ))}
           <div className="ml-auto flex items-center gap-2">
             <button type="button" onClick={toggleAll} className={cn("flex items-center gap-1.5 text-sm transition-colors cursor-pointer", selected.size === items.length && items.length > 0 ? "text-primary" : "text-muted-foreground hover:text-foreground")}>
-              <div className={cn("h-4 w-4 rounded border flex items-center justify-center transition-colors", selected.size === items.length && items.length > 0 ? "bg-primary border-primary" : "border-border")}>
+              <div
+                className={cn(
+                  "flex h-4 w-4 items-center justify-center rounded border shadow-sm transition-colors",
+                  selected.size === items.length && items.length > 0
+                    ? "border-primary bg-primary shadow-none"
+                    : "border-foreground/35 bg-white hover:border-primary/70"
+                )}
+              >
                 {selected.size === items.length && items.length > 0 && <Check className="h-2.5 w-2.5 text-white" />}
               </div>
               <span className="text-xs font-medium">Selecionar tudo</span>
@@ -202,7 +211,16 @@ const NotificationSheet = memo(() => {
                       isSelected && "bg-primary/5"
                     )}
                   >
-                    <button type="button" onClick={() => toggleSelect(notif.id)} className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors cursor-pointer", isSelected ? "bg-primary border-primary" : "border-border hover:border-primary/60")}>
+                    <button
+                      type="button"
+                      onClick={() => toggleSelect(notif.id)}
+                      className={cn(
+                        "mt-0.5 flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border shadow-sm transition-colors",
+                        isSelected
+                          ? "border-primary bg-primary shadow-none"
+                          : "border-foreground/35 bg-white hover:border-primary/70"
+                      )}
+                    >
                       {isSelected && <Check className="h-3 w-3 text-white" />}
                     </button>
                     <div className={cn("mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", cfg.bg)}>
@@ -221,7 +239,7 @@ const NotificationSheet = memo(() => {
                             <span className="text-[11px] text-muted-foreground">{timeAgo(notif.createdAt as Date)}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex shrink-0 items-center gap-1">
                           {!notif.read && (
                             <button type="button" onClick={() => handleMarkRead(notif.id)} disabled={isPending} title="Marcar como lida" className="p-1.5 rounded-md text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 transition-colors cursor-pointer disabled:opacity-50"><Check className="h-3.5 w-3.5" /></button>
                           )}
@@ -247,7 +265,7 @@ const NotificationSheet = memo(() => {
               <button type="button" disabled={page === totalPages} onClick={() => setPage(page + 1)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"><ChevronRight className="h-4 w-4" /></button>
             </div>
           )}
-          <Link href="/dashboard/notifications" onClick={() => setOpen(false)} className="flex items-center justify-center w-full py-3 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors">Ver todas as notificações</Link>
+          <Link href={accountNotificationsHref(userRole)} onClick={() => setOpen(false)} className="flex items-center justify-center w-full py-3 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors">Ver todas as notificações</Link>
         </div>
       </aside>
     </>

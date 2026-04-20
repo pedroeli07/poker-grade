@@ -140,7 +140,7 @@ const PlayerTableRowActions = memo(function PlayerTableRowActions({
               </>
             ) : null}
             <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href={`/dashboard/players/${player.id}`}>
+              <Link href={`/admin/jogadores/${player.id}`}>
                 <Settings2 className="h-4 w-4" />
                 Gerenciar perfil
               </Link>

@@ -19,7 +19,7 @@ export async function loadAnalyticsClientProps(): Promise<AnalyticsClientProps> 
 
 export async function getAnalyticsPageProps() {
   const session = await requireSession();
-  if (!canWriteOperations(session)) redirect("/dashboard");
+  if (!canWriteOperations(session)) redirect("/admin/dashboard");
   return loadAnalyticsClientProps();
 }
 
@@ -27,7 +27,7 @@ export async function getAnalyticsDebugPageData(
   playerParam: string | undefined
 ): Promise<AnalyticsDebugPageData> {
   const session = await requireSession();
-  if (!canWriteOperations(session)) redirect("/dashboard");
+  if (!canWriteOperations(session)) redirect("/admin/dashboard");
 
   const players = (
     await prisma.player.findMany({

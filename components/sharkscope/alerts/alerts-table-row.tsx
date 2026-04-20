@@ -62,7 +62,7 @@ const AlertsTableRow = memo(function AlertsTableRow({
       <TableCell className="align-middle text-center">
         <div className="flex flex-col items-center justify-center">
           <Link
-            href={`/dashboard/players/${alert.player.id}`}
+            href={`/admin/jogadores/${alert.player.id}`}
             className="font-medium transition-colors hover:text-primary"
           >
             {alert.player.name}

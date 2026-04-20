@@ -13,7 +13,7 @@ const PlayerProfileTargetsPanel = memo(function PlayerProfileTargetsPanel({
     <div>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-lg font-semibold">Targets</h3>
-        <Link href="/dashboard/targets" className="text-xs text-primary hover:underline">
+        <Link href="/admin/grades/metas" className="text-xs text-primary hover:underline">
           Ver todos
         </Link>
       </div>

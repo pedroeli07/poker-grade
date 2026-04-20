@@ -8,6 +8,8 @@ import TargetsColFilters from "@/components/targets/targets-col-filters";
 import TargetsCardsSection from "@/components/targets/targets-cards-section";
 import TargetsTableSection from "@/components/targets/targets-table-section";
 import TargetsViewToggle from "@/components/targets/targets-view-toggle";
+import TargetsBulkSelectionBar from "@/components/targets/targets-bulk-selection-bar";
+import TargetsDeleteDialog from "@/components/targets/targets-delete-dialog";
 import type { ColKey, Filters, TargetListRow, TargetsColumnOptions } from "@/lib/types";
 import { buildTargetsFilterSummaryLines } from "@/lib/utils/target";
 
@@ -21,6 +23,15 @@ const TargetsControlsCard = memo(function TargetsControlsCard({
   filtered,
   anyFilter,
   clearFilters,
+  canWrite,
+  selected,
+  setSelected,
+  idsToDelete,
+  setIdsToDelete,
+  isBulkDeletePending,
+  onToggleTargetSelection,
+  onConfirmBulkDelete,
+  hidePlayerFilter = false,
 }: {
   view: "cards" | "table";
   setView: (v: "cards" | "table") => void;
@@ -31,10 +42,23 @@ const TargetsControlsCard = memo(function TargetsControlsCard({
   filtered: TargetListRow[];
   anyFilter: boolean;
   clearFilters: () => void;
+  /** Oculta filtro por jogador (visão jogador: só há um jogador). */
+  hidePlayerFilter?: boolean;
+  canWrite: boolean;
+  selected: Set<string>;
+  setSelected: (next: Set<string>) => void;
+  idsToDelete: string[] | null;
+  setIdsToDelete: (ids: string[] | null) => void;
+  isBulkDeletePending: boolean;
+  onToggleTargetSelection: (ids: string[], force?: boolean) => void;
+  onConfirmBulkDelete: () => void;
 }) {
   const cardsFilterLines = useMemo(
-    () => buildTargetsFilterSummaryLines(filters, options),
-    [filters, options]
+    () =>
+      buildTargetsFilterSummaryLines(filters, options, {
+        omitPlayer: hidePlayerFilter,
+      }),
+    [filters, options, hidePlayerFilter]
   );
 
   return (
@@ -59,7 +83,13 @@ const TargetsControlsCard = memo(function TargetsControlsCard({
           <div className="mt-4 flex min-w-0 flex-col gap-2 sm:mr-0 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
            
             <div className="flex flex-wrap items-center gap-2">
-              <TargetsColFilters compact options={options} filters={filters} setCol={setCol} />
+              <TargetsColFilters
+                compact
+                options={options}
+                filters={filters}
+                setCol={setCol}
+                hidePlayerFilter={hidePlayerFilter}
+              />
             </div>
           </div>
         )}
@@ -79,9 +109,22 @@ const TargetsControlsCard = memo(function TargetsControlsCard({
           />
         )}
         {view === "cards" ? (
-          <TargetsCardsSection filtered={filtered} anyFilter={anyFilter} onClearFilters={clearFilters} />
+          <TargetsCardsSection
+            filtered={filtered}
+            anyFilter={anyFilter}
+            onClearFilters={clearFilters}
+            hidePlayerLine={hidePlayerFilter}
+          />
         ) : (
-          <div className="px-0 pb-0 pt-0">
+          <div className="space-y-3 px-4 pb-4 pt-3 sm:px-6">
+            {canWrite ? (
+              <TargetsBulkSelectionBar
+                selectedSize={selected.size}
+                isPending={isBulkDeletePending}
+                onClearSelection={() => setSelected(new Set())}
+                onRequestBulkDelete={() => setIdsToDelete(Array.from(selected))}
+              />
+            ) : null}
             <TargetsTableSection
               filtered={filtered}
               options={options}
@@ -90,7 +133,21 @@ const TargetsControlsCard = memo(function TargetsControlsCard({
               totalCount={rows.length}
               anyFilter={anyFilter}
               clearFilters={clearFilters}
+              hidePlayerFilter={hidePlayerFilter}
+              canWrite={canWrite}
+              selected={selected}
+              isBulkDeletePending={isBulkDeletePending}
+              onToggleTargetSelection={onToggleTargetSelection}
             />
+            {canWrite ? (
+              <TargetsDeleteDialog
+                isOpen={!!idsToDelete}
+                idsToDelete={idsToDelete}
+                isPending={isBulkDeletePending}
+                onOpenChange={(open) => !open && setIdsToDelete(null)}
+                onConfirm={onConfirmBulkDelete}
+              />
+            ) : null}
           </div>
         )}
       </CardContent>

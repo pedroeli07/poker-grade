@@ -12,5 +12,5 @@ export function buildReviewPath({
   else if (coachId) p.set("coach", coachId);
   if (page > 1) p.set("page", String(page));
   const q = p.toString();
-  return q ? `/dashboard/review?${q}` : "/dashboard/review";
+  return q ? `/admin/grades/revisao?${q}` : "/admin/grades/revisao";
 }

@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     ".agent/**",
     "arquivo.js",
     "scratch/**",
+    "count.js",
     "test-results/**",
     "playwright-report/**",
     ".playwright-mcp/**",

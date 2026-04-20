@@ -26,9 +26,13 @@ export function filterSidebarNavForRole(
   }
   return items.filter((item) => {
     if (item.kind === "link") {
-      if (item.href === "/dashboard/minha-grade") return false;
-      if (item.href === "/dashboard/minha-grade/torneios") return false;
-      if (item.href === "/dashboard/users") {
+      if (item.href === "/jogador/dashboard") return false;
+      if (item.href === "/jogador/minha-grade") return false;
+      if (item.href === "/jogador/meus-torneios") return false;
+      /** Staff usa Grades → Metas / Histórico; estes links são só para PLAYER. */
+      if (item.href === "/jogador/metas") return false;
+      if (item.href === "/jogador/historico") return false;
+      if (item.href === "/admin/usuarios") {
         return STAFF_WRITE_ROLES.includes(userRole);
       }
       return true;

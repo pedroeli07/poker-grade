@@ -171,7 +171,7 @@ const AnalyticsRankingPanel = memo(function AnalyticsRankingPanel({
                       </div>
                     </TableCell>
                     <TableCell className={tdCenter}>
-                      <Link href={`/dashboard/players/${entry.player.id}`} className="text-xs text-primary hover:underline inline-block">
+                      <Link href={`/admin/jogadores/${entry.player.id}`} className="text-xs text-primary hover:underline inline-block">
                         Ver perfil →
                       </Link>
                     </TableCell>

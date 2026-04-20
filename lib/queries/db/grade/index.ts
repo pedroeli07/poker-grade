@@ -221,7 +221,7 @@ export async function updateGradeCoachNote(
         data: { description: sanitized || null },
       });
       gradesQueriesLog.info("Nota do coach atualizada", { gradeId: parsed.data.gradeId });
-      return [`/dashboard/grades/${parsed.data.gradeId}`];
+      return [`/admin/grades/perfis/${parsed.data.gradeId}`];
     }
   );
 }
@@ -253,7 +253,7 @@ export async function updateGradeProfile(
       },
     });
     gradesQueriesLog.info("Grade atualizada", { gradeId: parsed.data.gradeId });
-    return [`/dashboard/grades/${parsed.data.gradeId}`];
+    return [`/admin/grades/perfis/${parsed.data.gradeId}`];
   });
 }
 
@@ -305,7 +305,7 @@ export async function updateGradeRule(
       },
     });
     gradesQueriesLog.info("Regra de grade atualizada", { ruleId: parsed.data.ruleId });
-    return [`/dashboard/grades/${rule.gradeProfileId}`];
+    return [`/admin/grades/perfis/${rule.gradeProfileId}`];
   });
 }
 
@@ -335,7 +335,7 @@ export async function createGradeRule(
       select: { id: true },
     });
     gradesQueriesLog.success("Regra de grade criada", { ruleId: rule.id, gradeProfileId: parsed.data.gradeProfileId });
-    revalidateGrades(`/dashboard/grades/${parsed.data.gradeProfileId}`);
+    revalidateGrades(`/admin/grades/perfis/${parsed.data.gradeProfileId}`);
     return { ok: true, id: rule.id };
   } catch (e) {
     gradesQueriesLog.error("Falha ao criar regra", e instanceof Error ? e : undefined);
@@ -352,6 +352,6 @@ export async function deleteGradeRule(ruleId: string): Promise<Ok | Err> {
     if (!rule) throw new Error("Regra não encontrada.");
     await prisma.gradeRule.delete({ where: { id: parsed.data.ruleId } });
     gradesQueriesLog.info("Regra de grade excluída", { ruleId: parsed.data.ruleId });
-    return [`/dashboard/grades/${rule.gradeProfileId}`];
+    return [`/admin/grades/perfis/${rule.gradeProfileId}`];
   });
 }

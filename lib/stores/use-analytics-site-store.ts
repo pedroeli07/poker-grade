@@ -1,6 +1,9 @@
 import type { AnalyticsSiteFilters } from "@/lib/types";
 import { createFilterStore } from "./create-filter-store";
 
-export const useAnalyticsSiteStore = createFilterStore<AnalyticsSiteFilters>({
-  network: null,
-});
+export const useAnalyticsSiteStore = createFilterStore<AnalyticsSiteFilters>(
+  {
+    network: null,
+  },
+  "gestao-grades:analytics-site:filters"
+);

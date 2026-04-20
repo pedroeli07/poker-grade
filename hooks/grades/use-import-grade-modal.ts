@@ -88,7 +88,7 @@ export function useImportGradeModal() {
           handleOpenChange(false);
           invalidateGrades();
           router.refresh();
-          router.push("/dashboard/grades");
+          router.push("/admin/grades/perfis");
         } catch (err) {
           if (isNextRedirectError(err)) throw err;
           const msg = err instanceof Error ? err.message : "Erro desconhecido ao importar JSON da grade";

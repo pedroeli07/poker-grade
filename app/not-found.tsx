@@ -27,17 +27,17 @@ export default function NotFound() {
           <h1 className="bg-gradient-to-br from-primary via-primary/80 to-primary/50 bg-clip-text text-7xl font-black tracking-tight text-transparent sm:text-8xl">
             404
           </h1>
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl text-white">
             Página não encontrada
           </h2>
-          <p className="mx-auto max-w-md text-[15px] leading-relaxed text-muted-foreground">
+          <p className="mx-auto max-w-md text-[15px] leading-relaxed text-white">
             O endereço que você tentou acessar não existe, foi movido ou você não tem permissão para vê-lo.
           </p>
         </div>
 
         <div className="flex flex-col items-center gap-3 sm:flex-row">
           <Button asChild size="lg" className="min-w-[10rem] rounded-lg shadow-sm">
-            <Link href="/dashboard">
+            <Link href="/admin/dashboard">
               <Home className="h-4 w-4" />
               Voltar ao início
             </Link>

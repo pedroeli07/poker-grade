@@ -159,7 +159,7 @@ const NewPlayerModal = memo(function NewPlayerModal(props: NewPlayerModalProps) 
                     </Select>
                     <p className="text-xs text-muted-foreground">
                       Mesmas grades da página{" "}
-                      <Link href="/dashboard/grades" className="text-primary underline-offset-2 hover:underline">
+                      <Link href="/admin/grades/perfis" className="text-primary underline-offset-2 hover:underline">
                         Grades
                       </Link>
                       .
@@ -202,7 +202,7 @@ const NewPlayerModal = memo(function NewPlayerModal(props: NewPlayerModalProps) 
                     <p className="text-xs text-muted-foreground">
                       Opcional. Cria o target &quot;ABI alvo&quot; em{" "}
                       <Link
-                        href="/dashboard/targets"
+                        href="/admin/grades/metas"
                         className="text-primary underline-offset-2 hover:underline"
                       >
                         Targets

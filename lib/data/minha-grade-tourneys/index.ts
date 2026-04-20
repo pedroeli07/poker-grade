@@ -12,6 +12,7 @@ export type PlayerTourneyRow = {
   tournamentName: string;
   scheduling: string | null;
   rebuy: boolean;
+  rebuys: number;
   speed: string | null;
   sharkId: string | null;
   priority: string | null;
@@ -36,6 +37,7 @@ export async function loadPlayerTournamentHistory(playerId: string): Promise<Pla
       tournamentName: true,
       scheduling: true,
       rebuy: true,
+      rebuys: true,
       speed: true,
       sharkId: true,
       priority: true,

@@ -20,7 +20,7 @@ const NotificationsPageHeader = memo(function NotificationsPageHeader({
           <button
             type="button"
             onClick={onMarkAllRead}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-[15px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-[15px] font-medium text-muted-foreground bg-blue-400/20 hover:bg-blue-400/30 hover:text-foreground transition-colors cursor-pointer"
           >
             <CheckCheck className="h-4 w-4" />
             Marcar todas como lidas

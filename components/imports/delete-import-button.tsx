@@ -45,7 +45,7 @@ export function DeleteImportButton({ importId, iconOnly = false }: { importId: s
         toast.success("Importação excluída");
         invalidate();
         if (iconOnly) router.refresh();
-        else router.push("/dashboard/imports");
+        else router.push("/admin/grades/importacoes");
       } else {
         toast.error("Erro ao excluir", res.error ?? "Tente novamente.");
       }

@@ -22,6 +22,10 @@ export async function getTargetsListRowsForSession(session: AppSession): Promise
     textCurrent: t.textCurrent,
     unit: t.unit,
     coachNotes: t.coachNotes,
+    greenThreshold: t.greenThreshold,
+    yellowThreshold: t.yellowThreshold,
+    createdAt: t.createdAt,
+    updatedAt: t.updatedAt,
   }));
 }
 
@@ -49,6 +53,7 @@ export async function loadTargetsPageProps(session: AppSession): Promise<Targets
     rows,
     players,
     canCreate,
+    isPlayer: session.role === UserRole.PLAYER,
     summary: {
       onTrack: rows.filter((t) => t.status === TargetPageStatus.ON_TRACK).length,
       attention: rows.filter((t) => t.status === TargetPageStatus.ATTENTION).length,

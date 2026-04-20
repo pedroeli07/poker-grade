@@ -40,6 +40,11 @@ const ColumnFilter = memo(function ColumnFilter({
   triggerClassName,
   /** Texto para aria-label quando `label` não é string (ex.: badge). */
   ariaLabel,
+  /**
+   * Um único valor aplicado (ex.: filtro de jogador na revisão). Esconde
+   * «Marcar todos» e usa seleção tipo rádio com checkboxes.
+   */
+  single = false,
 }: {
   columnId: string;
   label: React.ReactNode;
@@ -51,6 +56,7 @@ const ColumnFilter = memo(function ColumnFilter({
   /** Classes extras no trigger (ex.: coluna estreita, centralizar). */
   triggerClassName?: string;
   ariaLabel?: string;
+  single?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -59,9 +65,13 @@ const ColumnFilter = memo(function ColumnFilter({
   const allKeys = useMemo(() => columnFilterValueKeys(options), [options]);
 
   const initPending = useCallback(() => {
-    setPending(initialColumnFilterPending(applied, allKeys));
+    if (single) {
+      setPending(applied === null ? new Set() : new Set(applied));
+    } else {
+      setPending(initialColumnFilterPending(applied, allKeys));
+    }
     setSearch("");
-  }, [applied, allKeys]);
+  }, [applied, allKeys, single]);
 
   const filteredOptions = useMemo(
     () => filterColumnOptionsBySearch(options, search),
@@ -73,16 +83,25 @@ const ColumnFilter = memo(function ColumnFilter({
   const filterAria = resolveColumnFilterAriaLabel(columnId, label, ariaLabel);
 
   function applyFromPending(next: Set<string>) {
-    commitColumnFilterSelection(next, allKeys, onApply);
+    if (single) {
+      if (next.size === 0) onApply(null);
+      else onApply(next);
+    } else {
+      commitColumnFilterSelection(next, allKeys, onApply);
+    }
   }
 
   function toggle(value: string, checked: boolean) {
-    setPending((prev) => {
-      const n = new Set(prev);
-      if (checked) n.add(value);
-      else n.delete(value);
-      return n;
-    });
+    if (single) {
+      setPending(checked ? new Set([value]) : new Set());
+    } else {
+      setPending((prev) => {
+        const n = new Set(prev);
+        if (checked) n.add(value);
+        else n.delete(value);
+        return n;
+      });
+    }
   }
 
   return (
@@ -130,15 +149,17 @@ const ColumnFilter = memo(function ColumnFilter({
             className="h-9 text-sm"
           />
           <div className="flex gap-1 flex-wrap">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setPending(new Set(allKeys))}
-            >
-              {COLUMN_FILTER_BTN_SELECT_ALL}
-            </Button>
+            {!single && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => setPending(new Set(allKeys))}
+              >
+                {COLUMN_FILTER_BTN_SELECT_ALL}
+              </Button>
+            )}
             <Button
               type="button"
               variant="secondary"

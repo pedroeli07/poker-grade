@@ -107,7 +107,7 @@ const GradeTableRow = memo(function GradeTableRow({
       </TableCell>
       <TableCell className="align-middle py-3 text-center">
         <Link
-          href={`/dashboard/grades/${grade.id}`}
+          href={`/admin/grades/perfis/${grade.id}`}
           className="tabular-nums font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
           aria-label={`Abrir grade ${grade.name} — ${grade.rulesCount} regras`}
         >
@@ -124,7 +124,7 @@ const GradeTableRow = memo(function GradeTableRow({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[160px]">
             <DropdownMenuItem asChild>
-              <Link href={`/dashboard/grades/${grade.id}`} className="cursor-pointer">
+              <Link href={`/admin/grades/perfis/${grade.id}`} className="cursor-pointer">
                 <FileText className="mr-2 h-4 w-4" />
                 Ver regras
               </Link>

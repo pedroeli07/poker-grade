@@ -10,7 +10,7 @@ const PlayerProfileHeader = memo(function PlayerProfileHeader({ player }: Player
   return (
     <div className="flex items-start gap-4">
       <Button variant="ghost" size="icon" asChild className="mt-0.5 shrink-0">
-        <Link href="/dashboard/players">
+        <Link href="/admin/jogadores">
           <ArrowLeft className="h-5 w-5" />
         </Link>
       </Button>

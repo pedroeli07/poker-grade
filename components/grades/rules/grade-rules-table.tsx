@@ -11,7 +11,14 @@ import type { GradeRuleCardRule } from "@/lib/types";
 import { Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEditableRule } from "@/hooks/grades/use-editable-rule";
-import RuleDisplay from "./rule-display";
+import {
+  BuyInCell,
+  ExcludeCell,
+  FieldCell,
+  GtdCell,
+  StackedPills,
+  TipoTorneioCell,
+} from "./grade-rules-table-cells";
 
 import {
   AlertDialog,
@@ -40,6 +47,8 @@ import {
   destructiveAlertFooterClassName,
   destructiveAlertCancelButtonClassName,
   destructiveAlertConfirmButtonClassName,
+  dataTableHeaderRowClass,
+  dataTableShellActiveClass,
   SPEED_PRESETS,
   TOURNAMENT_TYPE_PRESETS,
   VARIANT_PRESETS,
@@ -72,23 +81,46 @@ function GradeRulesTableRow({
 
   return (
     <>
-      <TableRow className="group">
-        <TableCell className="w-[40px] text-center text-xs text-muted-foreground font-medium">
+      <TableRow
+        className={cn(
+          "group border-b border-border/70 transition-colors duration-150",
+          "odd:bg-card/90 even:bg-muted/[0.28]",
+          "hover:bg-blue-500/[0.06] hover:shadow-[inset_3px_0_0_0_rgba(59,130,246,0.35)]"
+        )}
+      >
+        <TableCell className="w-[40px] align-top text-center text-xs font-semibold tabular-nums text-muted-foreground">
           {idx + 1}
         </TableCell>
-        <TableCell className="font-medium">
-          <div className="flex flex-col">
-            <span>{rule.filterName}</span>
-          </div>
+        <TableCell className="max-w-[200px] align-top font-medium text-foreground">
+          <span className="leading-snug">{rule.filterName}</span>
         </TableCell>
-        <TableCell colSpan={6} className="p-0">
-          <div className="py-2 pr-2">
-            <RuleDisplay rule={rule} />
-          </div>
+        <TableCell className="min-w-[72px] max-w-[100px] whitespace-normal align-top">
+          <BuyInCell rule={rule} />
         </TableCell>
-        <TableCell className="text-right">
+        <TableCell className="min-w-[120px] max-w-[180px] whitespace-normal border-l border-border/40 align-top">
+          {rule.sites.length > 0 ? <StackedPills items={rule.sites} /> : <span className="text-xs text-muted-foreground">—</span>}
+        </TableCell>
+        <TableCell className="min-w-[100px] max-w-[140px] whitespace-normal align-top">
+          {rule.speed.length > 0 ? <StackedPills items={rule.speed} /> : <span className="text-xs text-muted-foreground">—</span>}
+        </TableCell>
+        <TableCell className="min-w-[100px] max-w-[140px] whitespace-normal align-top">
+          {rule.variant.length > 0 ? <StackedPills items={rule.variant} /> : <span className="text-xs text-muted-foreground">—</span>}
+        </TableCell>
+        <TableCell className="min-w-[100px] max-w-[160px] whitespace-normal align-top">
+          <TipoTorneioCell rule={rule} />
+        </TableCell>
+        <TableCell className="min-w-[120px] max-w-[200px] whitespace-normal align-top">
+          <GtdCell rule={rule} />
+        </TableCell>
+        <TableCell className="min-w-[72px] whitespace-normal align-top">
+          <FieldCell rule={rule} />
+        </TableCell>
+        <TableCell className="min-w-[120px] max-w-[220px] whitespace-normal align-top">
+          <ExcludeCell rule={rule} />
+        </TableCell>
+        <TableCell className="w-[88px] align-top text-right">
           {manage && (
-            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-start justify-end gap-1 pt-1 opacity-0 transition-opacity group-hover:opacity-100">
               <Button
                 type="button"
                 variant="ghost"
@@ -245,13 +277,52 @@ const GradeRulesTable = memo(function GradeRulesTable({
   anyFilter: boolean;
 }) {
   return (
-    <DataTableShell hasActiveView={anyFilter}>
-      <Table className="w-full max-w-full">
-        <TableHeader>
-          <TableRow className="hover:bg-transparent bg-muted/20 border-b border-border/60">
-            <TableHead className="w-[40px] text-center">#</TableHead>
-            <TableHead className="w-[200px]">Regra</TableHead>
-            <TableHead className="text-center w-[120px]">
+    <div
+      className={cn(
+        "min-w-0 max-w-full overflow-hidden rounded-xl transition-all duration-300",
+        anyFilter
+          ? dataTableShellActiveClass
+          : "border border-border/50 bg-card/40 shadow-sm ring-1 ring-border/20"
+      )}
+    >
+      <DataTableShell hasActiveView={false} className="!border-0 !bg-transparent shadow-none">
+        <Table className="w-full max-w-full text-[14px]">
+        <TableHeader className="[&_tr]:border-b-0">
+          <TableRow
+            className={cn(
+              dataTableHeaderRowClass,
+              "border-b border-blue-500/35 shadow-[inset_0_-1px_0_0_rgba(59,130,246,0.18)]",
+              anyFilter && "ring-1 ring-inset ring-primary/25"
+            )}
+          >
+            <TableHead className="w-[40px] text-center text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              #
+            </TableHead>
+            <TableHead className="min-w-[160px] max-w-[220px] text-left text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              <div className="flex items-center justify-start gap-0.5">
+                <ColumnFilter
+                  columnId="filterName"
+                  label={<FilteredColumnTitle active={filters.filterName !== null}>Regra</FilteredColumnTitle>}
+                  options={options.filterName}
+                  applied={filters.filterName}
+                  onApply={setCol("filterName")}
+                  ariaLabel="Regra"
+                />
+              </div>
+            </TableHead>
+            <TableHead className="w-[100px] min-w-[88px] text-left text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              <div className="flex items-center justify-start gap-0.5">
+                <ColumnFilter
+                  columnId="buyIn"
+                  label={<FilteredColumnTitle active={filters.buyIn !== null}>Buy-in</FilteredColumnTitle>}
+                  options={options.buyIn}
+                  applied={filters.buyIn}
+                  onApply={setCol("buyIn")}
+                  ariaLabel="Buy-in"
+                />
+              </div>
+            </TableHead>
+            <TableHead className="min-w-[120px] border-l border-blue-500/25 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
               <div className="flex items-center justify-center gap-0.5">
                 <ColumnFilter
                   columnId="sites"
@@ -263,7 +334,7 @@ const GradeRulesTable = memo(function GradeRulesTable({
                 />
               </div>
             </TableHead>
-            <TableHead className="text-center w-[120px]">
+            <TableHead className="min-w-[100px] text-center text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
               <div className="flex items-center justify-center gap-0.5">
                 <ColumnFilter
                   columnId="speed"
@@ -275,7 +346,7 @@ const GradeRulesTable = memo(function GradeRulesTable({
                 />
               </div>
             </TableHead>
-            <TableHead className="text-center w-[120px]">
+            <TableHead className="min-w-[100px] text-center text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
               <div className="flex items-center justify-center gap-0.5">
                 <ColumnFilter
                   columnId="variant"
@@ -287,31 +358,31 @@ const GradeRulesTable = memo(function GradeRulesTable({
                 />
               </div>
             </TableHead>
-            <TableHead className="text-center w-[120px]">
-              <div className="flex items-center justify-center gap-0.5">
-                <ColumnFilter
-                  columnId="gameType"
-                  label={<FilteredColumnTitle active={filters.gameType !== null}>Game Type</FilteredColumnTitle>}
-                  options={options.gameType}
-                  applied={filters.gameType}
-                  onApply={setCol("gameType")}
-                  ariaLabel="Game Type"
-                />
-              </div>
-            </TableHead>
-            <TableHead className="text-center w-[120px]">
+            <TableHead className="min-w-[100px] text-center text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
               <div className="flex items-center justify-center gap-0.5">
                 <ColumnFilter
                   columnId="tournamentType"
-                  label={<FilteredColumnTitle active={filters.tournamentType !== null}>Torneio</FilteredColumnTitle>}
+                  label={<FilteredColumnTitle active={filters.tournamentType !== null}>Tipo</FilteredColumnTitle>}
                   options={options.tournamentType}
                   applied={filters.tournamentType}
                   onApply={setCol("tournamentType")}
-                  ariaLabel="Tipo de Torneio"
+                  ariaLabel="Tipo de torneio"
                 />
               </div>
             </TableHead>
-            <TableHead className="text-center w-[120px]">
+            <TableHead className="min-w-[120px] text-left text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              <div className="flex items-center justify-start gap-0.5">
+                <ColumnFilter
+                  columnId="prizePool"
+                  label={<FilteredColumnTitle active={filters.prizePool !== null}>Garantido</FilteredColumnTitle>}
+                  options={options.prizePool}
+                  applied={filters.prizePool}
+                  onApply={setCol("prizePool")}
+                  ariaLabel="Garantido"
+                />
+              </div>
+            </TableHead>
+            <TableHead className="min-w-[88px] text-center text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
               <div className="flex items-center justify-center gap-0.5">
                 <ColumnFilter
                   columnId="playerCount"
@@ -323,13 +394,27 @@ const GradeRulesTable = memo(function GradeRulesTable({
                 />
               </div>
             </TableHead>
-            <TableHead className="w-[80px] text-right"></TableHead>
+            <TableHead className="min-w-[120px] max-w-[200px] text-left text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              <div className="flex items-center justify-start gap-0.5">
+                <ColumnFilter
+                  columnId="excludePattern"
+                  label={<FilteredColumnTitle active={filters.excludePattern !== null}>Excluir</FilteredColumnTitle>}
+                  options={options.excludePattern}
+                  applied={filters.excludePattern}
+                  onApply={setCol("excludePattern")}
+                  ariaLabel="Padrão de exclusão"
+                />
+              </div>
+            </TableHead>
+            <TableHead className="w-[88px] border-l border-border/40 text-right text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              <span className="sr-only">Ações</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="[&_tr:last-child]:border-b [&_tr:last-child]:border-border/60">
           {rules.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+            <TableRow className="border-b border-border/60 hover:bg-transparent">
+              <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
                 Nenhuma regra encontrada.
               </TableCell>
             </TableRow>
@@ -346,7 +431,8 @@ const GradeRulesTable = memo(function GradeRulesTable({
           )}
         </TableBody>
       </Table>
-    </DataTableShell>
+      </DataTableShell>
+    </div>
   );
 });
 

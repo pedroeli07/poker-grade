@@ -14,6 +14,8 @@ import {
   TOPBAR_USER_FALLBACK_NAME,
   TOPBAR_USER_MENU_TITLE,
 } from "@/lib/constants/topbar";
+import { accountProfileHref } from "@/lib/constants/navigation";
+import type { UserRole } from "@prisma/client";
 import { cn, getUserDisplayInitials } from "@/lib/utils";
 import { useTopbarClock } from "@/hooks/use-topbar-clock";
 
@@ -40,11 +42,13 @@ function CurrentTimeDisplay() {
 }
 
 function Topbar({
+  userRole,
   displayName,
   email,
   avatarUrl,
   initialUnreadCount,
 }: {
+  userRole: UserRole;
   displayName: string | null;
   email: string;
   avatarUrl: string | null;
@@ -148,7 +152,7 @@ function Topbar({
               </div>
               <div className="p-1">
                 <Link
-                  href="/dashboard/profile"
+                  href={accountProfileHref(userRole)}
                   className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
                   onClick={() => setDropdownOpen(false)}
                 >

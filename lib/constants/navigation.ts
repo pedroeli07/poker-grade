@@ -1,4 +1,13 @@
 import { UserRole } from "@prisma/client";
+
+/** Staff usa prefixo `/admin`; jogadores são bloqueados em `/admin/*` pelo proxy e devem usar `/jogador/...`. */
+export function accountProfileHref(role: UserRole): string {
+  return role === UserRole.PLAYER ? "/jogador/meu-perfil" : "/admin/meu-perfil";
+}
+
+export function accountNotificationsHref(role: UserRole): string {
+  return role === UserRole.PLAYER ? "/jogador/notificacoes" : "/admin/notificacoes";
+}
 import { SharkIcon } from "@/components/shark-icon";
 import type { SidebarNavEntry } from "@/lib/types";
 import {
@@ -28,32 +37,35 @@ import { nodeEnv } from "./env";
 type PrimaryNavRow = { title: string; href: string; icon: LucideIcon; exact?: true };
 
 const PRIMARY_NAV: PrimaryNavRow[] = [
-  { title: "Dashboard", href: "/dashboard", icon: Home, exact: true },
-  { title: "Minha Grade", href: "/dashboard/minha-grade", icon: Layers },
-  { title: "Meus Torneios", href: "/dashboard/minha-grade/torneios", icon: ListOrdered },
-  { title: "Jogadores", href: "/dashboard/players", icon: Users },
-  { title: "Usuários", href: "/dashboard/users", icon: UserRoundCog },
+  { title: "Dashboard", href: "/admin/dashboard", icon: Home, exact: true },
+  { title: "Início", href: "/jogador/dashboard", icon: Home, exact: true },
+  { title: "Minha Grade", href: "/jogador/minha-grade", icon: Layers },
+  { title: "Meus Torneios", href: "/jogador/meus-torneios", icon: ListOrdered },
+  { title: "Metas", href: "/jogador/metas", icon: Target },
+  { title: "Histórico", href: "/jogador/historico", icon: History },
+  { title: "Jogadores", href: "/admin/jogadores", icon: Users },
+  { title: "Usuários", href: "/admin/usuarios", icon: UserRoundCog },
 ];
 
 const GRADES_GROUP_ICON: LucideIcon = Grid3X3;
 
 const GRADES_ITEMS = [
-  { title: "Perfis", href: "/dashboard/grades", icon: Grid2x2Check },
-  { title: "Importações", href: "/dashboard/imports", icon: Upload },
-  { title: "Revisão", href: "/dashboard/review", icon: AlertTriangle },
-  { title: "Targets", href: "/dashboard/targets", icon: Target },
-  { title: "Histórico", href: "/dashboard/history", icon: History },
+  { title: "Perfis", href: "/admin/grades/perfis", icon: Grid2x2Check },
+  { title: "Importações", href: "/admin/grades/importacoes", icon: Upload },
+  { title: "Revisão", href: "/admin/grades/revisao", icon: AlertTriangle },
+  { title: "Metas", href: "/admin/grades/metas", icon: Target },
+  { title: "Histórico", href: "/admin/grades/historico", icon: History },
 ];
 
 const SHARKSCOPE_ITEMS = [
-  { title: "Alertas", href: "/dashboard/sharkscope/alerts", icon: BellRing },
-  { title: "Analytics", href: "/dashboard/sharkscope/analytics", icon: LineChart },
-  { title: "Scouting", href: "/dashboard/sharkscope/scouting", icon: Binoculars },
+  { title: "Alertas", href: "/admin/sharkscope/alertas", icon: BellRing },
+  { title: "Análises", href: "/admin/sharkscope/analises", icon: LineChart },
+  { title: "Avaliação", href: "/admin/sharkscope/avaliacao", icon: Binoculars },
   ...(nodeEnv === "development"
     ? [
-        { title: "Debug grupo", href: "/dashboard/sharkscope/group-compare", icon: FlaskConical },
-        { title: "Debug 1 jogador", href: "/dashboard/sharkscope/player-debug", icon: Bug },
-        { title: "Debug analytics", href: "/dashboard/sharkscope/analytics-debug", icon: LineChart },
+        { title: "Debug Grupo", href: "/admin/sharkscope/group-compare", icon: FlaskConical },
+        { title: "Debug 1 Jogador", href: "/admin/sharkscope/player-debug", icon: Bug },
+        { title: "Debug Análises", href: "/admin/sharkscope/analytics-debug", icon: LineChart },
       ]
     : []),
 ];
@@ -81,15 +93,17 @@ export const SIDEBAR_NAV_ITEMS: SidebarNavEntry[] = [
 ];
 
 export const SIDEBAR_SECONDARY_ITEMS = [
-  { title: "Notificações", href: "/dashboard/notifications", icon: Bell },
-  { title: "Meu Perfil", href: "/dashboard/profile", icon: UserCircle },
+  { title: "Notificações", href: "/admin/notificacoes", icon: Bell },
+  { title: "Meu Perfil", href: "/admin/meu-perfil", icon: UserCircle },
 ] as const;
 
 /** Rotas `kind: "link"` mostradas a PLAYER (entradas em grupo não entram nesta lista). */
 export const SIDEBAR_PLAYER_LINK_HREFS = [
-  "/dashboard/minha-grade",
-  "/dashboard/minha-grade/torneios",
-  "/dashboard/history",
+  "/jogador/dashboard",
+  "/jogador/minha-grade",
+  "/jogador/meus-torneios",
+  "/jogador/metas",
+  "/jogador/historico",
 ] as const;
 
 function collectSidebarHrefs(entries: SidebarNavEntry[]): string[] {

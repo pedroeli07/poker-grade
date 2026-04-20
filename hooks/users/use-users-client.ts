@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { distinctOptions } from "@/lib/utils";
+import { usePersistentState } from "@/hooks/use-persistent-state";
 import { useUsersStore } from "@/lib/stores/use-users-store";
 import { useUserActions } from "@/hooks/user/use-user-actions";
 import { ROLE_VISUAL } from "@/components/user/user-badges";
@@ -22,18 +23,25 @@ export function useUserClient(initialRows: UserDirectoryRow[]) {
   const { canManage } = useUserPermissions();
   const [inviteOpen, setInviteOpen] = useState(false);
   const canManageUsers = canManage ?? false;
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery, searchHydrated] = usePersistentState<string>(
+    "gestao-grades:users:search",
+    ""
+  );
   const {
     filters,
     setColumnFilter,
     clearFilters,
     hasAnyFilter: anyFilter,
   } = useUsersStore();
-  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
-  const [tableSort, setTableSort] = useState<{
+  const [viewMode, setViewMode, viewHydrated] = usePersistentState<"grid" | "table">(
+    "gestao-grades:users:view",
+    "table"
+  );
+  const [tableSort, setTableSort, sortHydrated] = usePersistentState<{
     key: UserColumnKey;
     dir: SortDir;
-  } | null>(null);
+  } | null>("gestao-grades:users:sort", null);
+  const hydrated = searchHydrated && viewHydrated && sortHydrated;
   const { runAction, pending } = useUserActions();
 
   const options = useMemo(
@@ -70,7 +78,7 @@ export function useUserClient(initialRows: UserDirectoryRow[]) {
         nextSortState(prev, key, kind === "date" ? "date" : kind)
       );
     },
-    []
+    [setTableSort]
   );
 
   const stats = useMemo(
@@ -99,7 +107,7 @@ export function useUserClient(initialRows: UserDirectoryRow[]) {
     setSearchQuery("");
     clearFilters();
     setTableSort(null);
-  }, [clearFilters]);
+  }, [clearFilters, setSearchQuery, setTableSort]);
 
   return {
     canManageUsers,
@@ -109,6 +117,7 @@ export function useUserClient(initialRows: UserDirectoryRow[]) {
     setSearchQuery,
     viewMode,
     setViewMode,
+    hydrated,
     tableSort,
     filters,
     options,

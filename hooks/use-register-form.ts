@@ -175,7 +175,7 @@ export function useRegisterForm() {
           return;
         }
         toast.success(registerMessages.toast.registerSuccess);
-        router.push(data.redirect ?? "/dashboard");
+        router.push(data.redirect ?? "/admin/dashboard");
         router.refresh();
       } catch {
         toast.error(registerMessages.toast.registerNetwork);

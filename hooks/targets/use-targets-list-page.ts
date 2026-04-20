@@ -1,18 +1,24 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect, useLayoutEffect } from "react";
+import { useMemo, useCallback, useEffect } from "react";
+import { usePersistentState } from "@/hooks/use-persistent-state";
 import { useQuery } from "@tanstack/react-query";
 import type { TargetListRow } from "@/lib/types";
 import { getTargetsListDataAction } from "@/lib/queries/db/target";
 import { targetKeys } from "@/lib/queries/target-query-keys";
 import { LIMIT_ACTION_LABEL, NONE_LIMIT } from "@/lib/constants/grade";
-import { TARGETS_LS_VIEW } from "@/lib/constants/target";
+import { CATEGORIES, TARGETS_LS_VIEW } from "@/lib/constants/target";
 import { distinctOptions } from "@/lib/utils";
 import { getTargetStatusLabel } from "@/lib/utils/target";
 import type { ColKey } from "@/lib/types";
 import { useTargetsListStore } from "@/lib/stores/use-targets-list-store";
+import { useTargetsBulkActions } from "@/hooks/targets/use-targets-bulk-actions";
 
-export function useTargetsListPage(initialRows: TargetListRow[]) {
+export function useTargetsListPage(
+  initialRows: TargetListRow[],
+  opts?: { isPlayer?: boolean }
+) {
+  const isPlayer = opts?.isPlayer ?? false;
   const { data: rows = initialRows } = useQuery({
     queryKey: targetKeys.list(),
     queryFn: async () => {
@@ -24,37 +30,25 @@ export function useTargetsListPage(initialRows: TargetListRow[]) {
     staleTime: 30_000,
   });
 
-  const [view, setView] = useState<"cards" | "table">("cards");
-  const [storageHydrated, setStorageHydrated] = useState(false);
-
-  useLayoutEffect(() => {
-    try {
-      const raw = localStorage.getItem(TARGETS_LS_VIEW);
-      if (raw === "cards" || raw === "table") setView(raw);
-    } catch {
-      /* ignore */
-    } finally {
-      setStorageHydrated(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!storageHydrated) return;
-    try {
-      localStorage.setItem(TARGETS_LS_VIEW, view);
-    } catch {
-      /* ignore */
-    }
-  }, [view, storageHydrated]);
+  const [view, setView, viewHydrated] = usePersistentState<"cards" | "table">(
+    TARGETS_LS_VIEW,
+    "cards"
+  );
   const { filters, setColumnFilter, clearFilters, hasAnyFilter: anyFilter } =
     useTargetsListStore();
+
+  useEffect(() => {
+    if (!isPlayer) return;
+    if (filters.player !== null) setColumnFilter("player", null);
+  }, [isPlayer, filters.player, setColumnFilter]);
 
   const options = useMemo(
     () => ({
       name: distinctOptions(rows, (r) => ({ value: r.name, label: r.name })),
       category: distinctOptions(rows, (r) => ({
         value: r.category,
-        label: r.category,
+        label:
+          CATEGORIES.find((c) => c.value === r.category)?.label ?? r.category,
       })),
       player: distinctOptions(rows, (r) => ({
         value: r.playerId,
@@ -85,7 +79,12 @@ export function useTargetsListPage(initialRows: TargetListRow[]) {
         if (filters.name && !filters.name.has(r.name)) return false;
         if (filters.category && !filters.category.has(r.category))
           return false;
-        if (filters.player && !filters.player.has(r.playerId)) return false;
+        if (
+          !isPlayer &&
+          filters.player &&
+          !filters.player.has(r.playerId)
+        )
+          return false;
         if (filters.status && !filters.status.has(r.status)) return false;
         if (filters.targetType && !filters.targetType.has(r.targetType))
           return false;
@@ -94,7 +93,7 @@ export function useTargetsListPage(initialRows: TargetListRow[]) {
           return false;
         return true;
       }),
-    [rows, filters]
+    [rows, filters, isPlayer]
   );
 
   const setCol = useCallback(
@@ -104,15 +103,19 @@ export function useTargetsListPage(initialRows: TargetListRow[]) {
     [setColumnFilter]
   );
 
+  const bulk = useTargetsBulkActions();
+
   return {
     rows,
     view,
     setView,
+    viewHydrated,
     filters,
     options,
     filtered,
     anyFilter,
     clearFilters,
     setCol,
+    ...bulk,
   };
 }

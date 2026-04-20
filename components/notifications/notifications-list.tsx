@@ -16,6 +16,7 @@ import {
   NotificationTextSearchFilter,
   NotificationDateRangeFilter,
 } from "@/components/notifications/notifications-table-column-filters";
+import { normalizeNotificationLink } from "@/lib/utils/notification";
 
 const typeOptions = Object.entries(TYPE_LABELS).map(([value, label]) => ({ value, label }));
 
@@ -23,6 +24,8 @@ const NotificationsList = memo(function NotificationsList({
   items,
   viewMode,
   selected,
+  allSelected,
+  onToggleAll,
   onToggleSelect,
   onMarkRead,
   onDelete,
@@ -37,6 +40,8 @@ const NotificationsList = memo(function NotificationsList({
   items: NotificationItem[];
   viewMode: "cards" | "table";
   selected: Set<string>;
+  allSelected: boolean;
+  onToggleAll: () => void;
   onToggleSelect: (id: string) => void;
   onMarkRead: (id: string) => void;
   onDelete: (id: string) => void;
@@ -53,10 +58,30 @@ const NotificationsList = memo(function NotificationsList({
       <div className="rounded-xl border border-border bg-white overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-blue-500/20 border-b border-border text-muted-foreground text-xs font-semibold">
+            <thead className="border-b border-border bg-blue-500/20 text-left text-base font-semibold text-foreground">
               <tr>
-                <th className="px-4 py-3 w-10 text-center align-middle">
-                  <div className="flex justify-center" />
+                <th className="w-10 px-4 py-3 text-center align-middle">
+                  <button
+                    type="button"
+                    onClick={onToggleAll}
+                    disabled={items.length === 0}
+                    className={cn(
+                      "mx-auto flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border transition-colors shadow-sm",
+                      allSelected && items.length > 0
+                        ? "border-primary bg-primary shadow-none"
+                        : "border-foreground/35 bg-white hover:border-primary/70",
+                      items.length === 0 && "cursor-not-allowed opacity-40"
+                    )}
+                    aria-label={
+                      allSelected && items.length > 0
+                        ? "Desmarcar todas nesta página"
+                        : "Selecionar todas nesta página"
+                    }
+                  >
+                    {allSelected && items.length > 0 ? (
+                      <Check className="h-3 w-3 text-white" />
+                    ) : null}
+                  </button>
                 </th>
                 <th className="px-4 py-3 align-middle normal-case">
                   <div className="flex items-center gap-0.5">
@@ -82,7 +107,7 @@ const NotificationsList = memo(function NotificationsList({
                     onApply={onApplyDateRange}
                   />
                 </th>
-                <th className="px-4 py-3 text-right align-middle uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-right align-middle font-semibold tracking-wide text-foreground">
                   Ações
                 </th>
               </tr>
@@ -92,6 +117,7 @@ const NotificationsList = memo(function NotificationsList({
                 const cfg = TYPE_CONFIG[notif.type];
                 const Icon = cfg.icon;
                 const isSelected = selected.has(notif.id);
+                const resolvedLink = normalizeNotificationLink(notif.link);
 
                 return (
                   <tr
@@ -99,7 +125,8 @@ const NotificationsList = memo(function NotificationsList({
                     className={cn(
                       "transition-colors group rounded-xl border-2",
                       !notif.read && !isSelected && "bg-blue-200/20 border-blue-200 border-2",
-                      isSelected && "bg-primary/10"
+                      isSelected &&
+                        "border-destructive/35 bg-red-50 dark:bg-destructive/15 dark:border-destructive/40"
                     )}
                   >
                     <td className="px-4 py-3 text-center">
@@ -107,8 +134,10 @@ const NotificationsList = memo(function NotificationsList({
                         type="button"
                         onClick={() => onToggleSelect(notif.id)}
                         className={cn(
-                          "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors mx-auto cursor-pointer",
-                          isSelected ? "bg-primary border-primary" : "border-border hover:border-primary/60"
+                          "mx-auto flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border shadow-sm transition-colors",
+                          isSelected
+                            ? "border-primary bg-primary shadow-none"
+                            : "border-foreground/35 bg-white hover:border-primary/70"
                         )}
                       >
                         {isSelected && <Check className="h-3 w-3 text-white" />}
@@ -135,10 +164,10 @@ const NotificationsList = memo(function NotificationsList({
                       {format(new Date(notif.createdAt), "dd/MM/yy HH:mm", { locale: ptBR })}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                        {notif.link && (
+                      <div className="flex items-center justify-end gap-1">
+                        {resolvedLink && (
                           <Link
-                            href={notif.link}
+                            href={resolvedLink}
                             title="Abrir"
                             className="p-1.5 rounded-md hover:bg-primary/10 hover:text-primary transition-colors"
                           >

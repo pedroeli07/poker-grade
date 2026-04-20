@@ -30,3 +30,5 @@ export const updateNickSchema = addNickSchema.partial().extend({
 
 export const playerIdFieldSchema = cuid;
 export const targetIdSchema = cuid;
+
+export const deleteTargetIdsSchema = z.array(targetIdSchema).min(1).max(80);

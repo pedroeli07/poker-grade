@@ -317,5 +317,6 @@ export function useNotificationsPage(initialData: NotificationsPageData) {
     handleDeleteSelected,
     allSelected,
     isPending,
+    storageHydrated,
   };
 }

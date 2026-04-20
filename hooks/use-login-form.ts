@@ -78,7 +78,7 @@ export function useLoginForm() {
           return;
         }
         toast.success(loginMessages.toast.sessionStarted);
-        router.push("/dashboard");
+        router.push("/admin/dashboard");
         router.refresh();
       } catch {
         toast.error(loginMessages.toast.network);
