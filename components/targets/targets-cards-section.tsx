@@ -5,7 +5,7 @@ import { Target as TargetWatermarkIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { TargetCard } from "@/components/targets/target-card";
 import TargetsEmptyState from "@/components/targets/targets-view-components";
-import type { TargetListRow } from "@/lib/types";
+import type { TargetListRow } from "@/lib/types/target/index";
 import { useTargetsCardsSection } from "@/hooks/targets/use-targets-cards-section";
 
 const TargetsCardsSection = memo(function TargetsCardsSection({

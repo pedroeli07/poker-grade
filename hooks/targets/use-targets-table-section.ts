@@ -2,7 +2,8 @@
 
 import { useCallback, useMemo, useState } from "react";
 import type { ColumnSortKind } from "@/lib/types/dataTable";
-import type { ColKey, TargetListRow, TargetsTableSortState } from "@/lib/types";
+import type { ColKey } from "@/lib/types/columnKeys";
+import type { TargetListRow, TargetsTableSortState } from "@/lib/types/target/index";
 import { nextSortState } from "@/lib/table-sort";
 import { sortTargetsTableRows } from "@/lib/utils/target";
 import { useTargetListViewModels } from "@/hooks/targets/use-target-list-view-models";

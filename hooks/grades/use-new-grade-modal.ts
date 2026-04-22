@@ -2,9 +2,9 @@
 
 import { useCallback, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { createGradeProfile } from "@/lib/queries/db/grade";
+import { createGradeProfile } from "@/lib/queries/db/grade/create-mutations";
 import { toast } from "@/lib/toast";
-import { isNextRedirectError } from "@/lib/utils";
+import { isNextRedirectError } from "@/lib/utils/auth-session";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals";
 

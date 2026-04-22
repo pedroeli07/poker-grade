@@ -2,9 +2,9 @@ import type { LucideIcon } from "lucide-react";
 import { Globe, Layers, Trophy, Zap } from "lucide-react";
 import type { SiteChartYMetric } from "@/lib/site-analytics-chart";
 import { statBadgeAmber, statBadgeEmerald, statBadgeMuted, statBadgeRed } from "@/lib/constants/classes";
-import type { SharkscopeAnalyticsPeriod, SharkscopeAnalyticsTab, TypeStat } from "@/lib/types";
-import type { StakeTierKey } from "@/lib/types";
-
+import type { SharkscopeAnalyticsPeriod, SharkscopeAnalyticsTab } from "@/lib/types/sharkscope/analytics/index";
+import type { TypeStat } from "@/lib/types/sharkScopeTypes";
+import type { StakeTierKey } from "@/lib/types/sharkScopeTypes";
 // ═══ analytics-ui-colors ═══════════════════════════════════════════════════════
 
 /**

@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { ArrowLeft, Pencil, Plus, X, Check, Loader2 } from "lucide-react";
 import { useGradeDetailPage } from "@/hooks/grades/use-grade-detail-page";
-import type { GradeDetailQueryData } from "@/lib/types";
-import { cardClassName } from "@/lib/constants";
+import type { GradeDetailQueryData } from "@/lib/types/grade/index";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 import { Button } from "@/components/ui/button";
 import { memo, lazy, Suspense, useTransition, useMemo } from "react";
 import { useEditableGradeNote } from "@/hooks/grades/use-editable-grade-note";
 import { useQueryClient } from "@tanstack/react-query";
-import { createGradeRule } from "@/lib/queries/db/grade";
+import { createGradeRule } from "@/lib/queries/db/grade/create-mutations";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
 import { toast } from "@/lib/toast";
 import { useGradeRulesList } from "@/hooks/grades/use-grade-rules-list";

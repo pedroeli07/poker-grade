@@ -1,8 +1,11 @@
 export type SortDir = "asc" | "desc";
 
+/** Ordenação de coluna em tabelas (reutilizável em qualquer grid). */
+export type TableSortState<K extends string = string> = { key: K; dir: SortDir } | null;
+
 /** Próximo estado ao clicar no cabeçalho: primeira vez usa direção padrão por tipo de coluna. */
 export function nextSortState<K extends string>(
-  prev: { key: K; dir: SortDir } | null,
+  prev: TableSortState<K>,
   key: K,
   kind: "number" | "string" | "date"
 ): { key: K; dir: SortDir } {

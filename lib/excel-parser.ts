@@ -8,7 +8,7 @@
  */
 
 import * as XLSX from "xlsx";
-import type { ExcelTournamentRow, ExcelParseResult } from "@/lib/types";
+import type { ExcelTournamentRow, ExcelParseResult } from "@/lib/types/imports/index";
 import { createLogger } from "./logger";
 
 const log = createLogger("excel-parser");

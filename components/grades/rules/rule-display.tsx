@@ -1,4 +1,5 @@
-import type { GradeRuleCardRule, LobbyzeFilterItem } from "@/lib/types";
+import type { GradeRuleCardRule } from "@/lib/types/grade/index";
+import type { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
 import {
   DollarSign,
   Users,

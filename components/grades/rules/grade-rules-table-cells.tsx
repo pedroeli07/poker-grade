@@ -1,13 +1,13 @@
 import { memo } from "react";
 import { TrendingUp, Infinity as InfinityIcon } from "lucide-react";
-import type { GradeRuleCardRule, LobbyzeFilterItem } from "@/lib/types";
+import type { GradeRuleCardRule } from "@/lib/types/grade/index";
+import type { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
 import { gradesRulesPillClass } from "@/lib/constants/classes";
 import { GRADE_RULE_GTD_OPEN_MAX_TITLE } from "@/lib/constants/grade-rule-display";
 import {
   formatGradeRuleUsdInt,
 } from "@/lib/utils/grade-rule-display";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 export const StackedPills = memo(function StackedPills({ items }: { items: LobbyzeFilterItem[] }) {
   if (items.length === 0) return null;
   return (

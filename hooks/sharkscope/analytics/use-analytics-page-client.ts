@@ -5,13 +5,8 @@ import {
   SHARKSCOPE_ANALYTICS_LS_PERIOD,
   SHARKSCOPE_ANALYTICS_LS_TAB,
 } from "@/lib/constants/sharkscope/analytics";
-import { pickSharkscopeStatsByPeriod } from "@/lib/utils";
-import type {
-  AnalyticsClientProps,
-  SharkscopeAnalyticsPeriod,
-  SharkscopeAnalyticsTab,
-} from "@/lib/types";
-
+import { pickSharkscopeStatsByPeriod } from "@/lib/utils/sharkscope-extract";
+import type { AnalyticsClientProps, SharkscopeAnalyticsPeriod, SharkscopeAnalyticsTab } from "@/lib/types/sharkscope/analytics/index";
 const PERIODS: SharkscopeAnalyticsPeriod[] = ["30d", "90d"];
 const TABS: SharkscopeAnalyticsTab[] = ["site", "ranking", "tier", "bounty"];
 

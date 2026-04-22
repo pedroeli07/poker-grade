@@ -2,10 +2,8 @@
 
 import { useId, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { PasswordInputProps } from "@/lib/types";
-
-
+import { cn } from "@/lib/utils/cn";
+import type { PasswordInputProps } from "@/lib/types/view-types";
 export function PasswordInput({
   className,
   containerClassName,

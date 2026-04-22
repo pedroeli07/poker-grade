@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useTransition } from "react";
-import type { EditPlayerModalProps } from "@/lib/types";
-
+import type { EditPlayerModalProps } from "@/lib/types/player/index";
 export function useEditPlayerModal({
   onOpenChange,
 }: Pick<EditPlayerModalProps, "onOpenChange">) {

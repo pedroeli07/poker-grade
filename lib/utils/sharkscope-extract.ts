@@ -4,13 +4,9 @@ import {
   SHARKSCOPE_STAT_CONTAINER_PATHS,
   SHARKSCOPE_STAT_ID_EXTRA_ALIASES,
 } from "@/lib/constants/sharkscope/stat-extract";
-import {
-  type NetworkStat,
-  type ScoutingSearchStats,
-  type SharkscopeAlertFilters,
-  type SharkscopeAlertRow,
-  type StatisticJson,
-} from "@/lib/types";
+import type { NetworkStat, ScoutingSearchStats } from "@/lib/types/sharkScopeTypes";
+import type { SharkscopeAlertFilters, SharkscopeAlertRow } from "@/lib/types/sharkscope/alerts/index";
+import type { StatisticJson } from "@/lib/types/view-types";
 import type { SharkscopeAnalyticsPeriod } from "@/lib/types/sharkscope/analytics";
 import { lookupSharkscopeStat, parseSharkscopeStatisticNode } from "@/lib/sharkscope-stat-scan";
 

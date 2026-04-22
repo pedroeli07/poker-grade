@@ -1,4 +1,4 @@
-import { superAdminEmail } from "@/lib/constants";
+import { superAdminEmail } from "@/lib/constants/env";
 
 export const normalizeAuthEmail = (raw: string) => raw.toLowerCase().trim();
 export const isSuperAdminEmail = (email: string) => normalizeAuthEmail(email) === superAdminEmail;

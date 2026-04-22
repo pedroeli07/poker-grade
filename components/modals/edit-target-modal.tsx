@@ -13,9 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Pencil, Loader2, ChevronRight } from "lucide-react";
 import { useEditTargetModal } from "@/hooks/targets/use-edit-target-modal";
-import type { EditTargetModalProps } from "@/lib/types";
-import { CATEGORIES, LIMIT_ACTIONS } from "@/lib/constants";
-
+import type { EditTargetModalProps } from "@/lib/types/target/index";
+import { CATEGORIES, LIMIT_ACTIONS } from "@/lib/constants/target";
 const EditTargetModal = memo(function EditTargetModal(props: EditTargetModalProps) {
   const { target } = props;
   const {

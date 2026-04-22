@@ -36,3 +36,5 @@ export const playerMutations = new ThrowingDashboardMutation(
   playerQueriesLog,
   "Erro na mutation de player"
 );
+
+export const teamQueriesLog = createLogger("team.queries");

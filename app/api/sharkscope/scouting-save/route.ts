@@ -4,9 +4,8 @@ import { isScoutingStaffRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation } from "@/lib/rate-limit";
-import { scoutBodySchema } from "@/lib/schemas";
-import { ErrorTypes } from "@/lib/types";
-
+import { scoutBodySchema } from "@/lib/schemas/sharkscope";
+import { ErrorTypes } from "@/lib/types/primitives";
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session || !isScoutingStaffRole(session.role)) {

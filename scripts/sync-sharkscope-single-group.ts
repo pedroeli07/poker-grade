@@ -14,7 +14,7 @@
  */
 import "dotenv/config";
 
-import { runDailySyncSharkScope } from "@/lib/sharkscope/run-daily-sync";
+import { runDailySyncSharkScope } from "@/lib/sharkscope/daily-sync/run-daily-sync";
 
 function parseArgs(): { group: string; forceRefresh: boolean } {
   const argv = process.argv.slice(2);

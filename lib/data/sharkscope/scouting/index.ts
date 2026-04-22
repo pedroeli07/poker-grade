@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
-import { buildNetworkOptions, canManageGrades } from "@/lib/utils";
-import type { ScoutingClientProps } from "@/lib/types";
-
+import { buildNetworkOptions } from "@/lib/utils/app-routing";
+import { canManageGrades } from "@/lib/utils/auth-permissions";
+import type { ScoutingClientProps } from "@/lib/types/sharkscope/scouting/index";
 export async function loadScoutingClientProps(): Promise<ScoutingClientProps> {
   const saved = await prisma.scoutingAnalysis.findMany({
     orderBy: { createdAt: "desc" },

@@ -1,19 +1,19 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { extractStat } from "@/lib/sharkscope-parse";
-import { POKER_NETWORKS } from "@/lib/constants";
+import { POKER_NETWORKS } from "@/lib/constants/poker-networks";
 import {
   SHARKSCOPE_STATS_FILTER_30D,
   SHARKSCOPE_STATS_FILTER_90D,
   SHARKSCOPE_TYPE_BREAKDOWN_KEYS,
   SHARKSCOPE_TYPE_BREAKDOWN_KEYS_90D,
-} from "@/lib/constants/sharkscope-type-filters";
+} from "@/lib/constants/sharkscope/type-filters";
 import {
   SHARKSCOPE_GROUP_SITE_BREAKDOWN_30D,
   SHARKSCOPE_GROUP_SITE_BREAKDOWN_90D,
   sharkscopeAnalyticsSiteByNick,
   sharkscopeAnalyticsSiteFallbackNicks,
-} from "@/lib/constants/sharkscope-group-site";
+} from "@/lib/constants/sharkscope/group-site";
 import {
   emptyNetworkAggBucket,
   parseGroupSiteBreakdownPayload,
@@ -23,15 +23,9 @@ import {
   type GroupSiteBreakdownPayload,
   type NetworkAggBucket,
 } from "@/lib/sharkscope/completed-tournaments-aggregate";
-import type {
-  NetworkStat,
-  RankingEntry,
-  SiteAnalyticsPayload,
-  StakeTierKey,
-  TierStat,
-  TypeStat,
-} from "@/lib/types";
-import { sharkscopeStatsHasData } from "@/lib/utils";
+import type { NetworkStat, StakeTierKey, TierStat, TypeStat } from "@/lib/types/sharkScopeTypes";
+import type { RankingEntry, SiteAnalyticsPayload } from "@/lib/types/sharkscope/analytics/index";
+import { sharkscopeStatsHasData } from "@/lib/utils/sharkscope-extract";
 import {
   classifyStakeTier,
   STAKE_TIER_LABEL_PT,

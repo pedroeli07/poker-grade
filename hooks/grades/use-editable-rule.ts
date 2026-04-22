@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/toast";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
-import { deleteGradeRule, updateGradeRule } from "@/lib/queries/db/grade";
-import { FIELD_CONFIG } from "@/lib/constants";
-import { parseValue, normalizeArray } from "@/lib/utils/index";
-import type { GradeRuleCardRule, UpdateGradeRuleInput } from "@/lib/types";
-
+import { deleteGradeRule } from "@/lib/queries/db/grade/delete-mutations";
+import { updateGradeRule } from "@/lib/queries/db/grade/update-mutations";
+import { FIELD_CONFIG } from "@/lib/constants/grade";
+import { parseValue, normalizeArray } from "@/lib/utils/parse-forms";
+import type { GradeRuleCardRule, UpdateGradeRuleInput } from "@/lib/types/grade/index";
 export function useEditableRule(rule: GradeRuleCardRule, manage: boolean, gradeProfileId: string) {
   const qc = useQueryClient();
 

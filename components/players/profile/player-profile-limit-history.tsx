@@ -1,8 +1,8 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { History } from "lucide-react";
-import { LIMIT_ACTION_CONFIG } from "@/lib/constants";
-import type { PlayerProfileRecord } from "@/lib/types";
+import { LIMIT_ACTION_CONFIG } from "@/lib/constants/grade";
+import type { PlayerProfileRecord } from "@/lib/types/player/index";
 import { memo } from "react";
 
 const PlayerProfileLimitHistory = memo(function PlayerProfileLimitHistory({

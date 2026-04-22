@@ -1,6 +1,7 @@
-import { cn, isTextSelected } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
+import { isTextSelected } from "@/lib/utils/lobbyze-filters";
 import { toggleByText } from "./toggle-by-text";
-import { LobbyzeFilterItem } from "@/lib/types";
+import { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
 import { memo } from "react";
 
 const MultiToggleRow = memo(function MultiToggleRow({

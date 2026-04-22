@@ -6,26 +6,14 @@ import ColumnFilter from "@/components/column-filter";
 import DataTableShell from "@/components/data-table/data-table-shell";
 import DataTableToolbar from "@/components/data-table/data-table-toolbar";
 import FilteredColumnTitle from "@/components/data-table/filtered-column-title";
-import { cn } from "@/lib/utils";
-import {
-  dataTableHeaderRowActiveRingClass,
-  dataTableHeaderRowClass,
-  IMPORTS_COLUMN_IDS,
-  IMPORTS_COLUMN_LABELS,
-  IMPORTS_LIST_EMPTY_FILTERED_MESSAGE,
-  IMPORTS_LIST_EMPTY_MESSAGE,
-  IMPORTS_LIST_TABLE_COLSPAN_BASE,
-  IMPORTS_LIST_TABLE_COLSPAN_WITH_DELETE,
-  IMPORTS_TABLE_COLUMN_ORDER,
-} from "@/lib/constants";
+import { cn } from "@/lib/utils/cn";
+import { dataTableHeaderRowActiveRingClass, dataTableHeaderRowClass } from "@/lib/constants/classes";
+import { IMPORTS_COLUMN_IDS, IMPORTS_COLUMN_LABELS, IMPORTS_LIST_EMPTY_FILTERED_MESSAGE, IMPORTS_LIST_EMPTY_MESSAGE, IMPORTS_LIST_TABLE_COLSPAN_BASE, IMPORTS_LIST_TABLE_COLSPAN_WITH_DELETE, IMPORTS_TABLE_COLUMN_ORDER } from "@/lib/constants/imports";
 import { importsListColumnSortKind } from "@/lib/utils/imports";
 import ImportsTableRow from "@/components/imports/imports-table-row";
-import type {
-  ColumnOptions,
-  ImportListRow,
-  ImportsColumnKey,
-  ImportsFilters,
-} from "@/lib/types";
+import type { ColumnOptions } from "@/lib/types/primitives";
+import type { ImportListRow } from "@/lib/types/imports/index";
+import type { ImportsColumnKey, ImportsFilters } from "@/lib/types/columnKeys";
 import { memo } from "react";
 import SortButton from "@/components/sort-button";
 import { useImportsListTable } from "@/hooks/imports/use-imports-list-table";

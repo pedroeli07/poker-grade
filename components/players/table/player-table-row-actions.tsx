@@ -28,21 +28,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TableCell } from "@/components/ui/table";
 import { MoreHorizontal, Pencil, Settings2, Trash } from "lucide-react";
-import { deletePlayer } from "@/lib/queries/db/player";
+import { deletePlayer } from "@/lib/queries/db/player/delete-mutations";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import type { PlayerTableRowActionsProps } from "@/lib/types";
-import { deletePlayerActionErrorMessage, cn } from "@/lib/utils";
-import { 
-  destructiveAlertDialogContentClassName, 
-  destructiveAlertHeaderClassName, 
-  destructiveAlertTitleClassName, 
-  destructiveAlertDescriptionWrapClassName, 
-  destructiveAlertFooterClassName, 
-  destructiveAlertCancelButtonClassName, 
-  destructiveAlertConfirmButtonClassName,
-  playersTableCol } from "@/lib/constants";
-
+import type { PlayerTableRowActionsProps } from "@/lib/types/player/index";
+import { deletePlayerActionErrorMessage } from "@/lib/utils/player";
+import { cn } from "@/lib/utils/cn";
+import { destructiveAlertDialogContentClassName, destructiveAlertHeaderClassName, destructiveAlertTitleClassName, destructiveAlertDescriptionWrapClassName, destructiveAlertFooterClassName, destructiveAlertCancelButtonClassName, destructiveAlertConfirmButtonClassName, playersTableCol } from "@/lib/constants/classes";
 const PlayerTableRowActions = memo(function PlayerTableRowActions({
   player,
   canEditPlayers,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { updateGradeRuleSchema } from "@/lib/schemas";
+import { updateGradeRuleSchema } from "@/lib/schemas/grade";
 import type { BaseEntity, EntityRef, WithId } from "../primitives";
 import type { GradesColumnKey } from "../columnKeys";
 import type { LobbyzeFilterItem } from "../lobbyzeTypes";
@@ -53,17 +53,17 @@ export type GradesListPageProps = { rows: GradeListRow[]; manage: boolean; playe
 export type { PlayerSelectOption };
 export type GradeDetailClientProps = { gradeId: string; initialData: GradeDetailQueryData };
 
-export interface GradeViewProps {
-    grade: GradeListRow;
-    manage: boolean;
-  }
-  
+export type GradeViewProps = {
+  grade: GradeListRow;
+  manage: boolean;
+};
+
 export type GradeCardProps = GradeViewProps;
 export type GradeTableRowProps = GradeViewProps;
 
-export interface GradeAssignmentView extends WithId {
+export type GradeAssignmentView = WithId & {
   gradeType: string;
   isActive: boolean;
   gradeProfile: EntityRef & { _count: { rules: number } };
-}
+};
 export type { GradesColumnKey, GradesColumnFilters, GradesColumnOptions } from "../columnKeys";

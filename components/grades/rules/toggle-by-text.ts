@@ -1,6 +1,5 @@
-import type { LobbyzeFilterItem } from "@/lib/types";
-import { normText } from "@/lib/utils";
-
+import type { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
+import { normText } from "@/lib/utils/lobbyze-filters";
 /**
  * Liga/desliga um item na lista por texto normalizado (evita duplicados ao ativar).
  * Não é um componente React — só utilitário partilhado com `multi-toggle-row`.

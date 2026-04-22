@@ -2,8 +2,7 @@
 
 import { memo } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { cardClassName } from "@/lib/constants";
-
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 const ReviewAllClearCard = memo(function ReviewAllClearCard() {
   return (
     <div className={`${cardClassName} flex flex-col items-center justify-center py-20`}>

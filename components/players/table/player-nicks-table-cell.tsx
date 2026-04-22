@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { POKER_NETWORKS_UI } from "@/lib/constants";
+import { POKER_NETWORKS_UI } from "@/lib/constants/poker-networks";
 import type { PlayerNickItemProps, PlayerNicksTableCellProps } from "@/lib/types/player";
 import { filterNicksExcludingPlayerGroup } from "@/lib/utils/player";
 import { memo, useCallback } from "react";

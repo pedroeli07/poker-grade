@@ -3,8 +3,7 @@
 import { memo, useMemo } from "react";
 import ColumnFilter from "@/components/column-filter";
 import { TARGETS_CARD_FILTER_COLUMNS } from "@/lib/constants/target";
-import type { ColKey, Filters, TargetsColumnOptions } from "@/lib/types";
-
+import type { ColKey, Filters, TargetsColumnOptions } from "@/lib/types/columnKeys";
 const TargetsColFilters = memo(function TargetsColFilters({
   compact = false,
   options,

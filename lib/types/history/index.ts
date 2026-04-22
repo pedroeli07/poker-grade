@@ -4,4 +4,4 @@ export enum GradeChangeAction {
   MAINTAIN = "MAINTAIN",
 }
 
-export type GradeChangeActionType = "UPGRADE" | "DOWNGRADE" | "MAINTAIN";
+export type GradeChangeActionType = (typeof GradeChangeAction)[keyof typeof GradeChangeAction];

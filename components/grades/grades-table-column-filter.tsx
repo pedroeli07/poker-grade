@@ -1,9 +1,8 @@
 import ColumnFilter from "@/components/column-filter";
 import FilteredColumnTitle from "@/components/data-table/filtered-column-title";
 import { memo } from "react";
-import type { GradesColumnKey, GradesColumnOptions, GradesColumnFilters } from "@/lib/types";
-import type { GradesSetCol } from "@/lib/types";
-
+import type { GradesColumnKey, GradesColumnOptions, GradesColumnFilters } from "@/lib/types/columnKeys";
+import type { GradesSetCol } from "@/lib/types/grade/index";
 const GradesTableColumnFilter = memo(function GradesTableColumnFilter({
     columnId,
     col,

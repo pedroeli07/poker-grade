@@ -7,7 +7,7 @@ import {
   PASSWORD_MIN_LENGTH,
   TRIVIAL_PASSWORD_EXACT_LIST,
 } from "@/lib/constants/password";
-import type { PasswordChecks, StrengthLevel } from "@/lib/types/password-policy";
+import type { PasswordChecks, StrengthLevel } from "@/lib/types/auth";
 
 const TRIVIAL_EXACT = new Set(
   TRIVIAL_PASSWORD_EXACT_LIST.map((s) => s.toLowerCase())

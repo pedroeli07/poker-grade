@@ -1,5 +1,4 @@
-import { sharkScopeGet } from "@/lib/utils";
-
+import { sharkScopeGet } from "@/lib/utils/sharkscope-client";
 async function main() {
   const path = `/networks/PlayerGroup/players/Fabiano%20CL%202022/statistics/Count,EarlyFinish,LateFinish,AvROI?filter=Class:SCHEDULED;Date:30D`;
   console.log("Fetching:", path);

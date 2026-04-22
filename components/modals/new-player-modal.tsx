@@ -11,8 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { UserPlus, User, AtSign, Mail, ChevronRight, Loader2, Grid3X3, DollarSign, Users } from "lucide-react";
-import { POKER_NETWORKS_UI } from "@/lib/constants";
-import type { NewPlayerModalProps } from "@/lib/types";
+import { POKER_NETWORKS_UI } from "@/lib/constants/poker-networks";
+import type { NewPlayerModalProps } from "@/lib/types/player/index";
 import { useNewPlayerModal } from "@/hooks/players/use-new-player-modal";
 import { memo } from "react";
 

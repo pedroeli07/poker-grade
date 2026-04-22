@@ -9,7 +9,7 @@ import RankingFinishPctBadge from "@/components/sharkscope/analytics/ranking-fin
 import AnalyticsRoiBadge from "@/components/sharkscope/analytics/analytics-roi-badge";
 import RankingProfitBadge from "@/components/sharkscope/analytics/ranking-profit-badge";
 import SortButton from "@/components/sort-button";
-import type { RankingEntry, SharkscopeAnalyticsPeriod } from "@/lib/types";
+import type { RankingEntry, SharkscopeAnalyticsPeriod } from "@/lib/types/sharkscope/analytics/index";
 import { memo } from "react";
 import NumberRangeFilter from "@/components/number-range-filter";
 import { useRankingAnalytics } from "@/lib/use-sharkscope-analytics";

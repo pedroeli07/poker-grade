@@ -5,10 +5,9 @@ import AppSidebar from "@/components/app-sidebar";
 import Topbar from "@/components/topbar";
 import NotificationSheet from "@/components/notification-sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import type { DashboardShellProps } from "@/lib/types";
+import type { DashboardShellProps } from "@/lib/types/dashboard/index";
 import { useDashboardShellLayout } from "@/hooks/dashboard/use-dashboard-shell";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 const DashboardShell = memo(({
   children,
   userRole,

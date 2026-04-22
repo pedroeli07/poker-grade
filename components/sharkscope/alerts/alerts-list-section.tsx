@@ -6,7 +6,7 @@ import AlertsBulkActionsBar from "@/components/sharkscope/alerts/alerts-bulk-act
 import AlertsEmptyState from "@/components/sharkscope/alerts/alerts-empty-state";
 import AlertsTable from "@/components/sharkscope/alerts/alerts-table";
 import { SHARKSCOPE_ALERTS_PAGE_SIZE_OPTIONS } from "@/lib/constants/sharkscope/alerts";
-import type { SharkscopeAlertRow } from "@/lib/types";
+import type { SharkscopeAlertRow } from "@/lib/types/sharkscope/alerts/index";
 import type { AlertSortKey } from "@/hooks/sharkscope/alerts/use-alerts-page-client";
 import type { ColumnSortState } from "@/lib/types/dataTable";
 import type { NumberFilterValue } from "@/lib/number-filter";

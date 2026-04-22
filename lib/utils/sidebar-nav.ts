@@ -1,8 +1,7 @@
 import { UserRole } from "@prisma/client";
 import { STAFF_WRITE_ROLES } from "@/lib/constants/session-rbac";
 import { SIDEBAR_PLAYER_LINK_HREFS } from "@/lib/constants/navigation";
-import type { SidebarNavEntry } from "@/lib/types";
-
+import type { SidebarNavEntry } from "@/lib/types/dashboard/index";
 const PLAYER_SIDEBAR_LINK_HREFS = new Set<string>(SIDEBAR_PLAYER_LINK_HREFS);
 
 export function isSidebarNavItemActive(
@@ -32,6 +31,7 @@ export function filterSidebarNavForRole(
       /** Staff usa Grades → Metas / Histórico; estes links são só para PLAYER. */
       if (item.href === "/jogador/metas") return false;
       if (item.href === "/jogador/historico") return false;
+      if (item.href === "/jogador/adversarios") return false;
       if (item.href === "/admin/usuarios") {
         return STAFF_WRITE_ROLES.includes(userRole);
       }

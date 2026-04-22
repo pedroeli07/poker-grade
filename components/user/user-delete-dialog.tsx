@@ -1,9 +1,6 @@
-import {
-  deleteAuthAccount,
-  deletePendingInvite,
-} from "@/lib/queries/db/user";
-import { UserDirectoryRow } from "@/lib/types";
-
+import { deleteAuthAccount } from "@/lib/queries/db/user/admin-account-mutations";
+import { deletePendingInvite } from "@/lib/queries/db/user/invite-mutations";
+import { UserDirectoryRow } from "@/lib/types/user/index";
 import {
   AlertDialog as AD,
   AlertDialogAction as ADA,

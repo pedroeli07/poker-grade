@@ -1,7 +1,7 @@
 "use client";
 
 import { lazy, memo } from "react";
-import type { GradesListPageProps } from "@/lib/types";
+import type { GradesListPageProps } from "@/lib/types/grade/index";
 import { useGradesListPage } from "@/hooks/grades/use-grades-list-page";
 import { GradesListInitialEmpty } from "@/components/grades/grades-view-components";
 

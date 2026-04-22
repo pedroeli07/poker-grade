@@ -1,8 +1,7 @@
-import type { AppSession } from "@/lib/types";
+import type { AppSession } from "@/lib/types/auth";
 import { getCachedPlayerWithProfileInclude } from "@/lib/data/player/cached-by-id";
-import { canManagePlayerProfile, canViewPlayer } from "@/lib/utils";
-import type { PlayerProfileLoadResult, PlayerProfileViewModel } from "@/lib/types";
-
+import { canManagePlayerProfile, canViewPlayer } from "@/lib/utils/auth-permissions";
+import type { PlayerProfileLoadResult, PlayerProfileViewModel } from "@/lib/types/player/index";
 export async function loadPlayerProfilePageData(
   session: AppSession,
   id: string

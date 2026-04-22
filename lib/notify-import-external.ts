@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createLogger } from "@/lib/logger";
-import { getAppBaseUrl } from "@/lib/utils";
-import type { ImportBatchNotifyPayload } from "@/lib/types";
-
+import { getAppBaseUrl } from "@/lib/utils/app-routing";
+import type { ImportBatchNotifyPayload } from "@/lib/types/imports/index";
 const log = createLogger("notify-import-external");
 
 async function staffEmailsForImport(): Promise<string[]> {

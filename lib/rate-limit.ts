@@ -1,7 +1,7 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { createLogger } from "@/lib/logger";
-import { redisToken, redisUrl } from "./constants";
+import { redisToken, redisUrl } from "./constants/env";
 
 const log = createLogger("rate-limit");
 

@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import ModalDialogContent from "@/components/modals/primitives/modal-dialog-content";
-import type { EditPlayerModalProps } from "@/lib/types"
+import type { EditPlayerModalProps } from "@/lib/types/player/index";
 import { useEditPlayerModal } from "@/hooks/players/use-edit-player-modal";
 import EditPlayerModalInner from "./edit-player-modal-inner";
 

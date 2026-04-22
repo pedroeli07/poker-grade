@@ -3,16 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Spade, ChevronLeft, ChevronDown } from "lucide-react";
-import { cn, filterSidebarNavForRole, isSidebarNavItemActive } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
+import { filterSidebarNavForRole, isSidebarNavItemActive } from "@/lib/utils/sidebar-nav";
 import { useSidebarStore } from "@/lib/stores/use-sidebar-store";
 import { memo, useEffect, useMemo, useState } from "react";
-import {
-  SIDEBAR_NAV_ITEMS,
-  SIDEBAR_SECONDARY_ITEMS,
-  accountNotificationsHref,
-  accountProfileHref,
-} from "@/lib/constants";
-import type { SidebarIcon, SidebarNavGroup } from "@/lib/types";
+import { SIDEBAR_NAV_ITEMS, SIDEBAR_SECONDARY_ITEMS, accountNotificationsHref, accountProfileHref } from "@/lib/constants/navigation";
+import type { SidebarIcon, SidebarNavGroup } from "@/lib/types/dashboard/index";
 import type { UserRole } from "@prisma/client";
 import {
   Collapsible,

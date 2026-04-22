@@ -11,7 +11,8 @@ import RankingProfitBadge from "@/components/sharkscope/analytics/ranking-profit
 import { AnalyticsMetricBarChart } from "@/components/sharkscope/analytics/analytics-metric-bar-chart";
 import SortButton from "@/components/sort-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { SharkscopeAnalyticsPeriod, TierStat } from "@/lib/types";
+import type { SharkscopeAnalyticsPeriod } from "@/lib/types/sharkscope/analytics/index";
+import type { TierStat } from "@/lib/types/sharkScopeTypes";
 import { useTierAnalytics } from "@/lib/use-sharkscope-analytics";
 import {
   fmtEntries,

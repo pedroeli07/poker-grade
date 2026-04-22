@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { schedulingCategory } from "@/lib/utils";
+import { schedulingCategory } from "@/lib/utils/player";
 import { memo } from "react";
 
 const SchedulingBadge = memo(function SchedulingBadge({ scheduling }: { scheduling: string | null }) {

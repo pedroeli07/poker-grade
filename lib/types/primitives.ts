@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { POKER_NETWORKS } from "@/lib/constants";
+import { POKER_NETWORKS } from "@/lib/constants/poker-networks";
 import { MODAL_DIALOG_SIZES } from "@/lib/constants/modals";
 import { createLogger } from "@/lib/logger";
 import { DialogContent } from "@/components/ui/dialog";
@@ -24,6 +24,20 @@ export type WithIdAndStatus<S> = WithId & { status: S };
 export type Err = { ok: false; error: string };
 export type Ok = { ok: true };
 export type Result<T = Record<string, never>> = ({ ok: true } & T) | Err;
+
+/** Ordenação de tabelas — fonte única em `lib/table-sort.ts`. */
+export type { SortDir, TableSortState } from "@/lib/table-sort";
+
+/** Conta de torneios por scheduling (dashboard jogador, agregados SQL, etc.). */
+export type PlayerTournamentSchedulingStats = {
+  played: number;
+  extraPlay: number;
+  didntPlay: number;
+  reentries: number;
+};
+
+/** Página async que exige conta vinculada (ex.: jogador sem `playerId`). */
+export type AccountPendingResult = { kind: "account_pending" };
 
 export type PaginatedPayload<T> = {
   items: T[];
@@ -87,11 +101,12 @@ export type GradeOpt = EntityRef;
 export type PokerNetworkKey = keyof typeof POKER_NETWORKS;
 export type PokerNetworkOption = SelectOption;
 
+type ScopedLogLine = (message: string, meta?: Record<string, unknown>) => void;
 export type ScopedLogger = {
-  debug: (message: string, meta?: Record<string, unknown>) => void;
-  info: (message: string, meta?: Record<string, unknown>) => void;
-  success: (message: string, meta?: Record<string, unknown>) => void;
-  warn: (message: string, meta?: Record<string, unknown>) => void;
+  debug: ScopedLogLine;
+  info: ScopedLogLine;
+  success: ScopedLogLine;
+  warn: ScopedLogLine;
   error: (message: string, cause?: Error, meta?: Record<string, unknown>) => void;
   table: (rows: Record<string, unknown>[]) => void;
   sep: (label?: string) => void;

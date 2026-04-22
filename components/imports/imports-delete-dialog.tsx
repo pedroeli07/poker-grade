@@ -12,21 +12,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { memo } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import {
   DestructiveAlertDivider,
   DestructiveAlertIconHeader,
   DestructiveAlertWarningNote,
 } from "@/components/modals/primitives/destructive-alert-dialog";
-import { 
-  destructiveAlertDialogContentClassName, 
-  destructiveAlertHeaderClassName, 
-  destructiveAlertTitleClassName, 
-  destructiveAlertDescriptionWrapClassName, 
-  destructiveAlertFooterClassName, 
-  destructiveAlertCancelButtonClassName, 
-  destructiveAlertConfirmButtonClassName } from "@/lib/constants";
-
+import { destructiveAlertDialogContentClassName, destructiveAlertHeaderClassName, destructiveAlertTitleClassName, destructiveAlertDescriptionWrapClassName, destructiveAlertFooterClassName, destructiveAlertCancelButtonClassName, destructiveAlertConfirmButtonClassName } from "@/lib/constants/classes";
 const ImportsDeleteDialog = memo(function ImportsDeleteDialog({
   isOpen,
   idsToDelete,

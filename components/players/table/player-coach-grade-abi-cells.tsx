@@ -2,7 +2,7 @@
 
 import { TableCell } from "@/components/ui/table";
 import { playersTableCol } from "@/lib/constants/classes";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import { memo } from "react";
 import type { PlayerAbiTableCellProps } from "@/lib/types/player";
 

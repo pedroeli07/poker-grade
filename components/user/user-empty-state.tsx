@@ -1,5 +1,5 @@
 import { useState, useEffect, memo } from "react";
-import { getUserPermissions } from "@/lib/queries/db/user";
+import { getUserPermissions } from "@/lib/queries/db/user/reads";
 import { Users } from "lucide-react";
 
 const UserEmptyState = memo(function UserEmptyState({ hasFilters }: { hasFilters: boolean }) {

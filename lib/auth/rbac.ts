@@ -5,6 +5,6 @@ export {
   canDeleteImports,
   isSharkscopeStaffRole,
   isScoutingStaffRole,
-} from "@/lib/utils";
+} from "@/lib/utils/auth-permissions";
 
-export { IMPORT_ROLES, STAFF_WRITE_ROLES } from "@/lib/constants";
+export { IMPORT_ROLES, STAFF_WRITE_ROLES } from "@/lib/constants/session-rbac";

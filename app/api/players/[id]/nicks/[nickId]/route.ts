@@ -5,9 +5,9 @@ import { getSession } from "@/lib/auth/session";
 import { isSharkscopeStaffRole } from "@/lib/auth/rbac";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation } from "@/lib/rate-limit";
-import { updateNickSchema } from "@/lib/schemas";
-import { ErrorTypes, ResolveNickProps } from "@/lib/types";
-
+import { updateNickSchema } from "@/lib/schemas/player";
+import { ErrorTypes } from "@/lib/types/primitives";
+import { ResolveNickProps } from "@/lib/types/player/index";
 async function resolveNick(
   props: ResolveNickProps
 ) {

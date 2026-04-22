@@ -14,8 +14,7 @@ import {
   List, ListOrdered, Quote, Undo2, Redo2, RemoveFormatting,
   Highlighter, Palette,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     fontSize: {

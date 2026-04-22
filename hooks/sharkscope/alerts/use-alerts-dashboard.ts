@@ -2,8 +2,8 @@
 
 import { useCallback, useMemo, useState, useTransition } from "react";
 import { toast } from "@/lib/toast";
-import type { SharkscopeAlertRow } from "@/lib/types";
-import { countUnacknowledgedAlerts, filterSharkscopeAlerts } from "@/lib/utils";
+import type { SharkscopeAlertRow } from "@/lib/types/sharkscope/alerts/index";
+import { countUnacknowledgedAlerts, filterSharkscopeAlerts } from "@/lib/utils/sharkscope-extract";
 import { usePersistentState } from "@/hooks/use-persistent-state";
 
 import type { NumberFilterValue } from "@/lib/number-filter";

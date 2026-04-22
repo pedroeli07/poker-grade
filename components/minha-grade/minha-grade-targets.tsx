@@ -1,6 +1,5 @@
-import { TARGET_STATUS_CONFIG } from "@/lib/constants";
-import type { PlayerProfileRecord } from "@/lib/types";
-
+import { TARGET_STATUS_CONFIG } from "@/lib/constants/target";
+import type { PlayerProfileRecord } from "@/lib/types/player/index";
 export function MinhaGradeTargets({ targets }: { targets: PlayerProfileRecord["targets"] }) {
   return (
     <div id="meus-targets">

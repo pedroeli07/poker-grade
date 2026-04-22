@@ -3,7 +3,7 @@
 import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
-import { deleteImports } from "@/lib/queries/db/imports";
+import { deleteImports } from "@/lib/queries/db/imports/delete-mutations";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import {
@@ -22,15 +22,7 @@ import {
   DestructiveAlertIconHeader,
   DestructiveAlertWarningNote,
 } from "@/components/modals/primitives/destructive-alert-dialog";
-import { 
-  destructiveAlertDialogContentClassName, 
-  destructiveAlertHeaderClassName, 
-  destructiveAlertTitleClassName, 
-  destructiveAlertDescriptionWrapClassName, 
-  destructiveAlertFooterClassName, 
-  destructiveAlertCancelButtonClassName, 
-  destructiveAlertConfirmButtonClassName } from "@/lib/constants";
-
+import { destructiveAlertDialogContentClassName, destructiveAlertHeaderClassName, destructiveAlertTitleClassName, destructiveAlertDescriptionWrapClassName, destructiveAlertFooterClassName, destructiveAlertCancelButtonClassName, destructiveAlertConfirmButtonClassName } from "@/lib/constants/classes";
 export function DeleteImportButton({ importId, iconOnly = false }: { importId: string; iconOnly?: boolean }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();

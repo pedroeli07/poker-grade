@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { buildImportDetailTabs } from "@/lib/utils/imports";
-import type { ImportDetailPageData } from "@/lib/types";
+import type { ImportDetailPageData } from "@/lib/types/imports/index";
 import ImportDetailHeader from "@/components/imports/import-detail-header";
 import ImportDetailMetricCards from "@/components/imports/import-detail-metric-cards";
 import ImportDetailTabNav from "@/components/imports/import-detail-tab-nav";

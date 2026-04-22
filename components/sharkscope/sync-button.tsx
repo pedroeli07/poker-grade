@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, Square } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
-import { ErrorTypes } from "@/lib/types";
+import { ErrorTypes } from "@/lib/types/primitives";
 import type { SharkscopeSyncJson, SharkScopeSyncMode } from "@/lib/types/sharkScopeTypes";
 import { createLogger } from "@/lib/logger";
 

@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
-import { authSecret, SESSION_MAX_AGE_SEC } from "@/lib/constants";
-import type { SessionJwtPayload, SignSessionTokenInput } from "@/lib/types/session-jwt";
+import { authSecret } from "@/lib/constants/env";
+import { SESSION_MAX_AGE_SEC } from "@/lib/constants/session-rbac";
+import type { SessionJwtPayload, SignSessionTokenInput } from "@/lib/types/auth";
 
 function getSecret(): Uint8Array {
   if (!authSecret ) {

@@ -4,10 +4,9 @@ import { clientIp, assertSameOrigin } from "@/lib/api/origin";
 import { limitRegister } from "@/lib/rate-limit"; // Usar o mesmo ou criar limitSendCode
 import { createLogger } from "@/lib/logger";
 import { sendRegisterVerificationEmail, sendPasswordResetEmail } from "@/lib/mailer";
-import { isSuperAdminEmail, generateOTP } from "@/lib/utils";
-import { sendCodeSchema } from "@/lib/schemas";
-import { ErrorTypes } from "@/lib/types";
-
+import { isSuperAdminEmail, generateOTP } from "@/lib/utils/auth-session";
+import { sendCodeSchema } from "@/lib/schemas/auth";
+import { ErrorTypes } from "@/lib/types/primitives";
 const log = createLogger("auth.send-code");
 
 export async function POST(request: Request) {

@@ -8,14 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GradeCardProps } from "@/lib/types";
-import { cardClassName } from "@/lib/constants";
+import { GradeCardProps } from "@/lib/types/grade/index";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 import { DeleteGradeButton } from "@/components/grades/delete-grade-button";
 import EditGradeDialog from "@/components/modals/edit-grade-modal";
 import { GradeDescriptionTooltip } from "@/components/grades/grade-description-tooltip";
 import { memo } from "react";
-import { htmlToPlainText } from "@/lib/utils";
-
+import { htmlToPlainText } from "@/lib/utils/html-to-plain-text";
 const GradeCard = memo(function GradeCard({ grade, manage }: GradeCardProps) {
   return (
     <Card className={cardClassName}>

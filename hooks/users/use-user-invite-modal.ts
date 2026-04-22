@@ -3,17 +3,9 @@
 import { useCallback, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { UserRole } from "@prisma/client";
-import { addAllowedInvite } from "@/lib/queries/db/user";
+import { addAllowedInvite } from "@/lib/queries/db/user/invite-mutations";
 import { toast } from "@/lib/toast";
-import {
-  USER_INVITE_TOAST_EMAIL_FAILED_DESC,
-  USER_INVITE_TOAST_EMAIL_FAILED_TITLE,
-  USER_INVITE_TOAST_EMAIL_SENT_DESC,
-  USER_INVITE_TOAST_EMAIL_SENT_TITLE,
-  USER_INVITE_TOAST_NO_MAILER_DESC,
-  USER_INVITE_TOAST_NO_MAILER_TITLE,
-} from "@/lib/constants";
-
+import { USER_INVITE_TOAST_EMAIL_FAILED_DESC, USER_INVITE_TOAST_EMAIL_FAILED_TITLE, USER_INVITE_TOAST_EMAIL_SENT_DESC, USER_INVITE_TOAST_EMAIL_SENT_TITLE, USER_INVITE_TOAST_NO_MAILER_DESC, USER_INVITE_TOAST_NO_MAILER_TITLE } from "@/lib/constants/users";
 export function useUserInviteModal(onOpenChange: (open: boolean) => void) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();

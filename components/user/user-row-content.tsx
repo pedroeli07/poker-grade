@@ -7,10 +7,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserRole } from "@prisma/client";
-import { ROLE_OPTIONS } from "@/lib/constants";
+import { ROLE_OPTIONS } from "@/lib/constants/session-rbac";
 import { RoleBadge, StatusBadge } from "./user-badges";
-import { UserDirectoryRow } from "@/lib/types";
-
+import { UserDirectoryRow } from "@/lib/types/user/index";
 export function UserRowContent({
   editing,
   email,

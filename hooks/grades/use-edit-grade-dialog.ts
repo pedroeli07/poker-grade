@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { updateGradeProfile } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
+import { htmlToPlainText } from "@/lib/utils/html-to-plain-text";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import { htmlToPlainText } from "@/lib/utils";
+import { updateGradeProfile } from "@/lib/queries/db/grade/update-mutations";
 
 function descriptionForEdit(raw: string | null | undefined): string {
   return htmlToPlainText(raw?.trim() ?? "");

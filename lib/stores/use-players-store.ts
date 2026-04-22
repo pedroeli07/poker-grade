@@ -1,4 +1,4 @@
-import type { PlayersTableColumnFilters } from "@/lib/types";
+import type { PlayersTableColumnFilters } from "@/lib/types/columnKeys";
 import { createFilterStore } from "./create-filter-store";
 
 export const usePlayersStore = createFilterStore<PlayersTableColumnFilters>(

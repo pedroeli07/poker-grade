@@ -1,13 +1,13 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { distinctOptions } from "@/lib/utils";
+import { distinctOptions } from "@/lib/utils/distinct-options";
 import { usePersistentState } from "@/hooks/use-persistent-state";
 import { useUsersStore } from "@/lib/stores/use-users-store";
 import { useUserActions } from "@/hooks/user/use-user-actions";
 import { ROLE_VISUAL } from "@/components/user/user-badges";
 import { useUserPermissions } from "@/hooks/user/use-user-permissions";
-import type { UserDirectoryRow, UserColumnKey } from "@/lib/types";
+import type { UserDirectoryRow, UserColumnKey } from "@/lib/types/user/index";
 import type { ColumnSortKind } from "@/lib/types/dataTable";
 import { nextSortState, type SortDir } from "@/lib/table-sort";
 import {

@@ -1,5 +1,5 @@
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MODAL_IMPORT_HEADER_RULE } from "@/lib/constants";
+import { MODAL_IMPORT_HEADER_RULE } from "@/lib/constants/modals";
 import { ModalGradientHeaderProps } from "@/lib/types/primitives";
 import { 
     modalGradientHeaderBlockClass, 

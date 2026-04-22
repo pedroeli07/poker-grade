@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Search } from "lucide-react";
-import type { PokerNetworkKey, PokerNetworkOption } from "@/lib/types";
+import type { PokerNetworkKey, PokerNetworkOption } from "@/lib/types/primitives";
 import { memo } from "react";
 
 const ScoutingSearchCard = memo(function ScoutingSearchCard({

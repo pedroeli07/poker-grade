@@ -1,17 +1,17 @@
 import { prisma } from "@/lib/prisma";
-import { sharkScopeAppKey, sharkScopeAppName } from "@/lib/constants";
+import { sharkScopeAppKey, sharkScopeAppName } from "@/lib/constants/env";
 import {
   SHARKSCOPE_GROUP_SITE_BREAKDOWN_90D,
   SHARKSCOPE_GROUP_SITE_FILTER_KEYS,
-} from "@/lib/constants/sharkscope-group-site";
+} from "@/lib/constants/sharkscope/group-site";
 import {
   SHARKSCOPE_STATS_FILTER_10D,
   SHARKSCOPE_STATS_FILTER_30D,
   SHARKSCOPE_STATS_FILTER_90D,
-} from "@/lib/constants/sharkscope-type-filters";
+} from "@/lib/constants/sharkscope/type-filters";
 import { extractStat, extractRemainingSearches, extractRoiTenDayForPlayerTable } from "@/lib/sharkscope-parse";
 import { buildSharkscopeStatMap } from "@/lib/sharkscope-stat-scan";
-import { sharkScopeGet } from "@/lib/utils";
+import { sharkScopeGet } from "@/lib/utils/sharkscope-client";
 import { parseGroupSiteBreakdownPayload } from "@/lib/sharkscope/completed-tournaments-aggregate";
 import { collectTournamentNetworkHistogram } from "@/lib/sharkscope/playergroup-network-probe";
 

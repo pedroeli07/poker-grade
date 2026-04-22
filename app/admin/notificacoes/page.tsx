@@ -2,9 +2,8 @@ import dynamicImport from "next/dynamic";
 import { notificationsPageMetadata } from "@/lib/constants/metadata";
 import NotificationsPageSkeleton from "@/components/notifications/notifications-page-skeleton";
 import { requireSession } from "@/lib/auth/session";
-import { getNotificationsPage } from "@/lib/queries/db/notification";
-import { NotificationFilterType } from "@/lib/types";
-
+import { getNotificationsPage } from "@/lib/queries/db/notification/reads";
+import { NotificationFilterType } from "@/lib/types/primitives";
 export const metadata = notificationsPageMetadata;
 
 export const dynamic = "force-dynamic";

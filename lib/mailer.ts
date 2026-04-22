@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
-import { gmailUser, gmailAppPassword, resendApiKey, resendFrom, USER_INVITE_EMAIL_SUBJECT } from "./constants";
+import { gmailUser, gmailAppPassword, resendApiKey, resendFrom } from "./constants/env";
+import { USER_INVITE_EMAIL_SUBJECT } from "./constants/users";
 import { createLogger } from "./logger";
 
 export function escapeHtml(text: string): string {

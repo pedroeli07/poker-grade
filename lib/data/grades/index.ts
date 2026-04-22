@@ -1,38 +1,14 @@
 import { requireSession } from "@/lib/auth/session";
-import { getGradeByIdForSession, getGradesForSession } from "@/lib/queries/db/grade";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import {
-  canEditGradeCoachNote,
-  canManageGrades,
-  mapPrismaRuleToCard,
-} from "@/lib/utils";
+import { canEditGradeCoachNote, canManageGrades } from "@/lib/utils/auth-permissions";
+import { mapPrismaRuleToCard } from "@/lib/utils/grade-rule-mapper";
 import { minhaGradePlayerInclude } from "@/lib/constants/player";
 import { getCachedPlayerWithMinhaGradeInclude } from "@/lib/data/player/cached-by-id";
-import type {
-  GradeDetailClientProps,
-  GradeDetailQueryData,
-  GradeListRow,
-  GradesListPageProps,
-  PlayerProfileViewModel,
-  AppSession,
-} from "@/lib/types";
-
-export async function getGradesListRowsForSession(
-  session: AppSession
-): Promise<GradeListRow[]> {
-  const grades = await getGradesForSession(session);
-
-  return grades.map((g) => ({
-    id: g.id,
-    createdAt: g.createdAt,
-    name: g.name,
-    description: g.description,
-    rulesCount: g._count.rules,
-    assignmentsCount: g._count.assignments,
-    assignedPlayers: [],
-  }));
-}
+import type { GradeDetailClientProps, GradeDetailQueryData, GradesListPageProps } from "@/lib/types/grade/index";
+import type { PlayerProfileViewModel } from "@/lib/types/player/index";
+import type { AppSession } from "@/lib/types/auth";
+import { getGradeByIdForSession, getGradesListRowsForSession } from "@/lib/queries/db/grade/reads";
 
 export async function loadGradesListPageProps(
   session: AppSession

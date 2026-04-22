@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { signSessionToken } from "@/lib/auth/jwt";
-import { nodeEnv, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC } from "@/lib/constants";
-import type { IssueSessionUser } from "@/lib/types/issue-session";
+import { nodeEnv } from "@/lib/constants/env";
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC } from "@/lib/constants/session-rbac";
+import type { IssueSessionUser } from "@/lib/types/auth";
 
 export async function createAuthSession(user: IssueSessionUser): Promise<{
   token: string;

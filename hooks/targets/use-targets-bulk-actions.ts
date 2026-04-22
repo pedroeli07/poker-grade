@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
-import { deleteTargets } from "@/lib/queries/db/target";
+import { deleteTargets } from "@/lib/queries/db/target/delete-mutations";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 

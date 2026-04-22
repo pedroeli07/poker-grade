@@ -2,19 +2,15 @@
 
 import { useState, useTransition, useLayoutEffect, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  getNotificationsPage,
-  markNotificationRead,
-  markAllNotificationsRead,
-  deleteNotification,
-  deleteSelectedNotifications,
-} from "@/lib/queries/db/notification";
+import { getNotificationsPage } from "@/lib/queries/db/notification/reads";
+import { markNotificationRead, markAllNotificationsRead } from "@/lib/queries/db/notification/update-mutations";
+import { deleteNotification, deleteSelectedNotifications } from "@/lib/queries/db/notification/delete-mutations";
 import { notificationKeys } from "@/lib/queries/notification-query-keys";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import { toast } from "@/lib/toast";
-import type { NotificationFilterType } from "@/lib/types";
+import type { NotificationFilterType } from "@/lib/types/primitives";
 import { NotificationType } from "@prisma/client";
-import { NotificationsPageData } from "@/lib/types/index";
+import type { NotificationsPageData } from "@/lib/types/notification";
 import {
   NOTIFICATIONS_LS_FILTER,
   NOTIFICATIONS_LS_PAGE,

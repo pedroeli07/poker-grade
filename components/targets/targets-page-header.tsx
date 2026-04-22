@@ -2,8 +2,7 @@
 
 import { memo } from "react";
 import NewTargetModal from "@/components/modals/new-target-modal";
-import type { TargetsPagePlayerOption } from "@/lib/types";
-
+import type { TargetsPagePlayerOption } from "@/lib/types/target/index";
 const TargetsPageHeader = memo(function TargetsPageHeader({
   canCreate,
   players,

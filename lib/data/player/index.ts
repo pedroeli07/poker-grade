@@ -1,14 +1,15 @@
 import { prisma } from "@/lib/prisma";
-import { getGradesForSession, getGradeIdsAndNamesForSession } from "@/lib/queries/db/grade";
-import { getPlayersForSession } from "@/lib/queries/db/player";
-import { ABI_ALVO_TARGET_NAME } from "@/lib/constants";
-import { buildAbiByPlayer, isAbiAlvoTargetName, toTableRows } from "@/lib/utils";
-import { SHARKSCOPE_STATS_FILTER_10D } from "@/lib/constants/sharkscope-type-filters";
+import { ABI_ALVO_TARGET_NAME } from "@/lib/constants/poker-networks";
+import { buildAbiByPlayer, isAbiAlvoTargetName, toTableRows } from "@/lib/utils/player";
+import { SHARKSCOPE_STATS_FILTER_10D } from "@/lib/constants/sharkscope/type-filters";
 import { extractStat, extractRoiTenDayForPlayerTable } from "@/lib/sharkscope-parse";
-import { notifyLimitChanged } from "@/lib/queries/db/notification";
-import { PlayersTablePayload, AppSession } from "@/lib/types";
+import { notifyLimitChanged } from "@/lib/queries/db/notification/notify-reviews-limits";
+import { PlayersTablePayload } from "@/lib/types/player/index";
+import { AppSession } from "@/lib/types/auth";
 import { GradeType, TargetStatus, TargetType, UserRole } from "@prisma/client";
 import { GradeChangeAction, GradeChangeActionType } from "@/lib/types/history";
+import { getPlayersForSession } from "@/lib/queries/db/player/reads";
+import { getGradeIdsAndNamesForSession } from "@/lib/queries/db/grade/reads";
 
 /** Coaches com conta de login ativa. */
 export async function getCoachesWithActiveLogin() {

@@ -7,12 +7,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { POKER_NETWORKS } from "@/lib/constants";
-import type { PokerNetworkKey, SharkscopeScoutingSavedCardProps } from "@/lib/types";
+import { POKER_NETWORKS } from "@/lib/constants/poker-networks";
+import type { PokerNetworkKey } from "@/lib/types/primitives";
+import type { SharkscopeScoutingSavedCardProps } from "@/lib/types/sharkscope/scouting/index";
 import ScoutingRoiDisplay from "@/components/sharkscope/scouting/scouting-roi-display";
 import ScoutingStatCard from "@/components/sharkscope/scouting/scounting-stat-card";
-import { parseScoutingSavedRaw } from "@/lib/utils";
-
+import { parseScoutingSavedRaw } from "@/lib/utils/sharkscope-extract";
 export const ScoutingSavedCard = memo(function ScoutingSavedCard({
   analysis,
   expanded,

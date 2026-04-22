@@ -3,14 +3,14 @@
 import { useMemo, useCallback, useEffect } from "react";
 import { usePersistentState } from "@/hooks/use-persistent-state";
 import { useQuery } from "@tanstack/react-query";
-import type { TargetListRow } from "@/lib/types";
-import { getTargetsListDataAction } from "@/lib/queries/db/target";
+import type { TargetListRow } from "@/lib/types/target/index";
+import { getTargetsListDataAction } from "@/lib/queries/db/target/reads";
 import { targetKeys } from "@/lib/queries/target-query-keys";
 import { LIMIT_ACTION_LABEL, NONE_LIMIT } from "@/lib/constants/grade";
 import { CATEGORIES, TARGETS_LS_VIEW } from "@/lib/constants/target";
-import { distinctOptions } from "@/lib/utils";
+import { distinctOptions } from "@/lib/utils/distinct-options";
 import { getTargetStatusLabel } from "@/lib/utils/target";
-import type { ColKey } from "@/lib/types";
+import type { ColKey } from "@/lib/types/columnKeys";
 import { useTargetsListStore } from "@/lib/stores/use-targets-list-store";
 import { useTargetsBulkActions } from "@/hooks/targets/use-targets-bulk-actions";
 

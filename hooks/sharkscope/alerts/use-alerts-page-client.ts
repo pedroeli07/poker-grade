@@ -7,7 +7,7 @@ import {
   SHARKSCOPE_ALERTS_LS_PAGE_SIZE,
   SHARKSCOPE_ALERTS_LS_SELECTED,
 } from "@/lib/constants/sharkscope/alerts";
-import type { SharkscopeAlertRow } from "@/lib/types";
+import type { SharkscopeAlertRow } from "@/lib/types/sharkscope/alerts/index";
 import { useAlertsDashboard } from "@/hooks/sharkscope/alerts/use-alerts-dashboard";
 import { nextSortState, compareString, compareDate } from "@/lib/table-sort";
 import type { ColumnSortState } from "@/lib/types/dataTable";

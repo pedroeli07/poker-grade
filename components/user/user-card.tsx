@@ -1,14 +1,14 @@
 "use client";
 
 import { memo } from "react";
-import { getInitials } from "@/lib/utils";
+import { getInitials } from "@/lib/utils/app-routing";
 import { useEditableUser } from "@/hooks/user/use-editable-user";
 import { useUserPermissions } from "@/hooks/user/use-user-permissions";
 import UserDeleteDialog from "./user-delete-dialog";
 import { UserRowContent } from "./user-row-content";
 import UserActions from "./user-actions";
-import { cardClassName } from "@/lib/constants";
-import { UserCardProps } from "@/lib/types/index";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
+import type { UserCardProps } from "@/lib/types/user";
 
 export const UserCard = memo(function UserCard({
   row,

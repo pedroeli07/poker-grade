@@ -1,5 +1,5 @@
 import { PlayerNicksSection } from "@/components/player-nicks-section";
-import type { PlayerProfileRecord } from "@/lib/types";
+import type { PlayerProfileRecord } from "@/lib/types/player/index";
 import { memo } from "react";
 
 const PlayerProfileNicksSection = memo(function PlayerProfileNicksSection({

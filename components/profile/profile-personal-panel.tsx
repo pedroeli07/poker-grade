@@ -1,7 +1,8 @@
 "use client";
 
-import type { ProfileData, UserRole } from "@/lib/types";
-import { ROLE_LABELS } from "@/lib/constants";
+import type { ProfileData } from "@/lib/types/user/index";
+import type { UserRole } from "@prisma/client";
+import { ROLE_LABELS } from "@/lib/constants/roles-actions";
 import FieldLabel from "@/components/profile/profile-form-fields";
 import TextInput from "@/components/profile/profile-text-input";
 import { memo } from "react";

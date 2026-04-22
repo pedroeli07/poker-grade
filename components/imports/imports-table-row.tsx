@@ -3,8 +3,9 @@ import { TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AppTooltip } from "@/components/ui/app-tooltip";
 import { FileSpreadsheet, ShieldCheck, AlertTriangle, ChevronRight, Check, Trash2 } from "lucide-react";
-import { cn, importRowDateLabel } from "@/lib/utils";
-import type { ImportsTableRowProps } from "@/lib/types";
+import { cn } from "@/lib/utils/cn";
+import { importRowDateLabel } from "@/lib/utils/notification";
+import type { ImportsTableRowProps } from "@/lib/types/imports/index";
 import { memo } from "react";
 
 const ImportsTableRow = memo(function ImportsTableRow({

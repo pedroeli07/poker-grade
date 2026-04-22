@@ -1,6 +1,5 @@
 import { UserRole } from "@prisma/client";
-import type { UserColumnKey } from "@/lib/types";
-
+import type { UserColumnKey } from "@/lib/types/user/index";
 // ─── users-page ───────────────────────────────────────────────────────────────
 
 export const USERS_PAGE_ALLOWED_ROLES = [

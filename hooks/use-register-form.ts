@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import type { SubmitEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   getPasswordPolicyGaps,
@@ -104,7 +104,7 @@ export function useRegisterForm() {
   }, [params]);
 
   const sendCode = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
+    async (e: SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
       setSubmitted(true);
       if (!canSubmit) return;
@@ -140,7 +140,7 @@ export function useRegisterForm() {
   );
 
   const completeRegister = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
+    async (e: SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (code.length !== REGISTER_OTP_LENGTH) {
         toast.error(

@@ -1,6 +1,5 @@
 import { LOBBYZE_SITE_NAME_STRIP_TOKENS } from "@/lib/constants/lobbyze-filters";
-import type { LobbyzeFilterItem } from "@/lib/types";
-
+import type { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
 export const normText = (t: string) => t.toLowerCase().trim();
 
 export const isTextSelected = (list: LobbyzeFilterItem[], opt: LobbyzeFilterItem) =>

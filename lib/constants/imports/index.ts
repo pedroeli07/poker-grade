@@ -1,4 +1,5 @@
-import type { ImportsColumnKey, ImportDetailTabDef } from "@/lib/types";
+import type { ImportsColumnKey } from "@/lib/types/columnKeys";
+import type { ImportDetailTabDef } from "@/lib/types/imports/index";
 import { AlertTriangle, CheckCircle2, MinusCircle, RefreshCw } from "lucide-react";
 
 // ─── imports-columns ─────────────────────────────────────────────────────────

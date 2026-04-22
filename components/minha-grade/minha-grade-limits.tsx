@@ -1,6 +1,5 @@
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
-import type { PlayerProfileRecord } from "@/lib/types";
-
+import type { PlayerProfileRecord } from "@/lib/types/player/index";
 export function MinhaGradeLimits({
   limitChanges,
 }: {

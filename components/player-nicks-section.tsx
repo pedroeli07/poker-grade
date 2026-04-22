@@ -29,19 +29,8 @@ import {
 } from "@/components/modals/primitives/destructive-alert-dialog";
 import { Plus, Pencil, Trash2, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "@/lib/toast";
-import {
-  getPokerstarsMainNickFromRows,
-  NETWORK_OPTS,
-  POKER_NETWORKS,
-  shouldPrefillPokerstarsMainNick,
-  destructiveAlertDialogContentClassName,
-  destructiveAlertHeaderClassName,
-  destructiveAlertTitleClassName,
-  destructiveAlertDescriptionWrapClassName,
-  destructiveAlertFooterClassName,
-  destructiveAlertCancelButtonClassName,
-  destructiveAlertConfirmButtonClassName,
-} from "@/lib/constants";
+import { getPokerstarsMainNickFromRows, NETWORK_OPTS, POKER_NETWORKS, shouldPrefillPokerstarsMainNick } from "@/lib/constants/poker-networks";
+import { destructiveAlertDialogContentClassName, destructiveAlertHeaderClassName, destructiveAlertTitleClassName, destructiveAlertDescriptionWrapClassName, destructiveAlertFooterClassName, destructiveAlertCancelButtonClassName, destructiveAlertConfirmButtonClassName } from "@/lib/constants/classes";
 import {
   PLAYER_NICKS_DELETE_CACHE_WARNING,
   PLAYER_NICKS_DELETE_CONFIRM,
@@ -71,11 +60,11 @@ import {
   PLAYER_NICKS_TOAST_UPDATE_SUCCESS,
   PLAYER_NICKS_BTN_ADD,
 } from "@/lib/constants/player-nicks-ui";
-import { cn, formatPlayerNickAddedToastDescription, playerNickItemPath, playerNicksCollectionPath } from "@/lib/utils";
-import { PokerNetworkKey, Nick, PlayerNicksSectionProps } from "@/lib/types";
-
-
-
+import { cn } from "@/lib/utils/cn";
+import { formatPlayerNickAddedToastDescription } from "@/lib/utils/player-nicks";
+import { playerNickItemPath, playerNicksCollectionPath } from "@/lib/utils/player-nicks-api";
+import { PokerNetworkKey } from "@/lib/types/primitives";
+import { Nick, PlayerNicksSectionProps } from "@/lib/types/player/index";
 export function PlayerNicksSection({ playerId, initialNicks, canManage }: PlayerNicksSectionProps) {
   const [nicks, setNicks] = useState<Nick[]>(initialNicks);
   const [showAdd, setShowAdd] = useState(false);

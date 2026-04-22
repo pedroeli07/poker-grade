@@ -1,6 +1,6 @@
 "use client";
 
-import { POKER_NETWORKS_UI } from "@/lib/constants";
+import { POKER_NETWORKS_UI } from "@/lib/constants/poker-networks";
 import { memo } from "react";
 
 const SiteNetworkTableCell = memo(function SiteNetworkTableCell({ network, label }: { network: string; label: string }) {

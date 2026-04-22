@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
-import { canWriteOperations } from "@/lib/utils";
-import { runDailySyncSharkScope } from "@/lib/sharkscope/run-daily-sync";
-import { ErrorTypes } from "@/lib/types";
+import { canWriteOperations } from "@/lib/utils/auth-permissions";
+import { runDailySyncSharkScope } from "@/lib/sharkscope/daily-sync/run-daily-sync";
+import { ErrorTypes } from "@/lib/types/primitives";
 import type { SharkScopeSyncMode } from "@/lib/types/sharkScopeTypes";
 
 function parseSyncModeFromBody(body: unknown): SharkScopeSyncMode {

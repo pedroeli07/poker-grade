@@ -3,10 +3,9 @@
 import { memo, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import ColumnFilter from "@/components/column-filter";
-import { REVIEW_NO_COACH_SENTINEL } from "@/lib/constants";
+import { REVIEW_NO_COACH_SENTINEL } from "@/lib/constants/sharkscope/ui";
 import { buildReviewPath } from "@/hooks/review/review-path";
-import type { ReviewCoachOption } from "@/lib/types";
-
+import type { ReviewCoachOption } from "@/lib/types/review/index";
 const ReviewCoachSelect = memo(function ReviewCoachSelect({
   coachOptions,
   coachId,

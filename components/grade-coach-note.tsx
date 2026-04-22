@@ -12,18 +12,10 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Info, Pencil, Loader2 } from "lucide-react";
-import { updateGradeCoachNote } from "@/lib/queries/db/grade";
+import { updateGradeCoachNote } from "@/lib/queries/db/grade/update-mutations";
 import { toast } from "@/lib/toast";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
-import {
-  GRADE_COACH_NOTE_EMPTY_HINT,
-  GRADE_COACH_NOTE_MAX_LENGTH,
-  GRADE_COACH_NOTE_SAVING_LABEL,
-  GRADE_COACH_NOTE_TEXTAREA_PLACEHOLDER,
-  GRADE_COACH_NOTE_TOAST_ERROR,
-  GRADE_COACH_NOTE_TOAST_SUCCESS,
-} from "@/lib/constants";
-
+import { GRADE_COACH_NOTE_EMPTY_HINT, GRADE_COACH_NOTE_MAX_LENGTH, GRADE_COACH_NOTE_SAVING_LABEL, GRADE_COACH_NOTE_TEXTAREA_PLACEHOLDER, GRADE_COACH_NOTE_TOAST_ERROR, GRADE_COACH_NOTE_TOAST_SUCCESS } from "@/lib/constants/grade";
 export function GradeCoachNoteSection({
   gradeId,
   initialDescription,

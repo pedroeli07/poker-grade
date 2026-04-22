@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
-import { canWriteOperations, sharkscopeStatsHasData } from "@/lib/utils";
-import type { AnalyticsClientProps } from "@/lib/types";
-import type { AnalyticsDebugPageData } from "@/lib/types";
+import { canWriteOperations } from "@/lib/utils/auth-permissions";
+import { sharkscopeStatsHasData } from "@/lib/utils/sharkscope-extract";
+import type { AnalyticsClientProps } from "@/lib/types/sharkscope/analytics/index";
+import type { AnalyticsDebugPageData } from "@/lib/types/sharkscope/analytics/index";
 import { getCachedSharkscopeAnalytics, loadAnalyticsPayloadForPlayer } from "./cache";
 
 export * from "./cache";

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import type { NetworkStat, SharkscopeAnalyticsPeriod, SiteAnalyticsPayload, SiteTableSortKey } from "@/lib/types";
+import type { NetworkStat } from "@/lib/types/sharkScopeTypes";
+import type { SharkscopeAnalyticsPeriod, SiteAnalyticsPayload, SiteTableSortKey } from "@/lib/types/sharkscope/analytics/index";
 import { useSiteAnalytics } from "@/lib/use-sharkscope-analytics";
 import useAnalyticsColumnSort from "@/hooks/sharkscope/analytics/use-analytics-column-sort";
 // Não usar useAnalyticsSortedRows aqui: `filtered` só existe depois de useSiteAnalytics,

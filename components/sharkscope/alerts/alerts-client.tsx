@@ -7,7 +7,7 @@ import AlertsListSection from "@/components/sharkscope/alerts/alerts-list-sectio
 import AlertsPageHeader from "@/components/sharkscope/alerts/alerts-page-header";
 import AlertsSelectionHint from "@/components/sharkscope/alerts/alerts-selection-hint";
 import { useAlertsPageClient } from "@/hooks/sharkscope/alerts/use-alerts-page-client";
-import type { SharkscopeAlertRow } from "@/lib/types";
+import type { SharkscopeAlertRow } from "@/lib/types/sharkscope/alerts/index";
 import {
   alertsHasActiveView,
   buildAlertDateFilterOptions,

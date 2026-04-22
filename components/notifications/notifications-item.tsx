@@ -2,9 +2,9 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Check, ExternalLink, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { TYPE_CONFIG } from "@/lib/constants";
-import type { NotificationItem } from "@/lib/types";
+import { cn } from "@/lib/utils/cn";
+import { TYPE_CONFIG } from "@/lib/constants/notification";
+import type { NotificationItem } from "@/lib/types/notification/index";
 import { memo } from "react";
 import { normalizeNotificationLink } from "@/lib/utils/notification";
 

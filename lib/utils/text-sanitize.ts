@@ -1,5 +1,4 @@
-import { CTRL } from "@/lib/constants";
-
+import { CTRL } from "@/lib/constants/sanitize";
 export function sanitizeText(input: string, maxLen: number): string {
   const s = input.replace(CTRL, "").trim();
   return s.length > maxLen ? s.slice(0, maxLen) : s;

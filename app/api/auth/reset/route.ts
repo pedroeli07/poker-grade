@@ -2,12 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
-import { resetPasswordSchema } from "@/lib/schemas";
+import { resetPasswordSchema } from "@/lib/schemas/auth";
 import { clientIp, assertSameOrigin } from "@/lib/api/origin";
 import { limitRegister } from "@/lib/rate-limit";
 import { createLogger } from "@/lib/logger";
-import { ErrorTypes } from "@/lib/types";
-
+import { ErrorTypes } from "@/lib/types/primitives";
 const log = createLogger("auth.reset");
 
 export async function POST(request: Request) {

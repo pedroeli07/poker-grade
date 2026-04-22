@@ -1,5 +1,4 @@
-import type { LobbyzeFilterItem } from "@/lib/types";
-
+import type { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
 const lobbyzeRows = (startId: number, item_texts: string[]): LobbyzeFilterItem[] =>
   item_texts.map((item_text, i) => ({ item_id: startId + i, item_text }));
 

@@ -1,8 +1,8 @@
-import type { AppSession } from "@/lib/types";
-import { IMPORT_ROLES } from "@/lib/constants";
+import type { AppSession } from "@/lib/types/auth";
+import { IMPORT_ROLES } from "@/lib/constants/session-rbac";
 import { getImportsListRowsForSession } from "@/lib/data/imports";
-import { canDeleteImports } from "@/lib/utils";
-import type { ImportsListPageProps } from "@/lib/types";
+import { canDeleteImports } from "@/lib/utils/auth-permissions";
+import type { ImportsListPageProps } from "@/lib/types/imports/index";
 import { prisma } from "@/lib/prisma";
 import { syncOrphanPlayerProfiles } from "@/lib/auth/ensure-player-profile";
 

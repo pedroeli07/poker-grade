@@ -16,15 +16,7 @@ import {
   DestructiveAlertIconHeader,
   DestructiveAlertWarningNote,
 } from "@/components/modals/primitives/destructive-alert-dialog";
-import { 
-  destructiveAlertDialogContentClassName, 
-  destructiveAlertHeaderClassName, 
-  destructiveAlertTitleClassName, 
-  destructiveAlertDescriptionWrapClassName, 
-  destructiveAlertFooterClassName, 
-  destructiveAlertCancelButtonClassName, 
-  destructiveAlertConfirmButtonClassName } from "@/lib/constants";
-
+import { destructiveAlertDialogContentClassName, destructiveAlertHeaderClassName, destructiveAlertTitleClassName, destructiveAlertDescriptionWrapClassName, destructiveAlertFooterClassName, destructiveAlertCancelButtonClassName, destructiveAlertConfirmButtonClassName } from "@/lib/constants/classes";
 const AlertsBulkDeleteDialog = memo(function AlertsBulkDeleteDialog({
   open,
   onOpenChange,

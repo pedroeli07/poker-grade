@@ -10,17 +10,9 @@ import {
   type TargetStatusKey,
 } from "@/lib/constants/target";
 import { timeAgo } from "@/lib/utils/app-routing";
-import type {
-  TargetsColKey,
-  TargetListRow,
-  TargetListViewModel,
-  TargetSummaryCardData,
-  TargetsSummaryInput,
-  TargetsTableSortState,
-  TargetsColumnOptions,
-  TargetsFilters,
-} from "@/lib/types";
-export type { TargetListViewModel, TargetSummaryCardData } from "@/lib/types";
+import type { TargetsColKey, TargetsColumnOptions, TargetsFilters } from "@/lib/types/columnKeys";
+import type { TargetListRow, TargetListViewModel, TargetSummaryCardData, TargetsSummaryInput, TargetsTableSortState } from "@/lib/types/target/index";
+export type { TargetListViewModel, TargetSummaryCardData } from "@/lib/types/target/index";
 import { compareString, SortDir } from "@/lib/table-sort";
 
 // ================= STATUS =================

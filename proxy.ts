@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { SESSION_COOKIE_NAME } from "@/lib/constants";
+import { SESSION_COOKIE_NAME } from "@/lib/constants/session-rbac";
 import { verifySessionJwt } from "@/lib/auth/jwt";
 import { logPerf } from "@/lib/utils/perf";
 import { UserRole } from "@prisma/client";

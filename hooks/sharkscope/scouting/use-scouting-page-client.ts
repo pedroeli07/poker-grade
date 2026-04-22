@@ -9,10 +9,10 @@ import {
   SHARKSCOPE_SCOUTING_LS_NLQ,
   SHARKSCOPE_SCOUTING_LS_NOTES,
 } from "@/lib/constants/sharkscope/scouting";
-import { SHARKSCOPE_NLQ_TIMEZONE } from "@/lib/constants";
-import type { PokerNetworkKey, PokerNetworkOption, ScoutingAnalysisRow } from "@/lib/types";
-import { parseScoutingSearchPayload } from "@/lib/utils";
-
+import { SHARKSCOPE_NLQ_TIMEZONE } from "@/lib/constants/env";
+import type { PokerNetworkKey, PokerNetworkOption } from "@/lib/types/primitives";
+import type { ScoutingAnalysisRow } from "@/lib/types/sharkscope/scouting/index";
+import { parseScoutingSearchPayload } from "@/lib/utils/sharkscope-extract";
 const MAX_NICK_LS = 120;
 const MAX_NOTES_LS = 8000;
 const MAX_NLQ_LS = 500;

@@ -6,9 +6,8 @@ import { getSession } from "@/lib/auth/session";
 import { isSharkscopeStaffRole } from "@/lib/auth/rbac";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation, limitSharkscopeRead } from "@/lib/rate-limit";
-import { addNickSchema } from "@/lib/schemas";
-import { ErrorTypes } from "@/lib/types";
-
+import { addNickSchema } from "@/lib/schemas/player";
+import { ErrorTypes } from "@/lib/types/primitives";
 async function resolvePlayer(
   params: Promise<{ id: string }>,
   userId: string,

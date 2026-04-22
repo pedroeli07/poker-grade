@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { cronSecret } from "@/lib/constants";
-import { sharkscopeCronSyncMode } from "@/lib/constants/sharkscope-group-site";
+import { cronSecret } from "@/lib/constants/env";
+import { sharkscopeCronSyncMode } from "@/lib/constants/sharkscope/group-site";
 import type { SharkScopeSyncMode } from "@/lib/types/sharkScopeTypes";
-import { runDailySyncSharkScope } from "@/lib/sharkscope/run-daily-sync";
-import { ErrorTypes } from "@/lib/types";
-
+import { runDailySyncSharkScope } from "@/lib/sharkscope/daily-sync/run-daily-sync";
+import { ErrorTypes } from "@/lib/types/primitives";
 export async function GET(request: Request) {
   if (!cronSecret) {
     return NextResponse.json({ error: ErrorTypes.CRON_SECRET_NOT_CONFIGURED }, { status: 503 });

@@ -1,6 +1,6 @@
 import { Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cardClassName } from "@/lib/constants";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 import { memo } from "react";
 
 /** Nenhuma grade no sistema (antes de importar). */

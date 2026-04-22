@@ -2,22 +2,17 @@
 
 import type { PlayerStatus } from "@prisma/client";
 import { useCallback, useMemo, useState, type SubmitEvent } from "react";
-import { updatePlayer } from "@/lib/queries/db/player";
+import { updatePlayer } from "@/lib/queries/db/player/update-mutations";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import { type CoachOpt, type GradeOpt, type PlayerTableRow, type PlayerNickFormRow, ErrorTypes } from "@/lib/types";
-import { NONE } from "@/lib/constants";
+import { type CoachOpt, type GradeOpt, ErrorTypes } from "@/lib/types/primitives";
+import type { PlayerTableRow, PlayerNickFormRow } from "@/lib/types/player/index";
+import { NONE } from "@/lib/constants/sharkscope/ui";
 import {
   PLAYER_MODAL_ABI_UNIT_NONE,
   PLAYER_MODAL_SELECT_NONE,
 } from "@/lib/constants/modals";
-import {
-  appendEmptyNickRow,
-  removeNickRowAt,
-  updateNickNetworkAt,
-  updateNickValueAt,
-} from "@/lib/utils";
-
+import { appendEmptyNickRow, removeNickRowAt, updateNickNetworkAt, updateNickValueAt } from "@/lib/utils/player";
 function initialAbiUnit(u: string | null | undefined): string {
   const t = u?.trim();
   if (!t) return PLAYER_MODAL_ABI_UNIT_NONE;

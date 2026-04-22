@@ -1,4 +1,4 @@
-import { cn } from "../utils";
+import { cn } from "../utils/cn";
 
 const pillBase =
   "inline-flex items-center justify-center tabular-nums px-2 py-1 rounded-md border text-xs font-bold min-w-[68px]";
@@ -68,6 +68,19 @@ export const playersTableCol = {
 
 /** Cabeçalho das três colunas de stats (ROI / FP / FT): alinhamento + tipografia. */
 export const playersTableStatsHeadClass = `${playersTableCol.roi} align-middle text-center text-[13px] leading-tight`;
+
+/** Tabela de adversários (`opponents-list-client`, `table-fixed`). */
+export const opponentsTableCol = {
+  adversario: "w-[19%] min-w-0",
+  site: "w-[14%] min-w-0",
+  tag: "w-[14%] min-w-0",
+  estilo: "w-[14%] min-w-0",
+  notas: "w-[9%] min-w-0",
+  ultima: "w-[12%] min-w-0",
+  actions: "w-[10%] min-w-0",
+} as const;
+
+export const opponentsTableNotesHeadClass = `${opponentsTableCol.notas} align-middle text-center text-[13px] leading-tight`;
 
 /** Barra superior: estado “ativo” (filtro ou ordenação). */
 export const dataTableToolbarActiveClass =

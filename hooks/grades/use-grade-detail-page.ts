@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getGradeDetailQueryAction } from "@/lib/queries/db/grade";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
-import type { GradeDetailQueryData } from "@/lib/types";
-import { STALE_TIME } from "@/lib/constants";
+import type { GradeDetailQueryData } from "@/lib/types/grade/index";
+import { STALE_TIME } from "@/lib/constants/query-result";
+import { getGradeDetailQueryAction } from "@/lib/queries/db/grade/reads";
 
 export function useGradeDetailPage(
   gradeId: string,

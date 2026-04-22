@@ -1,6 +1,7 @@
 import { UserRole } from "@prisma/client";
-import { ErrorTypes, AppSession } from "@/lib/types";
-import { GRADE_ADMIN_ROLES, IMPORT_ROLES, STAFF_WRITE_ROLES } from "@/lib/constants";
+import { ErrorTypes } from "@/lib/types/primitives";
+import { AppSession } from "@/lib/types/auth";
+import { GRADE_ADMIN_ROLES, IMPORT_ROLES, STAFF_WRITE_ROLES } from "@/lib/constants/session-rbac";
 
 export const canWriteOperations = (s: AppSession) => STAFF_WRITE_ROLES.includes(s.role);
 export const canManageGrades = (s: AppSession) => GRADE_ADMIN_ROLES.includes(s.role);
@@ -44,3 +45,11 @@ export const assertCanImport = assertCan((s) => IMPORT_ROLES.includes(s.role));
 
 export const isSharkscopeStaffRole = (role: UserRole) => STAFF_WRITE_ROLES.includes(role);
 export const isScoutingStaffRole = (role: UserRole) => GRADE_ADMIN_ROLES.includes(role);
+
+/** Notas de adversários: staff e players podem criar/ver. VIEWER é somente leitura. */
+export const canCreateOpponentNote = (s: AppSession) =>
+  s.role !== UserRole.VIEWER;
+
+/** Autor pode editar/apagar a própria nota; ADMIN pode editar/apagar qualquer nota. */
+export const canEditOpponentNote = (s: AppSession, authorId: string) =>
+  s.userId === authorId || s.role === UserRole.ADMIN;

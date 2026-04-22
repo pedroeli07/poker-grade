@@ -1,5 +1,5 @@
 import { POKER_NETWORKS } from "@/lib/constants/poker-networks";
-import type { NetworkStat } from "@/lib/types";
+import type { NetworkStat } from "@/lib/types/sharkScopeTypes";
 import {
   emptyNetworkAggBucket,
   pctFromRatio,

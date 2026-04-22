@@ -1,5 +1,4 @@
-import type { Err } from "@/lib/types";
-
+import type { Err } from "@/lib/types/primitives";
 export const fail = (error: string): Err => ({ ok: false, error });
 
 export const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;

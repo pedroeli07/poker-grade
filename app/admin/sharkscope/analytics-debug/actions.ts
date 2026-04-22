@@ -3,10 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
-import { canWriteOperations } from "@/lib/utils";
-import { runDailySyncSharkScope } from "@/lib/sharkscope/run-daily-sync";
-import { ErrorTypes } from "@/lib/types";
-
+import { canWriteOperations } from "@/lib/utils/auth-permissions";
+import { runDailySyncSharkScope } from "@/lib/sharkscope/daily-sync/run-daily-sync";
+import { ErrorTypes } from "@/lib/types/primitives";
 export type SyncAnalyticsDebugResult =
   | {
       success: true;

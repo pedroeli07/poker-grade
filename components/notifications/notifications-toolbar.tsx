@@ -1,7 +1,7 @@
 import { Check, Trash2, LayoutGrid, Table2 } from "lucide-react";
 import PaginationToolbarControls from "@/components/data-table/pagination-toolbar-controls";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import type { NotificationsFilterTab } from "@/components/notifications/notifications-empty-state";
 import { memo } from "react";
 import ColumnFilter from "@/components/column-filter";

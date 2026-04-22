@@ -9,13 +9,9 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import FilteredColumnTitle from "@/components/data-table/filtered-column-title";
-import {
-  COLUMN_FILTER_BTN_APPLY,
-  COLUMN_FILTER_BTN_CANCEL,
-  COLUMN_FILTER_BTN_CLEAR,
-} from "@/lib/constants";
+import { COLUMN_FILTER_BTN_APPLY, COLUMN_FILTER_BTN_CANCEL, COLUMN_FILTER_BTN_CLEAR } from "@/lib/constants/column-filter";
 import { toast } from "@/lib/toast";
 
 export const NotificationTextSearchFilter = memo(function NotificationTextSearchFilter({

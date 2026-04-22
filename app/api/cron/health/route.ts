@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { cronSecret } from "@/lib/constants";
-import { ErrorTypes } from "@/lib/types";
-
+import { cronSecret } from "@/lib/constants/env";
+import { ErrorTypes } from "@/lib/types/primitives";
 export async function GET(request: Request) {
   if (!cronSecret) {
     return NextResponse.json({ error: ErrorTypes.CRON_SECRET_NOT_CONFIGURED }, { status: 503 });

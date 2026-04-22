@@ -1,12 +1,6 @@
 import crypto from "node:crypto";
-import {
-  sharkScopeAppKey,
-  sharkScopeAppName,
-  sharkScopePasswordHash,
-  sharkScopeUsername,
-} from "@/lib/constants";
-import type { SharkScopeResponse } from "@/lib/types";
-
+import { sharkScopeAppKey, sharkScopeAppName, sharkScopePasswordHash, sharkScopeUsername } from "@/lib/constants/env";
+import type { SharkScopeResponse } from "@/lib/types/sharkScopeTypes";
 export function encodeSharkScopePassword(): string {
   const combined = sharkScopePasswordHash!.toLowerCase() + sharkScopeAppKey!;
   return crypto.createHash("md5").update(combined).digest("hex").toLowerCase();

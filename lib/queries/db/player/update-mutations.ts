@@ -1,0 +1,142 @@
+"use server";
+
+import { prisma } from "@/lib/prisma";
+import { assertCanWrite } from "@/lib/auth/rbac";
+import { setPlayerMainGrade, syncPlayerAbiAlvoTarget } from "@/lib/data/player";
+import { updatePlayerFormSchema } from "@/lib/schemas/player";
+import { sanitizeOptional, sanitizeText } from "@/lib/utils/text-sanitize";
+import { notifyPlayerUpdated } from "@/lib/queries/db/notification/notify-accounts";
+import { parseAbiAlvoInput } from "@/lib/utils/player";
+import { playerMutations, playerQueriesLog } from "@/lib/constants/queries-mutations";
+import { revalidatePlayers } from "@/lib/constants/revalidate-app";
+import { UserRole } from "@prisma/client";
+import { ErrorTypes } from "@/lib/types/primitives";
+
+export async function updatePlayer(formData: FormData) {
+  return playerMutations.run(assertCanWrite, async (session) => {
+    const parsed = updatePlayerFormSchema.safeParse({
+      id: formData.get("id"),
+      name: formData.get("name"),
+      nickname: formData.get("nickname") || null,
+      coachId: formData.get("coachId") || "none",
+      mainGradeId: formData.get("mainGradeId") || "none",
+      abiAlvoValue: String(formData.get("abiAlvoValue") ?? ""),
+      abiAlvoUnit: String(formData.get("abiAlvoUnit") ?? ""),
+      status: formData.get("status"),
+      playerGroup: formData.get("playerGroup") || null,
+      nicksData: formData.get("nicksData") || null,
+    });
+
+    if (!parsed.success) {
+      playerQueriesLog.warn("updatePlayer validação Zod falhou");
+      throw new Error("Dados inválidos");
+    }
+
+    const abiParsed = parseAbiAlvoInput(parsed.data.abiAlvoValue, parsed.data.abiAlvoUnit);
+    if (!abiParsed.ok) throw new Error(abiParsed.message);
+
+    const existing = await prisma.player.findUnique({
+      where: { id: parsed.data.id },
+      select: { id: true, coachId: true, driId: true },
+    });
+    if (!existing) throw new Error(ErrorTypes.NOT_FOUND);
+
+    if (session.role === UserRole.COACH) {
+      if (!session.coachId) throw new Error(ErrorTypes.FORBIDDEN);
+      if (existing.coachId !== session.coachId && existing.driId !== session.coachId)
+        throw new Error(ErrorTypes.FORBIDDEN);
+    }
+
+    let coachId = parsed.data.coachId === "none" || parsed.data.coachId === "" ? null : parsed.data.coachId;
+    if (session.role === UserRole.COACH) coachId = existing.coachId;
+
+    if (coachId) {
+      const coachRow = await prisma.coach.findUnique({ where: { id: coachId }, select: { id: true } });
+      if (!coachRow) throw new Error(ErrorTypes.COACH_NOT_FOUND);
+    }
+
+    const name = sanitizeText(parsed.data.name, 200);
+    const nickname = sanitizeOptional(parsed.data.nickname, 120);
+    const playerGroup = sanitizeOptional(parsed.data.playerGroup, 120);
+
+    let parsedNicks: { network: string; nick: string }[] | null = null;
+    if (parsed.data.nicksData !== undefined && parsed.data.nicksData !== null) {
+      try {
+        const parsedArr = JSON.parse(parsed.data.nicksData);
+        if (Array.isArray(parsedArr)) {
+          const raw = parsedArr
+            .map((n) => ({
+              network: String(n.network).trim(),
+              nick: String(n.nick).trim(),
+            }))
+            .filter((n) => n.nick.length > 0 && n.network.length > 0);
+          const seenKeys = new Set<string>();
+          parsedNicks = raw.filter((n) => {
+            const k = `${n.network}\0${n.nick}`;
+            if (seenKeys.has(k)) return false;
+            seenKeys.add(k);
+            return true;
+          });
+        }
+      } catch (e) {
+        playerQueriesLog.error("Falha ao fazer parse dos Nicks", e instanceof Error ? e : undefined, {
+          nicksData: parsed.data.nicksData,
+        });
+      }
+    }
+
+    try {
+      await prisma.player.update({
+        where: { id: parsed.data.id },
+        data: { name, nickname, coachId, status: parsed.data.status, playerGroup },
+      });
+
+      if (parsedNicks !== null) {
+        const allExistingNicks = await prisma.playerNick.findMany({
+          where: { playerId: parsed.data.id },
+        });
+        const formManagedExisting = allExistingNicks.filter((c) => c.network !== "PlayerGroup");
+        const toKeep = parsedNicks.map((n) => n.network + ":" + n.nick);
+        const nicksToDelete = formManagedExisting.filter((c) => !toKeep.includes(c.network + ":" + c.nick));
+        const newNicks = parsedNicks.filter(
+          (n) => !allExistingNicks.some((c) => c.network === n.network && c.nick === n.nick)
+        );
+
+        if (nicksToDelete.length > 0) {
+          await prisma.playerNick.deleteMany({ where: { id: { in: nicksToDelete.map((n) => n.id) } } });
+        }
+        if (newNicks.length > 0) {
+          await prisma.playerNick.createMany({
+            data: newNicks.map((n) => ({ playerId: parsed.data.id, network: n.network, nick: n.nick })),
+            skipDuplicates: true,
+          });
+        }
+      }
+
+      const mainGradeRaw = parsed.data.mainGradeId;
+      const mainGradeId = mainGradeRaw === "none" || mainGradeRaw === "" ? null : mainGradeRaw;
+      try {
+        await setPlayerMainGrade(parsed.data.id, mainGradeId as string | null, { performedBy: session.userId });
+      } catch (e) {
+        if (e instanceof Error && e.message === ErrorTypes.GRADE_NOT_FOUND) throw new Error(ErrorTypes.GRADE_NOT_FOUND);
+        throw e;
+      }
+
+      await syncPlayerAbiAlvoTarget(parsed.data.id, abiParsed.value ?? null, abiParsed.unit ?? null);
+    } catch (e) {
+      if (
+        e instanceof Error &&
+        (e.message === ErrorTypes.GRADE_NOT_FOUND || e.message === ErrorTypes.NOT_FOUND || e.message === ErrorTypes.FORBIDDEN)
+      ) {
+        throw e;
+      }
+      playerQueriesLog.error("updatePlayer falhou", e instanceof Error ? e : undefined, { id: parsed.data.id });
+      throw new Error("Não foi possível atualizar o jogador.");
+    }
+
+    await notifyPlayerUpdated(parsed.data.id, name);
+
+    playerQueriesLog.success("Jogador atualizado", { id: parsed.data.id });
+    return [`/admin/jogadores/${parsed.data.id}`];
+  }, (extra) => revalidatePlayers("/admin/grades/historico", ...(extra ?? [])));
+}

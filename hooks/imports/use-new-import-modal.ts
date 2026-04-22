@@ -2,12 +2,12 @@
 
 import { useCallback, useRef, useState, useTransition, type ChangeEvent, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { uploadTournaments } from "@/lib/queries/db/imports";
+import { uploadTournaments } from "@/lib/queries/db/imports/upload-mutations";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
-import { isNextRedirectError } from "@/lib/utils";
+import { isNextRedirectError } from "@/lib/utils/auth-session";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import type { UploadResult } from "@/lib/types";
+import type { UploadResult } from "@/lib/types/imports/index";
 import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals";
 import {
   LOBBYZE_IMPORT_ALLOWED_EXTENSIONS,

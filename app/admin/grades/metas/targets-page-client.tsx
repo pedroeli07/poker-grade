@@ -5,8 +5,7 @@ import TargetsControlsCard from "@/components/targets/targets-controls-card";
 import TargetsPageHeader from "@/components/targets/targets-page-header";
 import TargetsSummaryCards from "@/components/targets/targets-summary-cards";
 import { useTargetsListPage } from "@/hooks/targets/use-targets-list-page";
-import type { TargetsPageProps } from "@/lib/types";
-
+import type { TargetsPageProps } from "@/lib/types/target/index";
 const TargetsPageClient = memo(function TargetsPageClient({
   rows: initialRows,
   players,

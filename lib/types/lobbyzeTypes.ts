@@ -1,7 +1,7 @@
-export interface LobbyzeFilterItem {
-  item_id: number | string;
-  item_text: string;
-}
+export type LobbyzeItem = { item_id: number | string; item_text: string };
+
+/** Item de filtro Lobbyze (mesma forma que `LobbyzeItem`). */
+export type LobbyzeFilterItem = LobbyzeItem;
 
 export interface LobbyzeFilter {
   id: number;
@@ -52,5 +52,3 @@ export interface LobbyzeFilter {
   max_blind: number | null;
   favorites: boolean;
 }
-
-export type LobbyzeItem = { item_id: number | string; item_text: string };

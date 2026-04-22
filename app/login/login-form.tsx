@@ -4,10 +4,9 @@ import Link from "next/link";
 import { PasswordInput } from "@/components/auth/password-input";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AUTH_INPUT_CLASS } from "@/lib/constants";
+import { AUTH_INPUT_CLASS } from "@/lib/constants/sharkscope/ui";
 import { useLoginForm } from "@/hooks/use-login-form";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 export function LoginForm() {
   const {
     loading,

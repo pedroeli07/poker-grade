@@ -1,5 +1,4 @@
-import type { GradeRuleCardRule } from "@/lib/types";
-
+import type { GradeRuleCardRule } from "@/lib/types/grade/index";
 /** Chaves de `GradeRuleCardRule` mostradas como linhas com pills (ícones no componente). */
 export type GradeRuleDisplayFieldKey = keyof Pick<
   GradeRuleCardRule,

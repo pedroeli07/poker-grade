@@ -9,11 +9,8 @@
 import "dotenv/config";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import {
-  encodeSharkScopePassword,
-  extractRemainingSearches,
-  sharkScopeResponseErrorMessage,
-} from "@/lib/utils";
+import { encodeSharkScopePassword, sharkScopeResponseErrorMessage } from "@/lib/utils/sharkscope-client";
+import { extractRemainingSearches } from "@/lib/utils/sharkscope-extract";
 import { sharkScopeAppKey, sharkScopeAppName, sharkScopePasswordHash, sharkScopeUsername } from "@/lib/constants/env";
 import { collectTournamentNetworkHistogram } from "@/lib/sharkscope/playergroup-network-probe";
 

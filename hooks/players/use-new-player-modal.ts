@@ -12,10 +12,10 @@ type FormOnSubmitEvent = Parameters<
   NonNullable<ComponentProps<"form">["onSubmit"]>
 >[0];
 import { useRouter } from "next/navigation";
-import { createPlayer } from "@/lib/queries/db/player";
+import { createPlayer } from "@/lib/queries/db/player/create-mutations";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import type { NewPlayerModalProps, PlayerNickFormRow } from "@/lib/types";
+import type { NewPlayerModalProps, PlayerNickFormRow } from "@/lib/types/player/index";
 import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals";
 import {
   PLAYER_MODAL_ABI_UNIT_NONE,

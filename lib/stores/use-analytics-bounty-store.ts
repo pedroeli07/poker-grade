@@ -1,4 +1,4 @@
-import type { AnalyticsBountyFilters } from "@/lib/types";
+import type { AnalyticsBountyFilters } from "@/lib/types/sharkscope/analytics/index";
 import { createFilterStore } from "./create-filter-store";
 
 export const useAnalyticsBountyStore = createFilterStore<AnalyticsBountyFilters>(

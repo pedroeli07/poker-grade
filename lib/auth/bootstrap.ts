@@ -1,4 +1,4 @@
-import { superAdminEmail } from "../constants";
+import { superAdminEmail } from "@/lib/constants/env";
 
 export function isSuperAdminEmail(email: string): boolean {
   return email === superAdminEmail;

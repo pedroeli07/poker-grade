@@ -5,9 +5,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { createBrowserQueryClient } from "@/lib/react-query/create-query-client";
-import type { AppProvidersProps } from "@/lib/types";
-import { APP_TOASTER_PROPS, TOOLTIP_DELAY_MS } from "@/lib/constants";
-
+import type { AppProvidersProps } from "@/lib/types/primitives";
+import { APP_TOASTER_PROPS, TOOLTIP_DELAY_MS } from "@/lib/constants/session-rbac";
 export function AppProviders({ children }: AppProvidersProps) {
   const [queryClient] = useState(() => createBrowserQueryClient());
 

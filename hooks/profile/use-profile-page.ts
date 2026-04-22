@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
-import type { ProfileData } from "@/lib/types";
-import { updateProfile } from "@/lib/queries/db/user";
+import type { ProfileData } from "@/lib/types/user/index";
+import { updateProfile } from "@/lib/queries/db/user/profile-mutations";
 import { toast } from "@/lib/toast";
 
 export function useProfilePage(profile: ProfileData) {

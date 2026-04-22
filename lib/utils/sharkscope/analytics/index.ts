@@ -26,7 +26,7 @@ import {
   profitFmt,
   SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT,
 } from "@/lib/constants/sharkscope/analytics";
-import type { NetworkStat, TierStat, TypeStat } from "@/lib/types";
+import type { NetworkStat, TierStat, TypeStat } from "@/lib/types/sharkScopeTypes";
 import type {
   AnalyticsMetricBarRow,
   AnalyticsRoiBarChartDatum,

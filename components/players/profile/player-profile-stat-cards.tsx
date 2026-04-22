@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Grid3X3, AlertTriangle, ShieldCheck, Target } from "lucide-react";
-import { cardClassName } from "@/lib/constants";
-import type { PlayerProfileRecord } from "@/lib/types";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
+import type { PlayerProfileRecord } from "@/lib/types/player/index";
 import { memo } from "react";
 
 const PlayerProfileStatCards = memo(function PlayerProfileStatCards({

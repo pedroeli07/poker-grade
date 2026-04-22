@@ -11,16 +11,10 @@ import {
   PASSWORD_STRENGTH_TRIVIAL_HINT_DEFAULT,
   passwordPolicyTypesHintLine,
 } from "@/lib/constants/password";
-import {
-  barColor,
-  cn,
-  formatPasswordLengthLine,
-  labelColor,
-  passwordCharsShortfall,
-} from "@/lib/utils";
-import { PasswordStrengthProps } from "@/lib/types";
-import { LEVEL_LABEL } from "@/lib/constants";
-
+import { barColor, formatPasswordLengthLine, labelColor, passwordCharsShortfall } from "@/lib/utils/password-strength-ui";
+import { cn } from "@/lib/utils/cn";
+import { PasswordStrengthProps } from "@/lib/types/view-types";
+import { LEVEL_LABEL } from "@/lib/constants/target";
 export function PasswordStrength({ password, className, compact }: PasswordStrengthProps) {
   const { level, percent, checks, trivialRejected } = useMemo(
     () => getPasswordStrength(password),

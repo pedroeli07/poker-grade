@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import { SidebarState } from "@/lib/types";
-
+import { SidebarState } from "@/lib/types/dashboard/index";
 export const useSidebarStore = create<SidebarState>((set) => ({
   isOpen: true,
   toggle: () => set((s) => ({ isOpen: !s.isOpen })),

@@ -13,37 +13,43 @@ function looksLikeCompletedTournamentRow(r: Record<string, unknown>): boolean {
   return false;
 }
 
+function hasTournamentIdentity(r: Record<string, unknown>): boolean {
+  return (
+    r.tournamentId !== undefined ||
+    r["@id"] !== undefined ||
+    typeof r.id === "string" ||
+    typeof r.id === "number"
+  );
+}
+
+function extractNetworkRaw(r: Record<string, unknown>): string | null {
+  const netRaw = r["@network"] ?? r.network ?? r.Network;
+  if (typeof netRaw !== "string") return null;
+  if (netRaw.length === 0 || netRaw.length >= 120) return null;
+  return netRaw.trim();
+}
+
+function maybeCountNetworkForNode(r: Record<string, unknown>, histogram: Map<string, number>): void {
+  const key = extractNetworkRaw(r);
+  if (!key || !hasTournamentIdentity(r) || !looksLikeCompletedTournamentRow(r)) return;
+  histogram.set(key, (histogram.get(key) ?? 0) + 1);
+}
+
+function walkHistogram(o: unknown, histogram: Map<string, number>): void {
+  if (o === null || o === undefined) return;
+  if (Array.isArray(o)) {
+    for (const x of o) walkHistogram(x, histogram);
+    return;
+  }
+  if (typeof o !== "object") return;
+  const r = o as Record<string, unknown>;
+  maybeCountNetworkForNode(r, histogram);
+  for (const v of Object.values(r)) walkHistogram(v, histogram);
+}
+
 /** Conta redes em objetos de torneio (`@network` no nó Tournament de `CompletedTournaments`). */
 export function collectTournamentNetworkHistogram(raw: unknown): Map<string, number> {
-  const m = new Map<string, number>();
-
-  function walk(o: unknown): void {
-    if (o === null || o === undefined) return;
-    if (Array.isArray(o)) {
-      for (const x of o) walk(x);
-      return;
-    }
-    if (typeof o !== "object") return;
-    const r = o as Record<string, unknown>;
-    const netRaw = r["@network"] ?? r.network ?? r.Network;
-    const hasTournamentId =
-      r.tournamentId !== undefined ||
-      r["@id"] !== undefined ||
-      typeof r.id === "string" ||
-      typeof r.id === "number";
-    if (
-      typeof netRaw === "string" &&
-      netRaw.length > 0 &&
-      netRaw.length < 120 &&
-      hasTournamentId &&
-      looksLikeCompletedTournamentRow(r)
-    ) {
-      const key = netRaw.trim();
-      m.set(key, (m.get(key) ?? 0) + 1);
-    }
-    for (const v of Object.values(r)) walk(v);
-  }
-
-  walk(raw);
-  return m;
+  const histogram = new Map<string, number>();
+  walkHistogram(raw, histogram);
+  return histogram;
 }

@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { PlayerDataRowProps } from "@/lib/types";
+import type { PlayerDataRowProps } from "@/lib/types/player/index";
 import { playersTableCol, playerTableBadgeClassName } from "@/lib/constants/classes";
 import {
   PlayerAbiTableCell,
@@ -16,8 +16,7 @@ import {
   PlayerRoiCell, 
   PlayerStatusTableCell, 
   PlayerTableRowActions } from "./table";
-import { cn } from "@/lib/utils"; 
-
+import { cn } from "@/lib/utils/cn";
 const PlayerTableRow = memo(function PlayerTableRow({
   player,
   canEditPlayers,

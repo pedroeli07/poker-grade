@@ -3,7 +3,7 @@ import type {
   TargetStatusConfig,
   TargetStatusKey,
 } from "@/lib/constants/target";
-import type { SortDir } from "@/lib/table-sort";
+import type { TableSortState } from "@/lib/table-sort";
 import type { PlayerRef, WithIdAndStatus } from "../primitives";
 import type { TargetsColKey } from "../columnKeys";
 
@@ -91,10 +91,7 @@ export type TargetSummaryCardData = {
  * 📊 STATE / UI CONTROL
  * ========================================================= */
 
-export type TargetsTableSortState = {
-  key: TargetsColKey;
-  dir: SortDir;
-} | null;
+export type TargetsTableSortState = TableSortState<TargetsColKey>;
 
 export type TargetsSummaryInput = {
   onTrack: number;
@@ -107,19 +104,19 @@ export type TargetsPageProps = {
   rows: TargetListRow[];
   players: TargetsPagePlayerOption[];
   canCreate: boolean;
-  summary: { onTrack: number; attention: number; offTrack: number };
+  summary: TargetsSummaryInput;
   /** Jogador só vê os próprios targets — sem filtro por jogador. */
   isPlayer: boolean;
 };
 
-export interface NewTargetModalProps {
+export type NewTargetModalProps = {
   players: PlayerRef[];
-}
+};
 
-export interface EditTargetModalProps {
+export type EditTargetModalProps = {
   target: TargetListRow;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
+};
 
 export type { TargetsColKey, TargetsFilters, TargetsColumnOptions } from "../columnKeys";

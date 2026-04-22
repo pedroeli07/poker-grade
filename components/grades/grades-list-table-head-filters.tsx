@@ -1,5 +1,6 @@
 import { memo } from "react";
-import { GradesColumnFilters, GradesColumnKey, GradesColumnOptions, GradesSetCol } from "@/lib/types";
+import { GradesColumnFilters, GradesColumnKey, GradesColumnOptions } from "@/lib/types/columnKeys";
+import { GradesSetCol } from "@/lib/types/grade/index";
 import { GRADES_LIST_TABLE_HEAD_COLUMNS } from "@/lib/constants/grade";
 import GradesTableColumnFilter from "@/components/grades/grades-table-column-filter";
 import { TableHead } from "@/components/ui/table";

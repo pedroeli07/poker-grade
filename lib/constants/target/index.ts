@@ -1,8 +1,7 @@
 import { type ComponentType } from "react";
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
-import type { StrengthLevel } from "@/lib/types/password-policy";
-import type { ColKey } from "@/lib/types";
-
+import type { StrengthLevel } from "@/lib/types/auth";
+import type { ColKey } from "@/lib/types/columnKeys";
 // ─── target-status ───────────────────────────────────────────────────────────
 
 export type TargetStatusKey = "ON_TRACK" | "ATTENTION" | "OFF_TRACK";

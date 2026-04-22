@@ -1,15 +1,7 @@
-import {
-    IMPORT_DETAIL_TAB_DEFS,
-  IMPORTS_COLUMN_LABELS,
-  IMPORTS_FILTER_SUMMARY_EMPTY_SELECTION,
-} from "@/lib/constants";
-import type {
-  ColumnOptions,
-  ImportDetailTabWithCount,
-  ImportsColumnKey,
-  ImportsFilters,
-  Tab,
-} from "@/lib/types";
+import { IMPORT_DETAIL_TAB_DEFS, IMPORTS_COLUMN_LABELS, IMPORTS_FILTER_SUMMARY_EMPTY_SELECTION } from "@/lib/constants/imports";
+import type { ColumnOptions } from "@/lib/types/primitives";
+import type { ImportDetailTabWithCount, Tab } from "@/lib/types/imports/index";
+import type { ImportsColumnKey, ImportsFilters } from "@/lib/types/columnKeys";
 import type { SortDir } from "@/lib/table-sort";
 
 

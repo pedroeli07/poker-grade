@@ -11,8 +11,7 @@ import {
   isSharkscopeAlertPercentMetric,
   SEVERITY_LABEL,
 } from "@/lib/constants/sharkscope/alerts";
-import type { SharkscopeAlertFilters, SharkscopeAlertRow } from "@/lib/types";
-
+import type { SharkscopeAlertFilters, SharkscopeAlertRow } from "@/lib/types/sharkscope/alerts/index";
 export function formatAlertTriggeredAt(iso: string): string {
   return format(new Date(iso), ALERT_TRIGGERED_AT_DATE_FORMAT, { locale: ptBR });
 }

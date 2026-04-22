@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import ReviewStatusBadge from "@/components/imports/review-status-badge";
 import SchedulingBadge from "@/components/imports/scheduling-badge";
-import type { ImportDetailPageData } from "@/lib/types";
+import type { ImportDetailPageData } from "@/lib/types/imports/index";
 import { memo } from "react";
 
 const ImportDetailTournamentsSection = memo(function ImportDetailTournamentsSection({

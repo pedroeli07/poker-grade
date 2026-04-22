@@ -2,14 +2,17 @@
 
 import { useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { descriptionPick, distinctOptions } from "@/lib/utils";
-import { EMPTY_DESC, STALE_TIME } from "@/lib/constants";
+import { descriptionPick } from "@/lib/utils/grade-rule-mapper";
+import { distinctOptions } from "@/lib/utils/distinct-options";
+import { EMPTY_DESC } from "@/lib/constants/sharkscope/ui";
+import { STALE_TIME } from "@/lib/constants/query-result";
 import { GRADES_LS_VIEW } from "@/lib/constants/metadata";
-import type { GradeListRow, ColumnKey } from "@/lib/types";
-import { getGradesListRowsAction } from "@/lib/queries/db/grade";
+import type { GradeListRow } from "@/lib/types/grade/index";
+import type { ColumnKey } from "@/lib/types/columnKeys";
 import { gradeKeys } from "@/lib/queries/grade-query-keys";
 import { useGradesListStore } from "@/lib/stores/use-grades-list-store";
 import { usePersistentState } from "@/hooks/use-persistent-state";
+import { getGradesListRowsAction } from "@/lib/queries/db/grade/reads";
 
 export function useGradesListPage(initialRows: GradeListRow[]) {
   const { data: rows = initialRows } = useQuery({

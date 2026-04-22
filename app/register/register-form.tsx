@@ -5,7 +5,8 @@ import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { PasswordStrength } from "@/components/password-strength";
 import { PasswordInput } from "@/components/auth/password-input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { AUTH_INPUT_CLASS, REGISTER_OTP_INPUT_PATTERN } from "@/lib/constants";
+import { AUTH_INPUT_CLASS } from "@/lib/constants/sharkscope/ui";
+import { REGISTER_OTP_INPUT_PATTERN } from "@/lib/constants/register";
 import { useRegisterForm } from "@/hooks/use-register-form";
 
 export function RegisterForm() {

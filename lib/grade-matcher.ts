@@ -7,10 +7,11 @@
  * - OUT_OF_GRADE: tournament doesn't match any rule
  */
 
-import type { LobbyzeFilterItem, TournamentData, GradeRuleData, MatchDetail } from "@/lib/types";
+import type { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
+import type { TournamentData, MatchDetail } from "@/lib/types/view-types";
+import type { GradeRuleData } from "@/lib/types/grade/index";
 import { createLogger } from "./logger";
-import { normalizeSiteName, matchesExcludePattern, matchesSpeed } from "@/lib/utils";
-
+import { normalizeSiteName, matchesExcludePattern, matchesSpeed } from "@/lib/utils/lobbyze-filters";
 const log = createLogger("grade-matcher");
 
 /**

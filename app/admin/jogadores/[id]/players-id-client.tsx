@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import type { PlayerProfileViewModel } from "@/lib/types";
+import type { PlayerProfileViewModel } from "@/lib/types/player/index";
 import PlayerProfileHeader from "@/components/players/profile/player-profile-header";
 import PlayerProfileStatCards from "@/components/players/profile/player-profile-stat-cards";
 import PlayerProfileGradeAssignments from "@/components/players/profile/player-profile-grade-assignments";

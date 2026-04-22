@@ -1,5 +1,4 @@
-// Gestão de Grades - Poker Tournament Grid Management
-// Schema for Neon Postgres
+// Grades app — Prisma schema (Neon PostgreSQL)
 
 generator client {
   provider = "prisma-client-js"
@@ -84,7 +83,7 @@ enum NotificationType {
 }
 
 // ==========================================
-// AUTH (sessão + credenciais — Argon2id no app)
+// AUTH (sessions + Argon2id in application code)
 // ==========================================
 
 model AuthUser {
@@ -107,6 +106,15 @@ model AuthUser {
   sessions       AuthSession[]
   invitesCreated AllowedEmail[] @relation("AllowedEmailAddedBy")
   notifications  Notification[]
+  opponentNotes  OpponentNote[]
+
+  driRegistrations         TeamDri[]                 @relation("TeamDriAuthUser")
+  authoredDecisions        TeamDecision[]            @relation("TeamDecisionAuthor")
+  ritualsAsDri             TeamRitual[]              @relation("TeamRitualDri")
+  teamRitualParticipations TeamRitualParticipation[] @relation("TeamRitualParticipationUser")
+  assignedTeamTasks        TeamTask[]                @relation("TeamTaskAssignee")
+  teamAlertRuleAssignments TeamAlertRule[]           @relation("TeamAlertAssignee")
+  teamIndicatorsOwned      TeamIndicator[]           @relation("TeamIndicatorOwner")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -114,7 +122,7 @@ model AuthUser {
   @@map("auth_users")
 }
 
-/** E-mails autorizados a criar conta (convite) — removido após registro bem-sucedido. */
+/** Emails allowed to sign up (invite). Removed after successful registration. */
 model AllowedEmail {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -147,7 +155,7 @@ model AuthSession {
 model VerificationToken {
   id        String   @id @default(cuid())
   email     String
-  code      String   // OTP de 6 dígitos
+  code      String   // 6-digit OTP
   type      String   // "REGISTER" | "PASSWORD_RESET"
   expiresAt DateTime
   createdAt DateTime @default(now())
@@ -317,7 +325,7 @@ model PlayerTarget {
   player   Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   // Target definition
-  name        String      // e.g., "ABI alvo", "ROI mínimo", "Frequência de estudo"
+  name        String      // e.g. "target ABI", "min ROI", "study frequency"
   category    String      // e.g., "performance", "discipline", "study", "qualitative"
   targetType  TargetType  @default(NUMERIC)
 
@@ -607,4 +615,225 @@ model AuditLog {
   @@index([entity, entityId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ==========================================
+// OPPONENT NOTES
+// ==========================================
+
+enum OpponentClassification {
+  FISH
+  REG
+  WHALE
+  NIT
+  SHARK
+  UNKNOWN
+}
+
+enum OpponentStyle {
+  LAG
+  TAG
+  PASSIVE
+  AGGRESSIVE
+  TIGHT
+  LOOSE
+  UNKNOWN
+}
+
+model OpponentNote {
+  id             String                  @id @default(cuid())
+  network        String
+  nick           String
+  nickKey        String                  // lowercased/trimmed for deduplication
+  body           String
+  classification OpponentClassification?
+  style          OpponentStyle?
+
+  authorId       String
+  author         AuthUser                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  deletedAt      DateTime?
+
+  @@index([network, nickKey])
+  @@index([authorId])
+  @@index([createdAt])
+  @@map("opponent_notes")
+}
+
+// ==========================================
+// TEAM ADMIN (CL operations)
+// ==========================================
+
+model TeamCulture {
+  id        String   @id @default(cuid())
+  purpose   String   @default("")
+  vision    String   @default("")
+  mission   String   @default("")
+  values    Json     @default("[]")
+  updatedAt DateTime @updatedAt
+
+  @@map("team_culture")
+}
+
+model TeamOperationalRule {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  type          String
+  monitoring    Boolean  @default(false)
+  source        String   @default("")
+  limit         String?
+  consequence   String   @default("")
+  active        Boolean  @default(true)
+  severity      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("team_operational_rules")
+}
+
+model TeamDri {
+  id               String    @id @default(cuid())
+  area             String    @unique
+  authUserId       String?
+  responsibleName  String?
+  rules            String    @default("")
+  authUser         AuthUser? @relation("TeamDriAuthUser", fields: [authUserId], references: [id], onDelete: SetNull)
+
+  @@index([authUserId])
+  @@map("team_dri")
+}
+
+model TeamDecision {
+  id          String   @id @default(cuid())
+  title       String
+  summary     String
+  impact      String
+  decidedAt   DateTime @default(now())
+  authorId    String
+  area        String
+  tags        String[]
+  status      String   @default("PENDING")
+  visibility  String   @default("ALL")
+  author      AuthUser @relation("TeamDecisionAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  tasks       TeamTask[] @relation("TeamTaskFromDecision")
+
+  @@index([authorId])
+  @@index([decidedAt])
+  @@map("team_decisions")
+}
+
+model TeamRitual {
+  id               String   @id @default(cuid())
+  name             String
+  ritualType       String
+  area             String
+  description      String
+  driId            String?
+  responsibleName  String?
+  agenda           Json
+  startAt          DateTime
+  durationMin      Int
+  recurrence       String
+  dri              AuthUser? @relation("TeamRitualDri", fields: [driId], references: [id], onDelete: SetNull)
+  executions       TeamRitualExecution[]
+  participations   TeamRitualParticipation[]
+  linkedTasks      TeamTask[] @relation("TeamTaskFromRitual")
+
+  @@index([driId])
+  @@map("team_rituals")
+}
+
+model TeamRitualExecution {
+  id          String     @id @default(cuid())
+  ritualId  String
+  executedAt  DateTime   @default(now())
+  checklist   Json
+  notes       String     @default("")
+  attendance  Json
+  ritual      TeamRitual @relation(fields: [ritualId], references: [id], onDelete: Cascade)
+
+  @@index([ritualId])
+  @@map("team_ritual_executions")
+}
+
+model TeamRitualParticipation {
+  id        String     @id @default(cuid())
+  ritualId  String
+  userId    String
+  attended  Boolean
+  attendedAt DateTime
+  ritual    TeamRitual @relation(fields: [ritualId], references: [id], onDelete: Cascade)
+  user      AuthUser   @relation("TeamRitualParticipationUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ritualId])
+  @@index([userId])
+  @@map("team_ritual_participations")
+}
+
+model TeamTask {
+  id                 String   @id @default(cuid())
+  title              String
+  description        String   @default("")
+  status             String   @default("TODO")
+  priority           String
+  expectedResult     String?
+  criteria           String[] @default([])
+  tags               Json     @default("[]")
+  authUserId         String?
+  responsibleName    String?
+  dueAt              DateTime?
+  sourceRitualId     String?
+  sourceDecisionId   String?
+  assignee            AuthUser?     @relation("TeamTaskAssignee", fields: [authUserId], references: [id], onDelete: SetNull)
+  sourceRitual        TeamRitual?   @relation("TeamTaskFromRitual", fields: [sourceRitualId], references: [id], onDelete: SetNull)
+  sourceDecision     TeamDecision?  @relation("TeamTaskFromDecision", fields: [sourceDecisionId], references: [id], onDelete: SetNull)
+
+  @@index([authUserId])
+  @@index([status])
+  @@map("team_tasks")
+}
+
+model TeamAlertRule {
+  id                String     @id @default(cuid())
+  name              String
+  area              String
+  metric            String
+  operator          String
+  threshold         Float
+  severity          String
+  authUserId        String?
+  responsibleName   String?
+  assignee          AuthUser?  @relation("TeamAlertAssignee", fields: [authUserId], references: [id], onDelete: SetNull)
+
+  @@index([authUserId])
+  @@map("team_alert_rules")
+}
+
+model TeamIndicator {
+  id                String   @id @default(cuid())
+  name              String
+  area              String   @default("General")
+  targetValue       Float    @default(0)
+  frequency         String   @default("WEEKLY")
+  authUserId        String?
+  status            String   @default("ON_TARGET")
+  curveType         String   @default("RISING")
+  unit              String   @default("%")
+  currentValue      Float    @default(0)
+  autoAction        String   @default("NONE")
+  definition        String   @default("")
+  dataSource        String   @default("MANUAL")
+  glossary          String?
+  sourceUrl         String?
+  resultType        String   @default("OUTCOME")
+  responsibleName   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  owner             AuthUser? @relation("TeamIndicatorOwner", fields: [authUserId], references: [id], onDelete: SetNull)
+
+  @@index([authUserId])
+  @@map("team_indicators")
 }

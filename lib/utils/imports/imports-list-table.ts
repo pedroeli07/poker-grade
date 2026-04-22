@@ -1,4 +1,5 @@
-import type { ImportListRow, ImportsColumnKey } from "@/lib/types";
+import type { ImportListRow } from "@/lib/types/imports/index";
+import type { ImportsColumnKey } from "@/lib/types/columnKeys";
 import type { ColumnSortKind } from "@/lib/types/dataTable";
 import {
   compareDate,

@@ -12,7 +12,7 @@ import AnalyticsSitePanel from "@/components/sharkscope/analytics/analytics-site
 import AnalyticsTabBar from "@/components/sharkscope/analytics/analytics-tab-bar";
 import AnalyticsTierPanel from "@/components/sharkscope/analytics/analytics-tier-panel";
 import { useAnalyticsPageClient } from "@/hooks/sharkscope/analytics/use-analytics-page-client";
-import type { AnalyticsClientProps, AnalyticsDebugPageData } from "@/lib/types";
+import type { AnalyticsClientProps, AnalyticsDebugPageData } from "@/lib/types/sharkscope/analytics/index";
 import { syncAnalyticsDebugSinglePlayerAction, type SyncAnalyticsDebugResult } from "./actions";
 
 const EMPTY_PROPS: AnalyticsClientProps = {

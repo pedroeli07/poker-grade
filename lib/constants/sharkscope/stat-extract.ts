@@ -1,5 +1,4 @@
-import type { ScoutingSearchStats } from "@/lib/types";
-
+import type { ScoutingSearchStats } from "@/lib/types/sharkScopeTypes";
 /**
  * Caminhos JSON onde procurar nós `Statistics` / `Statistic` (ordem de prioridade).
  * PlayerGroup (Summary / Statistics) e jogador normal.

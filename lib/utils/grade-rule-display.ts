@@ -2,8 +2,8 @@ import {
   GRADE_RULE_DISPLAY_FIELD_ROWS,
   type GradeRuleDisplayFieldKey,
 } from "@/lib/constants/grade-rule-display";
-import type { GradeRuleCardRule, LobbyzeFilterItem } from "@/lib/types";
-
+import type { GradeRuleCardRule } from "@/lib/types/grade/index";
+import type { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
 export function formatGradeRuleUsdInt(n: number): string {
   return n.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
 }

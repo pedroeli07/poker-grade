@@ -1,12 +1,9 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import type {
-  ColumnOptions,
-  ImportListRow,
-  ImportsColumnKey,
-  ImportsFilters,
-} from "@/lib/types";
+import type { ColumnOptions } from "@/lib/types/primitives";
+import type { ImportListRow } from "@/lib/types/imports/index";
+import type { ImportsColumnKey, ImportsFilters } from "@/lib/types/columnKeys";
 import type { ColumnSortKind } from "@/lib/types/dataTable";
 import {
   buildImportsFilterSummaryLines,

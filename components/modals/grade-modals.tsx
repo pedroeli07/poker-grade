@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { FileJson, ChevronRight, Loader2, Upload, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import { useImportGradeModal } from "@/hooks/grades/use-import-grade-modal";
 import { memo } from "react";
 

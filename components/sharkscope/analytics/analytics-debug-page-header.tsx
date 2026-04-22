@@ -1,7 +1,7 @@
 "use client";
 
-import { SHARKSCOPE_ANALYTICS_PERIODS } from "@/lib/constants";
-import type { SharkscopeAnalyticsPeriod } from "@/lib/types";
+import { SHARKSCOPE_ANALYTICS_PERIODS } from "@/lib/constants/sharkscope/analytics";
+import type { SharkscopeAnalyticsPeriod } from "@/lib/types/sharkscope/analytics/index";
 import { memo } from "react";
 
 const AnalyticsDebugPageHeader = memo(function AnalyticsDebugPageHeader({

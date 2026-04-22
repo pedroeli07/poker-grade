@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import type { ScoutingClientProps } from "@/lib/types";
+import type { ScoutingClientProps } from "@/lib/types/sharkscope/scouting/index";
 import { useScoutingPageClient } from "@/hooks/sharkscope/scouting/use-scouting-page-client";
 import ScoutingPageHeader from "@/components/sharkscope/scouting/scouting-page-header";
 import ScoutingSearchCard from "@/components/sharkscope/scouting/scouting-search-card";

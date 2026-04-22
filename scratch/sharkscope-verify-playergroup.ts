@@ -16,7 +16,7 @@
  *
  * ## Interpretação
  * - bounty_site / nonbounty_site espelham filtros do site (Type B, BJ, MB, PB).
- * - bounty_app / vanilla_app / satellite_app espelham o que o cron grava hoje (ver lib/constants/sharkscope-type-filters.ts).
+ * - bounty_app / vanilla_app / satellite_app espelham o que o cron grava hoje (ver lib/constants/sharkscope/type-filters.ts).
  * Se baseline e site baterem mas app não, o desvio do dashboard vem dos filtros Type, não da API bruta.
  *
  * ## IDs oficiais (GET /metadata → PlayerStatisticsDefinitions)
@@ -34,12 +34,8 @@
 
 import "dotenv/config";
 
-import {
-  encodeSharkScopePassword,
-  extractRemainingSearches,
-  extractStat,
-  sharkScopeResponseErrorMessage,
-} from "@/lib/utils";
+import { encodeSharkScopePassword, sharkScopeResponseErrorMessage } from "@/lib/utils/sharkscope-client";
+import { extractRemainingSearches, extractStat } from "@/lib/utils/sharkscope-extract";
 import { parseSharkscopeStatisticNode } from "@/lib/sharkscope-stat-scan";
 import {
   sharkScopeAppKey,

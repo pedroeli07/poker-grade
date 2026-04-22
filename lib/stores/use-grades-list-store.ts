@@ -1,4 +1,4 @@
-import type { GradesColumnFilters } from "@/lib/types";
+import type { GradesColumnFilters } from "@/lib/types/columnKeys";
 import { createFilterStore } from "./create-filter-store";
 
 export const useGradesListStore = createFilterStore<GradesColumnFilters>(

@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { isScoutingStaffRole } from "@/lib/auth/rbac";
-import { sharkScopeGet } from "@/lib/utils";
+import { sharkScopeGet } from "@/lib/utils/sharkscope-client";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeSearch } from "@/lib/rate-limit";
-import { scoutSearchQuerySchema } from "@/lib/schemas";
-import { ErrorTypes } from "@/lib/types";
-import { sharkscopeApiNetworkSegment } from "@/lib/constants";
-
+import { scoutSearchQuerySchema } from "@/lib/schemas/sharkscope";
+import { ErrorTypes } from "@/lib/types/primitives";
+import { sharkscopeApiNetworkSegment } from "@/lib/constants/poker-networks";
 export async function GET(req: Request) {
   const session = await getSession();
   if (!session || !isScoutingStaffRole(session.role)) {

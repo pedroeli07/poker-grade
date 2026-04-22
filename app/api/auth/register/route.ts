@@ -3,16 +3,15 @@ import { z } from "zod";
 import { PlayerStatus, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
-import { registerBodySchema } from "@/lib/schemas";
+import { registerBodySchema } from "@/lib/schemas/auth";
 import { limitRegister } from "@/lib/rate-limit";
 import { clientIp, assertSameOrigin } from "@/lib/api/origin";
 import { logRateLimited, logValidationFailure } from "@/lib/security-log";
 import { createLogger } from "@/lib/logger";
 import { createAuthSession, applySessionCookie } from "@/lib/auth/issue-session";
-import { isSuperAdminEmail } from "@/lib/utils";
-import { INVITE_ONLY_MSG } from "@/lib/constants";
-import { ErrorTypes } from "@/lib/types";
-
+import { isSuperAdminEmail } from "@/lib/utils/auth-session";
+import { INVITE_ONLY_MSG } from "@/lib/constants/sharkscope/alerts";
+import { ErrorTypes } from "@/lib/types/primitives";
 const log = createLogger("auth.register");
 
 export async function POST(request: Request) {

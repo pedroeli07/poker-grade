@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Check, History, User } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ACTION_CONFIG, TIMELINE_CARD_CLS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { ACTION_CONFIG } from "@/lib/constants/roles-actions";
+import { TIMELINE_CARD_CLS } from "@/lib/constants/classes";
+import { cn } from "@/lib/utils/cn";
 import type { HistoryPageData } from "@/lib/data/history";
 import { memo } from "react";
 

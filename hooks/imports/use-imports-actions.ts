@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "@/lib/toast";
-import { deleteImports } from "@/lib/queries/db/imports";
+import { deleteImports } from "@/lib/queries/db/imports/delete-mutations";
 
 export function useImportsActions({
   invalidate,

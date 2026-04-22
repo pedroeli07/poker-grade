@@ -17,13 +17,11 @@ import {
   TARGETS_TABLE_HEAD_COLUMNS,
   TARGETS_TABLE_STATIC_COLUMNS,
 } from "@/lib/constants/target";
-import {
-  dataTableHeaderRowActiveRingClass,
-  dataTableHeaderRowClass,
-} from "@/lib/constants";
+import { dataTableHeaderRowActiveRingClass, dataTableHeaderRowClass } from "@/lib/constants/classes";
 import { useTargetsTableSection } from "@/hooks/targets/use-targets-table-section";
-import type { ColKey, Filters, TargetListRow, TargetsColumnOptions } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import type { ColKey, Filters, TargetsColumnOptions } from "@/lib/types/columnKeys";
+import type { TargetListRow } from "@/lib/types/target/index";
+import { cn } from "@/lib/utils/cn";
 import {
   buildTargetsFilterSummaryLines,
   formatTargetsSortSummary,

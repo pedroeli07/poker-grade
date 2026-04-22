@@ -2,9 +2,8 @@
 
 import { memo } from "react";
 import ReviewPlayerGroupCard from "@/components/review/review-player-group-card";
-import { cardClassName } from "@/lib/constants";
-import type { ReviewPlayerGroup } from "@/lib/types";
-
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
+import type { ReviewPlayerGroup } from "@/lib/types/review/index";
 const ReviewGroupsSection = memo(function ReviewGroupsSection({
   paginatedGroups,
   showActions,

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { distinctOptions } from "@/lib/utils";
+import { distinctOptions } from "@/lib/utils/distinct-options";
 import {
   ANALYTICS_NUM_FILTER_KEYS,
   buildUniqueValuesMap,
@@ -16,14 +16,8 @@ import { useAnalyticsTierStore } from "@/lib/stores/use-analytics-tier-store";
 import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope/analytics";
 import { useAnalyticsSortedRows } from "@/hooks/sharkscope/analytics/use-analytics-sorted-rows";
 import useAnalyticsColumnSort from "@/hooks/sharkscope/analytics/use-analytics-column-sort";
-import type {
-  TypeStat,
-  RankingEntry,
-  NetworkStat,
-  TierStat,
-  SharkscopeAnalyticsPeriod,
-  TierSortKey,
-} from "@/lib/types";
+import type { TypeStat, NetworkStat, TierStat } from "@/lib/types/sharkScopeTypes";
+import type { RankingEntry, SharkscopeAnalyticsPeriod, TierSortKey } from "@/lib/types/sharkscope/analytics/index";
 import {
   buildTierChartRows,
   siteAnalyticsPeriodLabel,

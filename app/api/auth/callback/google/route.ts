@@ -2,7 +2,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { GOOGLE_OAUTH_STATE_COOKIE, nextPublicAppUrl } from "@/lib/constants";
+import { GOOGLE_OAUTH_STATE_COOKIE } from "@/lib/constants/session-rbac";
+import { nextPublicAppUrl } from "@/lib/constants/env";
 import {
   exchangeGoogleAuthorizationCode,
   fetchGoogleUserInfo,
@@ -11,8 +12,7 @@ import { createAuthSession, applySessionCookie } from "@/lib/auth/issue-session"
 import { isSuperAdminEmail, normalizeAuthEmail } from "@/lib/auth/bootstrap";
 import { createLogger } from "@/lib/logger";
 import { ensureCoachProfileLinked } from "@/lib/auth/ensure-coach-profile";
-import { redirectTo } from "@/lib/utils";
-
+import { redirectTo } from "@/lib/utils/app-routing";
 const log = createLogger("auth.google.callback");
 
 export async function GET(request: Request) {

@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { FILTER_OPTION_ROW_HOVER_CARD_CONTENT_CLASS } from "@/lib/constants/classes";
-import { cn, filterOptionPreviewText, filterOptionNeedsHoverPreview } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
+import { filterOptionPreviewText, filterOptionNeedsHoverPreview } from "@/lib/utils/filter-options-ui";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Checkbox } from "@/components/ui/checkbox";
 

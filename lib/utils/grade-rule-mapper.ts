@@ -1,5 +1,8 @@
-import { EMPTY_DESC, STATUS_CONFIG } from "@/lib/constants";
-import type { GradeListRow, GradeRuleCardRule, LobbyzeFilterItem, TargetListRow } from "@/lib/types";
+import { EMPTY_DESC } from "@/lib/constants/sharkscope/ui";
+import { STATUS_CONFIG } from "@/lib/constants/grade";
+import type { GradeListRow, GradeRuleCardRule } from "@/lib/types/grade/index";
+import type { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
+import type { TargetListRow } from "@/lib/types/target/index";
 import { parseJson } from "./parse-forms";
 import { htmlToPlainText } from "./html-to-plain-text";
 

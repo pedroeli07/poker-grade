@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
 import {
   Select,
   SelectContent,
@@ -12,6 +12,7 @@ import {
 
 /** Mesmo bloco de “Itens” + paginação usado em Notificações e Histórico. */
 const PaginationToolbarControls = memo(function PaginationToolbarControls({
+  countSummary,
   page,
   pageSize,
   total,
@@ -19,6 +20,8 @@ const PaginationToolbarControls = memo(function PaginationToolbarControls({
   onChangePage,
   onChangePageSize,
 }: {
+  /** Ex.: “Mostrando 10 de 10 decisões” imediatamente à esquerda de Itens. */
+  countSummary?: ReactNode;
   page: number;
   pageSize: number;
   total: number;
@@ -28,7 +31,9 @@ const PaginationToolbarControls = memo(function PaginationToolbarControls({
 }) {
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-3">
+        {countSummary}
+        <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground font-medium">Itens:</span>
         <Select
           value={String(pageSize > 100 ? "all" : pageSize)}
@@ -48,6 +53,7 @@ const PaginationToolbarControls = memo(function PaginationToolbarControls({
             <SelectItem value="all">Todos</SelectItem>
           </SelectContent>
         </Select>
+        </div>
       </div>
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
         <span>

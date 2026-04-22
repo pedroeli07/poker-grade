@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifySessionJwt, signSessionToken } from "@/lib/auth/jwt";
-import { nodeEnv, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC, SESSION_RENEWAL_THRESHOLD_SEC } from "@/lib/constants";
-
+import { nodeEnv } from "@/lib/constants/env";
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC, SESSION_RENEWAL_THRESHOLD_SEC } from "@/lib/constants/session-rbac";
 export async function POST() {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE_NAME)?.value;

@@ -4,8 +4,7 @@ import dynamicImport from "next/dynamic";
 import { loadPlayersListPageProps } from "../../../hooks/players/players-page-load";
 import { SyncSharkScopeButton } from "@/components/sharkscope/sync-button";
 import { playersPageMetadata } from "@/lib/constants/metadata";
-import { canCreate } from "@/lib/constants";
-
+import { canCreate } from "@/lib/constants/navigation";
 export const dynamic = "force-dynamic";
 
 export const metadata = playersPageMetadata;

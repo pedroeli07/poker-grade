@@ -1,8 +1,10 @@
 import { STAFF_WRITE_ROLES } from "@/lib/auth/rbac";
 import { requireSession } from "@/lib/auth/session";
-import { getTargetsForSession } from "@/lib/queries/db/target";
+import { getTargetsForSession } from "@/lib/queries/db/target/reads";
 import { prisma } from "@/lib/prisma";
-import { TargetPageStatus, TargetListRow, TargetsPageProps, AppSession } from "@/lib/types";
+import { TargetPageStatus } from "@/lib/types/primitives";
+import { TargetListRow, TargetsPageProps } from "@/lib/types/target/index";
+import { AppSession } from "@/lib/types/auth";
 import { UserRole } from "@prisma/client";
 
 export async function getTargetsListRowsForSession(session: AppSession): Promise<TargetListRow[]> {

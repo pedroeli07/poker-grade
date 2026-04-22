@@ -4,11 +4,8 @@ import { memo } from "react";
 import { ArrowDownWideNarrow, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import {
-  dataTableToolbarActiveClass,
-  dataTableToolbarIdleClass,
-} from "@/lib/constants";
+import { cn } from "@/lib/utils/cn";
+import { dataTableToolbarActiveClass, dataTableToolbarIdleClass } from "@/lib/constants/classes";
 import type { DataTableToolbarProps } from "@/lib/types/dataTable";
 
 const DataTableToolbar = memo(function DataTableToolbar({
@@ -23,9 +20,14 @@ const DataTableToolbar = memo(function DataTableToolbar({
   onClear,
   clearButtonLabel = "Limpar filtros e ordenação",
   filterChipsSectionTitle = "Valores filtrados",
+  hideShowingCount = false,
 }: DataTableToolbarProps) {
   const [entitySingular, entityPlural] = entityLabels;
   const entityWord = totalCount !== 1 ? entityPlural : entitySingular;
+
+  if (hideShowingCount && !hasActiveView && !anyFilter) {
+    return null;
+  }
 
   return (
     <div
@@ -36,11 +38,13 @@ const DataTableToolbar = memo(function DataTableToolbar({
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
-          <span className={cn(hasActiveView && "font-medium text-foreground")}>
-            {showingLabel}{" "}
-            <span className="font-semibold tabular-nums text-primary">{filteredCount}</span> de{" "}
-            <span className="tabular-nums">{totalCount}</span> {entityWord}
-          </span>
+          {!hideShowingCount && (
+            <span className={cn(hasActiveView && "font-medium text-foreground")}>
+              {showingLabel}{" "}
+              <span className="font-semibold tabular-nums text-primary">{filteredCount}</span> de{" "}
+              <span className="tabular-nums">{totalCount}</span> {entityWord}
+            </span>
+          )}
           {hasActiveView && (
             <div className="flex flex-wrap items-center gap-2">
               {anyFilter && (

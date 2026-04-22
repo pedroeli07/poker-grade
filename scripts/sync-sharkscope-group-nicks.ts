@@ -19,13 +19,13 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { prisma } from "@/lib/prisma";
-import { sharkScopeAppKey, sharkScopeAppName } from "@/lib/constants";
+import { sharkScopeAppKey, sharkScopeAppName } from "@/lib/constants/env";
 import {
   assignSharkKeysToPlayers,
   buildNickUpsertPlans,
   getOrFetchGroupBreakdown30d,
   type PlayerLite,
-} from "@/lib/sharkscope/sync-player-nicks-from-groups";
+} from "@/lib/sharkscope/daily-sync/sync-player-nicks-from-groups";
 
 /** Tabela estilo Markdown (`player-groups.csv`): coluna "Grupo Shark" = nome do playerGroup. */
 function readGroupFilterFromMarkdownTable(filePath: string): Set<string> {

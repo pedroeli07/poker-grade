@@ -5,9 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import DataTableShell from "@/components/data-table/data-table-shell";
 import ColumnFilter from "@/components/column-filter";
 import FilteredColumnTitle from "@/components/data-table/filtered-column-title";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import type { GradeRulesColumnFilters, GradeRulesColumnOptions, GradeRulesColumnKey } from "@/hooks/grades/use-grade-rules-list";
-import type { GradeRuleCardRule } from "@/lib/types";
+import type { GradeRuleCardRule } from "@/lib/types/grade/index";
 import { Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEditableRule } from "@/hooks/grades/use-editable-rule";
@@ -38,26 +38,9 @@ import { Dialog } from "@/components/ui/dialog";
 import ModalDialogContent from "@/components/modals/primitives/modal-dialog-content";
 import ModalGradientHeader from "@/components/modals/primitives/modal-gradient-header";
 import RuleEditor from "./rule-editor";
-import { mergeOptions } from "@/lib/utils";
-import {
-  destructiveAlertDialogContentClassName,
-  destructiveAlertHeaderClassName,
-  destructiveAlertTitleClassName,
-  destructiveAlertDescriptionWrapClassName,
-  destructiveAlertFooterClassName,
-  destructiveAlertCancelButtonClassName,
-  destructiveAlertConfirmButtonClassName,
-  dataTableHeaderRowClass,
-  dataTableShellActiveClass,
-  SPEED_PRESETS,
-  TOURNAMENT_TYPE_PRESETS,
-  VARIANT_PRESETS,
-  GAME_TYPE_PRESETS,
-  PLAYER_COUNT_PRESETS,
-  WEEKDAY_PRESETS,
-  SITES_PRESETS,
-} from "@/lib/constants";
-
+import { mergeOptions } from "@/lib/utils/lobbyze-filters";
+import { destructiveAlertDialogContentClassName, destructiveAlertHeaderClassName, destructiveAlertTitleClassName, destructiveAlertDescriptionWrapClassName, destructiveAlertFooterClassName, destructiveAlertCancelButtonClassName, destructiveAlertConfirmButtonClassName, dataTableHeaderRowClass, dataTableShellActiveClass } from "@/lib/constants/classes";
+import { SPEED_PRESETS, TOURNAMENT_TYPE_PRESETS, VARIANT_PRESETS, GAME_TYPE_PRESETS, PLAYER_COUNT_PRESETS, WEEKDAY_PRESETS, SITES_PRESETS } from "@/lib/constants/presets";
 function GradeRulesTableRow({
   rule,
   idx,

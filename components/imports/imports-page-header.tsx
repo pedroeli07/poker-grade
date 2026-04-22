@@ -1,8 +1,7 @@
 import NewImportModal from "@/components/modals/new-import-modal";
 import { importsPageMetadata } from "@/lib/constants/metadata";
 import { memo } from "react";
-import type { PlayerSelectOption } from "@/lib/types";
-
+import type { PlayerSelectOption } from "@/lib/types/grade/index";
 const ImportsPageHeader = memo(function ImportsPageHeader({
   canImport,
   players,

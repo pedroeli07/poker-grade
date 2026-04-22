@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState } from "react";
-import type { NotificationsPageData } from "@/lib/types";
+import type { NotificationsPageData } from "@/lib/types/notification/index";
 import { useNotificationsPage } from "@/hooks/notification/use-notifications-page";
 import NotificationsPageHeader from "@/components/notifications/notifications-page-header";
 import NotificationsErrorState from "@/components/notifications/notifications-error-state";

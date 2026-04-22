@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import type { FormEvent } from "react";
+import type { SubmitEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
   getPasswordPolicyGaps,
@@ -29,7 +29,7 @@ export function useForgotPasswordResetForm() {
   const policyGaps = useMemo(() => getPasswordPolicyGaps(password), [password]);
 
   const sendCode = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
+    async (e: SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!emailOk) {
         toast.error(forgotPasswordMessages.toast.invalidEmail);
@@ -67,7 +67,7 @@ export function useForgotPasswordResetForm() {
   );
 
   const completeReset = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
+    async (e: SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (code.length !== FORGOT_PASSWORD_OTP_LENGTH) {
         toast.error(

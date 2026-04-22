@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { SortDir } from "@/lib/table-sort";
+import type { TableSortState } from "@/lib/table-sort";
 
 export type FilteredColumnTitleProps = { active: boolean; children: ReactNode };
 export type DataTableToolbarProps = {
@@ -14,11 +14,13 @@ export type DataTableToolbarProps = {
   onClear: () => void;
   clearButtonLabel?: string;
   filterChipsSectionTitle?: string;
+  /** When true, omits the “Mostrando X de Y” line (e.g. count is shown on PaginationToolbarControls). */
+  hideShowingCount?: boolean;
 };
 export type DataTableShellProps = { hasActiveView: boolean; children: ReactNode; className?: string };
 
 export type ColumnSortKind = "number" | "string" | "date";
-export type ColumnSortState<K extends string> = { key: K; dir: SortDir } | null;
+export type ColumnSortState<K extends string> = TableSortState<K>;
 export type ColumnSortToggle<K extends string> = (key: K, kind: ColumnSortKind) => void;
 export type ColumnSortButtonProps<K extends string> = {
   columnKey: K;

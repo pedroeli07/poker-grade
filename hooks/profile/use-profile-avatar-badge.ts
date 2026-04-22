@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { updateAvatar } from "@/lib/queries/db/user";
+import { updateAvatar } from "@/lib/queries/db/user/profile-mutations";
 import {
   PROFILE_AVATAR_MAX_BYTES,
   profileAvatarMessages,

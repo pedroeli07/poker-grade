@@ -1,15 +1,9 @@
-import type { AppSession } from "@/lib/types";
-import { getPendingReviewsForSession } from "@/lib/queries/db/review";
-import {
-  PLAYERS_PER_PAGE,
-  REVIEW_NO_COACH_SENTINEL,
-} from "@/lib/constants";
-import { canReview, groupByPlayer } from "@/lib/utils";
-import type {
-  ReviewPageData,
-} from "@/lib/types";
-
-
+import type { AppSession } from "@/lib/types/auth";
+import { getPendingReviewsForSession } from "@/lib/queries/db/review/reads";
+import { PLAYERS_PER_PAGE, REVIEW_NO_COACH_SENTINEL } from "@/lib/constants/sharkscope/ui";
+import { canReview } from "@/lib/utils/auth-permissions";
+import { groupByPlayer } from "@/lib/utils/notification";
+import type { ReviewPageData } from "@/lib/types/review/index";
 export async function loadReviewPageData(
   session: AppSession,
   sp: { page?: string; player?: string; coach?: string }

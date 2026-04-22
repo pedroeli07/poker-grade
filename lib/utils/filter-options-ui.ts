@@ -1,4 +1,4 @@
-import { HOVER_PREVIEW_MIN_CHARS } from "@/lib/constants";
+import { HOVER_PREVIEW_MIN_CHARS } from "@/lib/constants/target";
 import { htmlToPlainText } from "./html-to-plain-text";
 
 export function filterOptionPreviewText(opt: { value: string; label: string }): string {

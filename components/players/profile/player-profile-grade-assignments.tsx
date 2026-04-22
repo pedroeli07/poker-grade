@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Grid3X3 } from "lucide-react";
-import { cardClassName, GRADE_TYPE_LABEL, gradeOrder } from "@/lib/constants";
-import type { PlayerProfileRecord } from "@/lib/types";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
+import { GRADE_TYPE_LABEL, gradeOrder } from "@/lib/constants/grade";
+import type { PlayerProfileRecord } from "@/lib/types/player/index";
 import type { GradeType } from "@prisma/client";
 import { memo } from "react";
-import { htmlToPlainText } from "@/lib/utils";
-
+import { htmlToPlainText } from "@/lib/utils/html-to-plain-text";
 const PlayerProfileGradeAssignments = memo(function PlayerProfileGradeAssignments({
   assignmentsByType,
   canManage,

@@ -8,24 +8,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cardClassName } from "@/lib/constants";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 import GradeCard from "@/components/grades/grade-card";
 import GradeTableRow from "@/components/grades/grade-table-row";
 import GradesEmptyState from "@/components/grades/grades-view-components";
 import GradesListTableHeadFilters from "@/components/grades/grades-list-table-head-filters";
 import DataTableShell from "@/components/data-table/data-table-shell";
 import DataTableToolbar from "@/components/data-table/data-table-toolbar";
-import type {
-  GradesColumnFilters,
-  GradesColumnKey,
-  GradesColumnOptions,
-  GradeListRow,
-  GradesSetCol,
-} from "@/lib/types";
-import {
-  dataTableHeaderRowActiveRingClass,
-  dataTableHeaderRowClass,
-} from "@/lib/constants";
+import type { GradesColumnFilters, GradesColumnKey, GradesColumnOptions } from "@/lib/types/columnKeys";
+import type { GradeListRow, GradesSetCol } from "@/lib/types/grade/index";
+import { dataTableHeaderRowActiveRingClass, dataTableHeaderRowClass } from "@/lib/constants/classes";
 import { buildGradesFilterSummaryLines, formatGradesTableSortSummary } from "@/lib/utils/grade";
 import { memo, useCallback, useMemo, useState } from "react";
 import type { ColumnSortKind } from "@/lib/types/dataTable";
@@ -35,8 +27,7 @@ import {
   nextSortState,
   type SortDir,
 } from "@/lib/table-sort";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 const GradesListBody = memo(function GradesListBody({
   view,
   manage,

@@ -3,8 +3,7 @@
 import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash2 } from "lucide-react";
-import { cardClassName } from "@/lib/constants";
-
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 const AlertsBulkActionsBar = memo(function AlertsBulkActionsBar({
   selectedCount,
   isPending,

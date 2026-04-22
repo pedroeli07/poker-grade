@@ -1,6 +1,5 @@
-import { NO_COACH_QUERY, REVIEW_NO_COACH_SENTINEL } from "@/lib/constants";
-import type { ReviewPathFilters } from "@/lib/types";
-
+import { NO_COACH_QUERY, REVIEW_NO_COACH_SENTINEL } from "@/lib/constants/sharkscope/ui";
+import type { ReviewPathFilters } from "@/lib/types/review/index";
 export function buildReviewPath({
   playerId,
   coachId,

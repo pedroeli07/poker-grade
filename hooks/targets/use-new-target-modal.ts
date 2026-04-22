@@ -2,11 +2,11 @@
 
 import { useCallback, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { createTarget } from "@/lib/queries/db/target";
+import { createTarget } from "@/lib/queries/db/target/create-mutations";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import { isNextRedirectError } from "@/lib/utils";
-import type { NewTargetModalProps } from "@/lib/types";
+import { isNextRedirectError } from "@/lib/utils/auth-session";
+import type { NewTargetModalProps } from "@/lib/types/target/index";
 import { MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals";
 import {
   NEW_TARGET_MODAL_DEFAULT_CATEGORY,

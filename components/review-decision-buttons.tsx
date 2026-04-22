@@ -2,12 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { processReview } from "@/lib/queries/db/review";
+import { processReview } from "@/lib/queries/db/review/update-mutations";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import type { ReviewStatus } from "@/lib/types";
-
+import type { ReviewStatus } from "@prisma/client";
 const log = createLogger("review.ui");
 
 export function ReviewDecisionButtons({ reviewId }: { reviewId: string }) {

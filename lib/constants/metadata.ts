@@ -30,6 +30,13 @@ const PAGES: Record<string, { title: string; desc: string }> = {
   register: { title: "Cadastro | Gestão de Grades", desc: "Crie sua conta" },
   error: { title: "Erro", desc: "Algo deu errado. Tente novamente." },
   notFound: { title: "Página não encontrada | Gestão de Grades", desc: "A página que você tentou acessar não existe." },
+  dashboardJogador: { title: "Início | Jogador", desc: "Resumo da sua grade, torneios, metas e notificações." },
+  identity: { title: "Identidade & Regras | Time", desc: "Cultura operacional do time — auditável, mensurável e integrada aos rituais." },
+  rituals: { title: "Rituais | Time", desc: "Calendário, execução e acompanhamento de rituais do time." },
+  execution: { title: "Execução | Time", desc: "Tarefas, prioridades e acompanhamento de planos de ação do time." },
+  teamFinancial: { title: "Financeiro | Time", desc: "Visão de caixa, repasses, makeup e custos operacionais do time." },
+  teamGovernance: { title: "Governança | Time", desc: "Matriz DRI, fluxo de decisão e histórico de deliberações." },
+  teamIndicators: { title: "Indicadores | Time", desc: "KPIs de resultado e processo, analytics e catálogo de métricas." },
 };
 
 const KEYS = {
@@ -46,6 +53,15 @@ const KEYS = {
   SHARKSCOPE_SCOUTING_LS_NLQ: "gestao-grades:sharkscope-scouting:nlqQuestion",
   SHARKSCOPE_SCOUTING_LS_EXPANDED: "gestao-grades:sharkscope-scouting:expandedId",
   TARGETS_LS_VIEW: "gestao-grades:targets:view",
+  DASHBOARD_JOGADOR_LS_VIEW: "gestao-grades:dashboard-jogador:view",
+  IDENTITY_LS_VIEW: "gestao-grades:identity:view",
+  /** Histórico de deliberações (governança): cards | table */
+  GOVERNANCE_HISTORICAL_LS_VIEW: "gestao-grades:governance:historical:view",
+  /** Tamanho de página (5, 10, …, “todos” em 10_000) — alinhado a notificações */
+  GOVERNANCE_HISTORICAL_LS_PAGE_SIZE: "gestao-grades:governance:historical:pageSize",
+  /** Regras de alerta (governança): cards | table */
+  GOVERNANCE_ALERT_RULES_LS_VIEW: "gestao-grades:governance:alertRules:view",
+  GOVERNANCE_ALERT_RULES_LS_PAGE_SIZE: "gestao-grades:governance:alertRules:pageSize",
 };
 
 const toMetadata = (p: { title: string; desc: string }) => ({ title: p.title, description: p.desc } satisfies Metadata);
@@ -74,5 +90,30 @@ export const registerPageMetadata = toMetadata(PAGES.register);
 export const errorPageMetadata = toMetadata(PAGES.error);
 export const notFoundPageMetadata = toMetadata(PAGES.notFound);
 export const defaultMetadata = { title: "Gestão de Grades", description: "Gestão de Grades" } satisfies Metadata;
+export const dashboardJogadorPageMetadata = toMetadata(PAGES.dashboardJogador);
+export const identityPageMetadata = toMetadata(PAGES.identity);
+export const ritualsPageMetadata = toMetadata(PAGES.rituals);
+export const executionPageMetadata = toMetadata(PAGES.execution);
+export const teamFinancialPageMetadata = toMetadata(PAGES.teamFinancial);
+export const teamGovernancePageMetadata = toMetadata(PAGES.teamGovernance);
+export const teamIndicatorsPageMetadata = toMetadata(PAGES.teamIndicators);
 
-export const { GRADES_LS_VIEW, NOTIFICATIONS_LS_FILTER, NOTIFICATIONS_LS_PAGE, NOTIFICATIONS_LS_PAGE_SIZE, NOTIFICATIONS_LS_VIEW_MODE, SHARKSCOPE_ANALYTICS_LS_PERIOD, SHARKSCOPE_ANALYTICS_LS_TAB, SHARKSCOPE_SCOUTING_LS_NICK, SHARKSCOPE_SCOUTING_LS_NETWORK, SHARKSCOPE_SCOUTING_LS_NOTES, SHARKSCOPE_SCOUTING_LS_NLQ, SHARKSCOPE_SCOUTING_LS_EXPANDED, TARGETS_LS_VIEW } = KEYS;
+export const {
+  GRADES_LS_VIEW,
+  NOTIFICATIONS_LS_FILTER,
+  NOTIFICATIONS_LS_PAGE,
+  NOTIFICATIONS_LS_PAGE_SIZE,
+  NOTIFICATIONS_LS_VIEW_MODE,
+  SHARKSCOPE_ANALYTICS_LS_PERIOD,
+  SHARKSCOPE_ANALYTICS_LS_TAB,
+  SHARKSCOPE_SCOUTING_LS_NICK,
+  SHARKSCOPE_SCOUTING_LS_NETWORK,
+  SHARKSCOPE_SCOUTING_LS_NOTES,
+  SHARKSCOPE_SCOUTING_LS_NLQ,
+  SHARKSCOPE_SCOUTING_LS_EXPANDED,
+  TARGETS_LS_VIEW,
+  GOVERNANCE_HISTORICAL_LS_VIEW,
+  GOVERNANCE_HISTORICAL_LS_PAGE_SIZE,
+  GOVERNANCE_ALERT_RULES_LS_VIEW,
+  GOVERNANCE_ALERT_RULES_LS_PAGE_SIZE,
+} = KEYS;

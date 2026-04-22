@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { POKER_NETWORKS } from "@/lib/constants";
-import type { PokerNetworkOption } from "@/lib/types";
-
+import { POKER_NETWORKS } from "@/lib/constants/poker-networks";
+import type { PokerNetworkOption } from "@/lib/types/primitives";
 export const redirectTo = (baseUrl: string, path: string) =>
   NextResponse.redirect(new URL(path, baseUrl));
 

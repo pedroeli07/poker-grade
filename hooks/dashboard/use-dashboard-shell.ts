@@ -1,8 +1,7 @@
 "use client";
 
 import { useSidebarStore } from "@/lib/stores/use-sidebar-store";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 export function useDashboardShellLayout() {
   const isOpen = useSidebarStore((s) => s.isOpen);
   return {

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { GradeTableRowProps } from "@/lib/types";
+import { GradeTableRowProps } from "@/lib/types/grade/index";
 import {
   GRADE_DESCRIPTION_TOOLTIP_ARROW_CLASS,
   GRADE_DESCRIPTION_TOOLTIP_CONTENT_CLASS,
@@ -11,7 +11,7 @@ import { playerTableBadgeClassName, playerTableBadgeEmptyClassName } from "@/lib
 import { DeleteGradeButton } from "@/components/grades/delete-grade-button";
 import EditGradeModal from "@/components/modals/edit-grade-modal";
 import { memo, useMemo } from "react";
-import { htmlToPlainText } from "@/lib/utils";
+import { htmlToPlainText } from "@/lib/utils/html-to-plain-text";
 import { Copy, Check, MoreHorizontal, FileText, Pencil, Trash2 } from "lucide-react";
 import { AppTooltip } from "@/components/ui/app-tooltip";
 import { useCopyFeedback } from "@/hooks/use-copy-feedback";

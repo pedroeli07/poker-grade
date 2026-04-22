@@ -5,10 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MessageSquare, Save } from "lucide-react";
-import { POKER_NETWORKS } from "@/lib/constants";
+import { POKER_NETWORKS } from "@/lib/constants/poker-networks";
 import ScoutingRoiDisplay from "@/components/sharkscope/scouting/scouting-roi-display";
 import ScoutingStatCard from "@/components/sharkscope/scouting/scounting-stat-card";
-import type { PokerNetworkKey, ScoutingSearchStats } from "@/lib/types";
+import type { PokerNetworkKey } from "@/lib/types/primitives";
+import type { ScoutingSearchStats } from "@/lib/types/sharkScopeTypes";
 import { scoutingProfitClass, scoutingProfitText } from "@/lib/utils/sharkscope/scouting";
 import { memo } from "react";
 

@@ -1,4 +1,4 @@
-import type { LogLevel } from "@/lib/types";
+import type { LogLevel } from "@/lib/types/primitives";
 import pino from "pino";
 
 export const prodLogger =

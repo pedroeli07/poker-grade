@@ -3,7 +3,8 @@
  *   npx tsx scratch/sharkscope-probe-network-filter.ts
  */
 import "dotenv/config";
-import { extractStat, sharkScopeResponseErrorMessage } from "@/lib/utils";
+import { extractStat } from "@/lib/utils/sharkscope-extract";
+import { sharkScopeResponseErrorMessage } from "@/lib/utils/sharkscope-client";
 import {
   sharkScopeAppKey,
   sharkScopeAppName,

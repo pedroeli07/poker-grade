@@ -3,9 +3,7 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-
+import { cn } from "@/lib/utils/cn";
 export function DestructiveAlertIconHeader({
   icon: Icon = Trash2,
   iconClassName,

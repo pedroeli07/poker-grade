@@ -9,16 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DATA_TABLE_DEFAULT_PAGE_SIZE_OPTIONS,
-  DATA_TABLE_PAGINATION_NEXT_ARIA,
-  DATA_TABLE_PAGINATION_NONE_ITEMS,
-  DATA_TABLE_PAGINATION_PREV_ARIA,
-  DATA_TABLE_PAGINATION_RANGE_OF,
-  DATA_TABLE_PAGINATION_ROWS_LABEL,
-} from "@/lib/constants";
-import { cn, getDataTablePaginationState } from "@/lib/utils";
-
+import { DATA_TABLE_DEFAULT_PAGE_SIZE_OPTIONS, DATA_TABLE_PAGINATION_NEXT_ARIA, DATA_TABLE_PAGINATION_NONE_ITEMS, DATA_TABLE_PAGINATION_PREV_ARIA, DATA_TABLE_PAGINATION_RANGE_OF, DATA_TABLE_PAGINATION_ROWS_LABEL } from "@/lib/constants/data-table";
+import { cn } from "@/lib/utils/cn";
+import { getDataTablePaginationState } from "@/lib/utils/data-table-pagination";
 export type DataTablePaginationProps = {
   page: number;
   pageSize: number;

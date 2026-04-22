@@ -1,27 +1,19 @@
-import { 
-   pillClass, 
-   roiClass, 
-   statBadgeAmber,
-   statBadgeEmerald, 
-   statBadgeMuted, 
-   statBadgeRed, 
-   NONE,
-   getPokerstarsMainNickFromRows,
-} from "@/lib/constants";
+import { pillClass, roiClass, statBadgeAmber, statBadgeEmerald, statBadgeMuted, statBadgeRed } from "@/lib/constants/classes";
+import { NONE } from "@/lib/constants/sharkscope/ui";
+import { getPokerstarsMainNickFromRows } from "@/lib/constants/poker-networks";
 import {
   PLAYER_AVATAR_COLOR_CLASS,
   PLAYERS_TABLE_FILTER_NUMERIC_COLUMNS,
   PLAYERS_TABLE_FILTER_SUMMARY_COLUMNS,
-  PLAYERS_TABLE_ROW_LABELS,
-} from "@/lib/constants/player";
-import {
   PLAYERS_TABLE_FP_ATTENTION_THRESHOLD,
   PLAYERS_TABLE_FT_LOW_THRESHOLD,
   PLAYERS_TABLE_ROI_BADGE_THRESHOLDS,
+  PLAYERS_TABLE_ROW_LABELS,
   PLAYERS_TABLE_SORT_LABELS,
-} from "@/lib/constants/players-table-ui";
+} from "@/lib/constants/player";
 import { NumberFilterValue, OP_LABELS, formatNumberValue, isFilterActive } from "@/lib/number-filter";
-import type { PlayerRowInput, PlayerTableRow, PlayersTableColumnFilters, PlayersTableFilterOptions } from "@/lib/types";
+import type { PlayerRowInput, PlayerTableRow, PlayersTableFilterOptions } from "@/lib/types/player/index";
+import type { PlayersTableColumnFilters } from "@/lib/types/columnKeys";
 import type { PlayerNickFormRow, PlayersTableSortKey } from "@/lib/types/player";
 import type { SortDir } from "@/lib/table-sort";
 import { 
@@ -242,9 +234,10 @@ const initials = (name: string) =>
 const avatarColor = () => PLAYER_AVATAR_COLOR_CLASS;
 
 const schedulingCategory = (scheduling: string | null) => {
-  const s = scheduling?.toLowerCase() ?? "";
+  const s = (scheduling ?? "").toLowerCase().trim();
+  if (!s) return "missed";
   if (s.includes("extra")) return "extra";
-  if (s === "played" || s === "jogado") return "played";
+  if (s === "played" || s === "jogado" || s.includes("played")) return "played";
   return "missed";
 };
 

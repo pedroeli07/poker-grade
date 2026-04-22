@@ -1,7 +1,5 @@
 import { create } from "zustand";
-import { NotificationStore } from "@/lib/types";
-
-
+import { NotificationStore } from "@/lib/types/notification/index";
 export const useNotificationStore = create<NotificationStore>((set) => ({
   open: false,
   unreadCount: 0,

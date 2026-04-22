@@ -1,8 +1,8 @@
 import { GRADES_LIST_CARD_FILTER_COLUMNS } from "@/lib/constants/grade";
 import ColumnFilter from "../column-filter";
 import { memo } from "react";
-import { GradesColumnFilters, GradesColumnOptions, GradesSetCol } from "@/lib/types";
-
+import { GradesColumnFilters, GradesColumnOptions } from "@/lib/types/columnKeys";
+import { GradesSetCol } from "@/lib/types/grade/index";
 const GradesListColFilters = memo(function GradesListColFilters({
     compact,
     options,

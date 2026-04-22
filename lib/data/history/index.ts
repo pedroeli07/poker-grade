@@ -1,6 +1,6 @@
 import type { AppSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
-import { TargetLimit } from "@/lib/types";
+import { TargetLimit } from "@/lib/types/primitives";
 import { UserRole } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
@@ -91,3 +91,19 @@ export async function loadHistoryPageData(
 
 export type HistoryPageData = Awaited<ReturnType<typeof loadHistoryPageData>>;
 export type HistoryItem = HistoryPageData["history"][number];
+
+export const HISTORY_ROUTE_PAGE_SIZES = [5, 10, 25, 50, 100] as const;
+
+export function parseHistoryRoutePage(raw: string | string[] | undefined): number {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
+}
+
+export function parseHistoryRoutePageSize(raw: string | string[] | undefined): number {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  const n = Number(v);
+  if (!Number.isFinite(n)) return HISTORY_PAGE_SIZE_DEFAULT;
+  const floored = Math.floor(n);
+  return (HISTORY_ROUTE_PAGE_SIZES as readonly number[]).includes(floored) ? floored : HISTORY_PAGE_SIZE_DEFAULT;
+}

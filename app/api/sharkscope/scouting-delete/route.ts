@@ -4,7 +4,7 @@ import { isScoutingStaffRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation } from "@/lib/rate-limit";
-import { ErrorTypes } from "@/lib/types";
+import { ErrorTypes } from "@/lib/types/primitives";
 import { UserRole } from "@prisma/client";
 
 export async function DELETE(req: Request) {

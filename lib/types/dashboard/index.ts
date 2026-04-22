@@ -2,7 +2,7 @@ import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { UserRole } from "@prisma/client";
 
-export interface DashboardStats {
+export type DashboardStats = {
   totalPlayers: number;
   activePlayers: number;
   pendingReviews: number;
@@ -11,7 +11,7 @@ export interface DashboardStats {
   suspectCount: number;
   outOfGradeCount: number;
   recentInfractions: number;
-}
+};
 
 export type DashboardShellProps = {
   userRole: UserRole;
@@ -32,26 +32,21 @@ export type SidebarNavGroup = {
   items: SidebarNavGroupItem[];
 };
 export type SidebarNavEntry = SidebarNavLink | SidebarNavGroup;
-export interface NavItem {
-  title: string;
-  href: string;
-  icon: SidebarIcon;
-  badge?: number;
-}
+export type NavItem = NavBase & { icon: SidebarIcon; badge?: number };
 
-export interface FilterStore<T> {
+export type FilterStore<T> = {
   filters: T;
   setColumnFilter: (key: string, next: Set<string> | null) => void;
   clearFilters: () => void;
   hasAnyFilter: boolean;
-}
-export interface SidebarState {
+};
+export type SidebarState = {
   isOpen: boolean;
   toggle: () => void;
   open: () => void;
   close: () => void;
-}
-export interface TopbarState {
+};
+export type TopbarState = {
   titleOverride: string | null;
   setTitle: (title: string | null) => void;
-}
+};

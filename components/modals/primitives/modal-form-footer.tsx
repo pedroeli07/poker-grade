@@ -1,7 +1,7 @@
 import { DialogFooter } from "@/components/ui/dialog";
 import { MODAL_FORM_FOOTER_BASE } from "@/lib/constants/modals";
 import { ModalFormFooterProps } from "@/lib/types/primitives";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import { memo } from "react";
 
 const ModalFormFooter = memo(function ModalFormFooter({ children, className }: ModalFormFooterProps) {

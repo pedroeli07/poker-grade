@@ -9,11 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Upload, FileSpreadsheet, Loader2, CheckCircle2, ChevronRight, X, RotateCcw, UploadCloud } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import { useNewImportModal } from "@/hooks/imports/use-new-import-modal";
 import { memo } from "react";
-import type { PlayerSelectOption } from "@/lib/types";
-
+import type { PlayerSelectOption } from "@/lib/types/grade/index";
 const NewImportModal = memo(function NewImportModal({ players }: { players: PlayerSelectOption[] }) {
   const {
     open,

@@ -1,15 +1,6 @@
-import {
-  ALLOWED_SCOPES,
-  ANSI,
-  LEVEL_ORDER,
-  LEVEL_STYLE,
-  logLevel,
-  nodeEnv,
-  prodLogger,
-  SENSITIVE_KEYS,
-} from "@/lib/constants";
-import type { LogLevel } from "@/lib/types";
-
+import { ALLOWED_SCOPES, ANSI, LEVEL_ORDER, LEVEL_STYLE, prodLogger, SENSITIVE_KEYS } from "@/lib/constants/logger-config";
+import { logLevel, nodeEnv } from "@/lib/constants/env";
+import type { LogLevel } from "@/lib/types/primitives";
 export function shouldEmit(scope: string, level: LogLevel): boolean {
   const min = LEVEL_ORDER[minLevelFromEnv()];
   return LEVEL_ORDER[level] >= min && (!ALLOWED_SCOPES || ALLOWED_SCOPES.has(scope));

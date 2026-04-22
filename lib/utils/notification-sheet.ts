@@ -1,5 +1,4 @@
-import { NotificationFilterType } from "@/lib/types";
-
+import { NotificationFilterType } from "@/lib/types/primitives";
 const NOTIFICATION_FILTER_LABEL: Record<NotificationFilterType, string> = {
   [NotificationFilterType.ALL]: "Todas",
   [NotificationFilterType.UNREAD]: "Não lidas",

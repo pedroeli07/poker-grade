@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
-import { canWriteOperations } from "@/lib/utils";
+import { canWriteOperations } from "@/lib/utils/auth-permissions";
 import { loadSharkscopeGroupCompare } from "@/lib/data/sharkscope/group-compare";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

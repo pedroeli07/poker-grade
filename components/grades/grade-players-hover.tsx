@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { cn } from "@/lib/utils";
-import { playersHoverScrollClass } from "@/lib/constants";
+import { cn } from "@/lib/utils/cn";
+import { playersHoverScrollClass } from "@/lib/constants/sharkscope/ui";
 import { memo } from "react";
 import { gradePlayersBadgeClass } from "@/lib/constants/classes";
 

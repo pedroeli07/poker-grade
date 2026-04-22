@@ -5,23 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { ListFilter } from "lucide-react";
-import {
-  COLUMN_FILTER_ARIA_PREFIX,
-  COLUMN_FILTER_BTN_APPLY,
-  COLUMN_FILTER_BTN_CANCEL,
-  COLUMN_FILTER_BTN_DESELECT_ALL,
-  COLUMN_FILTER_BTN_SELECT_ALL,
-  filterListScrollClass,
-  NUMBER_RANGE_FILTER_BTN_CLEAR,
-  NUMBER_RANGE_FILTER_DEFAULT_ARIA_FALLBACK,
-  NUMBER_RANGE_FILTER_EMPTY_UNIQUE,
-  NUMBER_RANGE_FILTER_MODE_RANGE,
-  NUMBER_RANGE_FILTER_MODE_VALUES,
-  NUMBER_RANGE_FILTER_PLACEHOLDER_MAX,
-  NUMBER_RANGE_FILTER_PLACEHOLDER_MIN,
-  NUMBER_RANGE_FILTER_PLACEHOLDER_VALUE,
-} from "@/lib/constants";
-import { cn, resolveColumnFilterAriaLabel } from "@/lib/utils";
+import { COLUMN_FILTER_ARIA_PREFIX, COLUMN_FILTER_BTN_APPLY, COLUMN_FILTER_BTN_CANCEL, COLUMN_FILTER_BTN_DESELECT_ALL, COLUMN_FILTER_BTN_SELECT_ALL } from "@/lib/constants/column-filter";
+import { filterListScrollClass } from "@/lib/constants/target";
+import { NUMBER_RANGE_FILTER_BTN_CLEAR, NUMBER_RANGE_FILTER_DEFAULT_ARIA_FALLBACK, NUMBER_RANGE_FILTER_EMPTY_UNIQUE, NUMBER_RANGE_FILTER_MODE_RANGE, NUMBER_RANGE_FILTER_MODE_VALUES, NUMBER_RANGE_FILTER_PLACEHOLDER_MAX, NUMBER_RANGE_FILTER_PLACEHOLDER_MIN, NUMBER_RANGE_FILTER_PLACEHOLDER_VALUE } from "@/lib/constants/number-range-filter";
+import { cn } from "@/lib/utils/cn";
+import { resolveColumnFilterAriaLabel } from "@/lib/utils/column-filter";
 import FilterOptionRow from "./filter-row-option";
 import {
   OPS_WITH_RANGE,

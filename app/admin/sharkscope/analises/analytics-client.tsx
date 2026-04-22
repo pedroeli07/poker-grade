@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { useAnalyticsPageClient } from "@/hooks/sharkscope/analytics/use-analytics-page-client";
-import type { AnalyticsClientProps } from "@/lib/types";
+import type { AnalyticsClientProps } from "@/lib/types/sharkscope/analytics/index";
 import AnalyticsPageHeader from "@/components/sharkscope/analytics/analytics-page-header";
 import AnalyticsTabBar from "@/components/sharkscope/analytics/analytics-tab-bar";
 import AnalyticsSitePanel from "@/components/sharkscope/analytics/analytics-site-panel";

@@ -2,7 +2,7 @@ import {
   GRADES_FILTER_SUMMARY_EMPTY_SELECTION,
   GRADES_TABLE_COLUMN_LABELS,
 } from "@/lib/constants/grade";
-import type { GradesColumnFilters, GradesColumnKey, GradesColumnOptions } from "@/lib/types";
+import type { GradesColumnFilters, GradesColumnKey, GradesColumnOptions } from "@/lib/types/columnKeys";
 import type { SortDir } from "@/lib/table-sort";
 
 function labelsFromSet(

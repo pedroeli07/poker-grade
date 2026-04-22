@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import { useEditGradeDialog } from "@/hooks/grades/use-edit-grade-dialog";
 
 const EditGradeDialog = memo(function EditGradeDialog({

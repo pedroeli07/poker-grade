@@ -1,7 +1,8 @@
 import { randomBytes } from "crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { GOOGLE_OAUTH_STATE_COOKIE, googleClientId, nextPublicAppUrl } from "@/lib/constants";
+import { GOOGLE_OAUTH_STATE_COOKIE } from "@/lib/constants/session-rbac";
+import { googleClientId, nextPublicAppUrl } from "@/lib/constants/env";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("auth.google.start");

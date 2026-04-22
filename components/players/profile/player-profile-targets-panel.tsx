@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Target } from "lucide-react";
-import { TARGET_STATUS_CONFIG } from "@/lib/constants";
-import type { PlayerProfileRecord } from "@/lib/types";
+import { TARGET_STATUS_CONFIG } from "@/lib/constants/target";
+import type { PlayerProfileRecord } from "@/lib/types/player/index";
 import { memo } from "react";
 
 const PlayerProfileTargetsPanel = memo(function PlayerProfileTargetsPanel({

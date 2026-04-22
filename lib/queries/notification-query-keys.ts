@@ -1,4 +1,4 @@
-import { NotificationFilterType } from "@/lib/types";
+import { NotificationFilterType } from "@/lib/types/primitives";
 import { BaseQueryKeys } from "./query-keys";
 
 class NotificationKeys extends BaseQueryKeys {

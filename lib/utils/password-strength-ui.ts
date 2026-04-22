@@ -1,4 +1,4 @@
-import type { StrengthLevel } from "@/lib/types/password-policy";
+import type { StrengthLevel } from "@/lib/types/auth";
 import { PASSWORD_STRENGTH_STYLES } from "@/lib/constants/password";
 
 export const barColor = (level: StrengthLevel) =>

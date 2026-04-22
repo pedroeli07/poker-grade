@@ -10,7 +10,8 @@ import TargetsTableSection from "@/components/targets/targets-table-section";
 import TargetsViewToggle from "@/components/targets/targets-view-toggle";
 import TargetsBulkSelectionBar from "@/components/targets/targets-bulk-selection-bar";
 import TargetsDeleteDialog from "@/components/targets/targets-delete-dialog";
-import type { ColKey, Filters, TargetListRow, TargetsColumnOptions } from "@/lib/types";
+import type { ColKey, Filters, TargetsColumnOptions } from "@/lib/types/columnKeys";
+import type { TargetListRow } from "@/lib/types/target/index";
 import { buildTargetsFilterSummaryLines } from "@/lib/utils/target";
 
 const TargetsControlsCard = memo(function TargetsControlsCard({

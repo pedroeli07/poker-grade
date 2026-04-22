@@ -5,8 +5,7 @@ import {Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis} from "rechart
 import { ANALYTICS_METRIC_BAR_CHART_HEIGHT } from "@/lib/constants/sharkscope/analytics";
 import type { AnalyticsMetricBarChartProps } from "@/lib/types/sharkscope/analytics";
 import { metricBarFillForCell, metricBarYAxisDomain } from "@/lib/utils/sharkscope/analytics";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 export function AnalyticsMetricBarChart({
   title,
   rows,

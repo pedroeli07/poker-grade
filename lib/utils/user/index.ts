@@ -4,11 +4,7 @@ import {
   USERS_FILTER_SUMMARY_SEARCH_PREFIX,
   USERS_TABLE_COLUMN_LABELS,
 } from "@/lib/constants/users";
-import type {
-  UserColumnFilters,
-  UserColumnKey,
-  UserDirectoryRow,
-} from "@/lib/types";
+import type { UserColumnFilters, UserColumnKey, UserDirectoryRow } from "@/lib/types/user/index";
 import { compareString, type SortDir } from "@/lib/table-sort";
 
 const getUserDirectoryStatus = (u: UserDirectoryRow) =>

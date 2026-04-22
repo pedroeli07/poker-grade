@@ -1,6 +1,6 @@
 "use client";
 
-import type { TargetListRow } from "@/lib/types";
+import type { TargetListRow } from "@/lib/types/target/index";
 import { useTargetListViewModels } from "@/hooks/targets/use-target-list-view-models";
 
 export function useTargetsCardsSection(filtered: TargetListRow[]) {

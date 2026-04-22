@@ -1,4 +1,4 @@
-import type { NotificationItem } from "@/lib/types";
+import type { NotificationItem } from "@/lib/types/notification/index";
 import NotificationsItem from "@/components/notifications/notifications-item";
 import { memo } from "react";
 import { NotificationType } from "@prisma/client";
@@ -7,8 +7,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Link from "next/link";
 import { Check, ExternalLink, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { TYPE_CONFIG } from "@/lib/constants";
+import { cn } from "@/lib/utils/cn";
+import { TYPE_CONFIG } from "@/lib/constants/notification";
 import ColumnFilter from "@/components/column-filter";
 import { TYPE_LABELS } from "@/lib/constants/notification";
 import FilteredColumnTitle from "@/components/data-table/filtered-column-title";

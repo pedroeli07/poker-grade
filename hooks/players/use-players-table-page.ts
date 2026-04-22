@@ -3,12 +3,14 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePersistentState } from "@/hooks/use-persistent-state";
-import { distinctOptions } from "@/lib/utils";
-import type { PlayerTableRow, PlayersTableColumnKey, PlayersTableSortKey } from "@/lib/types";
-import type { PlayersTablePayload } from "@/lib/types";
-import { getPlayersTableDataAction } from "@/lib/queries/db/player";
+import { distinctOptions } from "@/lib/utils/distinct-options";
+import type { PlayerTableRow, PlayersTableSortKey } from "@/lib/types/player/index";
+import type { PlayersTableColumnKey } from "@/lib/types/columnKeys";
+import type { PlayersTablePayload } from "@/lib/types/player/index";
+import { getPlayersTableDataAction } from "@/lib/queries/db/player/reads";
 import { playerKeys } from "@/lib/queries/player-query-keys";
-import { EMPTY_NICK, PLAYER_GROUP_FILTER_HAS_ANY, STALE_TIME } from "@/lib/constants";
+import { EMPTY_NICK, PLAYER_GROUP_FILTER_HAS_ANY } from "@/lib/constants/sharkscope/ui";
+import { STALE_TIME } from "@/lib/constants/query-result";
 import { usePlayersStore } from "@/lib/stores/use-players-store";
 import type { NumberFilterValue } from "@/lib/number-filter";
 import { matchNumberFilter, getUniqueValues } from "@/lib/match-number-filter";
@@ -267,4 +269,4 @@ export function usePlayersTablePage(initialPayload: PlayersTablePayload) {
   };
 }
 
-export type { PlayersTableSortKey } from "@/lib/types";
+export type { PlayersTableSortKey } from "@/lib/types/player/index";

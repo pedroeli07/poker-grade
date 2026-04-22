@@ -6,8 +6,7 @@ import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeMutation } from "@/lib/rate-limit";
 import { coachNestedPlayerWhere } from "@/lib/queries/db/shared";
 import { bulkDeleteAlertsBodySchema } from "@/lib/schemas/sharkscope";
-import { ErrorTypes } from "@/lib/types";
-
+import { ErrorTypes } from "@/lib/types/primitives";
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session || !isSharkscopeStaffRole(session.role)) {

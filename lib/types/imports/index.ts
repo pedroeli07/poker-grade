@@ -1,4 +1,4 @@
-import { getImportDetailForSession } from "@/lib/queries/db/imports";
+import { getImportDetailForSession } from "@/lib/queries/db/imports/reads";
 import type { WithId } from "../primitives";
 import { LucideIcon } from "lucide-react";
 
@@ -16,17 +16,19 @@ type ImportListRow = WithId & {
 
 type ImportDetailRecord = NonNullable<Awaited<ReturnType<typeof getImportDetailForSession>>>;
 
+type ImportTournamentsSlice = ImportDetailRecord["tournaments"];
+
 type ImportDetailPageData = {
   importId: string;
   importRecord: ImportDetailRecord;
   activeTab: Tab;
   showActions: boolean;
   canDelete: boolean;
-  extraPlay: ImportDetailRecord["tournaments"];
-  withRebuy: ImportDetailRecord["tournaments"];
-  played: ImportDetailRecord["tournaments"];
-  missed: ImportDetailRecord["tournaments"];
-  activeTournaments: ImportDetailRecord["tournaments"];
+  extraPlay: ImportTournamentsSlice;
+  withRebuy: ImportTournamentsSlice;
+  played: ImportTournamentsSlice;
+  missed: ImportTournamentsSlice;
+  activeTournaments: ImportTournamentsSlice;
 };
 
 export type ImportBatchNotifyPayload = {
@@ -38,14 +40,7 @@ export type ImportBatchNotifyPayload = {
 
 type UploadResult = { processed: number; summary: string[] };
 
-interface ExcelParseResult {
-  playerName: string;
-  tournaments: ExcelTournamentRow[];
-  errors: string[];
-  totalRows: number;
-}
-
-interface ExcelTournamentRow {
+type ExcelTournamentRow = {
   date: string;
   site: string;
   buyInCurrency: string;
@@ -58,8 +53,14 @@ interface ExcelTournamentRow {
   speed: string;
   sharkId: string;
   priority: string;
-}
+};
 
+type ExcelParseResult = {
+  playerName: string;
+  tournaments: ExcelTournamentRow[];
+  errors: string[];
+  totalRows: number;
+};
 
 export type PlayerSelectOption = { id: string; name: string };
 
@@ -70,14 +71,14 @@ type ImportsListPageProps = {
   players: PlayerSelectOption[];
 };
 
-interface ImportsTableRowProps {
+type ImportsTableRowProps = {
   item: ImportListRow;
   canDelete: boolean;
   isSelected: boolean;
   isPending: boolean;
   onToggle: () => void;
   onDeleteRequest: () => void;
-}
+};
 
 type ImportDetailTabDef = {
   id: Tab;
@@ -108,4 +109,4 @@ export type {
   ImportDetailTabDef,
   ImportDetailTabWithCount,
   CsvNickRow,
-}
+};

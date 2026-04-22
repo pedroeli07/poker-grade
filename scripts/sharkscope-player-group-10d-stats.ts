@@ -14,10 +14,9 @@
  */
 import "dotenv/config";
 
-import { sharkScopeAppKey, sharkScopeAppName } from "@/lib/constants";
+import { sharkScopeAppKey, sharkScopeAppName } from "@/lib/constants/env";
 import { extractStat } from "@/lib/sharkscope-parse";
-import { sharkScopeGet } from "@/lib/utils";
-
+import { sharkScopeGet } from "@/lib/utils/sharkscope-client";
 function parseArgs(): string {
   const argv = process.argv.slice(2);
   let group: string | undefined;

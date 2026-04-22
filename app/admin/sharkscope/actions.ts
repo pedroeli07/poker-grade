@@ -1,10 +1,9 @@
 "use server";
 
 import { requireSession } from "@/lib/auth/session";
-import { canWriteOperations } from "@/lib/utils";
-import { runDailySyncSharkScope } from "@/lib/sharkscope/run-daily-sync";
-import { ErrorTypes } from "@/lib/types";
-
+import { canWriteOperations } from "@/lib/utils/auth-permissions";
+import { runDailySyncSharkScope } from "@/lib/sharkscope/daily-sync/run-daily-sync";
+import { ErrorTypes } from "@/lib/types/primitives";
 export async function syncSharkScopeManualAction() {
   const session = await requireSession();
   if (!canWriteOperations(session)) throw new Error(ErrorTypes.UNAUTHORIZED);

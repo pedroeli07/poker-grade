@@ -4,8 +4,8 @@ import { isSharkscopeStaffRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeRead } from "@/lib/rate-limit";
-import { querySchema } from "@/lib/schemas";
-import { ErrorTypes } from "@/lib/types";
+import { querySchema } from "@/lib/schemas/sharkscope";
+import { ErrorTypes } from "@/lib/types/primitives";
 import { UserRole } from "@prisma/client";
 
 export async function GET(req: Request) {

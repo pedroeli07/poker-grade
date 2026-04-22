@@ -1,6 +1,6 @@
-import { googleClientId, googleClientSecret } from "@/lib/constants";
+import { googleClientId, googleClientSecret } from "@/lib/constants/env";
 import { GOOGLE_OAUTH_TOKEN_URL, GOOGLE_OAUTH_USERINFO_URL } from "@/lib/constants/google-oauth";
-import type { GoogleUserInfo } from "@/lib/types/google-oauth";
+import type { GoogleUserInfo } from "@/lib/types/auth";
 
 export async function exchangeGoogleAuthorizationCode(
   code: string,

@@ -18,7 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { NetworkStat, SharkscopeAnalyticsPeriod, SiteAnalyticsPayload } from "@/lib/types";
+import type { NetworkStat } from "@/lib/types/sharkScopeTypes";
+import type { SharkscopeAnalyticsPeriod, SiteAnalyticsPayload } from "@/lib/types/sharkscope/analytics/index";
 import {
   useAnalyticsSitePanel,
   type UseAnalyticsSitePanelOptions,

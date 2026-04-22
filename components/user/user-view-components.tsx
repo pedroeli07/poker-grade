@@ -1,4 +1,4 @@
-import { cardClassName } from "@/lib/constants";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 import React, { memo } from "react";
 
 const UserStatCard = memo(function UserStatCard({

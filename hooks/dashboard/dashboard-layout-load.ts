@@ -1,8 +1,7 @@
-import type { AppSession } from "@/lib/types";
+import type { AppSession } from "@/lib/types/auth";
 import { countUnreadNotificationsForUser } from "@/lib/queries/db/notification-unread-server";
 import { getCachedAuthUserProfileRow } from "@/lib/auth/cached-auth-user";
-import { DashboardShellProps } from "@/lib/types";
-
+import { DashboardShellProps } from "@/lib/types/dashboard/index";
 export async function loadDashboardShellProps(
   session: AppSession
 ): Promise<DashboardShellProps> {

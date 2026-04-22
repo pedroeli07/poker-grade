@@ -2,7 +2,7 @@
 
 import { Check, Trash2 } from "lucide-react";
 import PaginationToolbarControls from "@/components/data-table/pagination-toolbar-controls";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import { memo, type ReactNode } from "react";
 
 const HistoryToolbar = memo(function HistoryToolbar({

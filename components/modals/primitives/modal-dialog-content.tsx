@@ -2,8 +2,7 @@ import { DialogContent } from "@/components/ui/dialog";
 import { MODAL_DIALOG_CONTENT_BASE, MODAL_DIALOG_SIZES } from "@/lib/constants/modals";
 import { ModalDialogContentProps } from "@/lib/types/primitives";
 import { memo } from "react";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 const ModalDialogContent = memo(function ModalDialogContent({
     size = "lg",
     className,

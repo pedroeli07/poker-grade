@@ -1,4 +1,4 @@
-import type { Filters } from "@/lib/types";
+import type { Filters } from "@/lib/types/columnKeys";
 import { createFilterStore } from "./create-filter-store";
 
 export const useTargetsListStore = createFilterStore<Filters>(

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { GradeRuleCardRule } from "@/lib/types";
+import type { GradeRuleCardRule } from "@/lib/types/grade/index";
 import {
   getRuleDisplayMeta,
   getVisibleRuleFieldRows,

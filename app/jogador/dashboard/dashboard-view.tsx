@@ -16,28 +16,13 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { cardClassName } from "@/lib/constants";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 import { accountNotificationsHref } from "@/lib/constants/navigation";
 import { MinhaGradeHero } from "@/components/minha-grade/minha-grade-hero";
-import type { PlayerProfileViewModel } from "@/lib/types";
 import { UserRole } from "@prisma/client";
-
-type RecentTourney = {
-  id: string;
-  date: Date;
-  tournamentName: string;
-  site: string;
-  buyInCurrency: string | null;
-  buyInValue: number;
-  scheduling: string | null;
-};
-
-function schedulingTone(s: string | null): { label: string; cls: string } {
-  const v = (s ?? "").toLowerCase().trim();
-  if (v.includes("extra")) return { label: "Extra play", cls: "border-red-500/30 bg-red-500/15 text-red-500" };
-  if (v === "played" || v.includes("played")) return { label: "Played", cls: "border-emerald-500/30 bg-emerald-500/15 text-emerald-500" };
-  return { label: "Didn't play", cls: "border-zinc-500/30 bg-zinc-500/15 text-zinc-500" };
-}
+import type { PlayerDashboardViewProps } from "@/lib/types/jogador";
+import { schedulingDashboardTone } from "@/lib/jogador/scheduling-dashboard";
+import { playerDashboardOnGradePct } from "@/lib/jogador/player-dashboard-view-model";
 
 export function PlayerDashboardView({
   player,
@@ -49,33 +34,13 @@ export function PlayerDashboardView({
   mainGradeName,
   unreadNotifications,
   recentTourneys,
-}: {
-  player: { name: string; nickname: string | null; coach?: { name: string } | null };
-  assignmentsByType: PlayerProfileViewModel["assignmentsByType"];
-  gradeOrder: ("ABOVE" | "MAIN" | "BELOW")[];
-  tourneyStats: { played: number; extraPlay: number; didntPlay: number; reentries: number };
-  pendingExtraReviews: number;
-  targetsCount: number;
-  mainGradeId: string | null;
-  mainGradeName: string | null;
-  unreadNotifications: number;
-  recentTourneys: RecentTourney[];
-}) {
-  const totalPlayedRelevant = tourneyStats.played + tourneyStats.extraPlay;
-  const onGradePct =
-    totalPlayedRelevant > 0
-      ? Math.round((tourneyStats.played / totalPlayedRelevant) * 100)
-      : null;
-
+}: PlayerDashboardViewProps) {
+  const onGradePct = playerDashboardOnGradePct(tourneyStats.played, tourneyStats.extraPlay);
   const notifHref = accountNotificationsHref(UserRole.PLAYER);
 
   return (
     <div className="space-y-6">
-      <MinhaGradeHero
-        player={player}
-        assignmentsByType={assignmentsByType}
-        gradeOrder={gradeOrder}
-      />
+      <MinhaGradeHero player={player} assignmentsByType={assignmentsByType} gradeOrder={gradeOrder} />
 
       <p className="text-sm text-muted-foreground -mt-2">
         Acesso rápido ao que importa — grade, torneios, metas e avisos.
@@ -84,17 +49,13 @@ export function PlayerDashboardView({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className={cardClassName}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">
-              Aderência
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">Aderência</CardTitle>
             <CheckCircle2 className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-primary">
-              {onGradePct != null ? `${onGradePct}%` : "—"}
-            </div>
+            <div className="text-4xl font-bold text-primary">{onGradePct != null ? `${onGradePct}%` : "—"}</div>
             <p className="text-sm text-muted-foreground mt-2 font-medium">
-              {totalPlayedRelevant > 0
+              {tourneyStats.played + tourneyStats.extraPlay > 0
                 ? `${tourneyStats.played} dentro da grade`
                 : "Sem torneios importados"}
             </p>
@@ -103,30 +64,22 @@ export function PlayerDashboardView({
 
         <Card className={cardClassName}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">
-              Extra plays
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">Extra plays</CardTitle>
             <AlertTriangle
               className={`h-5 w-5 ${pendingExtraReviews > 0 ? "text-red-500" : "text-muted-foreground"}`}
             />
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-primary">
-              {tourneyStats.extraPlay}
-            </div>
+            <div className="text-4xl font-bold text-primary">{tourneyStats.extraPlay}</div>
             <p className="text-sm text-muted-foreground mt-2 font-medium">
-              {pendingExtraReviews > 0
-                ? `${pendingExtraReviews} aguardando coach`
-                : "Tudo em dia"}
+              {pendingExtraReviews > 0 ? `${pendingExtraReviews} aguardando coach` : "Tudo em dia"}
             </p>
           </CardContent>
         </Card>
 
         <Card className={cardClassName}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">
-              Targets
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">Targets</CardTitle>
             <Target className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
@@ -141,18 +94,12 @@ export function PlayerDashboardView({
 
         <Card className={cardClassName}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">
-              Reentradas
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold text-muted-foreground tracking-wide">Reentradas</CardTitle>
             <Repeat2 className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-primary">
-              {tourneyStats.reentries}
-            </div>
-            <p className="text-sm text-muted-foreground mt-2 font-medium">
-              Torneios com rebuy
-            </p>
+            <div className="text-4xl font-bold text-primary">{tourneyStats.reentries}</div>
+            <p className="text-sm text-muted-foreground mt-2 font-medium">Torneios com rebuy</p>
           </CardContent>
         </Card>
       </div>
@@ -176,7 +123,7 @@ export function PlayerDashboardView({
             ) : (
               <div className="space-y-3">
                 {recentTourneys.map((t) => {
-                  const tone = schedulingTone(t.scheduling);
+                  const tone = schedulingDashboardTone(t.scheduling);
                   return (
                     <div key={t.id} className="flex items-center gap-4">
                       <div className="flex-1 min-w-0">
@@ -234,9 +181,7 @@ export function PlayerDashboardView({
               <Layers className="h-5 w-5 text-primary shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground">Minha grade</p>
-                <p className="text-[12px] text-muted-foreground truncate">
-                  {mainGradeName ?? "Nenhuma grade principal"}
-                </p>
+                <p className="text-[12px] text-muted-foreground truncate">{mainGradeName ?? "Nenhuma grade principal"}</p>
               </div>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </Link>

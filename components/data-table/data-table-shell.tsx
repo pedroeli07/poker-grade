@@ -1,11 +1,8 @@
 "use client";
 
 import { memo } from "react";
-import { cn } from "@/lib/utils";
-import {
-  dataTableShellActiveClass,
-  dataTableShellIdleClass,
-} from "@/lib/constants";
+import { cn } from "@/lib/utils/cn";
+import { dataTableShellActiveClass, dataTableShellIdleClass } from "@/lib/constants/classes";
 import type { DataTableShellProps } from "@/lib/types/dataTable";
 
 const DataTableShell = memo(function DataTableShell({

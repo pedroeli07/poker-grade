@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { UserDirectoryRow } from "@/lib/types";
+import type { UserDirectoryRow } from "@/lib/types/user/index";
 import { UserRole } from "@prisma/client";
-import { isSuperAdminEmail } from "@/lib/utils";
-import {
-  updateAuthAccount,
-  updatePendingInvite,
-} from "@/lib/queries/db/user";
+import { isSuperAdminEmail } from "@/lib/utils/auth-session";
+import { updateAuthAccount } from "@/lib/queries/db/user/admin-account-mutations";
+import { updatePendingInvite } from "@/lib/queries/db/user/invite-mutations";
 
 export function useEditableUser(
   row: UserDirectoryRow,

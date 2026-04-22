@@ -10,17 +10,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn, getInitials } from "@/lib/utils";
-import { ROLE_OPTIONS } from "@/lib/constants";
+import { cn } from "@/lib/utils/cn";
+import { getInitials } from "@/lib/utils/app-routing";
+import { ROLE_OPTIONS } from "@/lib/constants/session-rbac";
 import { useEditableUser } from "@/hooks/user/use-editable-user";
 import { useUserPermissions } from "@/hooks/user/use-user-permissions";
 import { RoleBadge, StatusBadge } from "./user-badges";
 import UserDeleteDialog from "./user-delete-dialog";
 import UserActions from "./user-actions";
 import { UserRole } from "@prisma/client";
-import type { UserTableRowProps } from "@/lib/types";
-import { userTableRowClassName } from "@/lib/constants";
-
+import type { UserTableRowProps } from "@/lib/types/user/index";
+import { userTableRowClassName } from "@/lib/constants/classes";
 export const UserTableRow = memo(function UserTableRow({
   row,
   disabled,

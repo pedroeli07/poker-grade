@@ -26,19 +26,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash } from "lucide-react";
-import { deleteTarget } from "@/lib/queries/db/target";
+import { deleteTarget } from "@/lib/queries/db/target/delete-mutations";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import type { TargetListRow } from "@/lib/types";
-import {
-  destructiveAlertDialogContentClassName,
-  destructiveAlertHeaderClassName,
-  destructiveAlertTitleClassName,
-  destructiveAlertDescriptionWrapClassName,
-  destructiveAlertFooterClassName,
-  destructiveAlertCancelButtonClassName,
-  destructiveAlertConfirmButtonClassName,
-} from "@/lib/constants";
+import type { TargetListRow } from "@/lib/types/target/index";
+import { destructiveAlertDialogContentClassName, destructiveAlertHeaderClassName, destructiveAlertTitleClassName, destructiveAlertDescriptionWrapClassName, destructiveAlertFooterClassName, destructiveAlertCancelButtonClassName, destructiveAlertConfirmButtonClassName } from "@/lib/constants/classes";
 import EditTargetModal from "@/components/modals/edit-target-modal";
 
 const TargetTableRowActions = memo(function TargetTableRowActions({

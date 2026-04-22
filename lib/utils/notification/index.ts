@@ -2,8 +2,8 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { IMPORT_LIST_ROW_DATE_FORMAT } from "@/lib/constants/imports";
-import type { ImportListRow, ReviewItem } from "@/lib/types";
-
+import type { ImportListRow } from "@/lib/types/imports/index";
+import type { ReviewItem } from "@/lib/types/review/index";
 const importRowDateLabel = (r: ImportListRow) =>
   format(new Date(r.createdAt), IMPORT_LIST_ROW_DATE_FORMAT, { locale: ptBR });
 

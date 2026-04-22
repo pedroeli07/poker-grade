@@ -4,14 +4,12 @@ import { useEffect, useState, useTransition, useCallback, memo } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useNotificationStore } from "@/lib/stores/use-notification-store";
-import { cn, countUnreadNotifications, getNotificationFilterLabel, timeAgo } from "@/lib/utils";
-import {
-  getNotificationsPage,
-  markNotificationRead,
-  markAllNotificationsRead,
-  deleteNotification,
-  deleteSelectedNotifications,
-} from "@/lib/queries/db/notification";
+import { cn } from "@/lib/utils/cn";
+import { countUnreadNotifications, getNotificationFilterLabel } from "@/lib/utils/notification-sheet";
+import { timeAgo } from "@/lib/utils/app-routing";
+import { getNotificationsPage } from "@/lib/queries/db/notification/reads";
+import { markNotificationRead, markAllNotificationsRead } from "@/lib/queries/db/notification/update-mutations";
+import { deleteNotification, deleteSelectedNotifications } from "@/lib/queries/db/notification/delete-mutations";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import { notificationKeys } from "@/lib/queries/notification-query-keys";
@@ -25,8 +23,9 @@ import {
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
-import { NotificationFilterType } from "@/lib/types";
-import { NOTIFICATION_PAGE_SIZE, NOTIFICATION_SHEET_TOAST_ERROR_TITLE, STALE_TIME, TYPE_CONFIG, TYPE_LABELS } from "@/lib/constants";
+import { NotificationFilterType } from "@/lib/types/primitives";
+import { NOTIFICATION_PAGE_SIZE, NOTIFICATION_SHEET_TOAST_ERROR_TITLE, TYPE_CONFIG, TYPE_LABELS } from "@/lib/constants/notification";
+import { STALE_TIME } from "@/lib/constants/query-result";
 import { accountNotificationsHref } from "@/lib/constants/navigation";
 import type { UserRole } from "@prisma/client";
 

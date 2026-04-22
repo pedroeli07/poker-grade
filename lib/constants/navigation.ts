@@ -9,26 +9,34 @@ export function accountNotificationsHref(role: UserRole): string {
   return role === UserRole.PLAYER ? "/jogador/notificacoes" : "/admin/notificacoes";
 }
 import { SharkIcon } from "@/components/shark-icon";
-import type { SidebarNavEntry } from "@/lib/types";
+import type { SidebarNavEntry } from "@/lib/types/dashboard/index";
 import {
   AlertTriangle,
+  BarChart3,
   Bell,
   BellRing,
   Binoculars,
   Bug,
+  Building2,
+  CalendarClock,
   FlaskConical,
+  GitBranch,
   Grid2x2Check,
   Grid3X3,
   History,
   Home,
   Layers,
   LineChart,
+  ListChecks,
   ListOrdered,
+  NotebookPen,
+  Sparkles,
   Target,
   Upload,
   UserCircle,
   UserRoundCog,
   Users,
+  Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { STAFF_WRITE_ROLES } from "./session-rbac";
@@ -44,10 +52,23 @@ const PRIMARY_NAV: PrimaryNavRow[] = [
   { title: "Metas", href: "/jogador/metas", icon: Target },
   { title: "Histórico", href: "/jogador/historico", icon: History },
   { title: "Jogadores", href: "/admin/jogadores", icon: Users },
+  { title: "Adversários", href: "/admin/adversarios", icon: NotebookPen },
+  { title: "Adversários", href: "/jogador/adversarios", icon: NotebookPen },
   { title: "Usuários", href: "/admin/usuarios", icon: UserRoundCog },
 ];
 
 const GRADES_GROUP_ICON: LucideIcon = Grid3X3;
+
+const TIME_GROUP_ICON: LucideIcon = Building2;
+
+const TIME_ITEMS = [
+  { title: "Identidade", href: "/admin/time/identidade", icon: Sparkles },
+  { title: "Governança", href: "/admin/time/governanca", icon: GitBranch },
+  { title: "Rituais", href: "/admin/time/rituais", icon: CalendarClock },
+  { title: "Execução", href: "/admin/time/execucao", icon: ListChecks },
+  { title: "Indicadores", href: "/admin/time/indicadores", icon: BarChart3 },
+  { title: "Financeiro", href: "/admin/time/financeiro", icon: Wallet },
+];
 
 const GRADES_ITEMS = [
   { title: "Perfis", href: "/admin/grades/perfis", icon: Grid2x2Check },
@@ -80,6 +101,12 @@ export const SIDEBAR_NAV_ITEMS: SidebarNavEntry[] = [
   })),
   {
     kind: "group" as const,
+    title: "Time",
+    icon: TIME_GROUP_ICON,
+    items: [...TIME_ITEMS],
+  },
+  {
+    kind: "group" as const,
     title: "Grades",
     icon: GRADES_GROUP_ICON,
     items: [...GRADES_ITEMS],
@@ -104,6 +131,7 @@ export const SIDEBAR_PLAYER_LINK_HREFS = [
   "/jogador/meus-torneios",
   "/jogador/metas",
   "/jogador/historico",
+  "/jogador/adversarios",
 ] as const;
 
 function collectSidebarHrefs(entries: SidebarNavEntry[]): string[] {

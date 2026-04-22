@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
-import { loginBodySchema } from "@/lib/schemas";
+import { loginBodySchema } from "@/lib/schemas/auth";
 import { limitLogin } from "@/lib/rate-limit";
 import { clientIp, assertSameOrigin } from "@/lib/api/origin";
 import {
@@ -14,9 +14,8 @@ import { createLogger } from "@/lib/logger";
 import { createAuthSession, applySessionCookie } from "@/lib/auth/issue-session";
 import { ensureCoachProfileLinked } from "@/lib/auth/ensure-coach-profile";
 import { ensurePlayerProfileLinked } from "@/lib/auth/ensure-player-profile";
-import { LOCKOUT_MINUTES, MAX_LOGIN_ATTEMPTS } from "@/lib/constants";
-import { ErrorTypes } from "@/lib/types";
-
+import { LOCKOUT_MINUTES, MAX_LOGIN_ATTEMPTS } from "@/lib/constants/session-rbac";
+import { ErrorTypes } from "@/lib/types/primitives";
 const log = createLogger("auth.login");
 
 const GENERIC = "Credenciais inválidas.";

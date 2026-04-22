@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { FilterStore } from "@/lib/types";
-
+import { FilterStore } from "@/lib/types/dashboard/index";
 type SerializedSet = { __type: "Set"; items: string[] };
 
 function isSerializedSet(value: unknown): value is SerializedSet {

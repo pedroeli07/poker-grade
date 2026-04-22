@@ -1,5 +1,5 @@
 import { createLogger } from "@/lib/logger";
-import { nodeEnv } from "../constants";
+import { nodeEnv } from "@/lib/constants/env";
 
 const log = createLogger("api.origin");
 

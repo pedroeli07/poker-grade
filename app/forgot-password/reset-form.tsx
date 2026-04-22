@@ -4,10 +4,10 @@ import Link from "next/link";
 import { PasswordStrength } from "@/components/password-strength";
 import { PasswordInput } from "@/components/auth/password-input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { AUTH_INPUT_CLASS, FORGOT_PASSWORD_OTP_INPUT_PATTERN } from "@/lib/constants";
+import { AUTH_INPUT_CLASS } from "@/lib/constants/sharkscope/ui";
+import { FORGOT_PASSWORD_OTP_INPUT_PATTERN } from "@/lib/constants/forgot-password";
 import { useForgotPasswordResetForm } from "@/hooks/use-forgot-password-reset-form";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 export function ResetForm() {
   const {
     loading,

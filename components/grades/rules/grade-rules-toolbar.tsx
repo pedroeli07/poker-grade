@@ -2,7 +2,7 @@
 
 import { LayoutGrid, Table2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import ColumnFilter from "@/components/column-filter";
 import { memo, useMemo } from "react";
 import type { GradeRulesColumnFilters, GradeRulesColumnOptions, GradeRulesColumnKey } from "@/hooks/grades/use-grade-rules-list";

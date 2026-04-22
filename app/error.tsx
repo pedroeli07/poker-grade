@@ -3,8 +3,7 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { errorPageMetadata } from "@/lib/constants/metadata";
-import { nodeEnv } from "@/lib/constants";
-
+import { nodeEnv } from "@/lib/constants/env";
 export const metadata = errorPageMetadata;
 
 export default function ErrorBoundary({

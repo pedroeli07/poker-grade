@@ -4,8 +4,7 @@ import { memo, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import ColumnFilter from "@/components/column-filter";
 import { buildReviewPath } from "@/hooks/review/review-path";
-import type { ReviewPlayerOption } from "@/lib/types";
-
+import type { ReviewPlayerOption } from "@/lib/types/review/index";
 const ReviewPlayerSelect = memo(function ReviewPlayerSelect({
   playerOptions,
   playerId,

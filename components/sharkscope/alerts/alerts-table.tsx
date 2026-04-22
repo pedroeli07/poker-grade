@@ -9,12 +9,9 @@ import FilteredColumnTitle from "@/components/data-table/filtered-column-title";
 import SortButton from "@/components/sort-button";
 import ColumnFilter from "@/components/column-filter";
 import NumberRangeFilter from "@/components/number-range-filter";
-import { cn } from "@/lib/utils";
-import {
-  dataTableHeaderRowActiveRingClass,
-  dataTableHeaderRowClass,
-} from "@/lib/constants";
-import type { SharkscopeAlertRow } from "@/lib/types";
+import { cn } from "@/lib/utils/cn";
+import { dataTableHeaderRowActiveRingClass, dataTableHeaderRowClass } from "@/lib/constants/classes";
+import type { SharkscopeAlertRow } from "@/lib/types/sharkscope/alerts/index";
 import type { AlertSortKey } from "@/hooks/sharkscope/alerts/use-alerts-page-client";
 import type { ColumnSortState } from "@/lib/types/dataTable";
 import { isFilterActive, type NumberFilterValue } from "@/lib/number-filter";

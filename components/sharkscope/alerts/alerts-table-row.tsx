@@ -7,15 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { ALERT_TYPE_LABEL, SEVERITY_UI } from "@/lib/constants";
-import type { SharkscopeAlertRow } from "@/lib/types";
-import {
-  formatAlertMetricValue,
-  formatAlertThreshold,
-  formatAlertTriggeredAt,
-  getAlertMetricBadgeProps,
-} from "@/lib/utils";
-
+import { ALERT_TYPE_LABEL, SEVERITY_UI } from "@/lib/constants/sharkscope/alerts";
+import type { SharkscopeAlertRow } from "@/lib/types/sharkscope/alerts/index";
+import { formatAlertMetricValue, formatAlertThreshold, formatAlertTriggeredAt, getAlertMetricBadgeProps } from "@/lib/utils/sharkscope/alerts";
 const AlertsTableRow = memo(function AlertsTableRow({
   alert,
   canAcknowledge,

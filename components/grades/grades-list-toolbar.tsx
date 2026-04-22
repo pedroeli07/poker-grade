@@ -2,9 +2,10 @@
 
 import { LayoutGrid, Table2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import GradesListColFilters from "@/components/grades/grades-list-col-filters";
-import type { GradesColumnFilters, GradesColumnOptions, GradesSetCol } from "@/lib/types";
+import type { GradesColumnFilters, GradesColumnOptions } from "@/lib/types/columnKeys";
+import type { GradesSetCol } from "@/lib/types/grade/index";
 import { memo } from "react";
 
 const GradesListToolbar = memo(function GradesListToolbar({

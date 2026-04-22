@@ -1,8 +1,7 @@
 import { Playfair_Display } from "next/font/google";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["600", "700"],

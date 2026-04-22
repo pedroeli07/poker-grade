@@ -1,7 +1,6 @@
 import { ChevronRight } from "lucide-react";
-import { GRADE_TYPE_CONFIG } from "@/lib/constants";
-import type { PlayerProfileViewModel } from "@/lib/types";
-
+import { GRADE_TYPE_CONFIG } from "@/lib/constants/grade";
+import type { PlayerProfileViewModel } from "@/lib/types/player/index";
 export function MinhaGradeHero({
   player,
   assignmentsByType,

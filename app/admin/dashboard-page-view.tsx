@@ -17,10 +17,10 @@ import Link from "next/link";
 import { DeleteImportButton } from "@/components/imports/delete-import-button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { cardClassName } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
+import { cn } from "@/lib/utils/cn";
 import type { DashboardPageData } from "@/hooks/dashboard/dashboard-page-load";
-import { ACTION_STYLE } from "@/lib/constants/sharkscope-type-filters";
+import { ACTION_STYLE } from "@/lib/constants/sharkscope/type-filters";
 
 
 export function DashboardPageView(data: DashboardPageData) {

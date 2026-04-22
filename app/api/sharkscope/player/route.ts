@@ -6,11 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { getOrFetchSharkScope } from "@/lib/sharkscope-cache";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeRead } from "@/lib/rate-limit";
-import { playerQuerySchema } from "@/lib/schemas";
-import { sharkScopeGet } from "@/lib/utils";
-import { DATA_TYPE_CONFIG, sharkscopeApiNetworkSegment } from "@/lib/constants";
-import { ErrorTypes } from "@/lib/types";
-
+import { playerQuerySchema } from "@/lib/schemas/sharkscope";
+import { sharkScopeGet } from "@/lib/utils/sharkscope-client";
+import { DATA_TYPE_CONFIG } from "@/lib/constants/notification";
+import { sharkscopeApiNetworkSegment } from "@/lib/constants/poker-networks";
+import { ErrorTypes } from "@/lib/types/primitives";
 export async function GET(req: Request) {
   const session = await getSession();
   if (!session || !isSharkscopeStaffRole(session.role))

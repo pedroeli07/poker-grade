@@ -42,12 +42,12 @@ type PlayerBase = WithIdAndStatus<PlayerStatus> &
    🔹 CORE TYPES
 ========================================================= */
 
-export interface ResolveNickProps {
+export type ResolveNickProps = {
   playerId: string;
   nickId: string;
   userId: string;
   role: UserRole;
-}
+};
 
 /* =========================================================
    🔹 TABLE
@@ -135,11 +135,11 @@ export type PlayerProfileLoadResult =
    🔹 ENTITIES
 ========================================================= */
 
-export interface Nick extends BaseEntity {
+export type Nick = BaseEntity & {
   nick: string;
   network: string;
   isActive: boolean;
-}
+};
 
 /* =========================================================
    🔹 FILTERS
@@ -198,8 +198,9 @@ export type PlayerAbiTableCellProps = {
 };
 
 export type PlayerRoiCellProps = { roi: NullableNumber };
-export type PlayerFtTenDayCellProps = { value: NullableNumber };
-export type PlayerFpTenDayCellProps = { value: NullableNumber };
+type NullableMetricCellProps = { value: NullableNumber };
+export type PlayerFtTenDayCellProps = NullableMetricCellProps;
+export type PlayerFpTenDayCellProps = NullableMetricCellProps;
 
 export type PlayerStatusTableCellProps = {
   status: PlayerStatus;
@@ -209,13 +210,11 @@ export type PlayerStatusTableCellProps = {
    🔹 PROFILE UI
 ========================================================= */
 
-export type PlayerProfileHeaderProps = {
-  player: PlayerProfileRecord;
-};
+type PlayerProfileRecordProps = { player: PlayerProfileRecord };
 
-export type PlayerProfileSidebarProps = {
-  player: PlayerProfileRecord;
-};
+export type PlayerProfileHeaderProps = PlayerProfileRecordProps;
+
+export type PlayerProfileSidebarProps = PlayerProfileRecordProps;
 
 /* =========================================================
    🔹 PAGE / CONTAINERS
@@ -251,29 +250,28 @@ export type NewPlayerModalProps = {
    🔹 SECTIONS
 ========================================================= */
 
-export interface PlayerNicksSectionProps {
+export type PlayerNicksSectionProps = {
   playerId: string;
   initialNicks: Nick[];
   canManage: boolean;
-}
+};
 
 /* =========================================================
    🔹 DOMAIN MODEL
 ========================================================= */
 
-export interface PlayerWithRelations
-  extends WithIdAndStatus<PlayerStatus>,
-    PlayerNameFields {
-  avatarUrl: string | null;
-  coach: EntityRef | null;
-  dri: EntityRef | null;
-  gradeAssignments: GradeAssignmentView[];
-  _count: {
-    targets: number;
-    playedTournaments: number;
-    reviewItems: number;
+export type PlayerWithRelations = WithIdAndStatus<PlayerStatus> &
+  PlayerNameFields & {
+    avatarUrl: string | null;
+    coach: EntityRef | null;
+    dri: EntityRef | null;
+    gradeAssignments: GradeAssignmentView[];
+    _count: {
+      targets: number;
+      playedTournaments: number;
+      reviewItems: number;
+    };
   };
-}
 
 /* ========================================================= */
 

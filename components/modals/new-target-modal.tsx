@@ -13,9 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Plus, Target, Loader2, ChevronRight } from "lucide-react";
 import { useNewTargetModal } from "@/hooks/targets/use-new-target-modal";
-import type { NewTargetModalProps } from "@/lib/types";
-import { CATEGORIES, LIMIT_ACTIONS } from "@/lib/constants";
-
+import type { NewTargetModalProps } from "@/lib/types/target/index";
+import { CATEGORIES, LIMIT_ACTIONS } from "@/lib/constants/target";
 const NewTargetModal = memo(function NewTargetModal(props: NewTargetModalProps) {
   const {
     players,

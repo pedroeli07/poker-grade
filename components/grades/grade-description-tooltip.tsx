@@ -4,7 +4,8 @@ import { memo, useMemo } from "react";
 import { Check, Copy } from "lucide-react";
 import { AppTooltip } from "@/components/ui/app-tooltip";
 import { useCopyFeedback } from "@/hooks/use-copy-feedback";
-import { cn, htmlToPlainText } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
+import { htmlToPlainText } from "@/lib/utils/html-to-plain-text";
 import {
   GRADE_DESCRIPTION_TOOLTIP_ARROW_CLASS,
   GRADE_DESCRIPTION_TOOLTIP_CONTENT_CLASS,

@@ -5,8 +5,7 @@ import ReviewAllClearCard from "@/components/review/review-all-clear-card";
 import ReviewGroupsSection from "@/components/review/review-groups-section";
 import ReviewPageHeader from "@/components/review/review-page-header";
 import ReviewToolbarCard from "@/components/review/review-toolbar-card";
-import type { ReviewPageData } from "@/lib/types";
-
+import type { ReviewPageData } from "@/lib/types/review/index";
 const ReviewPageClient = memo(function ReviewPageClient(data: ReviewPageData) {
   const {
     pendingReviews,

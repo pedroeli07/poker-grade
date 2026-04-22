@@ -1,5 +1,5 @@
 import { ScoutingSavedCard } from "@/components/sharkscope/scouting/scouting-saved-card";
-import type { ScoutingAnalysisRow } from "@/lib/types";
+import type { ScoutingAnalysisRow } from "@/lib/types/sharkscope/scouting/index";
 import { memo } from "react";
 
 const ScoutingSavedSection = memo(function ScoutingSavedSection({

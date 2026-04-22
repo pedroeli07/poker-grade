@@ -2,13 +2,12 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { TargetListRow as TargetListRowType, TargetListViewModel } from "@/lib/types";
+import type { TargetListRow as TargetListRowType, TargetListViewModel } from "@/lib/types/target/index";
 import { splitCategoryLabelForDisplay } from "@/lib/utils/target";
 import { memo } from "react";
 import TargetTableRowActions from "@/components/targets/target-table-row-actions";
 import { Check, StickyNote } from "lucide-react";
-import { cn } from "@/lib/utils";
-
+import { cn } from "@/lib/utils/cn";
 const TargetTableRow = memo(function TargetTableRow({
   vm,
   row,

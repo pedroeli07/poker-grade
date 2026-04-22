@@ -18,20 +18,12 @@ import {
   DestructiveAlertIconHeader,
   DestructiveAlertWarningNote,
 } from "@/components/modals/primitives/destructive-alert-dialog";
-import { deleteGrade } from "@/lib/queries/db/grade";
+import { deleteGrade } from "@/lib/queries/db/grade/delete-mutations";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import { 
-  destructiveAlertDialogContentClassName, 
-  destructiveAlertHeaderClassName, 
-  destructiveAlertTitleClassName, 
-  destructiveAlertDescriptionWrapClassName, 
-  destructiveAlertFooterClassName, 
-  destructiveAlertCancelButtonClassName, 
-  destructiveAlertConfirmButtonClassName } from "@/lib/constants";
-
+import { destructiveAlertDialogContentClassName, destructiveAlertHeaderClassName, destructiveAlertTitleClassName, destructiveAlertDescriptionWrapClassName, destructiveAlertFooterClassName, destructiveAlertCancelButtonClassName, destructiveAlertConfirmButtonClassName } from "@/lib/constants/classes";
 const log = createLogger("grades.ui");
 
 export function DeleteGradeButton({

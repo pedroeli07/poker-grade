@@ -1,6 +1,7 @@
 import "dotenv/config";
 import crypto from "node:crypto";
-import { extractStat, sharkScopeResponseErrorMessage } from "@/lib/utils";
+import { extractStat } from "@/lib/utils/sharkscope-extract";
+import { sharkScopeResponseErrorMessage } from "@/lib/utils/sharkscope-client";
 import {
   sharkScopeAppKey,
   sharkScopeAppName,

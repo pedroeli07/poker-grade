@@ -1,20 +1,23 @@
-import { getPendingReviewsForSession } from "@/lib/queries/db/review";
+import { getPendingReviewsForSession } from "@/lib/queries/db/review/reads";
 import type { BaseEntity, EntityRef, PlayerRef, WithId, WithIdAndStatus } from "../primitives";
 
-export interface ReviewItemView extends BaseEntity, WithIdAndStatus<string> {
-  player: PlayerRef;
-  tournament: WithId & {
-    date: string;
-    site: string;
-    buyInValue: number;
-    tournamentName: string;
-    speed: string | null;
-    matchStatus: string;
+type ReviewTournamentSummary = WithId & {
+  date: string;
+  site: string;
+  buyInValue: number;
+  tournamentName: string;
+  speed: string | null;
+  matchStatus: string;
+};
+
+export type ReviewItemView = BaseEntity &
+  WithIdAndStatus<string> & {
+    player: PlayerRef;
+    tournament: ReviewTournamentSummary;
+    justification: string | null;
+    reviewNotes: string | null;
+    isInfraction: boolean;
   };
-  justification: string | null;
-  reviewNotes: string | null;
-  isInfraction: boolean;
-}
 
 export type ReviewItem = Awaited<ReturnType<typeof getPendingReviewsForSession>>[number];
 export type ReviewPlayerOption = EntityRef & { extraPlayCount: number };

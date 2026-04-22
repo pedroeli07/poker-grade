@@ -7,10 +7,9 @@
  *   LOG_PERF=0|1                     (métricas [perf] — ver lib/utils/perf.ts; dev: ativo salvo LOG_PERF=0)
  */
 
-import { ANSI, prodLogger } from "./constants";
-import { ScopedLogger } from "@/lib/types";
-import { shortTime, emit, shouldEmit } from "@/lib/utils";
-
+import { ANSI, prodLogger } from "./constants/logger-config";
+import { ScopedLogger } from "@/lib/types/primitives";
+import { shortTime, emit, shouldEmit } from "@/lib/utils/app-logger";
 // ── Table helper ──────────────────────────────────────────
 export function logTable(scope: string, rows: Record<string, unknown>[]): void {
   if (!shouldEmit(scope, "debug") || prodLogger) return;

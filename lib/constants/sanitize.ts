@@ -1,5 +1,5 @@
-import { LobbyzeItem } from "../types";
-import { sanitizeText } from "../utils";
+import type { LobbyzeItem } from "../types/lobbyzeTypes";
+import { sanitizeText } from "../utils/text-sanitize";
 
 export const CTRL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 

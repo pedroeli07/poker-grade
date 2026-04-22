@@ -11,7 +11,7 @@ import HistoryDeleteDialog from "@/components/history/history-delete-dialog";
 import ColumnFilter from "@/components/column-filter";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
-import { deleteHistoryItems } from "@/lib/queries/db/history";
+import { deleteHistoryItems } from "@/lib/queries/db/history/delete-mutations";
 
 const HistoryPageClient = memo(function HistoryPageClient({
   history,

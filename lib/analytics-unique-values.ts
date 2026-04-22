@@ -1,6 +1,6 @@
 import { getUniqueValues } from "@/lib/match-number-filter";
-import type { NetworkStat, RankingEntry, TierStat, TypeStat } from "@/lib/types";
-
+import type { NetworkStat, TierStat, TypeStat } from "@/lib/types/sharkScopeTypes";
+import type { RankingEntry } from "@/lib/types/sharkscope/analytics/index";
 /** Chaves alinhadas a `useAnalyticsFilter` / `matchNumberFilter` nas tabelas analytics. */
 export const ANALYTICS_NUM_FILTER_KEYS = [
   "roi",

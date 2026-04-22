@@ -1,6 +1,5 @@
 import { ALERTS_SORT_KEY_LABEL } from "@/lib/constants/sharkscope/alerts";
-import type { SharkscopeAlertRow } from "@/lib/types";
-
+import type { SharkscopeAlertRow } from "@/lib/types/sharkscope/alerts/index";
 export function formatAlertsSortSummary(
   sort: { key: string; dir: "asc" | "desc" } | null
 ): string | null {

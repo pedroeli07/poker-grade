@@ -19,6 +19,8 @@ const eslintConfig = defineConfig([
     "test-results/**",
     "playwright-report/**",
     ".playwright-mcp/**",
+    // Cópia local / admin auxiliar, não rastreada no git; evita o mesmo lint do app principal
+    "cl-admin-app/**",
   ]),
 ]);
 

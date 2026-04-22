@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { LobbyzeFilterItem } from "@/lib/types";
+import { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
 import { gradesRulesPillClass } from "@/lib/constants/classes";
 
 const Pills = memo(function Pills({ items }: { items: LobbyzeFilterItem[] }) {

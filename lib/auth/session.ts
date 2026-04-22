@@ -4,11 +4,11 @@ import { redirect } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createLogger } from "@/lib/logger";
-import { nodeEnv, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC } from "@/lib/constants";
+import { nodeEnv } from "@/lib/constants/env";
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SEC } from "@/lib/constants/session-rbac";
 import { logPerf } from "@/lib/utils/perf";
 import { signSessionToken, verifySessionJwt } from "./jwt";
-import type { AppSession } from "@/lib/types";
-
+import type { AppSession } from "@/lib/types/auth";
 export type { AppSession };
 
 const log = createLogger("auth.session");

@@ -6,8 +6,7 @@ import { Clock, ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ReviewDecisionButtons } from "@/components/review-decision-buttons";
 import { pokerSiteIconFromSiteLabel } from "@/lib/constants/poker-networks";
-import type { ReviewItem } from "@/lib/types";
-
+import type { ReviewItem } from "@/lib/types/review/index";
 const PokerSiteInline = memo(function PokerSiteInline({ site }: { site: string }) {
   const icon = pokerSiteIconFromSiteLabel(site);
   return (

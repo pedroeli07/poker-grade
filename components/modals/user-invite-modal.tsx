@@ -11,13 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus, Loader2, Mail } from "lucide-react";
 import { UserRole } from "@prisma/client";
-import {
-  INVITE_ROLES, USER_INVITE_CANCEL, USER_INVITE_EMAIL_INPUT_ID, USER_INVITE_EMAIL_LABEL,
-  USER_INVITE_EMAIL_MAX_LENGTH, USER_INVITE_EMAIL_PLACEHOLDER, USER_INVITE_MODAL_DESCRIPTION,
-  USER_INVITE_MODAL_TITLE, USER_INVITE_ROLE_LABEL, USER_INVITE_ROLE_SELECT_PLACEHOLDER,
-  USER_INVITE_SUBMIT, USER_INVITE_SUBMIT_SAVING,
-} from "@/lib/constants";
-import { UserInviteModalProps } from "@/lib/types";
+import { INVITE_ROLES } from "@/lib/constants/session-rbac";
+import { USER_INVITE_CANCEL, USER_INVITE_EMAIL_INPUT_ID, USER_INVITE_EMAIL_LABEL, USER_INVITE_EMAIL_MAX_LENGTH, USER_INVITE_EMAIL_PLACEHOLDER, USER_INVITE_MODAL_DESCRIPTION, USER_INVITE_MODAL_TITLE, USER_INVITE_ROLE_LABEL, USER_INVITE_ROLE_SELECT_PLACEHOLDER, USER_INVITE_SUBMIT, USER_INVITE_SUBMIT_SAVING } from "@/lib/constants/users";
+import { UserInviteModalProps } from "@/lib/types/user/index";
 import { useUserInviteModal } from "@/hooks/users/use-user-invite-modal";
 import { memo } from "react";
 

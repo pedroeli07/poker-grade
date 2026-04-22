@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Bell, User } from "lucide-react";
 import Link from "next/link";
 import { useNotificationStore } from "@/lib/stores/use-notification-store";
-import { getUnreadCount } from "@/lib/queries/db/notification";
+import { getUnreadCount } from "@/lib/queries/db/notification/reads";
 import {
   TOPBAR_AVATAR_ALT,
   TOPBAR_LINK_PROFILE,
@@ -16,7 +16,8 @@ import {
 } from "@/lib/constants/topbar";
 import { accountProfileHref } from "@/lib/constants/navigation";
 import type { UserRole } from "@prisma/client";
-import { cn, getUserDisplayInitials } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
+import { getUserDisplayInitials } from "@/lib/utils/user-display";
 import { useTopbarClock } from "@/hooks/use-topbar-clock";
 
 function CurrentTimeDisplay() {

@@ -13,8 +13,7 @@ import {
   TrendingUp,
   XCircle,
 } from "lucide-react";
-import type { GradesColumnKey } from "@/lib/types";
-
+import type { GradesColumnKey } from "@/lib/types/columnKeys";
 // ─── grade-display ───────────────────────────────────────────────────────────
 
 export const GRADE_TYPE_CONFIG = {

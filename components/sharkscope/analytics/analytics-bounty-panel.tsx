@@ -11,7 +11,8 @@ import RankingFinishPctBadge from "@/components/sharkscope/analytics/ranking-fin
 import RankingProfitBadge from "@/components/sharkscope/analytics/ranking-profit-badge";
 import SortButton from "@/components/sort-button";
 import { SHARKSCOPE_ANALYTICS_TYPE_LABEL_PT } from "@/lib/constants/sharkscope/analytics";
-import type { SharkscopeAnalyticsPeriod, TypeStat } from "@/lib/types";
+import type { SharkscopeAnalyticsPeriod } from "@/lib/types/sharkscope/analytics/index";
+import type { TypeStat } from "@/lib/types/sharkScopeTypes";
 import { memo } from "react";
 import { useBountyAnalytics } from "@/lib/use-sharkscope-analytics";
 import {

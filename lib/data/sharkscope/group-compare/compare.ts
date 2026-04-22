@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { sharkScopeAppName, sharkScopeAppKey } from "@/lib/constants";
-import { sharkScopeGet } from "@/lib/utils";
+import { sharkScopeAppName, sharkScopeAppKey } from "@/lib/constants/env";
+import { sharkScopeGet } from "@/lib/utils/sharkscope-client";
 import { extractStat, extractRoiTenDayForPlayerTable } from "@/lib/sharkscope-parse";
 import { buildSharkscopeStatMap } from "@/lib/sharkscope-stat-scan";
 import { collectTournamentNetworkHistogram } from "@/lib/sharkscope/playergroup-network-probe";

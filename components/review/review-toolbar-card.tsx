@@ -1,12 +1,11 @@
 "use client";
 
 import { memo } from "react";
-import { cardClassName } from "@/lib/constants";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 import ReviewCoachSelect from "@/components/review/review-coach-select";
 import ReviewPagination from "@/components/review/review-pagination";
 import ReviewPlayerSelect from "@/components/review/review-player-select";
-import type { ReviewCoachOption, ReviewPlayerOption } from "@/lib/types";
-
+import type { ReviewCoachOption, ReviewPlayerOption } from "@/lib/types/review/index";
 const ReviewToolbarCard = memo(function ReviewToolbarCard({
   coachOptions,
   playerOptions,

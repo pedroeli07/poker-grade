@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import type { ProfileData } from "@/lib/types";
+import type { ProfileData } from "@/lib/types/user/index";
 import ProfilePageHeader from "@/components/profile/profile-page-header";
 import ProfilePersonalPanel from "@/components/profile/profile-personal-panel";
 import ProfilePasswordPanel from "@/components/profile/profile-password-panel";

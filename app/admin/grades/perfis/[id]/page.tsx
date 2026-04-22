@@ -5,8 +5,7 @@ import type { Metadata } from "next";
 import { gradeDetailFallbackMetadata } from "@/lib/constants/metadata";
 import GradeDetailPageSkeleton from "@/components/grades/grade-detail-page-skeleton";
 import { getGradeDetailPageProps } from "@/lib/data/grades";
-import type { GenerateMetadataProps } from "@/lib/types";
-
+import type { GenerateMetadataProps } from "@/lib/types/primitives";
 export const dynamic = "force-dynamic";
 
 const resolveProps = cache(async (params: GenerateMetadataProps["params"]) => {

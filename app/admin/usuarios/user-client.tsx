@@ -5,20 +5,20 @@ import { Search, UserPlus, Users, UserCheck, Clock, LayoutGrid, Table2 } from "l
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import UserInviteModal from "@/components/modals/user-invite-modal";
 import ColumnFilter from "@/components/column-filter";
 import { UserCard } from "@/components/user/user-card";
 import { UserTableRow } from "@/components/user/user-table-row";
-import { cardClassName } from "@/lib/constants";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 import UserStatCard from "@/components/user/user-view-components";
 import UserEmptyState from "@/components/user/user-empty-state";
 import DataTableShell from "@/components/data-table/data-table-shell";
 import DataTableToolbar from "@/components/data-table/data-table-toolbar";
 import FilteredColumnTitle from "@/components/data-table/filtered-column-title";
 import SortButton from "@/components/sort-button";
-import { dataTableHeaderRowActiveRingClass, dataTableHeaderRowClass } from "@/lib/constants";
-import type { UserClientProps } from "@/lib/types";
+import { dataTableHeaderRowActiveRingClass, dataTableHeaderRowClass } from "@/lib/constants/classes";
+import type { UserClientProps } from "@/lib/types/user/index";
 import { useUserClient } from "@/hooks/users/use-users-client";
 
 const UserClient = memo(function UserClient({ initialRows }: UserClientProps) {

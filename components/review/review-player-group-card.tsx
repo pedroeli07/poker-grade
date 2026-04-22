@@ -5,10 +5,9 @@ import Link from "next/link";
 import { ExternalLink, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import ReviewTournamentReviewRow from "@/components/review/review-tournament-review-row";
-import { cardClassName } from "@/lib/constants";
-import { avatarColor, initials } from "@/lib/utils";
-import type { ReviewPlayerGroup } from "@/lib/types";
-
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
+import { avatarColor, initials } from "@/lib/utils/player";
+import type { ReviewPlayerGroup } from "@/lib/types/review/index";
 const ReviewPlayerGroupCard = memo(function ReviewPlayerGroupCard({
   group,
   showActions,

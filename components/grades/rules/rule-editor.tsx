@@ -3,12 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import MultiToggleRow from "./multi-toggle-row";
-import type { GradeRuleCardRule, LobbyzeFilterItem } from "@/lib/types";
+import type { GradeRuleCardRule } from "@/lib/types/grade/index";
+import type { LobbyzeFilterItem } from "@/lib/types/lobbyzeTypes";
 import { memo } from "react";
 import LabeledTextRow from "./labeled-text-row";
-import { cn } from "@/lib/utils";
-import { phSubtle } from "@/lib/constants";
-
+import { cn } from "@/lib/utils/cn";
+import { phSubtle } from "@/lib/constants/classes";
 const RuleEditor = memo(function RuleEditor<T extends GradeRuleCardRule>({
   form,
   set,

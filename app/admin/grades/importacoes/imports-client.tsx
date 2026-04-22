@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import type { ImportListRow } from "@/lib/types";
+import type { ImportListRow } from "@/lib/types/imports/index";
 import ImportsDeleteDialog from "@/components/imports/imports-delete-dialog";
 import { useImportsListPage } from "@/hooks/imports/use-imports-list-page";
 import ImportsBulkSelectionBar from "@/components/imports/imports-bulk-selection-bar";

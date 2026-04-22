@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
-import { updateGradeCoachNote } from "@/lib/queries/db/grade";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
+import { updateGradeCoachNote } from "@/lib/queries/db/grade/update-mutations";
 
 /**
  * Converts stored plain-text (with \n line breaks) to HTML so the rich-text

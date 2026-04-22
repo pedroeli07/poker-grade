@@ -10,10 +10,10 @@ import {
   type SubmitEvent,
 } from "react";
 import { useRouter } from "next/navigation";
-import { importGradeFromJson } from "@/lib/queries/db/grade";
+import { importGradeFromJson } from "@/lib/queries/db/grade/create-mutations";
 import { toast } from "@/lib/toast";
 import { createLogger } from "@/lib/logger";
-import { isNextRedirectError } from "@/lib/utils";
+import { isNextRedirectError } from "@/lib/utils/auth-session";
 import { useInvalidate } from "@/hooks/use-invalidate";
 import { GRADE_JSON_IMPORT_INVALID_PT, MODAL_DIALOG_CLOSE_RESET_MS } from "@/lib/constants/modals";
 

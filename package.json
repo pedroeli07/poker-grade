@@ -16,6 +16,8 @@
     "sync:sharkscope-group": "tsx scripts/sync-sharkscope-single-group.ts",
     "sharkscope:10d": "tsx scripts/sharkscope-player-group-10d-stats.ts",
     "import:tournaments-csv": "tsx scripts/import-player-group-tournaments-csv.ts",
+    "seed:team-decisions": "tsx scripts/seed-team-decisions.ts",
+    "seed:team-alert-rules": "tsx scripts/seed-team-alert-rules.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

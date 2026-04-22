@@ -2,12 +2,11 @@
 
 import { useCallback, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { updateTarget } from "@/lib/queries/db/target";
+import { updateTarget } from "@/lib/queries/db/target/update-mutations";
 import { toast } from "@/lib/toast";
 import { useInvalidate } from "@/hooks/use-invalidate";
-import { isNextRedirectError } from "@/lib/utils";
-import type { EditTargetModalProps } from "@/lib/types";
-
+import { isNextRedirectError } from "@/lib/utils/auth-session";
+import type { EditTargetModalProps } from "@/lib/types/target/index";
 export function useEditTargetModal({ target, open, onOpenChange }: EditTargetModalProps) {
   const [isPending, startTransition] = useTransition();
   const [targetType, setTargetType] = useState<string>(target.targetType);

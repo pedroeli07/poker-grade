@@ -1,5 +1,5 @@
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
-import { cardClassName } from "@/lib/constants";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
 import { memo } from "react";
 
 const AnalyticsAboutCard = memo(function AnalyticsAboutCard() {

@@ -1,8 +1,7 @@
 import type { ColumnSortState } from "@/lib/types/dataTable";
 import type { SiteChartYMetric } from "@/lib/site-analytics-chart";
-import { PlayerRef } from "../../primitives";
-import { NetworkStat, TierStat, TypeStat } from "../../sharkScopeTypes";
-
+import type { FilterMap, PlayerRef } from "../../primitives";
+import type { NetworkStat, TierStat, TypeStat } from "../../sharkScopeTypes";
 
 /** Ordem de métricas alinhada ao ranking: ROI → inscrições (`entries`) → … */
 type CommonSortKey =
@@ -60,11 +59,7 @@ export type SharkscopeAnalyticsTab = "site" | "ranking" | "tier" | "bounty";
 /** Referência mínima de jogador no multiselect “Por site” (nome para resumo do gráfico). */
 export type SiteAnalyticsPlayerRef = { id: string; name: string };
 
-export type RankingEntry = {
-  player: PlayerRef;
-  /** TotalROI (SharkScope) */
-  roi: number;
-  /** Inscrições (Entries); não usar Count de outro slice de filtro */
+type RankingEntryMetrics = {
   entries: number | null;
   profit: number | null;
   itm: number | null;
@@ -75,6 +70,13 @@ export type RankingEntry = {
   lateFinish: number | null;
 };
 
+export type RankingEntry = {
+  player: PlayerRef;
+  /** TotalROI (SharkScope) */
+  roi: number;
+  /** Inscrições (Entries); não usar Count de outro slice de filtro */
+} & RankingEntryMetrics;
+
 /** Dados extra para aba Por site: breakdown por jogador (cache v2). */
 export type SiteAnalyticsPayload = {
   playersWithSiteData: SiteAnalyticsPlayerRef[];
@@ -82,37 +84,36 @@ export type SiteAnalyticsPayload = {
   hasPerPlayerBreakdown: boolean;
 };
 
-
 export type AnalyticsClientProps = {
-    stats30d: NetworkStat[];
-    stats90d: NetworkStat[];
-    siteAnalytics30d: SiteAnalyticsPayload;
-    siteAnalytics90d: SiteAnalyticsPayload;
-    ranking30d: RankingEntry[];
-    ranking90d: RankingEntry[];
-    tierStats30d: TierStat[];
-    tierStats90d: TierStat[];
-    typeStats30d: TypeStat[];
-    typeStats90d: TypeStat[];
-    hasData30d: boolean;
-    hasData90d: boolean;
-  };
-  
-  export type AnalyticsDebugPageData = {
-    players: { id: string; name: string; playerGroup: string }[];
-    selectedPlayerId: string | null;
-    playerMeta: { name: string; playerGroup: string } | null;
-    analyticsProps: AnalyticsClientProps | null;
-    listError: string | null;
-  };
+  stats30d: NetworkStat[];
+  stats90d: NetworkStat[];
+  siteAnalytics30d: SiteAnalyticsPayload;
+  siteAnalytics90d: SiteAnalyticsPayload;
+  ranking30d: RankingEntry[];
+  ranking90d: RankingEntry[];
+  tierStats30d: TierStat[];
+  tierStats90d: TierStat[];
+  typeStats30d: TypeStat[];
+  typeStats90d: TypeStat[];
+  hasData30d: boolean;
+  hasData90d: boolean;
+};
 
-export type AnalyticsSiteFilters = Record<"network", Set<string> | null>;
+export type AnalyticsDebugPageData = {
+  players: { id: string; name: string; playerGroup: string }[];
+  selectedPlayerId: string | null;
+  playerMeta: { name: string; playerGroup: string } | null;
+  analyticsProps: AnalyticsClientProps | null;
+  listError: string | null;
+};
+
+export type AnalyticsSiteFilters = FilterMap<"network">;
 export type AnalyticsSiteColumnKey = "network";
-export type AnalyticsRankingFilters = Record<"player", Set<string> | null>;
+export type AnalyticsRankingFilters = FilterMap<"player">;
 export type AnalyticsRankingColumnKey = "player";
-export type AnalyticsTierFilters = Record<"tier", Set<string> | null>;
+export type AnalyticsTierFilters = FilterMap<"tier">;
 export type AnalyticsTierColumnKey = "tier";
-export type AnalyticsBountyFilters = Record<"type", Set<string> | null>;
+export type AnalyticsBountyFilters = FilterMap<"type">;
 export type AnalyticsBountyColumnKey = "type";
 
 /** Linha de entrada do gráfico de barras ROI (antes de `mapRoiBarChartData`). */

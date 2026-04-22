@@ -2,8 +2,8 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { nextSortState } from "@/lib/table-sort";
-import type { ColumnSortKind, AnalyticsSortState } from "@/lib/types";
-
+import type { ColumnSortKind } from "@/lib/types/dataTable";
+import type { AnalyticsSortState } from "@/lib/types/sharkscope/analytics/index";
 const useAnalyticsColumnSort = <K extends string>() => {
   const [sort, setSort] = useState<AnalyticsSortState<K>>(null);
 

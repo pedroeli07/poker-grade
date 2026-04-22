@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useCallback } from "react";
-import type { GradeRuleCardRule } from "@/lib/types";
+import type { GradeRuleCardRule } from "@/lib/types/grade/index";
 import { formatGradeRuleUsdInt } from "@/lib/utils/grade-rule-display";
 import { usePersistentState } from "@/hooks/use-persistent-state";
 

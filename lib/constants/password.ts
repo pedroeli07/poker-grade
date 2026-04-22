@@ -1,4 +1,4 @@
-import type { StrengthLevel } from "@/lib/types/password-policy";
+import type { StrengthLevel } from "@/lib/types/auth";
 
 export const PASSWORD_STRENGTH_STYLES: Record<StrengthLevel, { bar: string; label: string }> = {
   empty: { bar: "bg-zinc-600", label: "text-zinc-500" },

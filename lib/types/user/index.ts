@@ -27,14 +27,13 @@ export type UserClientProps = { initialRows: UserDirectoryRow[] };
 
 export type UserInviteModalProps = ModalProps;
 
-export interface UserViewProps {
-    row: UserDirectoryRow;
-    disabled: boolean;
-    onAction: (
-      fn: () => Promise<{ error?: string; success?: boolean }>,
-      onSuccess?: () => void
-    ) => void;
-  }
+type UserAsyncAction = () => Promise<{ error?: string; success?: boolean }>;
+
+export type UserViewProps = {
+  row: UserDirectoryRow;
+  disabled: boolean;
+  onAction: (fn: UserAsyncAction, onSuccess?: () => void) => void;
+};
 
 export type UserCardProps = UserViewProps;
 export type UserTableRowProps = UserViewProps;

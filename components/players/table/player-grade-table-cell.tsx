@@ -5,7 +5,7 @@ import {
   playerTableCoachGradeBadgeEmptyClassName,
 } from "@/lib/constants/classes";
 import { playersTableCol } from "@/lib/constants/classes";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import { memo } from "react";
 import type { PlayerGradeTableCellProps } from "@/lib/types/player";
 

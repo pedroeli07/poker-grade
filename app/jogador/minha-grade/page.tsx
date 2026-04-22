@@ -1,24 +1,16 @@
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
-import type { Metadata } from "next";
 import { createLogger } from "@/lib/logger";
 import { MinhaGradeAccountPending } from "@/components/minha-grade/minha-grade-account-pending";
 import { loadMinhaGradePageData, loadGradeDetailClientProps } from "@/lib/data/grades";
-import { minhaGradePageMetadata } from "@/lib/constants/metadata";
 import { UserRole } from "@prisma/client";
 import GradeDetailClient from "@/app/admin/grades/perfis/[id]/grade-detail-client";
-import { cardClassName } from "@/lib/constants";
+import { cardClassName } from "@/lib/constants/sharkscope/ui";
+import { buildMinhaGradePageMetadata } from "@/lib/jogador/minha-grade-page";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const session = await requireSession();
-  if (session.role !== UserRole.PLAYER || !session.playerId) return minhaGradePageMetadata;
-  const data = await loadMinhaGradePageData(session.playerId);
-  const gradeName = data?.mainGrade?.name;
-  if (!gradeName) return minhaGradePageMetadata;
-  return { title: `${gradeName} | Minha grade`, description: minhaGradePageMetadata.description };
-}
+export const generateMetadata = buildMinhaGradePageMetadata;
 
 const log = createLogger("minha-grade.page");
 

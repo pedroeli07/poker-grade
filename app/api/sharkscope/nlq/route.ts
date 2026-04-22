@@ -6,11 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { createLogger } from "@/lib/logger";
 import { enforceUserRate } from "@/lib/api/enforce-rate";
 import { limitSharkscopeSearch } from "@/lib/rate-limit";
-import { bodySchema } from "@/lib/schemas";
-import { sharkScopeGet } from "@/lib/utils";
-import { sharkScopeAppKey, sharkScopeAppName, sharkscopeApiNetworkSegment } from "@/lib/constants";
-import { ErrorTypes } from "@/lib/types";
-
+import { bodySchema } from "@/lib/schemas/sharkscope";
+import { sharkScopeGet } from "@/lib/utils/sharkscope-client";
+import { sharkScopeAppKey, sharkScopeAppName } from "@/lib/constants/env";
+import { sharkscopeApiNetworkSegment } from "@/lib/constants/poker-networks";
+import { ErrorTypes } from "@/lib/types/primitives";
 const log = createLogger("sharkscope.nlq");
 
 export async function POST(req: Request) {
