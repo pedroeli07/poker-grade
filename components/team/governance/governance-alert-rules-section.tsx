@@ -44,9 +44,9 @@ export function GovernanceAlertRulesSection({
     <div className="w-full max-w-[1920px] mx-auto space-y-4">
       <div className="space-y-1">
         <h3 className="text-lg font-semibold tracking-tight text-foreground">Regras de alerta</h3>
-        <p className="text-sm text-muted-foreground max-w-2xl">
-          Consulte, filtre e ordene as regras. Na vista em tabela, use os filtros em cada coluna, como no
-          histórico{"\u00A0"}de deliberações.
+        <p className="text-sm text-muted-foreground">
+          Consulte, filtre e ordene as regras. Na vista em tabela, use os filtros em cada coluna,{" "}
+          como{"\u00A0"}no{"\u00A0"}histórico de deliberações.
         </p>
       </div>
       <div className="space-y-4">

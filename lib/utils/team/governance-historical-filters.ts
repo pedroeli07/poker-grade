@@ -20,9 +20,31 @@ function authorIdOrNone(d: GovernanceDecisionDTO) {
   return d.author?.id ?? NONE_AUTHOR;
 }
 
+/** Chave yyyy-mm-dd no fuso local (para filtrar por dia de calendário). */
+function governanceDecisionLocalDateKey(iso: string): string {
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function governanceDecisionLocalDateLabel(iso: string): string {
+  return new Date(iso).toLocaleDateString("pt-BR", { dateStyle: "medium" });
+}
+
 export function buildGovernanceDecisionColumnOptions(
   decisions: GovernanceDecisionDTO[],
 ): GovernanceDecisionColumnOptions {
+  const title = distinctOptions(decisions, (d) => ({ value: d.title, label: d.title }));
+  const dateMap = new Map<string, string>();
+  for (const d of decisions) {
+    const key = governanceDecisionLocalDateKey(d.decidedAt);
+    if (!dateMap.has(key)) dateMap.set(key, governanceDecisionLocalDateLabel(d.decidedAt));
+  }
+  const decidedAt = [...dateMap.entries()]
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([value, label]) => ({ value, label }));
   const area = distinctOptions(decisions, (d) => ({ value: d.area, label: d.area }));
   const status = DECISION_STATUS_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
   const visibility = DECISION_VISIBILITY_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
@@ -37,28 +59,18 @@ export function buildGovernanceDecisionColumnOptions(
   const tag = [...tagSet]
     .sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }))
     .map((t) => ({ value: t, label: t }));
-  return { area, status, visibility, author, tag };
+  return { title, decidedAt, area, status, visibility, author, tag };
 }
 
 export function filterGovernanceDecisions(
   decisions: GovernanceDecisionDTO[],
-  search: string,
   filters: GovernanceDecisionColumnFilters,
 ): GovernanceDecisionDTO[] {
-  const q = search.trim().toLowerCase();
   return decisions.filter((dec) => {
-    if (q) {
-      const blob = [
-        dec.title,
-        dec.summary,
-        dec.impact,
-        dec.tags.join(" "),
-        dec.area,
-        authorLabel(dec),
-      ]
-        .join(" ")
-        .toLowerCase();
-      if (!blob.includes(q)) return false;
+    if (filters.title && !filters.title.has(dec.title)) return false;
+    if (filters.decidedAt) {
+      const dk = governanceDecisionLocalDateKey(dec.decidedAt);
+      if (!filters.decidedAt.has(dk)) return false;
     }
     if (filters.area && !filters.area.has(dec.area)) return false;
     if (filters.status && !filters.status.has(dec.status)) return false;

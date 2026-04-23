@@ -58,11 +58,11 @@ const UserClient = memo(function UserClient({ initialRows }: UserClientProps) {
       {/* Header Area */}
       <div className="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-primary">
-            <Users className="h-7 w-7 text-primary" />
+          <h2 className="flex items-center gap-2 text-3xl font-bold tracking-tight text-primary">
+            <Users className="h-8 w-8 shrink-0 text-primary" />
             Usuários
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          </h2>
+          <p className="mt-1 text-muted-foreground">
             Apenas administradores registram sem convite direto; os demais
             precisam estar na lista de liberação.
             {!canManageUsers && (

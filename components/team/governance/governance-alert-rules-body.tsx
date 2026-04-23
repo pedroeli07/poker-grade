@@ -144,7 +144,7 @@ const GovernanceAlertRulesBody = memo(function GovernanceAlertRulesBody({
       />
       <DataTableShell hasActiveView={hasActiveView}>
         <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
-          <Table className="min-w-[1000px] w-full table-fixed">
+          <Table className="min-w-[1000px] w-full table-fixed text-base">
             <TableHeader>
               <TableRow
                 className={cn(

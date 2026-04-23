@@ -54,23 +54,23 @@ const GovernanceHistoricalTableRow = memo(function GovernanceHistoricalTableRow(
           <span className="text-xs font-medium leading-tight text-muted-foreground">{dec.area}</span>
         )}
       </TableCell>
-      <TableCell className="whitespace-nowrap text-center tabular-nums text-muted-foreground text-xs">
+      <TableCell className="whitespace-nowrap text-center tabular-nums text-muted-foreground text-sm">
         {format(new Date(dec.decidedAt), "dd/MM/yyyy", { locale: ptBR })}
       </TableCell>
       <TableCell className="text-center">
         <Badge
           className={cn(
-            "px-2.5 py-0.5 text-xs font-medium",
+            "px-2.5 py-0.5 text-sm font-medium",
             GOVERNANCE_STATUS_BADGE_CLASS[dec.status] ?? "bg-amber-50 text-amber-800",
           )}
         >
           {statusLabel(dec.status, DECISION_STATUS_OPTIONS)}
         </Badge>
       </TableCell>
-      <TableCell className="whitespace-normal text-center text-xs text-muted-foreground">
+      <TableCell className="whitespace-normal text-center text-sm text-muted-foreground">
         {decisionVisibilityLabel(dec.visibility)}
       </TableCell>
-      <TableCell className="min-w-0 text-center text-xs whitespace-normal">
+      <TableCell className="min-w-0 text-center text-sm whitespace-normal">
         <span className="line-clamp-2 break-words font-medium text-foreground">
           {dec.author?.displayName || dec.author?.email || "—"}
         </span>

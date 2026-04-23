@@ -9,3 +9,19 @@ export async function listTeamDri() {
     prisma.teamDri.findMany({ orderBy: { area: "asc" }, include: { authUser: AUTH_USER_MIN } }),
   );
 }
+
+/** Resolve `AuthUser` por nome de exibição exato (case-insensitive) — p.ex. `TeamDri.responsibleName` sem `authUserId`. */
+export async function findAuthUsersByExactDisplayNames(names: string[]) {
+  const unique = [...new Set(names.map((n) => n.trim()).filter(Boolean))];
+  if (unique.length === 0) return [];
+  return staffListRead(() =>
+    prisma.authUser.findMany({
+      where: {
+        OR: unique.map((name) => ({
+          displayName: { equals: name, mode: "insensitive" as const },
+        })),
+      },
+      select: { id: true, displayName: true, email: true },
+    }),
+  );
+}

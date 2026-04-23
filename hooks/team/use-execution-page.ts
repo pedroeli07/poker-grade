@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import type { Prisma } from "@prisma/client";
 import { EMPTY_EXECUTION_TASK_FORM } from "@/lib/constants/team/execution-page";
-import type { TaskStatusId } from "@/lib/constants/team/execution-ui";
 import { TASK_STATUS_COLUMNS } from "@/lib/constants/team/execution-ui";
 import type { ExecutionPageData } from "@/lib/data/team/execution-page";
 import type { NormalizedExecutionTask, ExecutionTaskFormState } from "@/lib/types/team/execution";
@@ -17,6 +16,10 @@ import {
 import { deleteTeamTask } from "@/lib/queries/db/team/tasks/delete-task";
 import { updateTeamTaskStatus } from "@/lib/queries/db/team/tasks/update-status";
 import { upsertTeamTask } from "@/lib/queries/db/team/tasks/save-task";
+import {
+  parseRitualDriForSave,
+  ritualDriFormValueFromRitual,
+} from "@/lib/utils/team/ritual-dri-select";
 
 export function useExecutionPage({ tasks: rawTasks, staff }: ExecutionPageData) {
   const router = useRouter();
@@ -32,11 +35,6 @@ export function useExecutionPage({ tasks: rawTasks, staff }: ExecutionPageData) 
   );
 
   const filtered = useMemo(() => filterExecutionTasksBySearch(tasks, search), [tasks, search]);
-
-  const tasksForColumn = useCallback(
-    (status: TaskStatusId) => filtered.filter((t) => t._status === status),
-    [filtered],
-  );
 
   const setFormPatch = useCallback((patch: Partial<ExecutionTaskFormState>) => {
     setForm((p) => ({ ...p, ...patch }));
@@ -55,26 +53,34 @@ export function useExecutionPage({ tasks: rawTasks, staff }: ExecutionPageData) 
       id: t.id,
       title: t.title,
       description: t.description,
-      authUserId: t.authUserId || "",
+      authUserId: ritualDriFormValueFromRitual(t.authUserId, t.responsibleName),
       priority: t.priority,
       status: t._status,
       prazo: t.dueAt ? format(new Date(t.dueAt), "yyyy-MM-dd") : "",
       criterio: t.criteria[0] || t.expectedResult || "",
-      tagsText: t._tags.join(", "),
+      tagEntries: t._tagItems.map((tag, i) => ({
+        id: `tag-${t.id}-${i}-${tag.label}`,
+        label: tag.label,
+        colorName: tag.colorName,
+      })),
     });
     setDialogOpen(true);
   }, []);
 
   const saveTask = useCallback(() => {
-    if (!form.title.trim() || !form.authUserId) {
+    if (!form.title.trim() || !form.authUserId.trim()) {
+      toast.error("Preencha título e responsável.");
+      return;
+    }
+    const assign = parseRitualDriForSave(form.authUserId);
+    if (!assign.driId && !assign.responsibleName) {
       toast.error("Preencha título e responsável.");
       return;
     }
     const crit = form.criterio.trim();
-    const tagArr = form.tagsText
-      .split(/[,;]/)
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const tagPayload = form.tagEntries
+      .map((e) => ({ label: e.label.trim(), colorName: e.colorName }))
+      .filter((e) => e.label.length > 0);
     const due = form.prazo ? new Date(`${form.prazo}T12:00:00`) : null;
     const base = {
       title: form.title.trim(),
@@ -83,9 +89,9 @@ export function useExecutionPage({ tasks: rawTasks, staff }: ExecutionPageData) 
       priority: form.priority,
       expectedResult: crit || null,
       criteria: crit ? [crit] : [],
-      tags: tagArr as unknown as Prisma.JsonValue,
-      authUserId: form.authUserId,
-      responsibleName: null,
+      tags: tagPayload as unknown as Prisma.JsonValue,
+      authUserId: assign.driId,
+      responsibleName: assign.responsibleName,
       dueAt: due,
       sourceRitualId: null,
       sourceDecisionId: null,
@@ -144,7 +150,7 @@ export function useExecutionPage({ tasks: rawTasks, staff }: ExecutionPageData) 
     saveTask,
     changeStatus,
     confirmDelete,
-    tasksForColumn,
+    filteredTasks: filtered,
     canCreate: staff.length > 0,
     statusColumns: TASK_STATUS_COLUMNS,
   };

@@ -1,6 +1,6 @@
 import type { loadMinhaGradePageData } from "@/lib/data/grades";
 import type { GradeType } from "@prisma/client";
-import type { STAT_CARD_TONE_CLASSES } from "@/lib/constants/jogador";
+import type { STAT_CARD_TONES } from "@/lib/constants/jogador";
 import type {
   AccountPendingResult,
   FilterMap,
@@ -57,4 +57,4 @@ type PlayerTourneysSetFilterKey =
 
 export type PlayerTourneysFilterState = { search: string } & FilterMap<PlayerTourneysSetFilterKey>;
 
-export type StatCardTone = keyof typeof STAT_CARD_TONE_CLASSES;
+export type StatCardTone = keyof typeof STAT_CARD_TONES;

@@ -2,6 +2,8 @@ import type { GovernanceDecisionColumnFilters } from "@/lib/types/team/governanc
 import { createFilterStore } from "@/lib/stores/create-filter-store";
 
 const defaultFilters: GovernanceDecisionColumnFilters = {
+  title: null,
+  decidedAt: null,
   area: null,
   status: null,
   visibility: null,

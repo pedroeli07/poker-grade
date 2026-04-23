@@ -15,8 +15,8 @@ export const ExecutionPageHeader = memo(function ExecutionPageHeader({
   return (
     <div className="flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-sm md:flex-row md:items-center md:justify-between">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-primary">Execução</h1>
-        <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+        <h2 className="text-3xl font-bold tracking-tight text-primary">Execução</h2>
+        <p className="mt-1 max-w-xl text-muted-foreground">
           Planos de ação, responsáveis e prazos — alinhado a decisões e rituais do time.
         </p>
       </div>

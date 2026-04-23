@@ -110,7 +110,7 @@ export function sevIconWrapCls(severity: string) {
 
 export function sevPillCls(severity: string) {
   return cn(
-    "border-none text-[10px] font-bold",
+    "border-none text-xs font-bold",
     severity === "CRITICAL" && "bg-rose-100 text-rose-800",
     severity === "ALERT" && "bg-amber-100 text-amber-900",
     severity === "WARNING" && "bg-amber-50 text-amber-800",

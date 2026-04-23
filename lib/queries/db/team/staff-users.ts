@@ -13,3 +13,14 @@ export async function listStaffUsersForSelect() {
     }),
   );
 }
+
+/** Admin, gestor e coach — atribuição de tarefas, DRI de indicadores, etc. */
+export async function listAssignableStaffUsersForSelect() {
+  return staffListRead(() =>
+    prisma.authUser.findMany({
+      where: { role: { in: [UserRole.ADMIN, UserRole.MANAGER, UserRole.COACH] } },
+      select: { id: true, displayName: true, email: true, role: true },
+      orderBy: [{ displayName: "asc" }, { email: "asc" }],
+    }),
+  );
+}

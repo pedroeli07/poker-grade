@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/auth/session";
 import { listTeamTasks } from "@/lib/queries/db/team/tasks/read";
-import { listStaffUsersForSelect } from "@/lib/queries/db/team/staff-users";
+import { getStaffSelectOptionsWithDriMatrix } from "@/lib/data/team/staff-select-options";
 import type { Prisma } from "@prisma/client";
 
 function coercePriority(p: string) {
@@ -43,7 +43,7 @@ export type ExecutionPageData = {
 
 export async function getExecutionPageData(): Promise<ExecutionPageData> {
   await requireSession();
-  const [tasks, staff] = await Promise.all([listTeamTasks(), listStaffUsersForSelect()]);
+  const [tasks, staff] = await Promise.all([listTeamTasks(), getStaffSelectOptionsWithDriMatrix()]);
 
   const serialized: ExecutionTaskDTO[] = tasks.map((t) => ({
     id: t.id,
@@ -66,10 +66,5 @@ export async function getExecutionPageData(): Promise<ExecutionPageData> {
       : null,
   }));
 
-  const staffList: ExecutionStaffOption[] = staff.map((u) => ({
-    id: u.id,
-    name: u.displayName || u.email,
-  }));
-
-  return { tasks: serialized, staff: staffList };
+  return { tasks: serialized, staff };
 }

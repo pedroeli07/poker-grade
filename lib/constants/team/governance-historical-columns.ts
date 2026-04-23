@@ -2,6 +2,8 @@ import type { GovernanceDecisionColKey, GovernanceDecisionSortKey } from "@/lib/
 import type { ColumnSortKind } from "@/lib/types/dataTable";
 
 export const GOVERNANCE_DECISION_COL_LABEL: Record<GovernanceDecisionColKey, string> = {
+  title: "Decisão",
+  decidedAt: "Data",
   area: "Área",
   status: "Status",
   visibility: "Visibilidade",
@@ -11,6 +13,8 @@ export const GOVERNANCE_DECISION_COL_LABEL: Record<GovernanceDecisionColKey, str
 
 /** Popovers de filtro no modo cards (id, chave, rótulo no botão). */
 export const GOVERNANCE_CARD_FILTER_COLUMNS: [string, GovernanceDecisionColKey, string][] = [
+  ["governance-hist-f-title", "title", "Decisão"],
+  ["governance-hist-f-date", "decidedAt", "Data"],
   ["governance-hist-f-area", "area", "Área"],
   ["governance-hist-f-status", "status", "Status"],
   ["governance-hist-f-vis", "visibility", "Visibilidade"],
@@ -42,7 +46,7 @@ export const GOVERNANCE_TABLE_HEAD_COLUMNS: HeadCol[] = [
     id: "d-title",
     width: "w-[34%] min-w-[260px]",
     label: "Decisão",
-    filterCol: null,
+    filterCol: "title",
     sortKey: "title",
     sortKind: "string",
   },
@@ -58,7 +62,7 @@ export const GOVERNANCE_TABLE_HEAD_COLUMNS: HeadCol[] = [
     id: "d-when",
     width: "w-[9%] whitespace-nowrap",
     label: "Data",
-    filterCol: null,
+    filterCol: "decidedAt",
     sortKey: "decidedAt",
     sortKind: "date",
   },
@@ -73,7 +77,7 @@ export const GOVERNANCE_TABLE_HEAD_COLUMNS: HeadCol[] = [
   {
     id: "d-vis",
     width: "w-[10%]",
-    label: "Vis.",
+    label: "Visibilidade",
     filterCol: "visibility",
     sortKey: "visibility",
     sortKind: "string",

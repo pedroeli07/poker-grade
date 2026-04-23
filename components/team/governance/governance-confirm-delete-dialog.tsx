@@ -2,7 +2,6 @@
 
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -10,7 +9,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  DestructiveAlertDivider,
+  DestructiveAlertIconHeader,
+  DestructiveAlertWarningNote,
+} from "@/components/modals/primitives/destructive-alert-dialog";
 import type { GovernanceConfirmDeleteDialogProps } from "@/lib/types/team/governance";
+import {
+  destructiveAlertCancelButtonClassName,
+  destructiveAlertConfirmButtonClassName,
+  destructiveAlertDescriptionWrapClassName,
+  destructiveAlertDialogContentClassName,
+  destructiveAlertFooterClassName,
+  destructiveAlertHeaderClassName,
+  destructiveAlertTitleClassName,
+} from "@/lib/constants/classes";
 
 export function GovernanceConfirmDeleteDialog({
   open,
@@ -18,22 +32,38 @@ export function GovernanceConfirmDeleteDialog({
   description,
   onConfirm,
   onCancel,
+  confirmPending = false,
 }: GovernanceConfirmDeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={(o) => !o && onCancel()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+      <AlertDialogContent size="default" className={destructiveAlertDialogContentClassName}>
+        <DestructiveAlertIconHeader />
+        <AlertDialogHeader className={destructiveAlertHeaderClassName}>
+          <AlertDialogTitle className={destructiveAlertTitleClassName}>{title}</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className={destructiveAlertDescriptionWrapClassName}>
+              {description}
+              <DestructiveAlertWarningNote>Esta ação não pode ser desfeita.</DestructiveAlertWarningNote>
+            </div>
+          </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            onClick={onConfirm}
+        <DestructiveAlertDivider />
+        <AlertDialogFooter className={destructiveAlertFooterClassName}>
+          <AlertDialogCancel
+            type="button"
+            disabled={confirmPending}
+            className={destructiveAlertCancelButtonClassName}
           >
-            Excluir
-          </AlertDialogAction>
+            Cancelar
+          </AlertDialogCancel>
+          <Button
+            type="button"
+            disabled={confirmPending}
+            onClick={onConfirm}
+            className={destructiveAlertConfirmButtonClassName}
+          >
+            {confirmPending ? "Excluindo…" : "Excluir"}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

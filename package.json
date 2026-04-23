@@ -18,6 +18,9 @@
     "import:tournaments-csv": "tsx scripts/import-player-group-tournaments-csv.ts",
     "seed:team-decisions": "tsx scripts/seed-team-decisions.ts",
     "seed:team-alert-rules": "tsx scripts/seed-team-alert-rules.ts",
+    "seed:team-rituals": "tsx scripts/seed-team-rituals.ts",
+    "seed:team-indicators": "tsx scripts/seed-team-indicators.ts",
+    "seed:team-tasks": "tsx scripts/seed-team-tasks.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

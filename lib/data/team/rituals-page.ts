@@ -1,6 +1,11 @@
 import { requireSession } from "@/lib/auth/session";
+import {
+  findAuthUsersByExactDisplayNames,
+  listTeamDri,
+} from "@/lib/queries/db/team/governance/dri-read";
 import { listTeamRituals } from "@/lib/queries/db/team/rituals/read";
 import { listStaffUsersForSelect } from "@/lib/queries/db/team/staff-users";
+import { mergeStaffSelectOptionsWithDriMatrix } from "@/lib/utils/team/staff-select-options-merge";
 
 export type RitualDTO = {
   id: string;
@@ -25,9 +30,21 @@ export type RitualsPageData = {
   staff: RitualStaffOption[];
 };
 
+function mergeRitualStaffOptions(
+  staff: Awaited<ReturnType<typeof listStaffUsersForSelect>>,
+  dris: Awaited<ReturnType<typeof listTeamDri>>,
+  resolvedFromFreeText: { id: string; displayName: string | null; email: string }[],
+): RitualStaffOption[] {
+  return mergeStaffSelectOptionsWithDriMatrix(staff, dris, resolvedFromFreeText);
+}
+
 export async function getRitualsPageData(): Promise<RitualsPageData> {
   await requireSession();
-  const [rituais, staff] = await Promise.all([listTeamRituals(), listStaffUsersForSelect()]);
+  const [rituais, staff, dris] = await Promise.all([
+    listTeamRituals(),
+    listStaffUsersForSelect(),
+    listTeamDri(),
+  ]);
 
   const serialized: RitualDTO[] = rituais.map((r) => ({
     id: r.id,
@@ -49,10 +66,11 @@ export async function getRitualsPageData(): Promise<RitualsPageData> {
     })),
   }));
 
-  const staffList: RitualStaffOption[] = staff.map((u) => ({
-    id: u.id,
-    name: u.displayName || u.email,
-  }));
+  const driNamesOnly = dris
+    .filter((d) => !d.authUserId && d.responsibleName?.trim())
+    .map((d) => d.responsibleName!.trim());
+  const resolvedUsers = await findAuthUsersByExactDisplayNames(driNamesOnly);
+  const staffList = mergeRitualStaffOptions(staff, dris, resolvedUsers);
 
   return { rituals: serialized, staff: staffList };
 }

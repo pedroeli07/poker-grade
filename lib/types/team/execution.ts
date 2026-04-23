@@ -1,7 +1,14 @@
 import type { TaskStatusId } from "@/lib/constants/team/execution-ui";
 import type { ExecutionTaskDTO } from "@/lib/data/team/execution-page";
 
-export type NormalizedExecutionTask = ExecutionTaskDTO & { _status: TaskStatusId; _tags: string[] };
+export type ExecutionTagItem = { label: string; colorName: string };
+
+export type NormalizedExecutionTask = ExecutionTaskDTO & {
+  _status: TaskStatusId;
+  _tagItems: ExecutionTagItem[];
+};
+
+export type ExecutionTaskFormTagEntry = { id: string; label: string; colorName: string };
 
 export type ExecutionTaskFormState = {
   id: string | undefined;
@@ -12,7 +19,7 @@ export type ExecutionTaskFormState = {
   status: string;
   prazo: string;
   criterio: string;
-  tagsText: string;
+  tagEntries: ExecutionTaskFormTagEntry[];
 };
 
 export type ExecutionTaskCardProps = {
@@ -37,6 +44,8 @@ export type ExecutionDeleteTaskDialogProps = {
   deleteId: string | null;
   onOpenChange: (open: boolean) => void;
   onConfirm: (id: string) => void;
+  /** Bloqueia fechar/acionar enquanto a exclusão roda (ex.: `useTransition`). */
+  confirmPending?: boolean;
 };
 
 export type ExecutionPageHeaderProps = {

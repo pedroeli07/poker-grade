@@ -68,8 +68,8 @@ export default function OpponentsListClient({
     <div className="min-w-0 max-w-full space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Adversários</h1>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-3xl font-bold tracking-tight text-primary">Adversários</h2>
+          <p className="mt-1 text-muted-foreground">
             Base coletiva de notas sobre adversários do time.
           </p>
         </div>

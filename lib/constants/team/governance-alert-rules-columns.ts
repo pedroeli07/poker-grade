@@ -36,7 +36,7 @@ type HeadCol = {
 export const GOVERNANCE_ALERT_RULE_TABLE_HEAD_COLUMNS: HeadCol[] = [
   {
     id: "ar-name",
-    width: "w-[22%] min-w-[200px]",
+    width: "w-[34%] min-w-[260px]",
     label: "Regra",
     filterCol: null,
     sortKey: "name",
@@ -44,7 +44,7 @@ export const GOVERNANCE_ALERT_RULE_TABLE_HEAD_COLUMNS: HeadCol[] = [
   },
   {
     id: "ar-area",
-    width: "w-[11%]",
+    width: "w-[10%]",
     label: "Área",
     filterCol: "area",
     sortKey: "area",
@@ -52,7 +52,7 @@ export const GOVERNANCE_ALERT_RULE_TABLE_HEAD_COLUMNS: HeadCol[] = [
   },
   {
     id: "ar-metric",
-    width: "w-[12%]",
+    width: "w-[10%]",
     label: "Métrica",
     filterCol: "metric",
     sortKey: "metric",
@@ -60,7 +60,7 @@ export const GOVERNANCE_ALERT_RULE_TABLE_HEAD_COLUMNS: HeadCol[] = [
   },
   {
     id: "ar-cond",
-    width: "w-[14%] min-w-[120px]",
+    width: "w-[12%] min-w-[120px]",
     label: "Condição",
     filterCol: null,
     sortKey: "threshold",
@@ -68,7 +68,7 @@ export const GOVERNANCE_ALERT_RULE_TABLE_HEAD_COLUMNS: HeadCol[] = [
   },
   {
     id: "ar-sev",
-    width: "w-[10%]",
+    width: "w-[9%]",
     label: "Severidade",
     filterCol: "severity",
     sortKey: "severity",
@@ -76,7 +76,7 @@ export const GOVERNANCE_ALERT_RULE_TABLE_HEAD_COLUMNS: HeadCol[] = [
   },
   {
     id: "ar-resp",
-    width: "w-[16%]",
+    width: "w-[13%]",
     label: "Responsável",
     filterCol: "responsible",
     sortKey: "responsible",

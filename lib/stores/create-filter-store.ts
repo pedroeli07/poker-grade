@@ -61,6 +61,17 @@ export function createFilterStore<
           filters: state.filters,
           hasAnyFilter: state.hasAnyFilter,
         }),
+        merge: (persistedState, currentState) => {
+          if (!persistedState || typeof persistedState !== "object") return currentState;
+          const p = persistedState as Partial<{ filters: Partial<T>; hasAnyFilter: boolean }>;
+          const mergedFilters = { ...defaultFilters, ...p.filters } as T;
+          const hasAnyFilter = Object.values(mergedFilters).some((v) => v !== null);
+          return {
+            ...currentState,
+            filters: mergedFilters,
+            hasAnyFilter: p.hasAnyFilter ?? hasAnyFilter,
+          };
+        },
       }
     )
   );

@@ -35,7 +35,7 @@ const GovernanceAlertRulesTableColumnFilter = memo(function GovernanceAlertRules
       options={options[col]}
       applied={filters[col]}
       onApply={setCol(col)}
-      triggerClassName="text-sm font-semibold leading-tight max-w-[7.5rem] text-center"
+      triggerClassName="text-base font-semibold leading-tight max-w-[8.5rem] text-center"
     />
   );
 });

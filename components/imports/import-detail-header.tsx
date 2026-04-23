@@ -26,7 +26,7 @@ const ImportDetailHeader = memo(function ImportDetailHeader({
         </Link>
       </Button>
       <div className="flex-1 min-w-0">
-        <h2 className="text-2xl font-bold tracking-tight truncate text-primary">{importRecord.fileName}</h2>
+        <h2 className="text-3xl font-bold tracking-tight truncate text-primary">{importRecord.fileName}</h2>
         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mt-0.5">
           {importRecord.playerName && (
             <span className="font-medium text-foreground">{importRecord.playerName}</span>

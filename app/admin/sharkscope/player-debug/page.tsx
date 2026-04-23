@@ -30,8 +30,8 @@ export default async function SharkscopePlayerDebugPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Debug — um jogador (SharkScope)</h1>
-        <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+        <h2 className="text-3xl font-bold tracking-tight text-primary">Debug — um jogador (SharkScope)</h2>
+        <p className="mt-1 max-w-2xl text-muted-foreground">
           Escolha um jogador com Grupo Shark. Use <strong>Sincronizar KPIs (só API)</strong> para atualizar
           só as estatísticas oficiais desse <code className="text-xs">playerGroup</code> (poucas buscas na
           API) e comparar ROI/FP/FT com a pesquisa manual no SharkScope. Quando bater com o site, pode

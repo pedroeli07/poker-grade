@@ -6,14 +6,28 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DestructiveAlertDivider,
+  DestructiveAlertIconHeader,
+  DestructiveAlertWarningNote,
+} from "@/components/modals/primitives/destructive-alert-dialog";
 import { deleteTeamOperationalRule } from "@/lib/queries/db/team/culture/delete-rule";
-
+import {
+  destructiveAlertCancelButtonClassName,
+  destructiveAlertConfirmButtonClassName,
+  destructiveAlertDescriptionWrapClassName,
+  destructiveAlertDialogContentClassName,
+  destructiveAlertFooterClassName,
+  destructiveAlertHeaderClassName,
+  destructiveAlertTitleClassName,
+} from "@/lib/constants/classes";
 
 const DeleteRuleButton = memo(function DeleteRuleButton({
   ruleId,
@@ -50,26 +64,35 @@ const DeleteRuleButton = memo(function DeleteRuleButton({
       </Button>
 
       <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent className="rounded-2xl border-none shadow-2xl p-0 overflow-hidden max-w-[420px]">
-          <div className="bg-destructive/10 p-6 flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center mb-4 border-4 border-destructive/20 shadow-sm">
-              <Trash2 className="w-7 h-7 text-destructive" />
-            </div>
-            <AlertDialogTitle className="text-xl font-bold">Excluir regra?</AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground mt-2">
-              A regra <span className="font-semibold text-foreground">&quot;{ruleTitle}&quot;</span> será removida permanentemente.
+        <AlertDialogContent size="default" className={destructiveAlertDialogContentClassName}>
+          <DestructiveAlertIconHeader />
+          <AlertDialogHeader className={destructiveAlertHeaderClassName}>
+            <AlertDialogTitle className={destructiveAlertTitleClassName}>Excluir regra?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className={destructiveAlertDescriptionWrapClassName}>
+                <p>
+                  A regra{" "}
+                  <span className="font-semibold text-foreground">&quot;{ruleTitle}&quot;</span> será
+                  removida permanentemente.
+                </p>
+                <DestructiveAlertWarningNote>Esta ação não pode ser desfeita.</DestructiveAlertWarningNote>
+              </div>
             </AlertDialogDescription>
-          </div>
-          <div className="p-4 bg-card flex gap-3">
-            <AlertDialogCancel className="flex-1 rounded-xl mt-0">Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
+          </AlertDialogHeader>
+          <DestructiveAlertDivider />
+          <AlertDialogFooter className={destructiveAlertFooterClassName}>
+            <AlertDialogCancel type="button" disabled={pending} className={destructiveAlertCancelButtonClassName}>
+              Cancelar
+            </AlertDialogCancel>
+            <Button
+              type="button"
               disabled={pending}
-              className="flex-1 rounded-xl bg-destructive hover:bg-destructive/90 text-white font-bold"
+              onClick={handleDelete}
+              className={destructiveAlertConfirmButtonClassName}
             >
-              {pending ? "Excluindo..." : "Excluir"}
-            </AlertDialogAction>
-          </div>
+              {pending ? "Excluindo…" : "Excluir"}
+            </Button>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>

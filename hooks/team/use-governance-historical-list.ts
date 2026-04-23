@@ -27,7 +27,6 @@ function normalizeGovernancePageSize(n: number): number {
 }
 
 export function useGovernanceHistoricalList(decisions: GovernanceDecisionDTO[]) {
-  const [search, setSearch] = useState("");
   const [view, setView, viewHydrated] = usePersistentState<"cards" | "table">(
     GOVERNANCE_HISTORICAL_LS_VIEW,
     "cards",
@@ -54,8 +53,8 @@ export function useGovernanceHistoricalList(decisions: GovernanceDecisionDTO[]) 
   );
 
   const filtered = useMemo(
-    () => filterGovernanceDecisions(decisions, search, filters),
-    [decisions, search, filters],
+    () => filterGovernanceDecisions(decisions, filters),
+    [decisions, filters],
   );
 
   const [sort, setSort] = useState<{ key: GovernanceDecisionSortKey; dir: SortDir } | null>(null);
@@ -81,7 +80,7 @@ export function useGovernanceHistoricalList(decisions: GovernanceDecisionDTO[]) 
     // Volta à primeira página quando o critério de listagem muda.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset de paginação ao filtrar/ordenar
     setPage(1);
-  }, [search, filtersKey, sortKey]);
+  }, [filtersKey, sortKey]);
 
   const paginatedRows = useMemo(() => {
     if (isAll) return sortedForTable;
@@ -101,16 +100,12 @@ export function useGovernanceHistoricalList(decisions: GovernanceDecisionDTO[]) 
   const clearTableView = useCallback(() => {
     clearFilters();
     setSort(null);
-    setSearch("");
     setPage(1);
   }, [clearFilters]);
 
-  const hasActiveView =
-    anyFilter || sort !== null || search.trim().length > 0;
+  const hasActiveView = anyFilter || sort !== null;
 
   return {
-    search,
-    setSearch,
     view,
     setView,
     viewHydrated,

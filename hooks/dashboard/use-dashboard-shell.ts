@@ -7,7 +7,7 @@ export function useDashboardShellLayout() {
   return {
     mainClassName: cn(
       "flex-1 flex flex-col transition-all duration-300",
-      isOpen ? "ml-[220px]" : "ml-[68px]"
+      isOpen ? "ml-[204px]" : "ml-[64px]"
     ),
   };
 }

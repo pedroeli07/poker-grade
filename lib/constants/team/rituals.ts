@@ -37,33 +37,68 @@ export const RITUAL_AREA_COLORS: Record<string, string> = {
   "Cultura": "bg-rose-50 text-rose-700 border-rose-200",
 };
 
+/** Valores alinhados a `Date.getDay()`: 0 = domingo … 6 = sábado. */
 export const DIAS_SEMANA = [
-  { value: 0, label: "D" },
-  { value: 1, label: "S" },
-  { value: 2, label: "T" },
-  { value: 3, label: "Q" },
-  { value: 4, label: "Q" },
-  { value: 5, label: "S" },
-  { value: 6, label: "S" },
-];
+  { value: 0, label: "Domingo" },
+  { value: 1, label: "Segunda" },
+  { value: 2, label: "Terça" },
+  { value: 3, label: "Quarta" },
+  { value: 4, label: "Quinta" },
+  { value: 5, label: "Sexta" },
+  { value: 6, label: "Sábado" },
+] as const;
 
-export const RITUAL_TEMPLATES: Record<
-  string,
-  Partial<{
-    name: string;
-    ritualType: string;
-    area: string;
-    description: string;
-    durationMin: string;
-    recurrence: string;
-    checklist: RitualChecklistItem[];
-  }>
-> = {
-  WBR: {
+/** Picker na ordem Seg → Dom, rótulos curtos (referência visual do modal). */
+export const RITUAL_WEEKDAY_PICKER = [
+  { value: 1, label: "Seg" },
+  { value: 2, label: "Ter" },
+  { value: 3, label: "Qua" },
+  { value: 4, label: "Qui" },
+  { value: 5, label: "Sex" },
+  { value: 6, label: "Sáb" },
+  { value: 0, label: "Dom" },
+] as const;
+
+export const RITUAL_GENERATE_FOR_OPTIONS = [
+  { value: "4", label: "4 semanas" },
+  { value: "8", label: "8 semanas" },
+  { value: "12", label: "12 semanas" },
+] as const;
+
+export const RITUAL_REMINDER_LEAD_OPTIONS = [
+  { value: "15min", label: "15 minutos" },
+  { value: "1hora", label: "1 hora" },
+  { value: "24horas", label: "24 horas" },
+] as const;
+
+/** Ordem dos chips em “Templates rápidos” (alinhado ao fluxo do time). */
+export const RITUAL_QUICK_TEMPLATE_ORDER = [
+  "WBR Semanal",
+  "Auditoria D+1",
+  "Revisão Mensal",
+  "1:1 Individual",
+  "Aula",
+] as const;
+
+export type RitualQuickTemplateId = (typeof RITUAL_QUICK_TEMPLATE_ORDER)[number];
+
+export type RitualTemplateFields = Partial<{
+  name: string;
+  ritualType: string;
+  area: string;
+  description: string;
+  durationMin: string;
+  recurrence: string;
+  checklist: RitualChecklistItem[];
+}>;
+
+export const RITUAL_TEMPLATES: Record<RitualQuickTemplateId, RitualTemplateFields> = {
+  "WBR Semanal": {
     name: "WBR Semanal",
     ritualType: "WBR",
     area: "Operação",
-    description: "Revisão semanal de indicadores e decisões do time.",
+    description:
+      "Weekly Business Review — análise semanal de resultados e métricas do time.",
     durationMin: "60",
     recurrence: "Semanal",
     checklist: [
@@ -75,8 +110,8 @@ export const RITUAL_TEMPLATES: Record<
   "Auditoria D+1": {
     name: "Auditoria D+1",
     ritualType: "Auditoria D+1",
-    area: "Operação",
-    description: "Conferência de torneios do dia anterior e desvios de grade.",
+    area: "Financeira",
+    description: "Validação diária dos resultados reportados vs dados oficiais.",
     durationMin: "30",
     recurrence: "Semanal",
     checklist: [
@@ -84,16 +119,41 @@ export const RITUAL_TEMPLATES: Record<
       { text: "Registrar exceções", required: true },
     ],
   },
-  "1:1": {
-    name: "1:1",
+  "Revisão Mensal": {
+    name: "Revisão Mensal",
+    ritualType: "Revisão Mensal",
+    area: "Operação",
+    description: "Fechamento mensal com análise completa de resultados e planejamento.",
+    durationMin: "90",
+    recurrence: "Mensal",
+    checklist: [
+      { text: "Consolidar resultados do mês", required: true },
+      { text: "Revisar metas e projeções", required: true },
+      { text: "Planejar próximo ciclo", required: true },
+    ],
+  },
+  "1:1 Individual": {
+    name: "1:1 Individual",
     ritualType: "1:1",
     area: "Mental",
-    description: "Conversa individual entre coach e jogador.",
+    description: "Sessão individual de acompanhamento e feedback.",
     durationMin: "45",
     recurrence: "Quinzenal",
     checklist: [
       { text: "Revisar metas pessoais", required: true },
       { text: "Discutir bloqueios", required: false },
+    ],
+  },
+  Aula: {
+    name: "Aula",
+    ritualType: "Aula",
+    area: "Técnica",
+    description: "Aula técnica para desenvolvimento de habilidades do time.",
+    durationMin: "60",
+    recurrence: "Semanal",
+    checklist: [
+      { text: "Definir tema e objetivo de aprendizado", required: true },
+      { text: "Registrar materiais / gravação", required: false },
     ],
   },
 };
@@ -109,8 +169,10 @@ export const RITUAL_EMPTY_FORM = {
   startTime: "14:00",
   durationMin: "60",
   recurrence: "Semanal",
+  generateFor: "8",
   daysOfWeek: [1] as number[],
   sendReminder: false,
   reminderLead: "15min",
   notifyDriIfLate: true,
+  createGoogleCalendar: false,
 };

@@ -35,9 +35,9 @@ const GovernanceAlertRulesTableHeadFilters = memo(function GovernanceAlertRulesT
         return (
           <TableHead
             key={col.id}
-            className={`${col.width} align-middle text-center px-1.5 py-2.5 text-sm`}
+            className={`${col.width} align-middle text-center px-2 py-3 text-base`}
           >
-            <div className="flex min-h-9 w-full items-center justify-center gap-0.5">
+            <div className="flex min-h-10 w-full items-center justify-center gap-0.5">
               {hasSort && hasF ? (
                 <div className="flex w-full min-w-0 items-center justify-center gap-0.5">
                   <SortButton
@@ -58,7 +58,7 @@ const GovernanceAlertRulesTableHeadFilters = memo(function GovernanceAlertRulesT
                 </div>
               ) : hasSort && !hasF ? (
                 <div className="flex w-full min-w-0 items-center justify-center gap-0.5">
-                  <span className="shrink-0 text-sm font-semibold leading-tight text-foreground">
+                  <span className="shrink-0 text-base font-semibold leading-tight text-foreground">
                     {col.label}
                   </span>
                   <SortButton
@@ -81,7 +81,7 @@ const GovernanceAlertRulesTableHeadFilters = memo(function GovernanceAlertRulesT
                   />
                 </div>
               ) : (
-                <span className="text-sm font-semibold leading-tight text-foreground">{col.label}</span>
+                <span className="text-base font-semibold leading-tight text-foreground">{col.label}</span>
               )}
             </div>
           </TableHead>

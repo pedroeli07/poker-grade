@@ -9,5 +9,5 @@ export const EMPTY_EXECUTION_TASK_FORM: ExecutionTaskFormState = {
   status: "TODO",
   prazo: "",
   criterio: "",
-  tagsText: "",
+  tagEntries: [],
 };

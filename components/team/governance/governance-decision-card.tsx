@@ -6,8 +6,21 @@ import { Calendar, Edit2, Tag, Trash2, User } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { statusLabel, decisionVisibilityLabel, DECISION_STATUS_OPTIONS } from "@/lib/constants/team/governance-mural-ui";
-import { GOVERNANCE_STATUS_BADGE_CLASS, governanceAreaBadgeCls } from "@/lib/constants/team/governance-ui";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  statusLabel,
+  decisionVisibilityLabel,
+  DECISION_STATUS_OPTIONS,
+} from "@/lib/constants/team/governance-mural-ui";
+import {
+  GOVERNANCE_STATUS_BADGE_CLASS,
+  governanceAreaBadgeCls,
+} from "@/lib/constants/team/governance-ui";
 import { cn } from "@/lib/utils/cn";
 import type { GovernanceDecisionCardProps } from "@/lib/types/team/governance";
 import { memo } from "react";
@@ -19,60 +32,106 @@ export const GovernanceDecisionCard = memo(function GovernanceDecisionCard({
   areaIcon,
 }: GovernanceDecisionCardProps) {
   return (
-    <Card
-      className={cn(
-        "group relative overflow-hidden rounded-2xl border border-border/80 bg-card/95 shadow-sm",
-        "transition-all duration-200 hover:border-primary/25 hover:shadow-md",
-      )}
-    >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary/0 via-primary/40 to-primary/0 opacity-0 transition-opacity group-hover:opacity-100" />
-      <CardHeader className="space-y-3 pb-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground line-clamp-2">
-                {dec.title}
-              </h3>
+    <TooltipProvider delayDuration={200}>
+      <Card
+        className={cn(
+          "group flex h-full flex-col overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm",
+          "transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md",
+        )}
+      >
+        <CardHeader className="gap-2 pb-2">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="line-clamp-2 min-w-0 flex-1 text-base font-semibold leading-snug tracking-tight text-foreground">
+              {dec.title}
+            </h3>
+            <div className="flex shrink-0 items-center gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                    onClick={() => onEdit(dec)}
+                    aria-label="Editar decisão"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Editar</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    onClick={() => onRequestDelete(dec.id)}
+                    aria-label="Excluir decisão"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Excluir</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {areaIcon ? (
               <Badge
+                variant="outline"
                 className={cn(
-                  "shrink-0 text-[10px] font-semibold uppercase tracking-wide",
-                  GOVERNANCE_STATUS_BADGE_CLASS[dec.status] ?? "bg-amber-50 text-amber-800 border-amber-200/80",
+                  "gap-1 border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                  governanceAreaBadgeCls(dec.area),
                 )}
               >
-                {statusLabel(dec.status, DECISION_STATUS_OPTIONS)}
+                {areaIcon}
+                <span>{dec.area}</span>
               </Badge>
-            </div>
-            <p className="text-sm leading-relaxed text-muted-foreground line-clamp-3">{dec.summary}</p>
-          </div>
-          {areaIcon ? (
+            ) : (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                  governanceAreaBadgeCls(dec.area),
+                )}
+              >
+                {dec.area}
+              </Badge>
+            )}
             <Badge
-              variant="outline"
-              className={cn("shrink-0 gap-2 border bg-background/80 py-1.5", governanceAreaBadgeCls(dec.area))}
-            >
-              {areaIcon}
-              <span className="text-[10px] font-bold uppercase tracking-wider">{dec.area}</span>
-            </Badge>
-          ) : (
-            <span
               className={cn(
-                "shrink-0 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider",
-                governanceAreaBadgeCls(dec.area),
+                "px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                GOVERNANCE_STATUS_BADGE_CLASS[dec.status] ??
+                  "border-amber-200 bg-amber-50 text-amber-800",
               )}
             >
-              {dec.area}
-            </span>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4 pt-0">
-        <div className="rounded-xl border border-primary/15 bg-gradient-to-br from-primary/[0.06] to-transparent p-4">
-          <h4 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-primary/90">
-            Impacto esperado
-          </h4>
-          <p className="text-sm leading-relaxed text-muted-foreground">{dec.impact?.trim() || "—"}</p>
-        </div>
-        <div className="flex flex-col gap-3 border-t border-border/60 pt-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+              {statusLabel(dec.status, DECISION_STATUS_OPTIONS)}
+            </Badge>
+            <Badge
+              variant="outline"
+              className="px-2 py-0.5 text-[10px] font-normal text-muted-foreground"
+            >
+              {decisionVisibilityLabel(dec.visibility)}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-1 flex-col gap-3 pt-0">
+          <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+            {dec.summary}
+          </p>
+          {dec.impact?.trim() ? (
+            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+              <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Impacto esperado
+              </p>
+              <p className="line-clamp-2 text-sm leading-relaxed text-foreground/85">
+                {dec.impact}
+              </p>
+            </div>
+          ) : null}
+          <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-border/50 pt-3 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <User className="h-3.5 w-3.5 shrink-0 opacity-70" />
               <span className="font-medium text-foreground">
@@ -86,38 +145,26 @@ export const GovernanceDecisionCard = memo(function GovernanceDecisionCard({
             {dec.tags.length > 0 && (
               <span className="inline-flex flex-wrap items-center gap-1">
                 <Tag className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                {dec.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-[10px] font-medium">
+                {dec.tags.slice(0, 3).map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="px-1.5 py-0 text-[10px] font-medium"
+                  >
                     {tag}
                   </Badge>
                 ))}
+                {dec.tags.length > 3 ? (
+                  <span className="text-[10px] text-muted-foreground">
+                    +{dec.tags.length - 3}
+                  </span>
+                ) : null}
               </span>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="text-[10px] font-normal text-muted-foreground">
-              Vis.: {decisionVisibilityLabel(dec.visibility)}
-            </Badge>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="h-8 gap-1 text-xs"
-              onClick={() => onEdit(dec)}
-            >
-              <Edit2 className="h-3.5 w-3.5" /> Editar
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 gap-1 text-xs text-destructive hover:text-destructive"
-              onClick={() => onRequestDelete(dec.id)}
-            >
-              <Trash2 className="h-3.5 w-3.5" /> Excluir
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 });
 

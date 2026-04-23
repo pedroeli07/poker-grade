@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import dynamicImport from "next/dynamic";
 import { PageSkeleton } from "@/components/page-skeleton";
 import { teamIndicatorsPageMetadata } from "@/lib/constants/metadata";
+import { getIndicatorsPageData } from "@/lib/data/team/indicators-page";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ const IndicatorsPageClient = dynamicImport(
   },
 );
 
-export default function IndicatorsPage() {
-  return <IndicatorsPageClient />;
+export default async function IndicatorsPage() {
+  const { indicators, staffOptions } = await getIndicatorsPageData();
+  return <IndicatorsPageClient indicators={indicators} staffOptions={staffOptions} />;
 }

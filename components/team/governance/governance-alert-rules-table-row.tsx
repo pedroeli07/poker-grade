@@ -27,47 +27,44 @@ const GovernanceAlertRulesTableRow = memo(function GovernanceAlertRulesTableRow(
   onRequestDelete: (id: string) => void;
 }) {
   return (
-    <TableRow className="text-sm">
+    <TableRow>
       <TableCell
-        className={cn(
-          "min-w-0 max-w-0 text-left align-top",
-          "whitespace-normal [overflow-wrap:anywhere] break-words",
-        )}
+        className={cn("text-left align-top py-3.5", "whitespace-normal break-words")}
       >
         <p className="font-semibold leading-snug text-foreground">{rule.name}</p>
       </TableCell>
-      <TableCell className="text-center">
-        <Badge variant="outline" className={cn("text-xs font-medium", decisionAreaBadgeCls(rule.area))}>
+      <TableCell className="text-center py-3.5">
+        <Badge variant="outline" className={cn("text-sm font-medium", decisionAreaBadgeCls(rule.area))}>
           {rule.area}
         </Badge>
       </TableCell>
-      <TableCell className="min-w-0 text-center text-xs text-muted-foreground whitespace-normal [overflow-wrap:anywhere]">
+      <TableCell className="min-w-0 text-center text-sm text-muted-foreground whitespace-normal [overflow-wrap:anywhere] py-3.5">
         {rule.metric}
       </TableCell>
-      <TableCell className="text-center align-middle">
-        <code className="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">
+      <TableCell className="text-center align-middle py-3.5">
+        <code className="rounded bg-primary/10 px-2 py-1 text-sm text-primary">
           {rule.operator} {rule.threshold}
         </code>
       </TableCell>
-      <TableCell className="text-center">
-        <Badge variant="outline" className={sevPillCls(rule.severity)}>
+      <TableCell className="text-center py-3.5">
+        <Badge variant="outline" className={cn(sevPillCls(rule.severity), "text-sm")}>
           {SEVERITY_LABELS_PT[rule.severity] ?? rule.severity}
         </Badge>
       </TableCell>
-      <TableCell className="min-w-0 text-center text-xs whitespace-normal">
+      <TableCell className="min-w-0 text-center text-sm whitespace-normal py-3.5">
         <span className="line-clamp-2 break-words font-medium text-foreground">{responsibleLabel(rule)}</span>
       </TableCell>
-      <TableCell className="w-[40px] text-right p-1">
+      <TableCell className="w-[44px] text-right p-1 py-3.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground"
+              className="h-9 w-9 text-muted-foreground"
               aria-label="Ações"
             >
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreHorizontal className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">

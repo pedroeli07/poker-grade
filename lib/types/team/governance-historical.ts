@@ -1,6 +1,8 @@
 import type { ColumnOptions, FilterMap } from "@/lib/types/primitives";
 
 export const GOVERNANCE_DECISION_FILTER_COLS = [
+  "title",
+  "decidedAt",
   "area",
   "status",
   "visibility",

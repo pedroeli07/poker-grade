@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = ritualsPageMetadata;
 
 const RitualsPageClient = dynamicImport(
-  () => import("@/components/team/rituals/rituals-page-client"),
+  () => import("@/components/team/rituals/rituals-page-with-tabs"),
   { loading: () => <PageSkeleton contentHeight="h-72" /> },
 );
 

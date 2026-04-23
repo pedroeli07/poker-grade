@@ -32,8 +32,8 @@ export default async function SharkscopeGroupComparePage({
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Debug — Player group vs tabela</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h2 className="text-3xl font-bold tracking-tight text-primary">Debug — Player group vs tabela</h2>
+        <p className="mt-1 text-muted-foreground">
           Use o mesmo nome do campo <strong>Grupo Shark</strong> (ex.:{" "}
           <code className="text-xs">Bruno Sampaio CL 2025</code>). Por padrão só lê o{" "}
           <strong>cache local</strong>. <strong>Probe por rede</strong> chama{" "}

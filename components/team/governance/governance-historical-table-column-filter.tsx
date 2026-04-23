@@ -9,6 +9,7 @@ import type {
   GovernanceDecisionColumnOptions,
   GovernanceDecisionsSetCol,
 } from "@/lib/types/team/governance-historical";
+import { cn } from "@/lib/utils/cn";
 
 const GovernanceHistoricalTableColumnFilter = memo(function GovernanceHistoricalTableColumnFilter({
   columnId,
@@ -35,7 +36,10 @@ const GovernanceHistoricalTableColumnFilter = memo(function GovernanceHistorical
       options={options[col]}
       applied={filters[col]}
       onApply={setCol(col)}
-      triggerClassName="text-sm font-semibold leading-tight max-w-[7.5rem] text-center"
+      triggerClassName={cn(
+        "text-base font-semibold leading-tight text-center",
+        col === "title" ? "max-w-[min(100%,18rem)]" : "max-w-[8.5rem]",
+      )}
     />
   );
 });

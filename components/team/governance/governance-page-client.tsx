@@ -37,6 +37,7 @@ export default function GovernancePageClient({ dris, decisions, staff, alertRule
     openNewDecision,
     openEditDecision,
     driAreaName,
+    deletePending,
   } = useGovernancePage({ dris, decisions, staff, alertRules });
 
   const {
@@ -120,21 +121,26 @@ export default function GovernancePageClient({ dris, decisions, staff, alertRule
       />
       <GovernanceConfirmDeleteDialog
         open={!!decisionToDelete}
-        title="Excluir decisão"
-        description="Esta ação remove o registro do histórico. Não é possível desfazer."
+        title="Excluir decisão?"
+        description={
+          <p>Esta decisão será removida do histórico de deliberações.</p>
+        }
         onConfirm={handleDeleteDecisao}
         onCancel={() => setDecisionToDelete(null)}
+        confirmPending={deletePending}
       />
       <GovernanceConfirmDeleteDialog
         open={!!driToDelete}
-        title="Excluir área DRI"
+        title="Excluir área DRI?"
         description={
-          <>
-            Confirmar exclusão da área <span className="font-semibold text-foreground">{driAreaName}</span>?
-          </>
+          <p>
+            A área DRI{" "}
+            <span className="font-semibold text-foreground">{driAreaName ?? "—"}</span> será excluída.
+          </p>
         }
         onConfirm={handleDeleteDRI}
         onCancel={() => setDriToDelete(null)}
+        confirmPending={deletePending}
       />
 
       <GovernanceAlertRuleFormDialog
@@ -147,12 +153,13 @@ export default function GovernancePageClient({ dris, decisions, staff, alertRule
         pending={alertPending}
       />
       <GovernanceDeleteDialogs
-        deleteDecisionId={null}
-        onDeleteDecisionIdChange={() => {}}
-        onConfirmDeleteDecision={() => {}}
         deleteAlertId={deleteAlertId}
         onDeleteAlertIdChange={setDeleteAlertId}
         onConfirmDeleteAlert={confirmDeleteAlert}
+        deleteAlertRuleName={
+          deleteAlertId ? (rules.find((r) => r.id === deleteAlertId)?.name ?? null) : null
+        }
+        confirmPending={alertPending}
       />
     </div>
   );

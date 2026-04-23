@@ -59,9 +59,21 @@ const KEYS = {
   GOVERNANCE_HISTORICAL_LS_VIEW: "gestao-grades:governance:historical:view",
   /** Tamanho de página (5, 10, …, “todos” em 10_000) — alinhado a notificações */
   GOVERNANCE_HISTORICAL_LS_PAGE_SIZE: "gestao-grades:governance:historical:pageSize",
+  /** Matriz DRI (governança): tamanho de página na tabela */
+  GOVERNANCE_DRI_LS_PAGE_SIZE: "gestao-grades:governance:dri:pageSize",
   /** Regras de alerta (governança): cards | table */
   GOVERNANCE_ALERT_RULES_LS_VIEW: "gestao-grades:governance:alertRules:view",
   GOVERNANCE_ALERT_RULES_LS_PAGE_SIZE: "gestao-grades:governance:alertRules:pageSize",
+  /** Lista de rituais (time): tamanho de página na tabela */
+  RITUALS_LIST_LS_PAGE_SIZE: "gestao-grades:rituals:list:pageSize",
+  /** Catálogo de indicadores (time): tamanho de página na tabela */
+  INDICATORS_CATALOG_LS_PAGE_SIZE: "gestao-grades:indicators:catalog:pageSize",
+  /** Execução (time): cards | table | kanban */
+  EXECUTION_LS_VIEW: "gestao-grades:execution:view",
+  /** Execução (time): tamanho de página na tabela/cards */
+  EXECUTION_LS_PAGE_SIZE: "gestao-grades:execution:pageSize",
+  /** Indicadores (time) Visão Geral: filtros + página + tamanho de página */
+  INDICATORS_VISAO_GERAL_LS: "gestao-grades:indicators:visao-geral:v1",
 };
 
 const toMetadata = (p: { title: string; desc: string }) => ({ title: p.title, description: p.desc } satisfies Metadata);
@@ -114,6 +126,12 @@ export const {
   TARGETS_LS_VIEW,
   GOVERNANCE_HISTORICAL_LS_VIEW,
   GOVERNANCE_HISTORICAL_LS_PAGE_SIZE,
+  GOVERNANCE_DRI_LS_PAGE_SIZE,
   GOVERNANCE_ALERT_RULES_LS_VIEW,
   GOVERNANCE_ALERT_RULES_LS_PAGE_SIZE,
+  RITUALS_LIST_LS_PAGE_SIZE,
+  INDICATORS_CATALOG_LS_PAGE_SIZE,
+  EXECUTION_LS_VIEW,
+  EXECUTION_LS_PAGE_SIZE,
+  INDICATORS_VISAO_GERAL_LS,
 } = KEYS;

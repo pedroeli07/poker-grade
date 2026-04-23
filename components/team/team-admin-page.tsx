@@ -12,12 +12,12 @@ export function TeamAdminPage({ title, lead, sectionLabel }: TeamAdminPageProps)
     <div className="space-y-6 max-w-3xl">
       <div className="space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+          <h2 className="text-3xl font-bold tracking-tight text-primary">{title}</h2>
           <Badge variant="secondary" className="font-normal">
             {sectionLabel}
           </Badge>
         </div>
-        <p className="text-sm text-muted-foreground">{lead}</p>
+        <p className="text-muted-foreground">{lead}</p>
       </div>
       <Card className="border-dashed">
         <CardHeader>

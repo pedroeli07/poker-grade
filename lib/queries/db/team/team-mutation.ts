@@ -6,6 +6,7 @@ import { ErrorTypes } from "@/lib/types/primitives";
 import type { Ok, Err } from "@/lib/types/primitives";
 import type { AppSession } from "@/lib/types/auth";
 import { teamQueriesLog } from "@/lib/constants/queries-mutations";
+import { prismaErrorToUserMessage } from "@/lib/utils/prisma-client-error-message";
 
 export async function runTeamMutation(
   fn: (session: AppSession) => Promise<void>,
@@ -23,6 +24,6 @@ export async function runTeamMutation(
     return { ok: true };
   } catch (e) {
     teamQueriesLog.error("team mutation", e instanceof Error ? e : undefined);
-    return fail(e instanceof Error ? e.message : ErrorTypes.OPERATION_FAILED);
+    return fail(prismaErrorToUserMessage(e));
   }
 }

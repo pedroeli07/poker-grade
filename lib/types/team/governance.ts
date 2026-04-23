@@ -49,6 +49,8 @@ export type GovernanceConfirmDeleteDialogProps = {
   description: ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Desabilita botões durante mutação (ex.: `useTransition`). */
+  confirmPending?: boolean;
 };
 
 export type GovernanceDecisionCardProps = {

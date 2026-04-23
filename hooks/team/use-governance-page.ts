@@ -17,7 +17,7 @@ export function useGovernancePage({ dris, decisions: _decisions, staff, alertRul
   const [editingDecisionId, setEditingDecisionId] = useState<string | null>(null);
   const [selectedDecision, setSelectedDecision] = useState<GovernanceDecisionDTO | null>(null);
   const [decisionToDelete, setDecisionToDelete] = useState<string | null>(null);
-  const [, startDel] = useTransition();
+  const [deletePending, startDel] = useTransition();
 
   const handleDeleteDRI = useCallback(() => {
     if (!driToDelete) return;
@@ -81,5 +81,6 @@ export function useGovernancePage({ dris, decisions: _decisions, staff, alertRul
     openNewDecision,
     openEditDecision,
     driAreaName,
+    deletePending,
   };
 }

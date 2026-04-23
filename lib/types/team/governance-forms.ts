@@ -32,10 +32,9 @@ export type GovernanceAlertRuleFormDialogProps = {
 };
 
 export type GovernanceDeleteDialogsProps = {
-  deleteDecisionId: string | null;
-  onDeleteDecisionIdChange: (id: string | null) => void;
-  onConfirmDeleteDecision: () => void;
   deleteAlertId: string | null;
   onDeleteAlertIdChange: (id: string | null) => void;
   onConfirmDeleteAlert: () => void;
+  deleteAlertRuleName: string | null;
+  confirmPending?: boolean;
 };
